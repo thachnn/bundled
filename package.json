@@ -1,7 +1,7 @@
 {
   "name": "npm-package-bundler",
-  "version": "1.0.0-xxx.0",
-  "description": "Use webpack v4 to bundle NPM package xxx v1.0",
+  "version": "4.46.0-webpack.0",
+  "description": "Bundle NPM package webpack v4 by using itself",
   "keywords": [
     "npm",
     "yarn",
@@ -21,14 +21,29 @@
     "build": "node scripts/build.js",
     "clean": "git clean -fdx dist/ node_modules/.cache",
     "postinstall": "git apply --reject --unidiff-zero --whitespace=nowarn scripts/fix-deps.patch",
-    "terser": "node node_modules/webpack/bin/terser --config-file scripts/terser.config.json",
-    "webpack": "node node_modules/webpack-cli/bin/cli.js --progress --display-modules",
+    "terser": "node node_modules/terser/bin/terser --config-file scripts/terser.config.json",
+    "rollup": "node node_modules/rollup/dist/bin/rollup -c --configName",
     "test": "grep -r --include=*.js -E \"[\\[,] ,|__webpack_require__\\.[a-z]|_WEBPACK_|webpackPoly|\\b_(iterator|interop)\" dist"
   },
-  "dependencies": {},
-  "devDependencies": {
-    "webpack": "thachnn/bundled#webpack-4.46.0",
-    "webpack-cli": "thachnn/bundled#webpack-cli-3.3.12"
+  "dependencies": {
+    "copy-webpack-plugin": "^5.0.5",
+    "i18n-webpack-plugin": "^1.0.0",
+    "string-replace-loader": "^2.2.0",
+    "webpack": "^4.43.0"
   },
-  "resolutions": {}
+  "devDependencies": {
+    "rollup": "^2.0.6",
+    "terser-es": "terser/terser#v4.8.1"
+  },
+  "resolutions": {
+    "**/assert/util": "^0.11.0",
+    "**/define-property": "^2.0.2",
+    "**/extend-shallow": "^3.0.2",
+    "**/pumpify/pump": "^3.0.0",
+    "**/snapdragon/source-map": "^0.6.0",
+    "**/unset-value/has-value": "^1.0.0",
+    "**/watchpack-chokidar2/chokidar": "^3.4.1",
+    "string-replace-loader/schema-utils": "^1.0.0",
+    "webpack/memory-fs": "^0.5.0"
+  }
 }
