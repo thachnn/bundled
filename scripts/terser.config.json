@@ -1,0 +1,19 @@
+{
+  "mangle": false,
+  "compress": {
+    "passes": 1,
+    "keep_infinity": true,
+    "inline": 0,
+    "lhs_constants": false,
+    "sequences": false,
+    "booleans": false
+  },
+  "output": {
+    "comments": false,
+    "keep_numbers": true,
+    "quote_style": 3,
+    "beautify": true,
+    "indent_level": 2,
+    "width": 100
+  }
+}
