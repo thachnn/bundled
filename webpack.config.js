@@ -2,7 +2,7 @@
 
 const path = require('path');
 const fs = require('fs');
-const { minify } = require('webpack/vendor/terser');
+const { minify } = require('terser');
 const { TerserPlugin, CopyPlugin, BannerPlugin, ReplaceCodePlugin } = require('webpack');
 
 /**

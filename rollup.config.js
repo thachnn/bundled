@@ -1,6 +1,11 @@
-import { existsSync } from 'fs';
-import { dirname, resolve } from 'path';
-import { minify } from 'terser';
+const { existsSync } = require('fs');
+const { dirname, resolve } = require('path');
+let minify;
+try {
+  minify = require('terser').minify;
+} catch (_) {
+  minify = (code) => code; // TODO decomment
+}
 
 /**
  * @typedef {import('terser').MinifyOptions} MinifyOptions
@@ -12,7 +17,14 @@ const baseTerserOpts = require('./scripts/terser.config.json');
 /** @param {MinifyOptions} [options] */
 const terserPlugin = (options = {}) => ({
   name: 'terser',
-  renderChunk: (code) => minify(code, Object.assign({}, baseTerserOpts, options)),
+  renderChunk(code, chunk, outputOpts) {
+    const opts = { sourceMap: !!outputOpts.sourcemap };
+
+    outputOpts.format !== 'es' || (opts.module = true);
+    outputOpts.format !== 'cjs' || (opts.toplevel = true);
+
+    return minify(code, Object.assign(opts, baseTerserOpts, options));
+  },
 });
 
 const nodeResolve = () => ({
@@ -36,7 +48,9 @@ const buildConfig = (name, config) =>
     name,
     output: Object.assign({ format: 'cjs', interop: false }, config.output),
     plugins: Object.values(
-      [nodeResolve(), terserPlugin()].concat(config.plugins || []).reduce((o, p) => ((o[p.name] = p), o), {})
+      [nodeResolve(), { name: 'transform-code' }, { name: 'replace-code' }, terserPlugin()]
+        .concat(config.plugins || [])
+        .reduce((o, p) => ((o[p.name] = p), o), {})
     ),
   });
 
@@ -49,13 +63,32 @@ export default (args) => {
   return set;
 };
 
+// Execute replacement
+const replaceBulk = (str, arr) =>
+  (Array.isArray(arr) ? arr : [arr]).reduce((s, o) => s.replace(o.search, o.replace), str);
+
+const transformCode = (options = {}) => ({
+  name: 'transform-code',
+  transform: (code, id) => (options.patterns && options.test.test(id) ? replaceBulk(code, options.patterns) : null),
+});
+
+const replaceCode = (options = {}) => ({
+  name: 'replace-code',
+  renderChunk: (code) => (options.patterns ? replaceBulk(code, options.patterns) : null),
+});
+
+//
 const configSet = [
   buildConfig('terser', {
     input: 'node_modules/terser-es/main.js',
     output: { file: 'dist/vendor/terser.js', esModule: false },
-    external: '../source-map',
+    external: 'source-map',
   }),
   //
+  buildConfig('long', {
+    input: 'node_modules/@xtuc/long/src/long.js',
+    output: { file: 'dist/vendor/long.js' },
+  }),
   buildConfig('wasm-ast', {
     input: 'node_modules/@webassemblyjs/ast/esm/index.js',
     output: { file: 'dist/vendor/wasm-ast.js' },

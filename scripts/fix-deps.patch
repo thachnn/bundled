@@ -1,3 +1,37 @@
+--- a/node_modules/@webassemblyjs/wasm-edit/esm/apply.js
++++ b/node_modules/@webassemblyjs/wasm-edit/esm/apply.js
+@@ -6 +6 @@ import { encodeNode } from "@webassemblyjs/wasm-gen";
+-import { encodeU32 } from "@webassemblyjs/wasm-gen/lib/encoder";
++import { encodeU32 } from "@webassemblyjs/wasm-gen";
+@@ -21 +21 @@ function applyUpdate(ast, uint8Buffer, _ref) {
+-  var _ref2 = _slicedToArray(_ref, 2),
++  var _ref2 = _ref,
+--- a/node_modules/@webassemblyjs/wasm-edit/esm/index.js
++++ b/node_modules/@webassemblyjs/wasm-edit/esm/index.js
+@@ -3 +3 @@ import { traverse } from "@webassemblyjs/ast";
+-import { cloneNode } from "@webassemblyjs/ast/lib/clone";
++import { cloneNode } from "@webassemblyjs/ast";
+@@ -20 +20 @@ function sortBySectionOrder(nodes) {
+-  var _iteratorNormalCompletion = true;
++  /*var _iteratorNormalCompletion = true;
+@@ -26 +26 @@ function sortBySectionOrder(nodes) {
+-      var _node = _step.value;
++      var _node = _step.value;*/ for (var _node of nodes) {
+@@ -29,2 +29,2 @@ function sortBySectionOrder(nodes) {
+-  } catch (err) {
++  /*} catch (err) {
+     _didIteratorError = true;
+@@ -39,4 +39,4 @@ function sortBySectionOrder(nodes) {
+         throw _iteratorError;
+       }
+     }
+-  }
++  }*/
+--- a/node_modules/@webassemblyjs/wasm-opt/esm/leb128.js
++++ b/node_modules/@webassemblyjs/wasm-opt/esm/leb128.js
+@@ -2 +2 @@ import { traverse, shiftSection } from "@webassemblyjs/ast";
+-import { encodeU32 } from "@webassemblyjs/wasm-gen/lib/encoder";
++import { encodeU32 } from "@webassemblyjs/wasm-gen";
 --- a/node_modules/terser-es/lib/output.js
 +++ b/node_modules/terser-es/lib/output.js
 @@ -1743,2 +1743,2 @@ function OutputStream(options) {
@@ -5,11 +39,6 @@
 -                if (output.should_break()) {
 +                output.print(",");
 +                if (!output.should_break()) output.space(); else {
---- a/node_modules/terser-es/lib/sourcemap.js
-+++ b/node_modules/terser-es/lib/sourcemap.js
-@@ -46 +46 @@
--import MOZ_SourceMap from "source-map";
-+import MOZ_SourceMap from "../source-map";
 --- a/node_modules/terser-es/lib/compress/index.js
 +++ b/node_modules/terser-es/lib/compress/index.js
 @@ -249 +249,2 @@ class Compressor extends TreeWalker {
@@ -43,3 +72,11 @@
 @@ -45 +45,2 @@ export interface CompressOptions {
      keep_infinity?: boolean;
 +    lhs_constants?: boolean;
+--- a/node_modules/webpack/lib/webpack.js
++++ b/node_modules/webpack/lib/webpack.js
+@@ -140 +140,5 @@ exportPlugins(exports, {
++	TerserPlugin: () => require("terser-webpack-plugin"),
++	I18nPlugin: () => require("i18n-webpack-plugin"),
++	CopyPlugin: () => require("copy-webpack-plugin"),
++	ReplaceCodePlugin: () => require("../../../scripts/ReplaceCodePlugin"),
+ 	WatchIgnorePlugin: () => require("./WatchIgnorePlugin")
