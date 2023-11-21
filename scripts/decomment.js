@@ -65,23 +65,22 @@ function parseOpts(args) {
 
 function main(args) {
   const cmd = parseOpts(args);
+  const run = (code) => {
+    code = decomment(code, cmd.opts);
+
+    if (!cmd.outfile && cmd.inplace && cmd.forceFile) cmd.outfile = cmd.infile;
+    if (!cmd.outfile) return console.log(code);
+
+    fs.writeFileSync(cmd.outfile, code);
+  };
 
   if (cmd.forceFile || (cmd.infile && cmd.infile !== '-')) {
     cmd.forceFile = true;
     run(fs.readFileSync(cmd.infile, 'utf8'), cmd);
   } else {
-    let code = '';
+    let data = '';
     process.stdin.resume();
-    process.stdin.on('data', (chunk) => (code += chunk));
-    process.stdin.on('end', () => run(code, cmd));
+    process.stdin.on('data', (chunk) => (data += chunk));
+    process.stdin.on('end', () => run(data, cmd));
   }
-}
-
-function run(code, cmd) {
-  code = decomment(code, cmd.opts);
-
-  if (!cmd.outfile && cmd.inplace && cmd.forceFile) cmd.outfile = cmd.infile;
-
-  if (cmd.outfile) fs.writeFileSync(cmd.outfile, code);
-  else console.log(code);
 }

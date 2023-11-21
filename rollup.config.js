@@ -3,8 +3,8 @@ const { dirname, resolve } = require('path');
 let minify;
 try {
   minify = require('terser').minify;
-} catch (_) {
-  minify = require('./scripts/decomment');
+} catch (err) {
+  (minify = require('./scripts/decomment'))._ex = err;
 }
 
 /**
@@ -80,8 +80,8 @@ const replaceCode = (options = {}) => ({
 //
 const configSet = [
   buildConfig('terser', {
-    input: 'node_modules/terser-es/main.js',
-    output: { file: 'dist/vendor/terser.js', esModule: false },
+    input: 'node_modules/terser/main.js',
+    output: { file: minify._ex ? 'node_modules/terser/dist/bundle.min.js' : 'dist/vendor/terser.js', esModule: false },
     external: 'source-map',
   }),
   //

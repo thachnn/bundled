@@ -32,8 +32,7 @@
     "webpack": "^4.43.0"
   },
   "devDependencies": {
-    "rollup": "^2.0.6",
-    "terser-es": "terser/terser#v4.8.1"
+    "rollup": "^2.0.6"
   },
   "resolutions": {
     "**/assert/util": "^0.11.0",
@@ -44,6 +43,7 @@
     "**/unset-value/has-value": "^1.0.0",
     "**/watchpack-chokidar2/chokidar": "^3.4.1",
     "string-replace-loader/schema-utils": "^1.0.0",
+    "webpack/**/terser": "terser/terser#v4.8.1",
     "webpack/memory-fs": "^0.5.0"
   }
 }

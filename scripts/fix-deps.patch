@@ -32,15 +32,15 @@
 @@ -2 +2 @@ import { traverse, shiftSection } from "@webassemblyjs/ast";
 -import { encodeU32 } from "@webassemblyjs/wasm-gen/lib/encoder";
 +import { encodeU32 } from "@webassemblyjs/wasm-gen";
---- a/node_modules/terser-es/lib/output.js
-+++ b/node_modules/terser-es/lib/output.js
+--- a/node_modules/terser/lib/output.js
++++ b/node_modules/terser/lib/output.js
 @@ -1743,2 +1743,2 @@ function OutputStream(options) {
 -                output.comma();
 -                if (output.should_break()) {
 +                output.print(",");
 +                if (!output.should_break()) output.space(); else {
---- a/node_modules/terser-es/lib/compress/index.js
-+++ b/node_modules/terser-es/lib/compress/index.js
+--- a/node_modules/terser/lib/compress/index.js
++++ b/node_modules/terser/lib/compress/index.js
 @@ -249 +249,2 @@ class Compressor extends TreeWalker {
              keep_infinity : false,
 +            lhs_constants : !false_by_default,
@@ -67,8 +67,8 @@
 +                if (self.operator.length == 2) self.operator += "=";
 +            }
          } else if (self.left instanceof AST_SymbolRef
---- a/node_modules/terser-es/tools/terser.d.ts
-+++ b/node_modules/terser-es/tools/terser.d.ts
+--- a/node_modules/terser/tools/terser.d.ts
++++ b/node_modules/terser/tools/terser.d.ts
 @@ -45 +45,2 @@ export interface CompressOptions {
      keep_infinity?: boolean;
 +    lhs_constants?: boolean;
