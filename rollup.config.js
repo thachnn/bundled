@@ -4,7 +4,7 @@ let minify;
 try {
   minify = require('terser').minify;
 } catch (_) {
-  minify = (code) => code; // TODO decomment
+  minify = require('./scripts/decomment');
 }
 
 /**
