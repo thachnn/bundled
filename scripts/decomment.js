@@ -5,8 +5,11 @@ const parse = require('acorn').parse;
 
 function decomment(code, options = {}) {
   const ranges = [];
-  const onComment = (block, text, start, end) => ranges.push([start, end]);
-  parse(code, Object.assign({ sourceType: 'module' }, options, { onComment }));
+
+  const opts = Object.assign({ sourceType: 'module' }, options, {
+    onComment: (block, text, start, end) => ranges.push([start, end]),
+  });
+  parse(code, opts);
 
   let cmt, s1, s2, m1, m2;
   while (ranges.length) {
@@ -25,13 +28,13 @@ function decomment(code, options = {}) {
   }
 
   // trailing spaces
-  return code.replace(/[^\S\r\n]+$/gm, '');
+  return code; //.replace(/[^\S\r\n]+$/gm, '')
 }
 
 if (!module.parent || require.main === module) {
   main(process.argv.slice(2));
 } else {
-  module.exports = decomment;
+  module.exports = decomment.decomment = decomment;
 }
 
 function help(status = 0) {
@@ -76,11 +79,11 @@ function main(args) {
 
   if (cmd.forceFile || (cmd.infile && cmd.infile !== '-')) {
     cmd.forceFile = true;
-    run(fs.readFileSync(cmd.infile, 'utf8'), cmd);
+    run(fs.readFileSync(cmd.infile, 'utf8'));
   } else {
     let data = '';
     process.stdin.resume();
     process.stdin.on('data', (chunk) => (data += chunk));
-    process.stdin.on('end', () => run(data, cmd));
+    process.stdin.on('end', () => run(data));
   }
 }

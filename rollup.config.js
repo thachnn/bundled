@@ -3,8 +3,8 @@ const { dirname, resolve } = require('path');
 let minify;
 try {
   minify = require('terser').minify;
-} catch (err) {
-  (minify = require('./scripts/decomment'))._ex = err;
+} catch (_) {
+  minify = require('./scripts/decomment');
 }
 
 /**
@@ -18,12 +18,15 @@ const baseTerserOpts = require('./scripts/terser.config.json');
 const terserPlugin = (options = {}) => ({
   name: 'terser',
   renderChunk(code, chunk, outputOpts) {
-    const opts = { sourceMap: !!outputOpts.sourcemap };
+    let opts = { sourceMap: !!outputOpts.sourcemap };
 
     outputOpts.format !== 'es' || (opts.module = true);
-    outputOpts.format !== 'cjs' || (opts.toplevel = true);
+    // outputOpts.format !== 'cjs' || (opts.toplevel = true);
 
-    return minify(code, Object.assign(opts, baseTerserOpts, options));
+    opts = Object.assign(opts, baseTerserOpts, options);
+    !opts.transform || (code = replaceBulk(code, opts.transform));
+
+    return minify(code, (delete opts.transform, opts));
   },
 });
 
@@ -48,9 +51,7 @@ const buildConfig = (name, config) =>
     name,
     output: Object.assign({ format: 'cjs', interop: false }, config.output),
     plugins: Object.values(
-      [nodeResolve(), { name: 'transform-code' }, { name: 'replace-code' }, terserPlugin()]
-        .concat(config.plugins || [])
-        .reduce((o, p) => ((o[p.name] = p), o), {})
+      [nodeResolve(), terserPlugin()].concat(config.plugins || []).reduce((o, p) => ((o[p.name] = p), o), {})
     ),
   });
 
@@ -64,25 +65,46 @@ export default (args) => {
 };
 
 // Execute replacement
-const replaceBulk = (str, arr) =>
-  (Array.isArray(arr) ? arr : [arr]).reduce((s, o) => s.replace(o.search, o.replace), str);
+function replaceBulk(str, arr) {
+  return (Array.isArray(arr) ? arr : [arr]).reduce((s, o) => s.replace(o.search, o.replace), str);
+}
 
 const transformCode = (options = {}) => ({
   name: 'transform-code',
   transform: (code, id) => (options.patterns && options.test.test(id) ? replaceBulk(code, options.patterns) : null),
 });
 
-const replaceCode = (options = {}) => ({
-  name: 'replace-code',
-  renderChunk: (code) => (options.patterns ? replaceBulk(code, options.patterns) : null),
-});
+const wasmBuildPlugins = [
+  transformCode({
+    test: /\bnode_modules[\\/]@webassemblyjs\b.[\w-]+\b.esm\b.*\.js$/i,
+    patterns: [
+      { search: /(?<!\bfunction )\b_(typeof\()/g, replace: '$1' },
+      { search: /\b_extends(\([^)])/g, replace: 'Object.assign$1' },
+      { search: /\b_slicedToArray\(([^,]+), \d+\)/g, replace: '$1' },
+      { search: /(?<!\bfunction )\b_toConsumableArray\(/g, replace: '(' },
+    ],
+  }),
+  terserPlugin({
+    transform: [
+      { search: /(?<!\bfunction )\b_(createClass|classCallCheck)\$\d+\(/g, replace: '_$1(' },
+      { search: /\b(require\(['"])@xtuc\//, replace: '$1./' },
+      { search: /\b(require\(['"])@webassemblyjs\/(wasm-)?/g, replace: '$1./wasm-' },
+    ],
+  }),
+];
 
 //
 const configSet = [
   buildConfig('terser', {
     input: 'node_modules/terser/main.js',
-    output: { file: minify._ex ? 'node_modules/terser/dist/bundle.min.js' : 'dist/vendor/terser.js', esModule: false },
+    output: {
+      file: minify.decomment ? 'node_modules/terser/dist/bundle.min.js' : 'dist/vendor/terser.js',
+      esModule: false,
+    },
     external: 'source-map',
+    plugins: minify.decomment
+      ? []
+      : [terserPlugin({ transform: { search: /\b(require\(['"])(source-map)\b/, replace: '$1./$2' } })],
   }),
   //
   buildConfig('long', {
@@ -92,15 +114,19 @@ const configSet = [
   buildConfig('wasm-ast', {
     input: 'node_modules/@webassemblyjs/ast/esm/index.js',
     output: { file: 'dist/vendor/wasm-ast.js' },
+    external: '@xtuc/long',
+    plugins: wasmBuildPlugins,
   }),
   buildConfig('wasm-parser', {
     input: 'node_modules/@webassemblyjs/wasm-parser/esm/index.js',
     output: { file: 'dist/vendor/wasm-parser.js' },
-    external: '@webassemblyjs/ast',
+    external: ['@xtuc/long', '@webassemblyjs/ast'],
+    plugins: wasmBuildPlugins,
   }),
   buildConfig('wasm-edit', {
     input: 'node_modules/@webassemblyjs/wasm-edit/esm/index.js',
     output: { file: 'dist/vendor/wasm-edit.js' },
-    external: ['@webassemblyjs/ast', '@webassemblyjs/wasm-parser'],
+    external: ['@xtuc/long', '@webassemblyjs/ast', '@webassemblyjs/wasm-parser'],
+    plugins: wasmBuildPlugins,
   }),
 ];

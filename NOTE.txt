@@ -17,5 +17,5 @@ git tag -f xxx-1.0
 11:41 AM 11/21/2023
 ---
 
-[\[,] ,|__webpack_require__\.[a-z]|_WEBPACK_|webpackPoly|\b_(iterator|interop|loop|len|toConsum|slice)
+[\[,] ,|__webpack_require__\.[a-z]|_WEBPACK_|webpackPoly|\b_(iterator|interop|loop|len|to(Array|Consum)|slice|typeof|extend|createClass|classCall)
 

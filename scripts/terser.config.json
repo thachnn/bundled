@@ -1,12 +1,13 @@
 {
   "mangle": false,
   "compress": {
+    "toplevel": 0,
     "passes": 1,
     "keep_infinity": true,
     "inline": 0,
+    "booleans_as_integers": 0,
     "lhs_constants": false,
-    "sequences": false,
-    "booleans": false
+    "sequences": false
   },
   "output": {
     "comments": false,
