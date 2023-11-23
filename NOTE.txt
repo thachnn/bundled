@@ -19,3 +19,21 @@ git tag -f xxx-1.0
 
 [\[,] ,|__webpack_require__\.[a-z]|_WEBPACK_|webpackPoly|\b_(iterator|interop|loop|len|to(Array|Consum)|slice|typeof|extend|createClass|classCall)
 
+,\s*((var|const|let)\s|(for|while)\s*\()
+
+
+8:45 PM 11/23/2023
+---
+
+* Unicode in bundled .js  [^\n -~]  \u00 -> \x  \v
+
+* Arrow funcs   \bfunction (\([^()]*\) )\{\s*return( .*);\s*\}  -> $1=>$2
+
+
+10:00 AM 11/25/2023
+---
+
+prettier --ignore-path .gitignore -c . && yarn clean && cls && yarn rollup long
+
+prettier --single-quote false --trailing-comma none --print-width 130 --arrow-parens avoid -w dist/vendor/long.js
+

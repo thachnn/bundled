@@ -1,3 +1,10 @@
+--- a/node_modules/@webassemblyjs/helper-buffer/esm/index.js
++++ b/node_modules/@webassemblyjs/helper-buffer/esm/index.js
+@@ -4,3 +4 @@ function concatUint8Arrays() {
+-  for (var _len = arguments.length, arrays = new Array(_len), _key = 0; _key < _len; _key++) {
+-    arrays[_key] = arguments[_key];
+-  }
++  var arrays = Array.prototype.slice.call(arguments);
 --- a/node_modules/@webassemblyjs/wasm-edit/esm/apply.js
 +++ b/node_modules/@webassemblyjs/wasm-edit/esm/apply.js
 @@ -6 +6 @@ import { encodeNode } from "@webassemblyjs/wasm-gen";

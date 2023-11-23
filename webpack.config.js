@@ -16,6 +16,7 @@ const baseTerserOpts = require('./scripts/terser.config.json');
 /**
  * @param {string} name
  * @param {Configuration} config
+ * @param {boolean} [clean]
  * @returns {Configuration}
  */
 const webpackConfig = (name, config, clean = name.charAt(0) !== '/') =>
@@ -45,7 +46,7 @@ const newTerserPlugin = (opt) =>
 const minifyContent = (content, opts = null) =>
   minify(String(content), Object.assign({}, baseTerserOpts, typeof opts === 'object' ? opts : null)).code;
 
-/** @param {Array<(ObjectPattern|string)>} patterns */
+/** @param {Array.<(ObjectPattern|string)>} patterns */
 const newCopyPlugin = (patterns) => new CopyPlugin(patterns);
 
 //

@@ -59,7 +59,10 @@ const searchReplacements = (str, patterns) => {
 };
 
 class ReplaceCodePlugin {
-  /** @param {(ReplacerOption|ReplacerOption[])} options */
+  /**
+   * @param {(ReplacerOption|ReplacerOption[])} options
+   * @see {#apply}
+   */
   constructor(options) {
     this.options = Array.isArray(options) ? options : [options];
 

@@ -1,15 +1,21 @@
 'use strict';
 
 const fs = require('fs');
-const parse = require('acorn').parse;
+const acorn = require('acorn');
 
+/**
+ * @param {string} code
+ * @param {acorn.Options} [options]
+ * @returns {string}
+ */
 function decomment(code, options = {}) {
   const ranges = [];
 
+  /** @type {acorn.Options} */
   const opts = Object.assign({ sourceType: 'module' }, options, {
     onComment: (block, text, start, end) => ranges.push([start, end]),
   });
-  parse(code, opts);
+  acorn.parse(code, opts);
 
   let cmt, s1, s2, m1, m2;
   while (ranges.length) {
@@ -18,23 +24,26 @@ function decomment(code, options = {}) {
     s1 = code.substring(0, cmt[0]);
     s2 = code.substring(cmt[1]);
 
-    // beginning of line?
-    if ((m1 = /[\r\n][^\S\r\n]*$/.exec(s1)) && (m2 = /^[^\S\r\n]*\r?\n/.exec(s2))) {
-      s2 = s2.substring(m2[0].length);
-      m1[0].length < 2 || (s1 = s1.substring(0, s1.length - m1[0].length + 1));
+    if (!(m2 = /^([^\S\r\n]*)(\r?\n|\r|$)/.exec(s2))) {
+      s2 = s2.replace(/^[^\S\r\n]+/, '');
+    } else if (!(m1 = /(^|\r?\n|\r)([^\S\r\n]*)$/.exec(s1))) {
+      s1 = s1.replace(/[^\S\r\n]+$/, ''); // trailing spaces
+      !m2[1].length || (s2 = s2.substring(m2[1].length));
+    } else {
+      !m1[2].length || (s1 = s1.substring(0, s1.length - m1[2].length));
+      !m2[0].length || (s2 = s2.substring(m2[0].length));
     }
 
     code = s1 + s2;
   }
 
-  // trailing spaces
-  return code; //.replace(/[^\S\r\n]+$/gm, '')
+  return code;
 }
 
-if (!module.parent || require.main === module) {
+if (require.main === module) {
   main(process.argv.slice(2));
 } else {
-  module.exports = decomment.decomment = decomment;
+  module.exports = decomment.default = decomment;
 }
 
 function help(status = 0) {

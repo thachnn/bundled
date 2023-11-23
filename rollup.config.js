@@ -1,20 +1,25 @@
+'use strict';
+
 const { existsSync } = require('fs');
 const { dirname, resolve } = require('path');
-let minify;
-try {
-  minify = require('terser').minify;
-} catch (_) {
-  minify = require('./scripts/decomment');
-}
+
+const hasTerser = ((r) => existsSync(resolve(r)) && r)('node_modules/terser/dist/bundle.min.js');
+let minify = hasTerser ? require('terser').minify : require('./scripts/decomment');
 
 /**
  * @typedef {import('terser').MinifyOptions} MinifyOptions
  * @typedef {import('rollup').RollupOptions} RollupOptions
+ * @typedef {import('rollup').Plugin} RollupPlugin
+ * @typedef {{search: (string|RegExp), replace: (string|Function)}} TransformPattern
+ * @typedef {(TransformPattern|TransformPattern[])} TransformPatterns
  */
 
 const baseTerserOpts = require('./scripts/terser.config.json');
 
-/** @param {MinifyOptions} [options] */
+/**
+ * @param {(MinifyOptions|{transform?: TransformPatterns})} [options]
+ * @returns {RollupPlugin}
+ */
 const terserPlugin = (options = {}) => ({
   name: 'terser',
   renderChunk(code, chunk, outputOpts) {
@@ -30,21 +35,26 @@ const terserPlugin = (options = {}) => ({
   },
 });
 
+/** @returns {RollupPlugin} */
 const nodeResolve = () => ({
   name: 'node-resolve',
   resolveId(source, importer) {
-    if (!source) return null;
-    if (source[0] === '.') return existsSync((source = resolve(dirname(importer), source, 'index.js'))) ? source : null;
+    if (!source || /\bnode_modules[\\/]/i.test(source)) return null;
 
-    source = resolve('node_modules', source, 'package.json');
-    return !existsSync(source) ? null : import(source).then((pkg) => resolve(dirname(source), pkg.module || pkg.main));
+    if (source[0] === '.')
+      return importer && existsSync((source = resolve(dirname(importer), source, 'index.js'))) ? source : null;
+
+    return import((source += '/package.json')).then(
+      (pkg) => resolve(dirname(require.resolve(source)), (pkg = pkg.default || pkg).module || pkg.main),
+      (err) => (console.warn(String(err)), null)
+    );
   },
 });
 
 /**
  * @param {string} name
  * @param {RollupOptions} config
- * @returns {RollupOptions}
+ * @returns {(RollupOptions|{name?: string})}
  */
 const buildConfig = (name, config) =>
   Object.assign(config, {
@@ -55,7 +65,9 @@ const buildConfig = (name, config) =>
     ),
   });
 
-export default (args) => {
+/** @param {Object.<string, *>} [args] */
+module.exports = (args = {}) => {
+  args.noMinify === undefined || (minify = (code) => code);
   const names = new Set(typeof args.configName == 'string' ? args.configName.split(',') : []);
 
   const set = names.size > 0 ? configSet.filter((cfg) => names.has(cfg.name)) : configSet;
@@ -69,9 +81,13 @@ function replaceBulk(str, arr) {
   return (Array.isArray(arr) ? arr : [arr]).reduce((s, o) => s.replace(o.search, o.replace), str);
 }
 
-const transformCode = (options = {}) => ({
+/**
+ * @param {{test: RegExp, patterns?: TransformPatterns}} [opts]
+ * @returns {RollupPlugin}
+ */
+const transformCode = (opts = {}) => ({
   name: 'transform-code',
-  transform: (code, id) => (options.patterns && options.test.test(id) ? replaceBulk(code, options.patterns) : null),
+  transform: (code, id) => (opts.patterns && opts.test.test(id) ? replaceBulk(code, opts.patterns) : null),
 });
 
 const wasmBuildPlugins = [
@@ -97,14 +113,13 @@ const wasmBuildPlugins = [
 const configSet = [
   buildConfig('terser', {
     input: 'node_modules/terser/main.js',
-    output: {
-      file: minify.decomment ? 'node_modules/terser/dist/bundle.min.js' : 'dist/vendor/terser.js',
-      esModule: false,
-    },
+    output: { file: hasTerser || 'dist/vendor/terser.js', esModule: false },
     external: 'source-map',
-    plugins: minify.decomment
-      ? []
-      : [terserPlugin({ transform: { search: /\b(require\(['"])(source-map)\b/, replace: '$1./$2' } })],
+    plugins: [
+      terserPlugin({
+        transform: { search: /\b(require\(['"])(source-map)\b/, replace: '$1./$2' },
+      }),
+    ].filter(() => !!hasTerser),
   }),
   //
   buildConfig('long', {

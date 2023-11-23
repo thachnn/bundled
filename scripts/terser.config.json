@@ -4,10 +4,11 @@
     "toplevel": 0,
     "passes": 1,
     "keep_infinity": true,
+    "reduce_vars": false,
     "inline": 0,
+    "sequences": false,
     "booleans_as_integers": 0,
-    "lhs_constants": false,
-    "sequences": false
+    "lhs_constants": false
   },
   "output": {
     "comments": false,
