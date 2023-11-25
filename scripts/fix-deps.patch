@@ -39,16 +39,37 @@
 @@ -2 +2 @@ import { traverse, shiftSection } from "@webassemblyjs/ast";
 -import { encodeU32 } from "@webassemblyjs/wasm-gen/lib/encoder";
 +import { encodeU32 } from "@webassemblyjs/wasm-gen";
---- a/node_modules/terser/lib/output.js
-+++ b/node_modules/terser/lib/output.js
-@@ -1743,2 +1743,2 @@ function OutputStream(options) {
--                output.comma();
--                if (output.should_break()) {
-+                output.print(",");
-+                if (!output.should_break()) output.space(); else {
-@@ -2059 +2059 @@ function OutputStream(options) {
--            output.print(self.start.raw);
-+            output.print(/['"`]/.test(self.start.raw) ? self.getValue() : self.start.raw);
+--- a/node_modules/@webassemblyjs/wast-parser/esm/tokenizer.js
++++ b/node_modules/@webassemblyjs/wast-parser/esm/tokenizer.js
+@@ -89 +89 @@ var NUMERIC_SEPARATOR = "_";
+-var numberLiteralFSM = new FSM({
++var _numberLiteralFSM, numberLiteralFSM = () => _numberLiteralFSM || (_numberLiteralFSM = new FSM({
+@@ -128 +128 @@ var numberLiteralFSM = new FSM({
+-}, "START", "STOP");
++}, "START", "STOP"));
+@@ -312 +312 @@ export function tokenize(input) {
+-      var _value = numberLiteralFSM.run(input.slice(current));
++      var _value = numberLiteralFSM().run(input.slice(current));
+--- a/node_modules/acorn/dist/acorn.js
++++ b/node_modules/acorn/dist/acorn.js
+@@ -1 +1 @@
+-(function (global, factory) {
++/*(function (global, factory) {
+@@ -5 +5 @@
+-}(this, (function (exports) { 'use strict';
++}(this, (function (exports) {*/ 'use strict';
+@@ -4990,3 +4990,2 @@
+   Object.defineProperty(exports, '__esModule', { value: true });
+ 
+-})));
+--- a/node_modules/source-map/dist/source-map.js
++++ b/node_modules/source-map/dist/source-map.js
+@@ -1 +1 @@
+-(function webpackUniversalModuleDefinition(root, factory) {
++module.exports = /*(function webpackUniversalModuleDefinition(root, factory) {
+@@ -3231,2 +3231 @@ return /******/ (function(modules) { // webpackBootstrap
+ /******/ ])
+-});
 --- a/node_modules/terser/lib/compress/index.js
 +++ b/node_modules/terser/lib/compress/index.js
 @@ -249 +249,2 @@ class Compressor extends TreeWalker {
@@ -86,11 +107,31 @@
 -        return make_node(AST_UnaryPrefix, self, {
 +        return compressor.option("booleans_as_integers") === 0 ? self : make_node(AST_UnaryPrefix, self, {
              operator: "!",
+--- a/node_modules/terser/lib/output.js
++++ b/node_modules/terser/lib/output.js
+@@ -1743,2 +1743,2 @@ function OutputStream(options) {
+-                output.comma();
+-                if (output.should_break()) {
++                output.print(",");
++                if (!output.should_break()) output.space(); else {
+@@ -2059 +2059 @@ function OutputStream(options) {
+-            output.print(self.start.raw);
++            output.print(/['"`]/.test(self.start.raw) ? self.getValue() : self.start.raw);
 --- a/node_modules/terser/tools/terser.d.ts
 +++ b/node_modules/terser/tools/terser.d.ts
 @@ -45 +45,2 @@ export interface CompressOptions {
      keep_infinity?: boolean;
 +    lhs_constants?: boolean;
+--- a/node_modules/webpack/lib/MainTemplate.js
++++ b/node_modules/webpack/lib/MainTemplate.js
+@@ -185,2 +185,2 @@ module.exports = class MainTemplate extends Tapable {
+-				"if(installedModules[moduleId]) {",
+-				Template.indent("return installedModules[moduleId].exports;"),
++				"var module = installedModules[moduleId];", "if (module) {",
++				Template.indent("return module.exports;"),
+@@ -189 +189 @@ module.exports = class MainTemplate extends Tapable {
+-				"var module = installedModules[moduleId] = {",
++				"installedModules[moduleId] = module = {",
 --- a/node_modules/webpack/lib/webpack.js
 +++ b/node_modules/webpack/lib/webpack.js
 @@ -140 +140,5 @@ exportPlugins(exports, {

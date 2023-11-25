@@ -33,6 +33,12 @@ const webpackConfig = (name, config, clean = name.charAt(0) !== '/') =>
       // minimize: false,
       minimizer: ((config.optimization || {}).minimizer || [null]).map(newTerserPlugin),
     }),
+    plugins: [
+      new ReplaceCodePlugin({
+        search: /(\n\/\*{6}\/[ \t]*__webpack_require__)\.d *= *function\b[\s\S]*?\1\.p *= *"";/,
+        replace: '',
+      }),
+    ].concat(config.plugins || []),
   });
 
 const newTerserPlugin = (opt) =>
@@ -49,32 +55,71 @@ const minifyContent = (content, opts = null) =>
 /** @param {Array.<(ObjectPattern|string)>} patterns */
 const newCopyPlugin = (patterns) => new CopyPlugin(patterns);
 
+// Helpers
+
+/** @param {...Array.<(string|RegExp)>} _args */
+String.prototype.replaceBulk = function (_args) {
+  return Array.prototype.reduce.call(arguments, (s, i) => s.replace(i[0], i[1]), this);
+};
+
 //
 module.exports = [
-  /* TODO:
-  webpackConfig('import-local', {
-    entry: { index: './node_modules/import-local/index' },
-    output: { libraryTarget: 'commonjs2' },
-    externals: { fsevents: 'commonjs2 fsevents' },
+  webpackConfig('@terser', {
+    entry: { 'bin/terser': './node_modules/terser/bin/terser' },
+    output: { filename: '[name]' },
+    externals: {
+      '..': 'commonjs2 ..', // ../vendor/terser
+      acorn: 'commonjs ../vendor/acorn',
+      'source-map': 'commonjs2 ../vendor/source-map',
+    },
     module: {
       rules: [
         {
-          test: /\bnode_modules[\\/]import-local\b.index\.js$/i,
-          loader: 'webpack/lib/replace-loader',
-          options: { search: /\brequire((\.resolve)?\(\w+)/g, replace: '__non_webpack_require__$1' },
+          test: /\bnode_modules[\\/]terser\b.package\.json$/i,
+          loader: 'string-replace-loader',
+          options: { search: /,\s*"((description|author)":.*"|engines":[\s\S]*(?=\}\s*$))/g, replace: '' },
+        },
+        {
+          test: /\bnode_modules[\\/]source-map-support\b.source-map-support\.js$/i,
+          loader: 'string-replace-loader',
+          options: { search: /(?<=\s)dynamicRequire\(module,/g, replace: '__non_webpack_require__(' },
+        },
+      ],
+    },
+    optimization: {
+      minimizer: [
+        {
+          include: /[\\/]terser$/i,
+          terserOptions: { compress: { passes: 1 }, output: { comments: false, beautify: true, indent_level: 2 } },
         },
       ],
     },
     plugins: [
       newCopyPlugin([
-        { from: '{LICENSE*,*.md}', context: 'node_modules/import-local' },
+        { from: '{LICENSE*,*.md,tools/*.d.ts}', context: 'node_modules/terser' },
         {
-          from: 'node_modules/import-local/package.json',
-          transform: (s) => String(s).replace(/,\s*"(d(evD)?ependencies|scripts)":\s*\{[^{}]*\}/g, ''),
+          from: 'node_modules/terser/package.json',
+          transform(content) {
+            const pkg = JSON.parse(String(content).replaceBulk(['.min.', '.'], [/"dist",$/m, '$&"vendor",']));
+            ['dependencies', 'devDependencies', 'scripts', 'eslintConfig', 'pre-commit'].forEach((k) => delete pkg[k]);
+
+            return (pkg.version += '-0'), (pkg.bin.decomment = 'bin/decomment'), JSON.stringify(pkg, null, 2) + '\n';
+          },
+        },
+        { from: 'node_modules/*/dist/{source-map,acorn}.js', to: 'vendor/[name].[ext]', transform: minifyContent },
+        {
+          from: 'scripts/decomment.js',
+          to: 'bin/decomment',
+          transform: (s) => minifyContent(s).replace(/\b(require\(['"])(acorn)\b/, '$1../vendor/$2'),
         },
       ]),
       new BannerPlugin({ banner: '#!/usr/bin/env node', raw: true }),
     ],
   }),
-  */
+  //
+  // TODO: /ajv
+  webpackConfig('/ajv-keywords', {
+    entry: { 'vendor/ajv-keywords': './node_modules/ajv-keywords/index' },
+    output: { libraryTarget: 'commonjs2' },
+  }),
 ];
