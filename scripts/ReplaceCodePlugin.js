@@ -64,6 +64,7 @@ class ReplaceCodePlugin {
    * @see {#apply}
    */
   constructor(options) {
+    /** @member {ReplacerOption[]} */
     this.options = Array.isArray(options) ? options : [options];
 
     validateOptions(schema, this.options, 'ReplaceCode Plugin');

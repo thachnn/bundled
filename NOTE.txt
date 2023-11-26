@@ -27,7 +27,7 @@ git tag -f xxx-1.0
 
 * Unicode in bundled .js  [^\n -~]  \u00 -> \x  \v
 
-* Arrow funcs   \bfunction (\([^()]*\) )\{\s*return( .*);\s*\}  -> $1=>$2
+* Arrow funcs   \bfunction (\([^()]*\) )\{\s*return( [^;{}]*);\s*\}  -> $1=>$2
 
 
 10:00 AM 11/25/2023

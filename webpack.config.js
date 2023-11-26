@@ -75,9 +75,14 @@ module.exports = [
     module: {
       rules: [
         {
+          test: /\bnode_modules[\\/]terser\b.bin\b.terser$/i,
+          loader: 'string-replace-loader',
+          options: { search: /^#!.*/m, replace: '' },
+        },
+        {
           test: /\bnode_modules[\\/]terser\b.package\.json$/i,
           loader: 'string-replace-loader',
-          options: { search: /,\s*"((description|author)":.*"|engines":[\s\S]*(?=\}\s*$))/g, replace: '' },
+          options: { search: /,\s*"((description|author)":.*"|engines":[\s\S]*(?=}\s*$))/g, replace: '' },
         },
         {
           test: /\bnode_modules[\\/]source-map-support\b.source-map-support\.js$/i,
@@ -87,30 +92,33 @@ module.exports = [
       ],
     },
     optimization: {
-      minimizer: [
-        {
-          include: /[\\/]terser$/i,
-          terserOptions: { compress: { passes: 1 }, output: { comments: false, beautify: true, indent_level: 2 } },
-        },
-      ],
+      minimizer: [{ test: /(\.m?js|[\\/][\w-]+)$/i }],
     },
     plugins: [
       newCopyPlugin([
-        { from: '{LICENSE*,*.md,tools/*.d.ts}', context: 'node_modules/terser' },
+        { from: '{LICENSE*,!(CONTRIBUTING).md,tools/*.d.ts}', context: 'node_modules/terser' },
         {
           from: 'node_modules/terser/package.json',
           transform(content) {
+            /** @type {Object.<string, *>} */
             const pkg = JSON.parse(String(content).replaceBulk(['.min.', '.'], [/"dist",$/m, '$&"vendor",']));
             ['dependencies', 'devDependencies', 'scripts', 'eslintConfig', 'pre-commit'].forEach((k) => delete pkg[k]);
 
             return (pkg.version += '-0'), (pkg.bin.decomment = 'bin/decomment'), JSON.stringify(pkg, null, 2) + '\n';
           },
         },
-        { from: 'node_modules/*/dist/{source-map,acorn}.js', to: 'vendor/[name].[ext]', transform: minifyContent },
+        // prettier-ignore
         {
-          from: 'scripts/decomment.js',
-          to: 'bin/decomment',
-          transform: (s) => minifyContent(s).replace(/\b(require\(['"])(acorn)\b/, '$1../vendor/$2'),
+          from: 'node_modules/acorn/dist/acorn.js', to: 'vendor/',
+          transform: (s) => minifyContent(
+            String(s).replaceBulk([/( pp)\$\d+([.\[])/g, '$1$2'], [/ var ([A-Z]\w+) =( function \1\()/g, '$2'])
+          ),
+        },
+        { from: 'node_modules/source-map/dist/source-map.js', to: 'vendor/', transform: minifyContent },
+        { from: 'node_modules/{acorn/dist,source-map}/*.d.ts', to: 'vendor/[name].[ext]' },
+        {
+          ...{ from: 'scripts/decomment.js', to: 'bin/[name]' },
+          transform: (s) => minifyContent(String(s).replace(/( require\(['"])(acorn)\b/, '$1../vendor/$2')),
         },
       ]),
       new BannerPlugin({ banner: '#!/usr/bin/env node', raw: true }),

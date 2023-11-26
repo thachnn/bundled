@@ -127,7 +127,7 @@
 @@ -185,2 +185,2 @@ module.exports = class MainTemplate extends Tapable {
 -				"if(installedModules[moduleId]) {",
 -				Template.indent("return installedModules[moduleId].exports;"),
-+				"var module = installedModules[moduleId];", "if (module) {",
++				"var module = installedModules[moduleId]; if(module) {",
 +				Template.indent("return module.exports;"),
 @@ -189 +189 @@ module.exports = class MainTemplate extends Tapable {
 -				"var module = installedModules[moduleId] = {",
