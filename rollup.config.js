@@ -3,8 +3,8 @@
 const { existsSync } = require('fs');
 const { dirname, resolve } = require('path');
 
-const hasTerser = ((r) => existsSync(resolve(r)) && r)('node_modules/terser/dist/bundle.min.js');
-let minify = hasTerser ? require('terser').minify : require('./scripts/decomment');
+const noTerser = ((r) => !existsSync(resolve(r)) && r)('node_modules/terser/dist/bundle.min.js');
+let minify = !noTerser ? require('terser').minify : require('./scripts/decomment');
 
 /**
  * @typedef {import('terser').MinifyOptions} MinifyOptions
@@ -113,13 +113,13 @@ const wasmBuildPlugins = [
 const configSet = [
   buildConfig('terser', {
     input: 'node_modules/terser/main.js',
-    output: { file: hasTerser || 'dist/vendor/terser.js', esModule: false },
+    output: { file: noTerser || 'dist/vendor/terser.js', esModule: false },
     external: 'source-map',
     plugins: [
       terserPlugin({
         transform: { search: /\b(require\(['"])(source-map)\b/, replace: '$1./$2' },
       }),
-    ].filter(() => !!hasTerser),
+    ].filter(() => !noTerser),
   }),
   //
   buildConfig('long', {

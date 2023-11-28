@@ -114,7 +114,8 @@
 -                if (output.should_break()) {
 +                output.print(",");
 +                if (!output.should_break()) output.space(); else {
-@@ -2059 +2059 @@ function OutputStream(options) {
+@@ -2058,2 +2058,2 @@ function OutputStream(options) {
+         if ((output.option("keep_numbers") || output.use_asm) && self.start && self.start.raw != null) {
 -            output.print(self.start.raw);
 +            output.print(/['"`]/.test(self.start.raw) ? self.getValue() : self.start.raw);
 --- a/node_modules/terser/tools/terser.d.ts

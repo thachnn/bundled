@@ -16,6 +16,7 @@
     "quote_style": 3,
     "beautify": true,
     "indent_level": 2,
-    "width": 100
+    "width": 100,
+    "ascii_only": true
   }
 }
