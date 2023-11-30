@@ -1,34 +1,53 @@
 {
-  "name": "npm-package-bundler",
-  "version": "1.0.0-xxx.0",
-  "description": "Use webpack v4 to bundle NPM package xxx v1.0",
-  "keywords": [
-    "npm",
-    "yarn",
-    "package",
-    "module",
-    "bundle",
-    "bundled",
-    "rollup",
-    "webpack"
+  "name": "flow-remove-types",
+  "version": "2.168.0",
+  "description": "Removes Flow type annotations from JavaScript files with speed and simplicity.",
+  "author": {
+    "name": "Flow Team",
+    "email": "flow@fb.com"
+  },
+  "contributors": [
+    "Lee Byron <lee@leebyron.com> (http://leebyron.com/)"
   ],
-  "repository": "thachnn/bundled",
   "license": "MIT",
-  "engines": {
-    "node": ">=10"
+  "main": "index.js",
+  "bin": {
+    "flow-remove-types": "./flow-remove-types",
+    "flow-node": "./flow-node"
   },
-  "scripts": {
-    "build": "node scripts/build.js",
-    "clean": "git clean -fdx dist/ node_modules/.cache",
-    "postinstall": "git apply --reject --unidiff-zero --whitespace=nowarn scripts/fix-deps.patch",
-    "terser": "node node_modules/webpack/bin/terser --config-file scripts/terser.config.json",
-    "webpack": "node node_modules/webpack-cli/bin/cli.js --progress --display-modules",
-    "test": "grep -r --include=*.js -E \"[\\[,] ,|__webpack_require__\\.[a-z]|_WEBPACK_|webpackPoly|\\b_(iterator|interop)\" dist"
+  "files": [
+    "vendor/",
+    "index.js",
+    "jest.js",
+    "register.js",
+    "flow-remove-types",
+    "flow-node",
+    "LICENSE"
+  ],
+  "homepage": "https://flow.org",
+  "bugs": {
+    "url": "https://github.com/facebook/flow/issues"
   },
-  "dependencies": {},
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/facebook/flow.git"
+  },
+  "keywords": [
+    "flow",
+    "flowtype",
+    "compiler",
+    "transpiler",
+    "transform",
+    "es6"
+  ],
+  "dependencies": {
+    "flow-parser": "^0.168.0"
+  },
   "devDependencies": {
-    "webpack": "thachnn/bundled#webpack-4.46.0",
-    "webpack-cli": "thachnn/bundled#webpack-cli-3.3.12"
+    "pirates": "^3.0.2",
+    "vlq": "^0.2.1"
   },
-  "resolutions": {}
+  "engines": {
+    "node": ">=4"
+  }
 }
