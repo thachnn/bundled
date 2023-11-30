@@ -65,6 +65,7 @@ function mkdirp(dirpath) {
       mkdirp(path.dirname(dirpath));
       fs.mkdirSync(dirpath);
     } else {
+      var stat;
       try {
         stat = fs.statSync(dirpath);
       } catch (ignored) {
@@ -150,9 +151,10 @@ if (!outDir && !outFile && sourceMaps && !inlineSourceMaps) {
 }
 
 // Ensure all sources exist
-for (var i = 0; i < sources.length; i++) {
+var stat;
+for (i = 0; i < sources.length; i++) {
   try {
-    var stat = fs.lstatSync(sources[i]);
+    stat = fs.lstatSync(sources[i]);
     if (sources.length > 1 && !stat.isFile()) {
       error('Source "' + sources[i] + '" is not a file.');
     }
@@ -162,8 +164,9 @@ for (var i = 0; i < sources.length; i++) {
 }
 
 // Process stdin if no sources were provided
+var content;
 if (sources.length === 0) {
-  var content = '';
+  content = '';
   process.stdin.setEncoding('utf-8');
   process.stdin.resume();
   process.stdin.on('data', function (str) { content += str; });
@@ -180,9 +183,9 @@ if ((sources.length > 1 || isDirSource) && !outDir) {
 }
 
 // Process multiple files
-for (var i = 0; i < sources.length; i++) {
+for (i = 0; i < sources.length; i++) {
   var source = sources[i];
-  var stat = fs.lstatSync(source);
+  stat = fs.lstatSync(source);
   if (stat.isDirectory()) {
     var files = fs.readdirSync(source);
     for (var j = 0; j < files.length; j++) {
@@ -196,7 +199,7 @@ for (var i = 0; i < sources.length; i++) {
       outFile = path.join(outDir, isDirSource ? path.relative(sources[0], source) : source);
       mkdirp(path.dirname(outFile));
     }
-    var content = fs.readFileSync(source, 'utf8');
+    content = fs.readFileSync(source, 'utf8');
     transformAndOutput(content, outFile, source);
   }
 }

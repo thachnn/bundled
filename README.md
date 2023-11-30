@@ -64,10 +64,12 @@ When using the `flow-remove-types` script, be sure [not to direct the output to 
 * Mocha: `mocha -r flow-remove-types/register`
 * Jest: Add to your config:
 
-  ```js
+  ```json5
+  {
    transform: {
      "^.+\\.js(?:\\.flow)?$": "flow-remove-types/jest"
    }
+  }
   ```
 
 ## Use `flow-node`
@@ -132,7 +134,7 @@ and experimental ECMAScript proposals that Flow supports.
 
 **Before:**
 
-```js
+```ts
 import SomeClass from 'some-module'
 import type { SomeInterface } from 'some-module'
 

@@ -133,7 +133,7 @@ function resultPrinter(options, source, removedNodes) {
         }
       }
 
-      return (result += source.slice(lastPos));
+      return (result + source.slice(lastPos));
     },
     generateMap: function() {
       return {
