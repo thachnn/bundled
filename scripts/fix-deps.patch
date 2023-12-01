@@ -78,8 +78,16 @@
 @@ -3672,2 +3673,2 @@ AST_Scope.DEFMETHOD("drop_unused", function(compressor) {
 -    var drop_funcs = !(self instanceof AST_Toplevel) || compressor.toplevel.funcs;
 -    var drop_vars = !(self instanceof AST_Toplevel) || compressor.toplevel.vars;
-+    var drop_funcs = !(self instanceof AST_Toplevel) || compressor.toplevel.funcs || compressor.toplevel.funcs === 0;
-+    var drop_vars = !(self instanceof AST_Toplevel) || compressor.toplevel.vars || compressor.toplevel.vars === 0;
++    var drop_funcs = !(self instanceof AST_Toplevel) || compressor.toplevel.funcs !== false;
++    var drop_vars = !(self instanceof AST_Toplevel) || compressor.toplevel.vars !== false;
+@@ -4603 +4604 @@ def_optimize(AST_For, function(self, compressor) {
+-    if (!compressor.option("loops")) return self;
++    if (compressor.option("loops") === false) return self;
+@@ -4720,3 +4721,3 @@ def_optimize(AST_If, function(self, compressor) {
+-        return make_node(AST_SimpleStatement, self, {
++        return compressor.option("conditionals") !== true ? self : make_node(AST_SimpleStatement, self, {
+             body: make_node(AST_Binary, self, {
+                 operator : "&&",
 @@ -5823,2 +5824,2 @@ def_optimize(AST_Binary, function(self, compressor) {
 -    if (commutativeOperators.has(self.operator)) {
 +    if (compressor.option("lhs_constants") && commutativeOperators.has(self.operator)) {
@@ -117,7 +125,7 @@
 @@ -2058,2 +2058,2 @@ function OutputStream(options) {
          if ((output.option("keep_numbers") || output.use_asm) && self.start && self.start.raw != null) {
 -            output.print(self.start.raw);
-+            output.print(/['"`]/.test(self.start.raw) ? self.getValue() : self.start.raw);
++            output.print(self.start.value != null && self.start.value != self.getValue() ? self.getValue() : self.start.raw);
 --- a/node_modules/terser/tools/terser.d.ts
 +++ b/node_modules/terser/tools/terser.d.ts
 @@ -45 +45,2 @@ export interface CompressOptions {

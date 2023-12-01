@@ -3,7 +3,7 @@
 const { existsSync } = require('fs');
 const { dirname, resolve } = require('path');
 
-const noTerser = ((r) => !existsSync(resolve(r)) && r)('node_modules/terser/dist/bundle.min.js');
+const noTerser = ((r) => !existsSync(resolve(r)) && r)('node_modules/terser/' + require('terser/package.json').main);
 let minify = !noTerser ? require('terser').minify : require('./scripts/decomment');
 
 /**

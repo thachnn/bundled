@@ -14,7 +14,7 @@ function decomment(code, options = {}) {
 
   /** @type {acorn.Options} */
   const opts = Object.assign({ sourceType: 'module' }, options, {
-    onComment: (block, text, start, end) => ranges.push([start, end]),
+    onComment: (block, text, start, end) => (start > 0 || block || code[0] != '#') && ranges.push([start, end]),
   });
   acorn.parse(code, opts);
 
