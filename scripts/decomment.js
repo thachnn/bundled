@@ -6,20 +6,21 @@ const acorn = require('acorn');
 
 /**
  * @param {string} code
- * @param {acorn.Options} [options]
+ * @param {(acorn.Options|{keep?: RegExp})} [options]
  * @returns {string}
  */
 function decomment(code, options = {}) {
+  const keep = options.keep;
   const ranges = [];
 
   /** @type {acorn.Options} */
   const opts = Object.assign({ sourceType: 'module' }, options, {
-    onComment: (block, text, start, end) => (start > 0 || block || code[0] != '#') && ranges.push([start, end]),
+    onComment: (block, text, start, end) =>
+      (start > 0 || block || code[0] != '#') && !(keep && keep.test(text)) && ranges.push([start, end]),
   });
-  acorn.parse(code, opts);
+  acorn.parse(code, (delete opts.keep, opts));
 
-  let cmt, s1, s2, m1, m2;
-  while (ranges.length) {
+  for (let cmt, s1, s2, m1, m2; ranges.length; ) {
     cmt = ranges.pop();
 
     s1 = code.substring(0, cmt[0]);
@@ -58,8 +59,7 @@ function help(status = 0) {
 function parseOpts(args) {
   const cmd = { opts: {} };
 
-  let arg, m;
-  while (args.length) {
+  for (let arg, m; args.length; ) {
     if (!(arg = args.shift())) continue;
 
     if ((arg === '-' || arg[0] !== '-') && !cmd.infile) cmd.infile = arg;
@@ -67,6 +67,7 @@ function parseOpts(args) {
     else if (arg === '--help' || arg === '-h' || arg === '-?') return help();
     else if ((arg === '--output' || arg === '-o') && args.length) cmd.outfile = args.shift();
     else if (arg === '--inplace' || arg === '-i') cmd.inplace = true;
+    else if (arg === '--keep' && args.length) cmd.opts.keep = new RegExp(args.shift());
     else if (arg === '--script') cmd.opts.sourceType = 'script';
     else if ((m = arg.match(/^--((allow|preserve)[A-Za-z]+)$/))) cmd.opts[m[1]] = true;
     else if ((m = arg.match(/^--ecma(\d+)$/))) cmd.opts.ecmaVersion = +m[1];
