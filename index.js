@@ -5255,7 +5255,7 @@ function printString$4(raw, options) {
   const rawContent = raw.slice(1, -1);
   /** @type {Quote} */
 
-  const enclosingQuote = options.parser === "json" || options.parser === "json5" && options.quoteProps === "preserve" && !options.singleQuote ? '"' : options.__isInHtmlAttribute ? "'" : getPreferredQuote$1(raw, options.singleQuote ? "'" : '"'); // It might sound unnecessary to use `makeString` even if the string already
+  const enclosingQuote = options.parser === "json" || options.parser === "json5" && options.quoteProps === "preserve" && !options.singleQuote ? '"' : options.__isInHtmlAttribute ? "'" : getPreferredQuote$1(raw, options.preserveQuote ? raw[0] : options.singleQuote ? "'" : '"'); // It might sound unnecessary to use `makeString` even if the string already
   // is enclosed with `enclosingQuote`, but it isn't. The string could contain
   // unnecessary escapes (such as in `"\'"`). Always using `makeString` makes
   // sure that we consistently output the minimum amount of escaped quotes.
@@ -45641,7 +45641,7 @@ function printFunction$2(path, print, options, args) {
   if (node.generator) {
     parts.push("function* ");
   } else {
-    parts.push("function ");
+    parts.push(node.id || options.spaceAfterAnonFunc ? "function " : "function");
   }
 
   if (node.id) {
@@ -49027,7 +49027,7 @@ function printPathNoParens(path, options, print, args) {
     // Note: ignoring n.lexical because it has no printing consequences.
 
     case "SwitchStatement":
-      return [group$c(["switch (", indent$7([softline$8, print("discriminant")]), softline$8, ")"]), " {", node.cases.length > 0 ? indent$7([hardline$d, join$b(hardline$d, path.map((casePath, index, cases) => {
+      return [group$c(["switch (", indent$7([softline$8, print("discriminant")]), softline$8, ")"]), " {", node.cases.length > 0 ? (options.dedentSwitchLabels ? identity : indent$7)([hardline$d, join$b(hardline$d, path.map((casePath, index, cases) => {
         const caseNode = casePath.getValue();
         return [print(), index !== cases.length - 1 && isNextLineEmpty$4(caseNode, options) ? hardline$d : ""];
       }, "cases"))]) : "", hardline$d, "}"];
@@ -49374,6 +49374,28 @@ var options$5 = {
     oppositeDescription: "Do not print semicolons, except at the beginning of lines which may need them."
   },
   singleQuote: commonOptions.singleQuote,
+  preserveQuote: {
+    since: "2.0.5",
+    category: CATEGORY_JAVASCRIPT,
+    type: "boolean",
+    default: false,
+    description: "Use the original quotes."
+  },
+  spaceAfterAnonFunc: {
+    since: "2.0.5",
+    category: CATEGORY_JAVASCRIPT,
+    type: "boolean",
+    default: true,
+    description: "Print space before anonymous function parens.",
+    oppositeDescription: "Do not print spaces after anonymous functions."
+  },
+  dedentSwitchLabels: {
+    since: "2.0.5",
+    category: CATEGORY_JAVASCRIPT,
+    type: "boolean",
+    default: false,
+    description: "Dedent 'case' from 'switch'."
+  },
   jsxSingleQuote: {
     since: "1.15.0",
     category: CATEGORY_JAVASCRIPT,
@@ -58179,7 +58201,7 @@ function genericPrint$1(path, options, print) {
           id: attrGroupId
         }), node.children.length === 0 ? node.hasDanglingSpaces && node.isDanglingSpaceSensitive ? line$4 : "" : [forceBreakContent(node) ? breakParent$1 : "", (childrenDoc => shouldHugContent ? indentIfBreak(childrenDoc, {
           groupId: attrGroupId
-        }) : (isScriptLikeTag(node) || isVueCustomBlock(node, options)) && node.parent.type === "root" && options.parser === "vue" && !options.vueIndentScriptAndStyle ? childrenDoc : indent(childrenDoc))([shouldHugContent ? ifBreak$2(softline$2, "", {
+        }) : options.parser === "html" && node.type === "element" && node.parent.type === "root" && node.fullName.toLowerCase() === "html" && options.htmlDedentChildren ? dedentToRoot$1(childrenDoc) : (isScriptLikeTag(node) || isVueCustomBlock(node, options)) && node.parent.type === "root" && options.parser === "vue" && !options.vueIndentScriptAndStyle ? childrenDoc : indent(childrenDoc))([shouldHugContent ? ifBreak$2(softline$2, "", {
           groupId: attrGroupId
         }) : node.firstChild.hasLeadingSpaces && node.firstChild.isLeadingSpaceSensitive ? line$4 : node.firstChild.type === "text" && node.isWhitespaceSensitive && node.isIndentationSensitive ? dedentToRoot$1(softline$2) : softline$2, printChildren$1(path, options, print)]), (node.next ? needsToBorrowPrevClosingTagEndMarker(node.next) : needsToBorrowLastChildClosingTagEndMarker(node.parent)) ? node.lastChild.hasTrailingSpaces && node.lastChild.isTrailingSpaceSensitive ? " " : "" : shouldHugContent ? ifBreak$2(softline$2, "", {
           groupId: attrGroupId
@@ -58846,6 +58868,13 @@ var options$1 = {
       value: "ignore",
       description: "Whitespaces are considered insensitive."
     }]
+  },
+  htmlDedentChildren: {
+    since: "2.0.5",
+    category: CATEGORY_HTML,
+    type: "boolean",
+    default: false,
+    description: "Dedent children of <html> tag."
   },
   vueIndentScriptAndStyle: {
     since: "1.19.0",
