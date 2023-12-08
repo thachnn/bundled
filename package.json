@@ -1,34 +1,21 @@
 {
-  "name": "npm-package-bundler",
-  "version": "1.0.0-xxx.0",
-  "description": "Use webpack v4 to bundle NPM package xxx v1.0",
-  "keywords": [
-    "npm",
-    "yarn",
-    "package",
-    "module",
-    "bundle",
-    "bundled",
-    "rollup",
-    "webpack"
-  ],
-  "repository": "thachnn/bundled",
+  "name": "prettier",
+  "version": "2.7.1",
+  "description": "Prettier is an opinionated code formatter",
+  "bin": "./bin-prettier.js",
+  "repository": "prettier/prettier",
+  "funding": "https://github.com/prettier/prettier?sponsor=1",
+  "homepage": "https://prettier.io",
+  "author": "James Long",
   "license": "MIT",
+  "main": "./index.js",
+  "browser": "./standalone.js",
+  "unpkg": "./standalone.js",
   "engines": {
-    "node": ">=10"
+    "node": ">=10.13.0"
   },
-  "scripts": {
-    "build": "node scripts/build.js",
-    "clean": "git clean -fdx dist/ node_modules/.cache",
-    "postinstall": "git apply --reject --unidiff-zero --whitespace=nowarn scripts/fix-deps.patch",
-    "terser": "node node_modules/webpack/bin/terser --config-file scripts/terser.config.json",
-    "webpack": "node node_modules/webpack-cli/bin/cli.js --progress --display-modules",
-    "test": "grep -r --include=*.js -E \"[\\[,] ,|__webpack_require__\\.[a-z]|_WEBPACK_|webpackPoly|\\b_(iterator|interop)\" dist"
-  },
-  "dependencies": {},
-  "devDependencies": {
-    "webpack": "thachnn/bundled#webpack-4.46.0",
-    "webpack-cli": "thachnn/bundled#webpack-cli-3.3.12"
-  },
-  "resolutions": {}
+  "files": [
+    "*.js",
+    "esm/*.mjs"
+  ]
 }
