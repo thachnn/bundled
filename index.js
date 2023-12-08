@@ -3135,7 +3135,7 @@ var require_util = __commonJS2({
     }
     function printString(raw, options) {
       const rawContent = raw.slice(1, -1);
-      const enclosingQuote = options.parser === "json" || options.parser === "json5" && options.quoteProps === "preserve" && !options.singleQuote ? '"' : options.__isInHtmlAttribute ? "'" : getPreferredQuote(rawContent, options.singleQuote ? "'" : '"').quote;
+      const enclosingQuote = options.parser === "json" || options.parser === "json5" && options.quoteProps === "preserve" && !options.singleQuote ? '"' : options.__isInHtmlAttribute ? "'" : getPreferredQuote(rawContent, options.preserveQuote ? raw[0] : options.singleQuote ? "'" : '"').quote;
       return makeString(rawContent, enclosingQuote, !(options.parser === "css" || options.parser === "less" || options.parser === "scss" || options.__embeddedInHtml));
     }
     function makeString(rawContent, enclosingQuote, unescapeUnnecessaryEscapes) {
@@ -26482,7 +26482,7 @@ var require_function = __commonJS2({
       if (node.generator) {
         parts.push("function* ");
       } else {
-        parts.push("function ");
+        parts.push(node.id || options.spaceAfterAnonFunc ? "function " : "function");
       }
       if (node.id) {
         parts.push(print("id"));
@@ -28621,7 +28621,7 @@ var require_printer_estree = __commonJS2({
     var preprocess = require_print_preprocess();
     var {
       hasFlowShorthandAnnotationComment,
-      hasComment,
+      hasComment, identity,
       CommentCheckFlags,
       isTheOnlyJsxElementInMarkdown,
       isLineComment,
@@ -29073,7 +29073,7 @@ var require_printer_estree = __commonJS2({
           }
           return ["catch ", print("body")];
         case "SwitchStatement":
-          return [group(["switch (", indent([softline, print("discriminant")]), softline, ")"]), " {", node.cases.length > 0 ? indent([hardline, join(hardline, path.map((casePath, index, cases) => {
+          return [group(["switch (", indent([softline, print("discriminant")]), softline, ")"]), " {", node.cases.length > 0 ? (options.dedentSwitchLabels ? identity : indent)([hardline, join(hardline, path.map((casePath, index, cases) => {
             const caseNode = casePath.getValue();
             return [print(), index !== cases.length - 1 && isNextLineEmpty(caseNode, options) ? hardline : ""];
           }, "cases"))]) : "", hardline, "}"];
@@ -29373,6 +29373,28 @@ var require_options2 = __commonJS2({
         oppositeDescription: "Do not print semicolons, except at the beginning of lines which may need them."
       },
       singleQuote: commonOptions.singleQuote,
+      preserveQuote: {
+        since: "2.0.5",
+        category: CATEGORY_JAVASCRIPT,
+        type: "boolean",
+        default: false,
+        description: "Use the original quotes."
+      },
+      spaceAfterAnonFunc: {
+        since: "2.0.5",
+        category: CATEGORY_JAVASCRIPT,
+        type: "boolean",
+        default: true,
+        description: "Print space before anonymous function parens.",
+        oppositeDescription: "Do not print spaces after anonymous functions."
+      },
+      dedentSwitchLabels: {
+        since: "2.0.5",
+        category: CATEGORY_JAVASCRIPT,
+        type: "boolean",
+        default: false,
+        description: "Dedent 'case' from 'switch'."
+      },
       jsxSingleQuote: {
         since: "1.15.0",
         category: CATEGORY_JAVASCRIPT,
@@ -35929,6 +35951,9 @@ var require_element = __commonJS2({
             groupId: attrGroupId
           });
         }
+        if (options.parser === "html" && node.type === "element" && node.parent.type === "root" && node.fullName.toLowerCase() === "html" && options.htmlDedentChildren) {
+          return dedentToRoot(childrenDoc);
+        }
         if ((isScriptLikeTag(node) || isVueCustomBlock(node, options)) && node.parent.type === "root" && options.parser === "vue" && !options.vueIndentScriptAndStyle) {
           return childrenDoc;
         }
@@ -36108,6 +36133,13 @@ var require_options6 = __commonJS2({
         }]
       },
       singleAttributePerLine: commonOptions.singleAttributePerLine,
+      htmlDedentChildren: {
+        since: "2.0.5",
+        category: CATEGORY_HTML,
+        type: "boolean",
+        default: false,
+        description: "Dedent children of <html> tag."
+      },
       vueIndentScriptAndStyle: {
         since: "1.19.0",
         category: CATEGORY_HTML,
