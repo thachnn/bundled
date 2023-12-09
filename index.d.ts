@@ -327,6 +327,21 @@ export interface RequiredOptions extends doc.printer.Options {
    */
   singleQuote: boolean;
   /**
+   * Use the original quotes.
+   * @default false
+   */
+  preserveQuote: boolean;
+  /**
+   * Print space before anonymous function parens.
+   * @default true
+   */
+  spaceAfterAnonFunc: boolean;
+  /**
+   * Dedent 'case' from 'switch'.
+   * @default false
+   */
+  dedentSwitchLabels: boolean;
+  /**
    * Use single quotes in JSX.
    * @default false
    */
@@ -415,6 +430,11 @@ export interface RequiredOptions extends doc.printer.Options {
    * @default "as-needed"
    */
   quoteProps: "as-needed" | "consistent" | "preserve";
+  /**
+   * Whether or not to dedent children of <html> tag.
+   * @default false
+   */
+  htmlDedentChildren: boolean;
   /**
    * Whether or not to indent the code inside <script> and <style> tags in Vue files.
    * @default false

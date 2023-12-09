@@ -22924,6 +22924,12 @@ var options3 = {
     ]
   },
   singleAttributePerLine: common_options_evaluate_default.singleAttributePerLine,
+  htmlDedentChildren: {
+    category: CATEGORY_HTML,
+    type: "boolean",
+    default: false,
+    description: "Dedent children of <html> tag."
+  },
   vueIndentScriptAndStyle: {
     category: CATEGORY_HTML,
     type: "boolean",
@@ -23069,6 +23075,25 @@ var options4 = {
     oppositeDescription: "Default behavior of ternaries; keep question marks on the same line as the consequent."
   },
   singleQuote: common_options_evaluate_default.singleQuote,
+  preserveQuote: {
+    category: CATEGORY_JAVASCRIPT,
+    type: "boolean",
+    default: false,
+    description: "Use the original quotes."
+  },
+  spaceAfterAnonFunc: {
+    category: CATEGORY_JAVASCRIPT,
+    type: "boolean",
+    default: true,
+    description: "Print space before anonymous function parens.",
+    oppositeDescription: "Do not print spaces after anonymous functions."
+  },
+  dedentSwitchLabels: {
+    category: CATEGORY_JAVASCRIPT,
+    type: "boolean",
+    default: false,
+    description: "Dedent 'case' from 'switch'."
+  },
   jsxSingleQuote: {
     category: CATEGORY_JAVASCRIPT,
     type: "boolean",
