@@ -31,25 +31,19 @@ function createCommonjsModule(fn) {
 	return fn(module, module.exports), module.exports;
 }
 
-/*istanbul ignore start*/
 var base$1 = createCommonjsModule(function (module, exports) {
 
   Object.defineProperty(exports, "__esModule", {
     value: true
   });
   exports["default"] = Diff;
-  /*istanbul ignore end*/
 
   function Diff() {}
 
   Diff.prototype = {
-    /*istanbul ignore start*/
 
-    /*istanbul ignore end*/
     diff: function diff(oldString, newString) {
-      /*istanbul ignore start*/
       var
-      /*istanbul ignore end*/
       options = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : {};
       var callback = options.callback;
 
@@ -70,7 +64,7 @@ var base$1 = createCommonjsModule(function (module, exports) {
         } else {
           return value;
         }
-      } // Allow subclasses to massage the input prior to running
+      }
 
 
       oldString = this.castInput(oldString);
@@ -84,25 +78,22 @@ var base$1 = createCommonjsModule(function (module, exports) {
       var bestPath = [{
         newPos: -1,
         components: []
-      }]; // Seed editLength = 0, i.e. the content starts with the same values
+      }];
 
       var oldPos = this.extractCommon(bestPath[0], newString, oldString, 0);
 
       if (bestPath[0].newPos + 1 >= newLen && oldPos + 1 >= oldLen) {
-        // Identity per the equality and tokenizer
         return done([{
           value: this.join(newString),
           count: newString.length
         }]);
-      } // Main worker method. checks all permutations of a given edit length for acceptance.
+      }
 
 
       function execEditLength() {
         for (var diagonalPath = -1 * editLength; diagonalPath <= editLength; diagonalPath += 2) {
           var basePath =
-          /*istanbul ignore start*/
           void 0
-          /*istanbul ignore end*/
           ;
 
           var addPath = bestPath[diagonalPath - 1],
@@ -110,7 +101,6 @@ var base$1 = createCommonjsModule(function (module, exports) {
               _oldPos = (removePath ? removePath.newPos : 0) - diagonalPath;
 
           if (addPath) {
-            // No one else is going to attempt to use this value, clear it
             bestPath[diagonalPath - 1] = undefined;
           }
 
@@ -118,46 +108,38 @@ var base$1 = createCommonjsModule(function (module, exports) {
               canRemove = removePath && 0 <= _oldPos && _oldPos < oldLen;
 
           if (!canAdd && !canRemove) {
-            // If this path is a terminal then prune
             bestPath[diagonalPath] = undefined;
             continue;
-          } // Select the diagonal that we want to branch from. We select the prior
-          // path whose position in the new string is the farthest from the origin
-          // and does not pass the bounds of the diff graph
+          }
 
 
           if (!canAdd || canRemove && addPath.newPos < removePath.newPos) {
             basePath = clonePath(removePath);
             self.pushComponent(basePath.components, undefined, true);
           } else {
-            basePath = addPath; // No need to clone, we've pulled it from the list
+            basePath = addPath;
 
             basePath.newPos++;
             self.pushComponent(basePath.components, true, undefined);
           }
 
-          _oldPos = self.extractCommon(basePath, newString, oldString, diagonalPath); // If we have hit the end of both strings, then we are done
+          _oldPos = self.extractCommon(basePath, newString, oldString, diagonalPath);
 
           if (basePath.newPos + 1 >= newLen && _oldPos + 1 >= oldLen) {
             return done(buildValues(self, basePath.components, newString, oldString, self.useLongestToken));
           } else {
-            // Otherwise track this path as a potential candidate and continue.
             bestPath[diagonalPath] = basePath;
           }
         }
 
         editLength++;
-      } // Performs the length of edit iteration. Is a bit fugly as this has to support the
-      // sync and async mode which is never fun. Loops over execEditLength until a value
-      // is produced.
+      }
 
 
       if (callback) {
         (function exec() {
           setTimeout(function () {
-            // This should not happen, but we want to be safe.
 
-            /* istanbul ignore next */
             if (editLength > maxEditLength) {
               return callback();
             }
@@ -178,15 +160,11 @@ var base$1 = createCommonjsModule(function (module, exports) {
       }
     },
 
-    /*istanbul ignore start*/
 
-    /*istanbul ignore end*/
     pushComponent: function pushComponent(components, added, removed) {
       var last = components[components.length - 1];
 
       if (last && last.added === added && last.removed === removed) {
-        // We need to clone here as the component clone operation is just
-        // as shallow array clone
         components[components.length - 1] = {
           count: last.count + 1,
           added: added,
@@ -201,9 +179,7 @@ var base$1 = createCommonjsModule(function (module, exports) {
       }
     },
 
-    /*istanbul ignore start*/
 
-    /*istanbul ignore end*/
     extractCommon: function extractCommon(basePath, newString, oldString, diagonalPath) {
       var newLen = newString.length,
           oldLen = oldString.length,
@@ -227,9 +203,7 @@ var base$1 = createCommonjsModule(function (module, exports) {
       return oldPos;
     },
 
-    /*istanbul ignore start*/
 
-    /*istanbul ignore end*/
     equals: function equals(left, right) {
       if (this.options.comparator) {
         return this.options.comparator(left, right);
@@ -238,9 +212,7 @@ var base$1 = createCommonjsModule(function (module, exports) {
       }
     },
 
-    /*istanbul ignore start*/
 
-    /*istanbul ignore end*/
     removeEmpty: function removeEmpty(array) {
       var ret = [];
 
@@ -253,23 +225,17 @@ var base$1 = createCommonjsModule(function (module, exports) {
       return ret;
     },
 
-    /*istanbul ignore start*/
 
-    /*istanbul ignore end*/
     castInput: function castInput(value) {
       return value;
     },
 
-    /*istanbul ignore start*/
 
-    /*istanbul ignore end*/
     tokenize: function tokenize(value) {
       return value.split('');
     },
 
-    /*istanbul ignore start*/
 
-    /*istanbul ignore end*/
     join: function join(chars) {
       return chars.join('');
     }
@@ -296,16 +262,14 @@ var base$1 = createCommonjsModule(function (module, exports) {
           component.value = diff.join(newString.slice(newPos, newPos + component.count));
         }
 
-        newPos += component.count; // Common case
+        newPos += component.count;
 
         if (!component.added) {
           oldPos += component.count;
         }
       } else {
         component.value = diff.join(oldString.slice(oldPos, oldPos + component.count));
-        oldPos += component.count; // Reverse add and remove so removes are output first to match common convention
-        // The diffing algorithm is tied to add then remove output and this is the simplest
-        // route to get the desired output with minimal overhead.
+        oldPos += component.count;
 
         if (componentPos && components[componentPos - 1].added) {
           var tmp = components[componentPos - 1];
@@ -313,9 +277,7 @@ var base$1 = createCommonjsModule(function (module, exports) {
           components[componentPos] = tmp;
         }
       }
-    } // Special case handle for when one terminal is ignored (i.e. whitespace).
-    // For this case we merge the terminal into the prior string and drop the change.
-    // This is only available for string mode.
+    }
 
 
     var lastComponent = components[componentLen - 1];
@@ -336,7 +298,6 @@ var base$1 = createCommonjsModule(function (module, exports) {
   }
 });
 
-/*istanbul ignore start*/
 var character = createCommonjsModule(function (module, exports) {
 
   Object.defineProperty(exports, "__esModule", {
@@ -344,14 +305,10 @@ var character = createCommonjsModule(function (module, exports) {
   });
   exports.diffChars = diffChars;
   exports.characterDiff = void 0;
-  /*istanbul ignore end*/
 
   var
-  /*istanbul ignore start*/
   _base = _interopRequireDefault(base$1)
-  /*istanbul ignore end*/
   ;
-  /*istanbul ignore start*/
 
 
   function _interopRequireDefault(obj) {
@@ -359,39 +316,29 @@ var character = createCommonjsModule(function (module, exports) {
       "default": obj
     };
   }
-  /*istanbul ignore end*/
 
 
   var characterDiff = new
-  /*istanbul ignore start*/
   _base
-  /*istanbul ignore end*/
   [
-  /*istanbul ignore start*/
   "default"
-  /*istanbul ignore end*/
   ]();
-  /*istanbul ignore start*/
 
   exports.characterDiff = characterDiff;
-  /*istanbul ignore end*/
 
   function diffChars(oldStr, newStr, options) {
     return characterDiff.diff(oldStr, newStr, options);
   }
 });
 
-/*istanbul ignore start*/
 
 var generateOptions_1 = generateOptions;
-/*istanbul ignore end*/
 
 function generateOptions(options, defaults) {
   if (typeof options === 'function') {
     defaults.callback = options;
   } else if (options) {
     for (var name in options) {
-      /* istanbul ignore else */
       if (options.hasOwnProperty(name)) {
         defaults[name] = options[name];
       }
@@ -407,7 +354,6 @@ var params = /*#__PURE__*/Object.defineProperty({
   value: true
 });
 
-/*istanbul ignore start*/
 var word = createCommonjsModule(function (module, exports) {
 
   Object.defineProperty(exports, "__esModule", {
@@ -416,14 +362,10 @@ var word = createCommonjsModule(function (module, exports) {
   exports.diffWords = diffWords;
   exports.diffWordsWithSpace = diffWordsWithSpace;
   exports.wordDiff = void 0;
-  /*istanbul ignore end*/
 
   var
-  /*istanbul ignore start*/
   _base = _interopRequireDefault(base$1)
-  /*istanbul ignore end*/
   ;
-  /*istanbul ignore start*/
 
 
   function _interopRequireDefault(obj) {
@@ -431,42 +373,17 @@ var word = createCommonjsModule(function (module, exports) {
       "default": obj
     };
   }
-  /*istanbul ignore end*/
-  // Based on https://en.wikipedia.org/wiki/Latin_script_in_Unicode
-  //
-  // Ranges and exceptions:
-  // Latin-1 Supplement, 0080–00FF
-  //  - U+00D7  × Multiplication sign
-  //  - U+00F7  ÷ Division sign
-  // Latin Extended-A, 0100–017F
-  // Latin Extended-B, 0180–024F
-  // IPA Extensions, 0250–02AF
-  // Spacing Modifier Letters, 02B0–02FF
-  //  - U+02C7  ˇ &#711;  Caron
-  //  - U+02D8  ˘ &#728;  Breve
-  //  - U+02D9  ˙ &#729;  Dot Above
-  //  - U+02DA  ˚ &#730;  Ring Above
-  //  - U+02DB  ˛ &#731;  Ogonek
-  //  - U+02DC  ˜ &#732;  Small Tilde
-  //  - U+02DD  ˝ &#733;  Double Acute Accent
-  // Latin Extended Additional, 1E00–1EFF
 
 
   var extendedWordChars = /^[A-Za-z\xC0-\u02C6\u02C8-\u02D7\u02DE-\u02FF\u1E00-\u1EFF]+$/;
   var reWhitespace = /\S/;
   var wordDiff = new
-  /*istanbul ignore start*/
   _base
-  /*istanbul ignore end*/
   [
-  /*istanbul ignore start*/
   "default"
-  /*istanbul ignore end*/
   ]();
-  /*istanbul ignore start*/
 
   exports.wordDiff = wordDiff;
-  /*istanbul ignore end*/
 
   wordDiff.equals = function (left, right) {
     if (this.options.ignoreCase) {
@@ -478,11 +395,9 @@ var word = createCommonjsModule(function (module, exports) {
   };
 
   wordDiff.tokenize = function (value) {
-    // All whitespace symbols except newline group into one token, each newline - in separate token
-    var tokens = value.split(/([^\S\r\n]+|[()[\]{}'"\r\n]|\b)/); // Join the boundary splits that we do not consider to be boundaries. This is primarily the extended Latin character set.
+    var tokens = value.split(/([^\S\r\n]+|[()[\]{}'"\r\n]|\b)/);
 
     for (var i = 0; i < tokens.length - 1; i++) {
-      // If we have an empty string in the next field and we have only word chars before and after, merge
       if (!tokens[i + 1] && tokens[i + 2] && extendedWordChars.test(tokens[i]) && extendedWordChars.test(tokens[i + 2])) {
         tokens[i] += tokens[i + 2];
         tokens.splice(i + 1, 2);
@@ -495,16 +410,11 @@ var word = createCommonjsModule(function (module, exports) {
 
   function diffWords(oldStr, newStr, options) {
     options =
-    /*istanbul ignore start*/
-    (/*istanbul ignore end*/
+    (
 
-    /*istanbul ignore start*/
     0, params
-    /*istanbul ignore end*/
     .
-    /*istanbul ignore start*/
     generateOptions
-    /*istanbul ignore end*/
     )(options, {
       ignoreWhitespace: true
     });
@@ -516,7 +426,6 @@ var word = createCommonjsModule(function (module, exports) {
   }
 });
 
-/*istanbul ignore start*/
 var line$x = createCommonjsModule(function (module, exports) {
 
   Object.defineProperty(exports, "__esModule", {
@@ -525,14 +434,10 @@ var line$x = createCommonjsModule(function (module, exports) {
   exports.diffLines = diffLines;
   exports.diffTrimmedLines = diffTrimmedLines;
   exports.lineDiff = void 0;
-  /*istanbul ignore end*/
 
   var
-  /*istanbul ignore start*/
   _base = _interopRequireDefault(base$1)
-  /*istanbul ignore end*/
   ;
-  /*istanbul ignore start*/
 
 
   function _interopRequireDefault(obj) {
@@ -540,30 +445,23 @@ var line$x = createCommonjsModule(function (module, exports) {
       "default": obj
     };
   }
-  /*istanbul ignore end*/
 
 
   var lineDiff = new
-  /*istanbul ignore start*/
   _base
-  /*istanbul ignore end*/
   [
-  /*istanbul ignore start*/
   "default"
-  /*istanbul ignore end*/
   ]();
-  /*istanbul ignore start*/
 
   exports.lineDiff = lineDiff;
-  /*istanbul ignore end*/
 
   lineDiff.tokenize = function (value) {
     var retLines = [],
-        linesAndNewlines = value.split(/(\n|\r\n)/); // Ignore the final empty token that occurs if the string ends with a new line
+        linesAndNewlines = value.split(/(\n|\r\n)/);
 
     if (!linesAndNewlines[linesAndNewlines.length - 1]) {
       linesAndNewlines.pop();
-    } // Merge the content and line separators into single tokens
+    }
 
 
     for (var i = 0; i < linesAndNewlines.length; i++) {
@@ -589,16 +487,11 @@ var line$x = createCommonjsModule(function (module, exports) {
 
   function diffTrimmedLines(oldStr, newStr, callback) {
     var options =
-    /*istanbul ignore start*/
-    (/*istanbul ignore end*/
+    (
 
-    /*istanbul ignore start*/
     0, params
-    /*istanbul ignore end*/
     .
-    /*istanbul ignore start*/
     generateOptions
-    /*istanbul ignore end*/
     )(callback, {
       ignoreWhitespace: true
     });
@@ -606,7 +499,6 @@ var line$x = createCommonjsModule(function (module, exports) {
   }
 });
 
-/*istanbul ignore start*/
 var sentence = createCommonjsModule(function (module, exports) {
 
   Object.defineProperty(exports, "__esModule", {
@@ -614,14 +506,10 @@ var sentence = createCommonjsModule(function (module, exports) {
   });
   exports.diffSentences = diffSentences;
   exports.sentenceDiff = void 0;
-  /*istanbul ignore end*/
 
   var
-  /*istanbul ignore start*/
   _base = _interopRequireDefault(base$1)
-  /*istanbul ignore end*/
   ;
-  /*istanbul ignore start*/
 
 
   function _interopRequireDefault(obj) {
@@ -629,22 +517,15 @@ var sentence = createCommonjsModule(function (module, exports) {
       "default": obj
     };
   }
-  /*istanbul ignore end*/
 
 
   var sentenceDiff = new
-  /*istanbul ignore start*/
   _base
-  /*istanbul ignore end*/
   [
-  /*istanbul ignore start*/
   "default"
-  /*istanbul ignore end*/
   ]();
-  /*istanbul ignore start*/
 
   exports.sentenceDiff = sentenceDiff;
-  /*istanbul ignore end*/
 
   sentenceDiff.tokenize = function (value) {
     return value.split(/(\S.+?[.!?])(?=\s+|$)/);
@@ -655,7 +536,6 @@ var sentence = createCommonjsModule(function (module, exports) {
   }
 });
 
-/*istanbul ignore start*/
 var css$1 = createCommonjsModule(function (module, exports) {
 
   Object.defineProperty(exports, "__esModule", {
@@ -663,14 +543,10 @@ var css$1 = createCommonjsModule(function (module, exports) {
   });
   exports.diffCss = diffCss;
   exports.cssDiff = void 0;
-  /*istanbul ignore end*/
 
   var
-  /*istanbul ignore start*/
   _base = _interopRequireDefault(base$1)
-  /*istanbul ignore end*/
   ;
-  /*istanbul ignore start*/
 
 
   function _interopRequireDefault(obj) {
@@ -678,22 +554,15 @@ var css$1 = createCommonjsModule(function (module, exports) {
       "default": obj
     };
   }
-  /*istanbul ignore end*/
 
 
   var cssDiff = new
-  /*istanbul ignore start*/
   _base
-  /*istanbul ignore end*/
   [
-  /*istanbul ignore start*/
   "default"
-  /*istanbul ignore end*/
   ]();
-  /*istanbul ignore start*/
 
   exports.cssDiff = cssDiff;
-  /*istanbul ignore end*/
 
   cssDiff.tokenize = function (value) {
     return value.split(/([{}:;,]|\s+)/);
@@ -708,15 +577,11 @@ var check = function (it) {
   return it && it.Math == Math && it;
 };
 
-// https://github.com/zloirock/core-js/issues/86#issuecomment-115759028
 var global$2 =
-  // eslint-disable-next-line es/no-global-this -- safe
   check(typeof globalThis == 'object' && globalThis) ||
   check(typeof window == 'object' && window) ||
-  // eslint-disable-next-line no-restricted-globals -- safe
   check(typeof self == 'object' && self) ||
   check(typeof global$2 == 'object' && global$2) ||
-  // eslint-disable-next-line no-new-func -- fallback
   (function () { return this; })() || Function('return this')();
 
 var fails = function (exec) {
@@ -727,21 +592,15 @@ var fails = function (exec) {
   }
 };
 
-// Detect IE8's incomplete defineProperty implementation
 var descriptors$1 = !fails(function () {
-  // eslint-disable-next-line es/no-object-defineproperty -- required for testing
   return Object.defineProperty({}, 1, { get: function () { return 7; } })[1] != 7;
 });
 
 var $propertyIsEnumerable = {}.propertyIsEnumerable;
-// eslint-disable-next-line es/no-object-getownpropertydescriptor -- safe
 var getOwnPropertyDescriptor$1 = Object.getOwnPropertyDescriptor;
 
-// Nashorn ~ JDK8 bug
 var NASHORN_BUG = getOwnPropertyDescriptor$1 && !$propertyIsEnumerable.call({ 1: 2 }, 1);
 
-// `Object.prototype.propertyIsEnumerable` method implementation
-// https://tc39.es/ecma262/#sec-object.prototype.propertyisenumerable
 var f$4 = NASHORN_BUG ? function propertyIsEnumerable(V) {
   var descriptor = getOwnPropertyDescriptor$1(this, V);
   return !!descriptor && descriptor.enumerable;
@@ -768,23 +627,17 @@ var classofRaw = function (it) {
 
 var split = ''.split;
 
-// fallback for non-array-like ES3 and non-enumerable old V8 strings
 var indexedObject = fails(function () {
-  // throws an error in rhino, see https://github.com/mozilla/rhino/issues/346
-  // eslint-disable-next-line no-prototype-builtins -- safe
   return !Object('z').propertyIsEnumerable(0);
 }) ? function (it) {
   return classofRaw(it) == 'String' ? split.call(it, '') : Object(it);
 } : Object;
 
-// `RequireObjectCoercible` abstract operation
-// https://tc39.es/ecma262/#sec-requireobjectcoercible
 var requireObjectCoercible = function (it) {
   if (it == undefined) throw TypeError("Can't call method on " + it);
   return it;
 };
 
-// toObject with fallback for non-array-like ES3 strings
 
 
 
@@ -796,10 +649,6 @@ var isObject$3 = function (it) {
   return typeof it === 'object' ? it !== null : typeof it === 'function';
 };
 
-// `ToPrimitive` abstract operation
-// https://tc39.es/ecma262/#sec-toprimitive
-// instead of the ES6 spec version, we didn't implement @@toPrimitive case
-// and the second argument - flag - preferred type is a string
 var toPrimitive = function (input, PREFERRED_STRING) {
   if (!isObject$3(input)) return input;
   var fn, val;
@@ -809,8 +658,6 @@ var toPrimitive = function (input, PREFERRED_STRING) {
   throw TypeError("Can't convert object to primitive value");
 };
 
-// `ToObject` abstract operation
-// https://tc39.es/ecma262/#sec-toobject
 var toObject = function (argument) {
   return Object(requireObjectCoercible(argument));
 };
@@ -822,32 +669,26 @@ var has$1 = Object.hasOwn || function hasOwn(it, key) {
 };
 
 var document = global$2.document;
-// typeof document.createElement is 'object' in old IE
 var EXISTS = isObject$3(document) && isObject$3(document.createElement);
 
 var documentCreateElement = function (it) {
   return EXISTS ? document.createElement(it) : {};
 };
 
-// Thank's IE8 for his funny defineProperty
 var ie8DomDefine = !descriptors$1 && !fails(function () {
-  // eslint-disable-next-line es/no-object-defineproperty -- requied for testing
   return Object.defineProperty(documentCreateElement('div'), 'a', {
     get: function () { return 7; }
   }).a != 7;
 });
 
-// eslint-disable-next-line es/no-object-getownpropertydescriptor -- safe
 var $getOwnPropertyDescriptor = Object.getOwnPropertyDescriptor;
 
-// `Object.getOwnPropertyDescriptor` method
-// https://tc39.es/ecma262/#sec-object.getownpropertydescriptor
 var f$3 = descriptors$1 ? $getOwnPropertyDescriptor : function getOwnPropertyDescriptor(O, P) {
   O = toIndexedObject(O);
   P = toPrimitive(P, true);
   if (ie8DomDefine) try {
     return $getOwnPropertyDescriptor(O, P);
-  } catch (error) { /* empty */ }
+  } catch (error) { }
   if (has$1(O, P)) return createPropertyDescriptor(!objectPropertyIsEnumerable.f.call(O, P), O[P]);
 };
 
@@ -861,18 +702,15 @@ var anObject = function (it) {
   } return it;
 };
 
-// eslint-disable-next-line es/no-object-defineproperty -- safe
 var $defineProperty = Object.defineProperty;
 
-// `Object.defineProperty` method
-// https://tc39.es/ecma262/#sec-object.defineproperty
 var f$2 = descriptors$1 ? $defineProperty : function defineProperty(O, P, Attributes) {
   anObject(O);
   P = toPrimitive(P, true);
   anObject(Attributes);
   if (ie8DomDefine) try {
     return $defineProperty(O, P, Attributes);
-  } catch (error) { /* empty */ }
+  } catch (error) { }
   if ('get' in Attributes || 'set' in Attributes) throw TypeError('Accessors not supported');
   if ('value' in Attributes) O[P] = Attributes.value;
   return O;
@@ -904,7 +742,6 @@ var sharedStore = store$1;
 
 var functionToString = Function.toString;
 
-// this helper broken in `core-js@3.4.1-3.4.4`, so we can't use `shared` helper
 if (typeof sharedStore.inspectSource != 'function') {
   sharedStore.inspectSource = function (it) {
     return functionToString.call(it);
@@ -1031,7 +868,6 @@ var TEMPLATE = String(String).split('String');
   }
   if (simple) O[key] = value;
   else createNonEnumerableProperty(O, key, value);
-// add fake Function#toString for correct work wrapped methods / constructors with methods like LoDash isNative
 })(Function.prototype, 'toString', function toString() {
   return typeof this == 'function' && getInternalState(this).source || inspectSource(this);
 });
@@ -1051,45 +887,33 @@ var getBuiltIn = function (namespace, method) {
 var ceil = Math.ceil;
 var floor$1 = Math.floor;
 
-// `ToInteger` abstract operation
-// https://tc39.es/ecma262/#sec-tointeger
 var toInteger = function (argument) {
   return isNaN(argument = +argument) ? 0 : (argument > 0 ? floor$1 : ceil)(argument);
 };
 
 var min$1 = Math.min;
 
-// `ToLength` abstract operation
-// https://tc39.es/ecma262/#sec-tolength
 var toLength = function (argument) {
-  return argument > 0 ? min$1(toInteger(argument), 0x1FFFFFFFFFFFFF) : 0; // 2 ** 53 - 1 == 9007199254740991
+  return argument > 0 ? min$1(toInteger(argument), 0x1FFFFFFFFFFFFF) : 0;
 };
 
 var max = Math.max;
 var min = Math.min;
 
-// Helper for a popular repeating case of the spec:
-// Let integer be ? ToInteger(index).
-// If integer < 0, let result be max((length + integer), 0); else let result be min(integer, length).
 var toAbsoluteIndex = function (index, length) {
   var integer = toInteger(index);
   return integer < 0 ? max(integer + length, 0) : min(integer, length);
 };
 
-// `Array.prototype.{ indexOf, includes }` methods implementation
 var createMethod = function (IS_INCLUDES) {
   return function ($this, el, fromIndex) {
     var O = toIndexedObject($this);
     var length = toLength(O.length);
     var index = toAbsoluteIndex(fromIndex, length);
     var value;
-    // Array#includes uses SameValueZero equality algorithm
-    // eslint-disable-next-line no-self-compare -- NaN check
     if (IS_INCLUDES && el != el) while (length > index) {
       value = O[index++];
-      // eslint-disable-next-line no-self-compare -- NaN check
       if (value != value) return true;
-    // Array#indexOf ignores holes, Array#includes - not
     } else for (;length > index; index++) {
       if ((IS_INCLUDES || index in O) && O[index] === el) return IS_INCLUDES || index || 0;
     } return !IS_INCLUDES && -1;
@@ -1097,11 +921,7 @@ var createMethod = function (IS_INCLUDES) {
 };
 
 var arrayIncludes$1 = {
-  // `Array.prototype.includes` method
-  // https://tc39.es/ecma262/#sec-array.prototype.includes
   includes: createMethod(true),
-  // `Array.prototype.indexOf` method
-  // https://tc39.es/ecma262/#sec-array.prototype.indexof
   indexOf: createMethod(false)
 };
 
@@ -1114,14 +934,12 @@ var objectKeysInternal = function (object, names) {
   var result = [];
   var key;
   for (key in O) !has$1(hiddenKeys$1, key) && has$1(O, key) && result.push(key);
-  // Don't enum bug & hidden keys
   while (names.length > i) if (has$1(O, key = names[i++])) {
     ~indexOf(result, key) || result.push(key);
   }
   return result;
 };
 
-// IE8- don't enum bug keys
 var enumBugKeys = [
   'constructor',
   'hasOwnProperty',
@@ -1134,9 +952,6 @@ var enumBugKeys = [
 
 var hiddenKeys = enumBugKeys.concat('length', 'prototype');
 
-// `Object.getOwnPropertyNames` method
-// https://tc39.es/ecma262/#sec-object.getownpropertynames
-// eslint-disable-next-line es/no-object-getownpropertynames -- safe
 var f$1 = Object.getOwnPropertyNames || function getOwnPropertyNames(O) {
   return objectKeysInternal(O, hiddenKeys);
 };
@@ -1145,14 +960,12 @@ var objectGetOwnPropertyNames = {
 	f: f$1
 };
 
-// eslint-disable-next-line es/no-object-getownpropertysymbols -- safe
 var f = Object.getOwnPropertySymbols;
 
 var objectGetOwnPropertySymbols = {
 	f: f
 };
 
-// all object keys, includes non-enumerable and symbols
 var ownKeys = getBuiltIn('Reflect', 'ownKeys') || function ownKeys(it) {
   var keys = objectGetOwnPropertyNames.f(anObject(it));
   var getOwnPropertySymbols = objectGetOwnPropertySymbols.f;
@@ -1196,20 +1009,6 @@ var getOwnPropertyDescriptor = objectGetOwnPropertyDescriptor.f;
 
 
 
-/*
-  options.target      - name of the target object
-  options.global      - target is the global object
-  options.stat        - export as static methods of target
-  options.proto       - export as prototype methods of target
-  options.real        - real prototype method for the `pure` version
-  options.forced      - export even if the native feature is available
-  options.bind        - bind methods to the target, required for the `pure` version
-  options.wrap        - wrap constructors to preventing global pollution, required for the `pure` version
-  options.unsafe      - use the simple assignment of property instead of delete + defineProperty
-  options.sham        - add a flag to not completely full polyfills
-  options.enumerable  - export as enumerable property
-  options.noTargetGet - prevent calling a getter on target
-*/
 var _export = function (options, source) {
   var TARGET = options.target;
   var GLOBAL = options.global;
@@ -1229,16 +1028,13 @@ var _export = function (options, source) {
       targetProperty = descriptor && descriptor.value;
     } else targetProperty = target[key];
     FORCED = isForced_1(GLOBAL ? key : TARGET + (STATIC ? '.' : '#') + key, options.forced);
-    // contained in target
     if (!FORCED && targetProperty !== undefined) {
       if (typeof sourceProperty === typeof targetProperty) continue;
       copyConstructorProperties(sourceProperty, targetProperty);
     }
-    // add a flag to not completely full polyfills
     if (options.sham || (targetProperty && targetProperty.sham)) {
       createNonEnumerableProperty(sourceProperty, 'sham', true);
     }
-    // extend global
     redefine(target, key, sourceProperty, options);
   }
 };
@@ -1249,7 +1045,6 @@ var aFunction = function (it) {
   } return it;
 };
 
-// TODO: use something more complex like timsort?
 var floor = Math.floor;
 
 var mergeSort = function (array, comparefn) {
@@ -1298,7 +1093,6 @@ var arraySort = mergeSort;
 var arrayMethodIsStrict = function (METHOD_NAME, argument) {
   var method = [][METHOD_NAME];
   return !!method && fails(function () {
-    // eslint-disable-next-line no-useless-call,no-throw-literal -- required for testing
     method.call(null, argument || function () { throw 1; }, 1);
   });
 };
@@ -1336,19 +1130,15 @@ var engineWebkitVersion = !!webkit && +webkit[1];
 var test$1 = [];
 var nativeSort = test$1.sort;
 
-// IE8-
 var FAILS_ON_UNDEFINED = fails(function () {
   test$1.sort(undefined);
 });
-// V8 bug
 var FAILS_ON_NULL = fails(function () {
   test$1.sort(null);
 });
-// Old WebKit
 var STRICT_METHOD = arrayMethodIsStrict('sort');
 
 var STABLE_SORT = !fails(function () {
-  // feature detection can be too slow, so check engines versions
   if (engineV8Version) return engineV8Version < 70;
   if (engineFfVersion && engineFfVersion > 3) return;
   if (engineIsIeOrEdge) return true;
@@ -1357,7 +1147,6 @@ var STABLE_SORT = !fails(function () {
   var result = '';
   var code, chr, value, index;
 
-  // generate an array with more 512 elements (Chakra and old V8 fails only in this case)
   for (code = 65; code < 76; code++) {
     chr = String.fromCharCode(code);
 
@@ -1393,8 +1182,6 @@ var getSortCompare = function (comparefn) {
   };
 };
 
-// `Array.prototype.sort` method
-// https://tc39.es/ecma262/#sec-array.prototype.sort
 _export({ target: 'Array', proto: true, forced: FORCED }, {
   sort: function sort(comparefn) {
     if (comparefn !== undefined) aFunction(comparefn);
@@ -1430,14 +1217,10 @@ var json = createCommonjsModule(function (module, exports) {
   exports.diffJson = diffJson;
   exports.canonicalize = canonicalize;
   exports.jsonDiff = void 0;
-  /*istanbul ignore end*/
 
   var
-  /*istanbul ignore start*/
   _base = _interopRequireDefault(base$1)
-  /*istanbul ignore end*/
   ;
-  /*istanbul ignore start*/
 
 
   function _interopRequireDefault(obj) {
@@ -1461,49 +1244,33 @@ var json = createCommonjsModule(function (module, exports) {
 
     return _typeof(obj);
   }
-  /*istanbul ignore end*/
 
 
   var objectPrototypeToString = Object.prototype.toString;
   var jsonDiff = new
-  /*istanbul ignore start*/
   _base
-  /*istanbul ignore end*/
   [
-  /*istanbul ignore start*/
   "default"
-  /*istanbul ignore end*/
-  ](); // Discriminate between two lines of pretty-printed, serialized JSON where one of them has a
-  // dangling comma and the other doesn't. Turns out including the dangling comma yields the nicest output:
+  ]();
 
-  /*istanbul ignore start*/
 
   exports.jsonDiff = jsonDiff;
-  /*istanbul ignore end*/
 
   jsonDiff.useLongestToken = true;
   jsonDiff.tokenize =
-  /*istanbul ignore start*/
   line$x
-  /*istanbul ignore end*/
   .
-  /*istanbul ignore start*/
   lineDiff
-  /*istanbul ignore end*/
   .tokenize;
 
   jsonDiff.castInput = function (value) {
-    /*istanbul ignore start*/
     var _this$options =
-    /*istanbul ignore end*/
     this.options,
         undefinedReplacement = _this$options.undefinedReplacement,
         _this$options$stringi = _this$options.stringifyReplacer,
         stringifyReplacer = _this$options$stringi === void 0 ? function (k, v)
-    /*istanbul ignore start*/
     {
       return (
-        /*istanbul ignore end*/
         typeof v === 'undefined' ? undefinedReplacement : v
       );
     } : _this$options$stringi;
@@ -1512,21 +1279,16 @@ var json = createCommonjsModule(function (module, exports) {
 
   jsonDiff.equals = function (left, right) {
     return (
-      /*istanbul ignore start*/
       _base
-      /*istanbul ignore end*/
       [
-      /*istanbul ignore start*/
       "default"
-      /*istanbul ignore end*/
       ].prototype.equals.call(jsonDiff, left.replace(/,([\r\n])/g, '$1'), right.replace(/,([\r\n])/g, '$1'))
     );
   };
 
   function diffJson(oldObj, newObj, options) {
     return jsonDiff.diff(oldObj, newObj, options);
-  } // This function handles the presence of circular references by bailing out when encountering an
-  // object that is already on the "stack" of items being processed. Accepts an optional replacer
+  }
 
 
   function canonicalize(obj, stack, replacementStack, replacer, key) {
@@ -1566,9 +1328,7 @@ var json = createCommonjsModule(function (module, exports) {
     }
 
     if (
-    /*istanbul ignore start*/
     _typeof(
-    /*istanbul ignore end*/
     obj) === 'object' && obj !== null) {
       stack.push(obj);
       canonicalizedObj = {};
@@ -1578,7 +1338,6 @@ var json = createCommonjsModule(function (module, exports) {
           _key;
 
       for (_key in obj) {
-        /* istanbul ignore else */
         if (obj.hasOwnProperty(_key)) {
           sortedKeys.push(_key);
         }
@@ -1601,7 +1360,6 @@ var json = createCommonjsModule(function (module, exports) {
   }
 });
 
-/*istanbul ignore start*/
 var array$5 = createCommonjsModule(function (module, exports) {
 
   Object.defineProperty(exports, "__esModule", {
@@ -1609,14 +1367,10 @@ var array$5 = createCommonjsModule(function (module, exports) {
   });
   exports.diffArrays = diffArrays;
   exports.arrayDiff = void 0;
-  /*istanbul ignore end*/
 
   var
-  /*istanbul ignore start*/
   _base = _interopRequireDefault(base$1)
-  /*istanbul ignore end*/
   ;
-  /*istanbul ignore start*/
 
 
   function _interopRequireDefault(obj) {
@@ -1624,22 +1378,15 @@ var array$5 = createCommonjsModule(function (module, exports) {
       "default": obj
     };
   }
-  /*istanbul ignore end*/
 
 
   var arrayDiff = new
-  /*istanbul ignore start*/
   _base
-  /*istanbul ignore end*/
   [
-  /*istanbul ignore start*/
   "default"
-  /*istanbul ignore end*/
   ]();
-  /*istanbul ignore start*/
 
   exports.arrayDiff = arrayDiff;
-  /*istanbul ignore end*/
 
   arrayDiff.tokenize = function (value) {
     return value.slice();
@@ -1654,15 +1401,11 @@ var array$5 = createCommonjsModule(function (module, exports) {
   }
 });
 
-/*istanbul ignore start*/
 
 var parsePatch_1 = parsePatch;
-/*istanbul ignore end*/
 
 function parsePatch(uniDiff) {
-  /*istanbul ignore start*/
   var
-  /*istanbul ignore end*/
   options = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
   var diffstr = uniDiff.split(/\r\n|[\n\v\f\r\x85]/),
       delimiters = uniDiff.match(/\r\n|[\n\v\f\r\x85]/g) || [],
@@ -1671,14 +1414,14 @@ function parsePatch(uniDiff) {
 
   function parseIndex() {
     var index = {};
-    list.push(index); // Parse diff metadata
+    list.push(index);
 
     while (i < diffstr.length) {
-      var line = diffstr[i]; // File header found, end parsing diff metadata
+      var line = diffstr[i];
 
       if (/^(\-\-\-|\+\+\+|@@)\s/.test(line)) {
         break;
-      } // Diff index
+      }
 
 
       var header = /^(?:Index:|diff(?: -r \w+)+)\s+(.+?)\s*$/.exec(line);
@@ -1688,12 +1431,11 @@ function parsePatch(uniDiff) {
       }
 
       i++;
-    } // Parse file headers if they are defined. Unified diff requires them, but
-    // there's no technical issues to have an isolated hunk without file header
+    }
 
 
     parseFileHeader(index);
-    parseFileHeader(index); // Parse hunks
+    parseFileHeader(index);
 
     index.hunks = [];
 
@@ -1705,14 +1447,12 @@ function parsePatch(uniDiff) {
       } else if (/^@@/.test(_line)) {
         index.hunks.push(parseHunk());
       } else if (_line && options.strict) {
-        // Ignore unexpected content unless in strict mode
         throw new Error('Unknown line ' + (i + 1) + ' ' + JSON.stringify(_line));
       } else {
         i++;
       }
     }
-  } // Parses the --- and +++ headers, if none are found, no lines
-  // are consumed.
+  }
 
 
   function parseFileHeader(index) {
@@ -1731,8 +1471,7 @@ function parsePatch(uniDiff) {
       index[keyPrefix + 'Header'] = (data[1] || '').trim();
       i++;
     }
-  } // Parses a hunk
-  // This assumes that we are at the start of a hunk.
+  }
 
 
   function parseHunk() {
@@ -1746,9 +1485,7 @@ function parsePatch(uniDiff) {
       newLines: typeof chunkHeader[4] === 'undefined' ? 1 : +chunkHeader[4],
       lines: [],
       linedelimiters: []
-    }; // Unified Diff Format quirk: If the chunk size is 0,
-    // the first number is one lower than one would expect.
-    // https://www.artima.com/weblogs/viewpost.jsp?thread=164293
+    };
 
     if (hunk.oldLines === 0) {
       hunk.oldStart += 1;
@@ -1762,8 +1499,6 @@ function parsePatch(uniDiff) {
         removeCount = 0;
 
     for (; i < diffstr.length; i++) {
-      // Lines starting with '---' could be mistaken for the "remove line" operation
-      // But they could be the header for the next file. Therefore prune such cases out.
       if (diffstr[i].indexOf('--- ') === 0 && i + 2 < diffstr.length && diffstr[i + 1].indexOf('+++ ') === 0 && diffstr[i + 2].indexOf('@@') === 0) {
         break;
       }
@@ -1785,7 +1520,7 @@ function parsePatch(uniDiff) {
       } else {
         break;
       }
-    } // Handle the empty block count case
+    }
 
 
     if (!addCount && hunk.newLines === 1) {
@@ -1794,7 +1529,7 @@ function parsePatch(uniDiff) {
 
     if (!removeCount && hunk.oldLines === 1) {
       hunk.oldLines = 0;
-    } // Perform optional sanity checking
+    }
 
 
     if (options.strict) {
@@ -1823,22 +1558,15 @@ var parse$b = /*#__PURE__*/Object.defineProperty({
   value: true
 });
 
-/*istanbul ignore start*/
 var distanceIterator = createCommonjsModule(function (module, exports) {
 
   Object.defineProperty(exports, "__esModule", {
     value: true
   });
   exports["default"] = _default;
-  /*istanbul ignore end*/
-  // Iterator that traverses in the range of [min, max], stepping
-  // by distance from a given start position. I.e. for [0, 4], with
-  // start of 2, this will iterate 2, 3, 1, 4, 0.
 
   function
-  /*istanbul ignore start*/
   _default
-  /*istanbul ignore end*/
   (start, minLine, maxLine) {
     var wantForward = true,
         backwardExhausted = false,
@@ -1850,8 +1578,7 @@ var distanceIterator = createCommonjsModule(function (module, exports) {
           localOffset++;
         } else {
           wantForward = false;
-        } // Check if trying to fit beyond text length, and if not, check it fits
-        // after offset location (or desired location on first iteration)
+        }
 
 
         if (start + localOffset <= maxLine) {
@@ -1864,8 +1591,7 @@ var distanceIterator = createCommonjsModule(function (module, exports) {
       if (!backwardExhausted) {
         if (!forwardExhausted) {
           wantForward = true;
-        } // Check if trying to fit before text beginning, and if not, check it fits
-        // before offset location
+        }
 
 
         if (minLine <= start - localOffset) {
@@ -1874,25 +1600,19 @@ var distanceIterator = createCommonjsModule(function (module, exports) {
 
         backwardExhausted = true;
         return iterator();
-      } // We tried to fit hunk before text beginning and beyond text length, then
-      // hunk can't fit on the text. Return undefined
+      }
 
     };
   }
 });
 
-/*istanbul ignore start*/
 
 var applyPatch_1 = applyPatch;
 var applyPatches_1 = applyPatches;
-/*istanbul ignore end*/
 
 var
-/*istanbul ignore start*/
 _distanceIterator = _interopRequireDefault$1(distanceIterator)
-/*istanbul ignore end*/
 ;
-/*istanbul ignore start*/
 
 
 function _interopRequireDefault$1(obj) {
@@ -1900,27 +1620,19 @@ function _interopRequireDefault$1(obj) {
     "default": obj
   };
 }
-/*istanbul ignore end*/
 
 
 function applyPatch(source, uniDiff) {
-  /*istanbul ignore start*/
   var
-  /*istanbul ignore end*/
   options = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : {};
 
   if (typeof uniDiff === 'string') {
     uniDiff =
-    /*istanbul ignore start*/
-    (/*istanbul ignore end*/
+    (
 
-    /*istanbul ignore start*/
     0, parse$b
-    /*istanbul ignore end*/
     .
-    /*istanbul ignore start*/
     parsePatch
-    /*istanbul ignore end*/
     )(uniDiff);
   }
 
@@ -1930,17 +1642,15 @@ function applyPatch(source, uniDiff) {
     }
 
     uniDiff = uniDiff[0];
-  } // Apply the diff to the input
+  }
 
 
   var lines = source.split(/\r\n|[\n\v\f\r\x85]/),
       delimiters = source.match(/\r\n|[\n\v\f\r\x85]/g) || [],
       hunks = uniDiff.hunks,
       compareLine = options.compareLine || function (lineNumber, line, operation, patchContent)
-  /*istanbul ignore start*/
   {
     return (
-      /*istanbul ignore end*/
       line === patchContent
     );
   },
@@ -1950,9 +1660,6 @@ function applyPatch(source, uniDiff) {
       offset = 0,
       removeEOFNL,
       addEOFNL;
-  /**
-   * Checks if the hunk exactly fits on the provided location
-   */
 
 
   function hunkFits(hunk, toPos) {
@@ -1962,7 +1669,6 @@ function applyPatch(source, uniDiff) {
           content = line.length > 0 ? line.substr(1) : line;
 
       if (operation === ' ' || operation === '-') {
-        // Context sanity check
         if (!compareLine(toPos + 1, lines[toPos], operation, content)) {
           errorCount++;
 
@@ -1976,7 +1682,7 @@ function applyPatch(source, uniDiff) {
     }
 
     return true;
-  } // Search best fit offsets for each hunk based on the previous ones
+  }
 
 
   for (var i = 0; i < hunks.length; i++) {
@@ -1985,16 +1691,11 @@ function applyPatch(source, uniDiff) {
         localOffset = 0,
         toPos = offset + hunk.oldStart - 1;
     var iterator =
-    /*istanbul ignore start*/
-    (/*istanbul ignore end*/
+    (
 
-    /*istanbul ignore start*/
     0, _distanceIterator
-    /*istanbul ignore end*/
     [
-    /*istanbul ignore start*/
     "default"
-    /*istanbul ignore end*/
     ])(toPos, minLine, maxLine);
 
     for (; localOffset !== undefined; localOffset = iterator()) {
@@ -2006,12 +1707,11 @@ function applyPatch(source, uniDiff) {
 
     if (localOffset === undefined) {
       return false;
-    } // Set lower text limit to end of the current hunk, so next ones don't try
-    // to fit over already patched text
+    }
 
 
     minLine = hunk.offset + hunk.oldStart + hunk.oldLines;
-  } // Apply patch hunks
+  }
 
 
   var diffOffset = 0;
@@ -2033,7 +1733,6 @@ function applyPatch(source, uniDiff) {
       } else if (operation === '-') {
         lines.splice(_toPos, 1);
         delimiters.splice(_toPos, 1);
-        /* istanbul ignore else */
       } else if (operation === '+') {
         lines.splice(_toPos, 0, content);
         delimiters.splice(_toPos, 0, delimiter);
@@ -2048,7 +1747,7 @@ function applyPatch(source, uniDiff) {
         }
       }
     }
-  } // Handle EOFNL insertion/removal
+  }
 
 
   if (removeEOFNL) {
@@ -2066,22 +1765,17 @@ function applyPatch(source, uniDiff) {
   }
 
   return lines.join('');
-} // Wrapper that supports multiple file patches via callbacks.
+}
 
 
 function applyPatches(uniDiff, options) {
   if (typeof uniDiff === 'string') {
     uniDiff =
-    /*istanbul ignore start*/
-    (/*istanbul ignore end*/
+    (
 
-    /*istanbul ignore start*/
     0, parse$b
-    /*istanbul ignore end*/
     .
-    /*istanbul ignore start*/
     parsePatch
-    /*istanbul ignore end*/
     )(uniDiff);
   }
 
@@ -2120,15 +1814,12 @@ var apply = /*#__PURE__*/Object.defineProperty({
   value: true
 });
 
-/*istanbul ignore start*/
 
 var structuredPatch_1 = structuredPatch;
 var formatPatch_1 = formatPatch;
 var createTwoFilesPatch_1 = createTwoFilesPatch;
 var createPatch_1 = createPatch;
-/*istanbul ignore end*/
 
-/*istanbul ignore start*/
 
 function _toConsumableArray$1(arr) {
   return _arrayWithoutHoles$1(arr) || _iterableToArray$1(arr) || _unsupportedIterableToArray$1(arr) || _nonIterableSpread$1();
@@ -2164,7 +1855,6 @@ function _arrayLikeToArray$1(arr, len) {
 
   return arr2;
 }
-/*istanbul ignore end*/
 
 
 function structuredPatch(oldFileName, newFileName, oldStr, newStr, oldHeader, newHeader, options) {
@@ -2177,21 +1867,16 @@ function structuredPatch(oldFileName, newFileName, oldStr, newStr, oldHeader, ne
   }
 
   var diff =
-  /*istanbul ignore start*/
-  (/*istanbul ignore end*/
+  (
 
-  /*istanbul ignore start*/
   0, line$x
-  /*istanbul ignore end*/
   .
-  /*istanbul ignore start*/
   diffLines
-  /*istanbul ignore end*/
   )(oldStr, newStr, options);
   diff.push({
     value: '',
     lines: []
-  }); // Append an empty value to make cleanup easier
+  });
 
   function contextLines(lines) {
     return lines.map(function (entry) {
@@ -2205,20 +1890,15 @@ function structuredPatch(oldFileName, newFileName, oldStr, newStr, oldHeader, ne
       curRange = [],
       oldLine = 1,
       newLine = 1;
-  /*istanbul ignore start*/
 
   var _loop = function _loop(
-  /*istanbul ignore end*/
   i) {
     var current = diff[i],
         lines = current.lines || current.value.replace(/\n$/, '').split('\n');
     current.lines = lines;
 
     if (current.added || current.removed) {
-      /*istanbul ignore start*/
       var _curRange;
-      /*istanbul ignore end*/
-      // If we have previous context, start with that
 
 
       if (!oldRangeStart) {
@@ -2231,28 +1911,20 @@ function structuredPatch(oldFileName, newFileName, oldStr, newStr, oldHeader, ne
           oldRangeStart -= curRange.length;
           newRangeStart -= curRange.length;
         }
-      } // Output our changes
+      }
 
-      /*istanbul ignore start*/
 
-      /*istanbul ignore end*/
 
-      /*istanbul ignore start*/
 
 
       (_curRange =
-      /*istanbul ignore end*/
       curRange).push.apply(
-      /*istanbul ignore start*/
       _curRange
-      /*istanbul ignore end*/
       ,
-      /*istanbul ignore start*/
       _toConsumableArray$1(
-      /*istanbul ignore end*/
       lines.map(function (entry) {
         return (current.added ? '+' : '-') + entry;
-      }))); // Track the updated file position
+      })));
 
 
       if (current.added) {
@@ -2261,57 +1933,33 @@ function structuredPatch(oldFileName, newFileName, oldStr, newStr, oldHeader, ne
         oldLine += lines.length;
       }
     } else {
-      // Identical context lines. Track line changes
       if (oldRangeStart) {
-        // Close out any changes that have been output (or join overlapping)
         if (lines.length <= options.context * 2 && i < diff.length - 2) {
-          /*istanbul ignore start*/
           var _curRange2;
-          /*istanbul ignore end*/
-          // Overlapping
 
-          /*istanbul ignore start*/
 
-          /*istanbul ignore end*/
 
-          /*istanbul ignore start*/
 
 
           (_curRange2 =
-          /*istanbul ignore end*/
           curRange).push.apply(
-          /*istanbul ignore start*/
           _curRange2
-          /*istanbul ignore end*/
           ,
-          /*istanbul ignore start*/
           _toConsumableArray$1(
-          /*istanbul ignore end*/
           contextLines(lines)));
         } else {
-          /*istanbul ignore start*/
           var _curRange3;
-          /*istanbul ignore end*/
-          // end the range and output
 
 
           var contextSize = Math.min(lines.length, options.context);
-          /*istanbul ignore start*/
 
-          /*istanbul ignore end*/
 
-          /*istanbul ignore start*/
 
           (_curRange3 =
-          /*istanbul ignore end*/
           curRange).push.apply(
-          /*istanbul ignore start*/
           _curRange3
-          /*istanbul ignore end*/
           ,
-          /*istanbul ignore start*/
           _toConsumableArray$1(
-          /*istanbul ignore end*/
           contextLines(lines.slice(0, contextSize))));
 
           var hunk = {
@@ -2323,14 +1971,11 @@ function structuredPatch(oldFileName, newFileName, oldStr, newStr, oldHeader, ne
           };
 
           if (i >= diff.length - 2 && lines.length <= options.context) {
-            // EOF is inside this hunk
             var oldEOFNewline = /\n$/.test(oldStr);
             var newEOFNewline = /\n$/.test(newStr);
             var noNlBeforeAdds = lines.length == 0 && curRange.length > hunk.oldLines;
 
             if (!oldEOFNewline && noNlBeforeAdds && oldStr.length > 0) {
-              // special case: old has no eol and no trailing context; no-nl can end up before adds
-              // however, if the old file is empty, do not output the no-nl line
               curRange.splice(hunk.oldLines, 0, '\\ No newline at end of file');
             }
 
@@ -2352,9 +1997,7 @@ function structuredPatch(oldFileName, newFileName, oldStr, newStr, oldHeader, ne
   };
 
   for (var i = 0; i < diff.length; i++) {
-    /*istanbul ignore start*/
     _loop(
-    /*istanbul ignore end*/
     i);
   }
 
@@ -2379,9 +2022,7 @@ function formatPatch(diff) {
   ret.push('+++ ' + diff.newFileName + (typeof diff.newHeader === 'undefined' ? '' : '\t' + diff.newHeader));
 
   for (var i = 0; i < diff.hunks.length; i++) {
-    var hunk = diff.hunks[i]; // Unified Diff Format quirk: If the chunk size is 0,
-    // the first number is one lower than one would expect.
-    // https://www.artima.com/weblogs/viewpost.jsp?thread=164293
+    var hunk = diff.hunks[i];
 
     if (hunk.oldLines === 0) {
       hunk.oldStart -= 1;
@@ -2415,11 +2056,9 @@ var create = /*#__PURE__*/Object.defineProperty({
   value: true
 });
 
-/*istanbul ignore start*/
 
 var arrayEqual_1 = arrayEqual;
 var arrayStartsWith_1 = arrayStartsWith;
-/*istanbul ignore end*/
 
 function arrayEqual(a, b) {
   if (a.length !== b.length) {
@@ -2450,13 +2089,10 @@ var array$4 = /*#__PURE__*/Object.defineProperty({
   value: true
 });
 
-/*istanbul ignore start*/
 
 var calcLineCount_1 = calcLineCount;
 var merge_2 = merge;
-/*istanbul ignore end*/
 
-/*istanbul ignore start*/
 
 function _toConsumableArray(arr) {
   return _arrayWithoutHoles(arr) || _iterableToArray(arr) || _unsupportedIterableToArray(arr) || _nonIterableSpread();
@@ -2492,13 +2128,10 @@ function _arrayLikeToArray(arr, len) {
 
   return arr2;
 }
-/*istanbul ignore end*/
 
 
 function calcLineCount(hunk) {
-  /*istanbul ignore start*/
   var _calcOldNewLineCount =
-  /*istanbul ignore end*/
   calcOldNewLineCount(hunk.lines),
       oldLines = _calcOldNewLineCount.oldLines,
       newLines = _calcOldNewLineCount.newLines;
@@ -2519,9 +2152,7 @@ function calcLineCount(hunk) {
 function merge(mine, theirs, base) {
   mine = loadPatch(mine, base);
   theirs = loadPatch(theirs, base);
-  var ret = {}; // For index we just let it pass through as it doesn't have any necessary meaning.
-  // Leaving sanity checks on this to the API consumer that may know more about the
-  // meaning in their own context.
+  var ret = {};
 
   if (mine.index || theirs.index) {
     ret.index = mine.index || theirs.index;
@@ -2529,19 +2160,16 @@ function merge(mine, theirs, base) {
 
   if (mine.newFileName || theirs.newFileName) {
     if (!fileNameChanged(mine)) {
-      // No header or no change in ours, use theirs (and ours if theirs does not exist)
       ret.oldFileName = theirs.oldFileName || mine.oldFileName;
       ret.newFileName = theirs.newFileName || mine.newFileName;
       ret.oldHeader = theirs.oldHeader || mine.oldHeader;
       ret.newHeader = theirs.newHeader || mine.newHeader;
     } else if (!fileNameChanged(theirs)) {
-      // No header or no change in theirs, use ours
       ret.oldFileName = mine.oldFileName;
       ret.newFileName = mine.newFileName;
       ret.oldHeader = mine.oldHeader;
       ret.newHeader = mine.newHeader;
     } else {
-      // Both changed... figure it out
       ret.oldFileName = selectField(ret, mine.oldFileName, theirs.oldFileName);
       ret.newFileName = selectField(ret, mine.newFileName, theirs.newFileName);
       ret.oldHeader = selectField(ret, mine.oldHeader, theirs.oldHeader);
@@ -2564,17 +2192,14 @@ function merge(mine, theirs, base) {
     };
 
     if (hunkBefore(mineCurrent, theirsCurrent)) {
-      // This patch does not overlap with any of the others, yay.
       ret.hunks.push(cloneHunk(mineCurrent, mineOffset));
       mineIndex++;
       theirsOffset += mineCurrent.newLines - mineCurrent.oldLines;
     } else if (hunkBefore(theirsCurrent, mineCurrent)) {
-      // This patch does not overlap with any of the others, yay.
       ret.hunks.push(cloneHunk(theirsCurrent, theirsOffset));
       theirsIndex++;
       mineOffset += theirsCurrent.newLines - theirsCurrent.oldLines;
     } else {
-      // Overlap, merge as best we can
       var mergedHunk = {
         oldStart: Math.min(mineCurrent.oldStart, theirsCurrent.oldStart),
         oldLines: 0,
@@ -2596,16 +2221,11 @@ function loadPatch(param, base) {
   if (typeof param === 'string') {
     if (/^@@/m.test(param) || /^Index:/m.test(param)) {
       return (
-        /*istanbul ignore start*/
-        (/*istanbul ignore end*/
+        (
 
-        /*istanbul ignore start*/
         0, parse$b
-        /*istanbul ignore end*/
         .
-        /*istanbul ignore start*/
         parsePatch
-        /*istanbul ignore end*/
         )(param)[0]
       );
     }
@@ -2615,16 +2235,11 @@ function loadPatch(param, base) {
     }
 
     return (
-      /*istanbul ignore start*/
-      (/*istanbul ignore end*/
+      (
 
-      /*istanbul ignore start*/
       0, create
-      /*istanbul ignore end*/
       .
-      /*istanbul ignore start*/
       structuredPatch
-      /*istanbul ignore end*/
       )(undefined, undefined, base, param)
     );
   }
@@ -2663,8 +2278,6 @@ function cloneHunk(hunk, offset) {
 }
 
 function mergeLines(hunk, mineOffset, mineLines, theirOffset, theirLines) {
-  // This will generally result in a conflicted hunk, but there are cases where the context
-  // is the only overlap where we can successfully merge the content here.
   var mine = {
     offset: mineOffset,
     lines: mineLines,
@@ -2674,82 +2287,55 @@ function mergeLines(hunk, mineOffset, mineLines, theirOffset, theirLines) {
     offset: theirOffset,
     lines: theirLines,
     index: 0
-  }; // Handle any leading content
+  };
 
   insertLeading(hunk, mine, their);
-  insertLeading(hunk, their, mine); // Now in the overlap content. Scan through and select the best changes from each.
+  insertLeading(hunk, their, mine);
 
   while (mine.index < mine.lines.length && their.index < their.lines.length) {
     var mineCurrent = mine.lines[mine.index],
         theirCurrent = their.lines[their.index];
 
     if ((mineCurrent[0] === '-' || mineCurrent[0] === '+') && (theirCurrent[0] === '-' || theirCurrent[0] === '+')) {
-      // Both modified ...
       mutualChange(hunk, mine, their);
     } else if (mineCurrent[0] === '+' && theirCurrent[0] === ' ') {
-      /*istanbul ignore start*/
       var _hunk$lines;
-      /*istanbul ignore end*/
-      // Mine inserted
 
-      /*istanbul ignore start*/
 
-      /*istanbul ignore end*/
 
-      /*istanbul ignore start*/
 
 
       (_hunk$lines =
-      /*istanbul ignore end*/
       hunk.lines).push.apply(
-      /*istanbul ignore start*/
       _hunk$lines
-      /*istanbul ignore end*/
       ,
-      /*istanbul ignore start*/
       _toConsumableArray(
-      /*istanbul ignore end*/
       collectChange(mine)));
     } else if (theirCurrent[0] === '+' && mineCurrent[0] === ' ') {
-      /*istanbul ignore start*/
       var _hunk$lines2;
-      /*istanbul ignore end*/
-      // Theirs inserted
 
-      /*istanbul ignore start*/
 
-      /*istanbul ignore end*/
 
-      /*istanbul ignore start*/
 
 
       (_hunk$lines2 =
-      /*istanbul ignore end*/
       hunk.lines).push.apply(
-      /*istanbul ignore start*/
       _hunk$lines2
-      /*istanbul ignore end*/
       ,
-      /*istanbul ignore start*/
       _toConsumableArray(
-      /*istanbul ignore end*/
       collectChange(their)));
     } else if (mineCurrent[0] === '-' && theirCurrent[0] === ' ') {
-      // Mine removed or edited
       removal(hunk, mine, their);
     } else if (theirCurrent[0] === '-' && mineCurrent[0] === ' ') {
-      // Their removed or edited
       removal(hunk, their, mine, true);
     } else if (mineCurrent === theirCurrent) {
-      // Context identity
       hunk.lines.push(mineCurrent);
       mine.index++;
       their.index++;
     } else {
-      // Context mismatch
       conflict(hunk, collectChange(mine), collectChange(their));
     }
-  } // Now push anything that may be remaining
+  }
 
 
   insertTrailing(hunk, mine);
@@ -2762,113 +2348,67 @@ function mutualChange(hunk, mine, their) {
       theirChanges = collectChange(their);
 
   if (allRemoves(myChanges) && allRemoves(theirChanges)) {
-    // Special case for remove changes that are supersets of one another
     if (
-    /*istanbul ignore start*/
-    (/*istanbul ignore end*/
+    (
 
-    /*istanbul ignore start*/
     0, array$4
-    /*istanbul ignore end*/
     .
-    /*istanbul ignore start*/
     arrayStartsWith
-    /*istanbul ignore end*/
     )(myChanges, theirChanges) && skipRemoveSuperset(their, myChanges, myChanges.length - theirChanges.length)) {
-      /*istanbul ignore start*/
       var _hunk$lines3;
-      /*istanbul ignore end*/
 
-      /*istanbul ignore start*/
 
-      /*istanbul ignore end*/
 
-      /*istanbul ignore start*/
 
 
       (_hunk$lines3 =
-      /*istanbul ignore end*/
       hunk.lines).push.apply(
-      /*istanbul ignore start*/
       _hunk$lines3
-      /*istanbul ignore end*/
       ,
-      /*istanbul ignore start*/
       _toConsumableArray(
-      /*istanbul ignore end*/
       myChanges));
 
       return;
     } else if (
-    /*istanbul ignore start*/
-    (/*istanbul ignore end*/
+    (
 
-    /*istanbul ignore start*/
     0, array$4
-    /*istanbul ignore end*/
     .
-    /*istanbul ignore start*/
     arrayStartsWith
-    /*istanbul ignore end*/
     )(theirChanges, myChanges) && skipRemoveSuperset(mine, theirChanges, theirChanges.length - myChanges.length)) {
-      /*istanbul ignore start*/
       var _hunk$lines4;
-      /*istanbul ignore end*/
 
-      /*istanbul ignore start*/
 
-      /*istanbul ignore end*/
 
-      /*istanbul ignore start*/
 
 
       (_hunk$lines4 =
-      /*istanbul ignore end*/
       hunk.lines).push.apply(
-      /*istanbul ignore start*/
       _hunk$lines4
-      /*istanbul ignore end*/
       ,
-      /*istanbul ignore start*/
       _toConsumableArray(
-      /*istanbul ignore end*/
       theirChanges));
 
       return;
     }
   } else if (
-  /*istanbul ignore start*/
-  (/*istanbul ignore end*/
+  (
 
-  /*istanbul ignore start*/
   0, array$4
-  /*istanbul ignore end*/
   .
-  /*istanbul ignore start*/
   arrayEqual
-  /*istanbul ignore end*/
   )(myChanges, theirChanges)) {
-    /*istanbul ignore start*/
     var _hunk$lines5;
-    /*istanbul ignore end*/
 
-    /*istanbul ignore start*/
 
-    /*istanbul ignore end*/
 
-    /*istanbul ignore start*/
 
 
     (_hunk$lines5 =
-    /*istanbul ignore end*/
     hunk.lines).push.apply(
-    /*istanbul ignore start*/
     _hunk$lines5
-    /*istanbul ignore end*/
     ,
-    /*istanbul ignore start*/
     _toConsumableArray(
-    /*istanbul ignore end*/
     myChanges));
 
     return;
@@ -2882,27 +2422,17 @@ function removal(hunk, mine, their, swap) {
       theirChanges = collectContext(their, myChanges);
 
   if (theirChanges.merged) {
-    /*istanbul ignore start*/
     var _hunk$lines6;
-    /*istanbul ignore end*/
 
-    /*istanbul ignore start*/
 
-    /*istanbul ignore end*/
 
-    /*istanbul ignore start*/
 
 
     (_hunk$lines6 =
-    /*istanbul ignore end*/
     hunk.lines).push.apply(
-    /*istanbul ignore start*/
     _hunk$lines6
-    /*istanbul ignore end*/
     ,
-    /*istanbul ignore start*/
     _toConsumableArray(
-    /*istanbul ignore end*/
     theirChanges.merged));
   } else {
     conflict(hunk, swap ? theirChanges : myChanges, swap ? myChanges : theirChanges);
@@ -2938,7 +2468,7 @@ function collectChange(state) {
       operation = state.lines[state.index][0];
 
   while (state.index < state.lines.length) {
-    var line = state.lines[state.index]; // Group additions that are immediately after subtractions and treat them as one "atomic" modify change.
+    var line = state.lines[state.index];
 
     if (operation === '-' && line[0] === '+') {
       operation = '+';
@@ -2964,7 +2494,7 @@ function collectContext(state, matchChanges) {
 
   while (matchIndex < matchChanges.length && state.index < state.lines.length) {
     var change = state.lines[state.index],
-        match = matchChanges[matchIndex]; // Once we've hit our add, then we are done
+        match = matchChanges[matchIndex];
 
     if (match[0] === '+') {
       break;
@@ -2972,8 +2502,7 @@ function collectContext(state, matchChanges) {
 
     contextChanges = contextChanges || change[0] !== ' ';
     merged.push(match);
-    matchIndex++; // Consume any additions in the other block as a conflict to attempt
-    // to pull in the remaining context after this
+    matchIndex++;
 
     if (change[0] === '+') {
       conflicted = true;
@@ -3075,11 +2604,8 @@ var merge_1 = /*#__PURE__*/Object.defineProperty({
   value: true
 });
 
-/*istanbul ignore start*/
 
 var convertChangesToDMP_1 = convertChangesToDMP;
-/*istanbul ignore end*/
-// See: http://code.google.com/p/google-diff-match-patch/wiki/API
 
 function convertChangesToDMP(changes) {
   var ret = [],
@@ -3109,10 +2635,8 @@ var dmp = /*#__PURE__*/Object.defineProperty({
   value: true
 });
 
-/*istanbul ignore start*/
 
 var convertChangesToXML_1 = convertChangesToXML;
-/*istanbul ignore end*/
 
 function convertChangesToXML(changes) {
   var ret = [];
@@ -3153,7 +2677,6 @@ var xml = /*#__PURE__*/Object.defineProperty({
   value: true
 });
 
-/*istanbul ignore start*/
 var lib$6 = createCommonjsModule(function (module, exports) {
 
   Object.defineProperty(exports, "__esModule", {
@@ -3279,14 +2802,10 @@ var lib$6 = createCommonjsModule(function (module, exports) {
       return xml.convertChangesToXML;
     }
   });
-  /*istanbul ignore end*/
 
   var
-  /*istanbul ignore start*/
   _base = _interopRequireDefault(base$1)
-  /*istanbul ignore end*/
   ;
-  /*istanbul ignore start*/
 
 
   function _interopRequireDefault(obj) {
@@ -3294,7 +2813,6 @@ var lib$6 = createCommonjsModule(function (module, exports) {
       "default": obj
     };
   }
-  /*istanbul ignore end*/
 
 });
 
@@ -3309,30 +2827,27 @@ var ansiRegex = ({
 
 var stripAnsi = string => typeof string === 'string' ? string.replace(ansiRegex(), '') : string;
 
-/* eslint-disable yoda */
 
 const isFullwidthCodePoint = codePoint => {
   if (Number.isNaN(codePoint)) {
     return false;
-  } // Code points are derived from:
-  // http://www.unix.org/Public/UNIDATA/EastAsianWidth.txt
+  }
 
 
-  if (codePoint >= 0x1100 && (codePoint <= 0x115F || // Hangul Jamo
-  codePoint === 0x2329 || // LEFT-POINTING ANGLE BRACKET
-  codePoint === 0x232A || // RIGHT-POINTING ANGLE BRACKET
-  // CJK Radicals Supplement .. Enclosed CJK Letters and Months
-  0x2E80 <= codePoint && codePoint <= 0x3247 && codePoint !== 0x303F || // Enclosed CJK Letters and Months .. CJK Unified Ideographs Extension A
-  0x3250 <= codePoint && codePoint <= 0x4DBF || // CJK Unified Ideographs .. Yi Radicals
-  0x4E00 <= codePoint && codePoint <= 0xA4C6 || // Hangul Jamo Extended-A
-  0xA960 <= codePoint && codePoint <= 0xA97C || // Hangul Syllables
-  0xAC00 <= codePoint && codePoint <= 0xD7A3 || // CJK Compatibility Ideographs
-  0xF900 <= codePoint && codePoint <= 0xFAFF || // Vertical Forms
-  0xFE10 <= codePoint && codePoint <= 0xFE19 || // CJK Compatibility Forms .. Small Form Variants
-  0xFE30 <= codePoint && codePoint <= 0xFE6B || // Halfwidth and Fullwidth Forms
-  0xFF01 <= codePoint && codePoint <= 0xFF60 || 0xFFE0 <= codePoint && codePoint <= 0xFFE6 || // Kana Supplement
-  0x1B000 <= codePoint && codePoint <= 0x1B001 || // Enclosed Ideographic Supplement
-  0x1F200 <= codePoint && codePoint <= 0x1F251 || // CJK Unified Ideographs Extension B .. Tertiary Ideographic Plane
+  if (codePoint >= 0x1100 && (codePoint <= 0x115F ||
+  codePoint === 0x2329 ||
+  codePoint === 0x232A ||
+  0x2E80 <= codePoint && codePoint <= 0x3247 && codePoint !== 0x303F ||
+  0x3250 <= codePoint && codePoint <= 0x4DBF ||
+  0x4E00 <= codePoint && codePoint <= 0xA4C6 ||
+  0xA960 <= codePoint && codePoint <= 0xA97C ||
+  0xAC00 <= codePoint && codePoint <= 0xD7A3 ||
+  0xF900 <= codePoint && codePoint <= 0xFAFF ||
+  0xFE10 <= codePoint && codePoint <= 0xFE19 ||
+  0xFE30 <= codePoint && codePoint <= 0xFE6B ||
+  0xFF01 <= codePoint && codePoint <= 0xFF60 || 0xFFE0 <= codePoint && codePoint <= 0xFFE6 ||
+  0x1B000 <= codePoint && codePoint <= 0x1B001 ||
+  0x1F200 <= codePoint && codePoint <= 0x1F251 ||
   0x20000 <= codePoint && codePoint <= 0x3FFFD)) {
     return true;
   }
@@ -3345,7 +2860,6 @@ var _default$r = isFullwidthCodePoint;
 isFullwidthCodePoint_1.default = _default$r;
 
 var emojiRegex = function () {
-  // https://mths.be/emoji
   return /\uD83C\uDFF4\uDB40\uDC67\uDB40\uDC62(?:\uDB40\uDC65\uDB40\uDC6E\uDB40\uDC67|\uDB40\uDC73\uDB40\uDC63\uDB40\uDC74|\uDB40\uDC77\uDB40\uDC6C\uDB40\uDC73)\uDB40\uDC7F|\uD83D\uDC68(?:\uD83C\uDFFC\u200D(?:\uD83E\uDD1D\u200D\uD83D\uDC68\uD83C\uDFFB|\uD83C[\uDF3E\uDF73\uDF93\uDFA4\uDFA8\uDFEB\uDFED]|\uD83D[\uDCBB\uDCBC\uDD27\uDD2C\uDE80\uDE92]|\uD83E[\uDDAF-\uDDB3\uDDBC\uDDBD])|\uD83C\uDFFF\u200D(?:\uD83E\uDD1D\u200D\uD83D\uDC68(?:\uD83C[\uDFFB-\uDFFE])|\uD83C[\uDF3E\uDF73\uDF93\uDFA4\uDFA8\uDFEB\uDFED]|\uD83D[\uDCBB\uDCBC\uDD27\uDD2C\uDE80\uDE92]|\uD83E[\uDDAF-\uDDB3\uDDBC\uDDBD])|\uD83C\uDFFE\u200D(?:\uD83E\uDD1D\u200D\uD83D\uDC68(?:\uD83C[\uDFFB-\uDFFD])|\uD83C[\uDF3E\uDF73\uDF93\uDFA4\uDFA8\uDFEB\uDFED]|\uD83D[\uDCBB\uDCBC\uDD27\uDD2C\uDE80\uDE92]|\uD83E[\uDDAF-\uDDB3\uDDBC\uDDBD])|\uD83C\uDFFD\u200D(?:\uD83E\uDD1D\u200D\uD83D\uDC68(?:\uD83C[\uDFFB\uDFFC])|\uD83C[\uDF3E\uDF73\uDF93\uDFA4\uDFA8\uDFEB\uDFED]|\uD83D[\uDCBB\uDCBC\uDD27\uDD2C\uDE80\uDE92]|\uD83E[\uDDAF-\uDDB3\uDDBC\uDDBD])|\u200D(?:\u2764\uFE0F\u200D(?:\uD83D\uDC8B\u200D)?\uD83D\uDC68|(?:\uD83D[\uDC68\uDC69])\u200D(?:\uD83D\uDC66\u200D\uD83D\uDC66|\uD83D\uDC67\u200D(?:\uD83D[\uDC66\uDC67]))|\uD83D\uDC66\u200D\uD83D\uDC66|\uD83D\uDC67\u200D(?:\uD83D[\uDC66\uDC67])|(?:\uD83D[\uDC68\uDC69])\u200D(?:\uD83D[\uDC66\uDC67])|[\u2695\u2696\u2708]\uFE0F|\uD83D[\uDC66\uDC67]|\uD83C[\uDF3E\uDF73\uDF93\uDFA4\uDFA8\uDFEB\uDFED]|\uD83D[\uDCBB\uDCBC\uDD27\uDD2C\uDE80\uDE92]|\uD83E[\uDDAF-\uDDB3\uDDBC\uDDBD])|(?:\uD83C\uDFFB\u200D[\u2695\u2696\u2708]|\uD83C\uDFFF\u200D[\u2695\u2696\u2708]|\uD83C\uDFFE\u200D[\u2695\u2696\u2708]|\uD83C\uDFFD\u200D[\u2695\u2696\u2708]|\uD83C\uDFFC\u200D[\u2695\u2696\u2708])\uFE0F|\uD83C\uDFFB\u200D(?:\uD83C[\uDF3E\uDF73\uDF93\uDFA4\uDFA8\uDFEB\uDFED]|\uD83D[\uDCBB\uDCBC\uDD27\uDD2C\uDE80\uDE92]|\uD83E[\uDDAF-\uDDB3\uDDBC\uDDBD])|\uD83C[\uDFFB-\uDFFF])|(?:\uD83E\uDDD1\uD83C\uDFFB\u200D\uD83E\uDD1D\u200D\uD83E\uDDD1|\uD83D\uDC69\uD83C\uDFFC\u200D\uD83E\uDD1D\u200D\uD83D\uDC69)\uD83C\uDFFB|\uD83E\uDDD1(?:\uD83C\uDFFF\u200D\uD83E\uDD1D\u200D\uD83E\uDDD1(?:\uD83C[\uDFFB-\uDFFF])|\u200D\uD83E\uDD1D\u200D\uD83E\uDDD1)|(?:\uD83E\uDDD1\uD83C\uDFFE\u200D\uD83E\uDD1D\u200D\uD83E\uDDD1|\uD83D\uDC69\uD83C\uDFFF\u200D\uD83E\uDD1D\u200D(?:\uD83D[\uDC68\uDC69]))(?:\uD83C[\uDFFB-\uDFFE])|(?:\uD83E\uDDD1\uD83C\uDFFC\u200D\uD83E\uDD1D\u200D\uD83E\uDDD1|\uD83D\uDC69\uD83C\uDFFD\u200D\uD83E\uDD1D\u200D\uD83D\uDC69)(?:\uD83C[\uDFFB\uDFFC])|\uD83D\uDC69(?:\uD83C\uDFFE\u200D(?:\uD83E\uDD1D\u200D\uD83D\uDC68(?:\uD83C[\uDFFB-\uDFFD\uDFFF])|\uD83C[\uDF3E\uDF73\uDF93\uDFA4\uDFA8\uDFEB\uDFED]|\uD83D[\uDCBB\uDCBC\uDD27\uDD2C\uDE80\uDE92]|\uD83E[\uDDAF-\uDDB3\uDDBC\uDDBD])|\uD83C\uDFFC\u200D(?:\uD83E\uDD1D\u200D\uD83D\uDC68(?:\uD83C[\uDFFB\uDFFD-\uDFFF])|\uD83C[\uDF3E\uDF73\uDF93\uDFA4\uDFA8\uDFEB\uDFED]|\uD83D[\uDCBB\uDCBC\uDD27\uDD2C\uDE80\uDE92]|\uD83E[\uDDAF-\uDDB3\uDDBC\uDDBD])|\uD83C\uDFFB\u200D(?:\uD83E\uDD1D\u200D\uD83D\uDC68(?:\uD83C[\uDFFC-\uDFFF])|\uD83C[\uDF3E\uDF73\uDF93\uDFA4\uDFA8\uDFEB\uDFED]|\uD83D[\uDCBB\uDCBC\uDD27\uDD2C\uDE80\uDE92]|\uD83E[\uDDAF-\uDDB3\uDDBC\uDDBD])|\uD83C\uDFFD\u200D(?:\uD83E\uDD1D\u200D\uD83D\uDC68(?:\uD83C[\uDFFB\uDFFC\uDFFE\uDFFF])|\uD83C[\uDF3E\uDF73\uDF93\uDFA4\uDFA8\uDFEB\uDFED]|\uD83D[\uDCBB\uDCBC\uDD27\uDD2C\uDE80\uDE92]|\uD83E[\uDDAF-\uDDB3\uDDBC\uDDBD])|\u200D(?:\u2764\uFE0F\u200D(?:\uD83D\uDC8B\u200D(?:\uD83D[\uDC68\uDC69])|\uD83D[\uDC68\uDC69])|\uD83C[\uDF3E\uDF73\uDF93\uDFA4\uDFA8\uDFEB\uDFED]|\uD83D[\uDCBB\uDCBC\uDD27\uDD2C\uDE80\uDE92]|\uD83E[\uDDAF-\uDDB3\uDDBC\uDDBD])|\uD83C\uDFFF\u200D(?:\uD83C[\uDF3E\uDF73\uDF93\uDFA4\uDFA8\uDFEB\uDFED]|\uD83D[\uDCBB\uDCBC\uDD27\uDD2C\uDE80\uDE92]|\uD83E[\uDDAF-\uDDB3\uDDBC\uDDBD]))|\uD83D\uDC69\u200D\uD83D\uDC69\u200D(?:\uD83D\uDC66\u200D\uD83D\uDC66|\uD83D\uDC67\u200D(?:\uD83D[\uDC66\uDC67]))|(?:\uD83E\uDDD1\uD83C\uDFFD\u200D\uD83E\uDD1D\u200D\uD83E\uDDD1|\uD83D\uDC69\uD83C\uDFFE\u200D\uD83E\uDD1D\u200D\uD83D\uDC69)(?:\uD83C[\uDFFB-\uDFFD])|\uD83D\uDC69\u200D\uD83D\uDC66\u200D\uD83D\uDC66|\uD83D\uDC69\u200D\uD83D\uDC69\u200D(?:\uD83D[\uDC66\uDC67])|(?:\uD83D\uDC41\uFE0F\u200D\uD83D\uDDE8|\uD83D\uDC69(?:\uD83C\uDFFF\u200D[\u2695\u2696\u2708]|\uD83C\uDFFE\u200D[\u2695\u2696\u2708]|\uD83C\uDFFC\u200D[\u2695\u2696\u2708]|\uD83C\uDFFB\u200D[\u2695\u2696\u2708]|\uD83C\uDFFD\u200D[\u2695\u2696\u2708]|\u200D[\u2695\u2696\u2708])|(?:(?:\u26F9|\uD83C[\uDFCB\uDFCC]|\uD83D\uDD75)\uFE0F|\uD83D\uDC6F|\uD83E[\uDD3C\uDDDE\uDDDF])\u200D[\u2640\u2642]|(?:\u26F9|\uD83C[\uDFCB\uDFCC]|\uD83D\uDD75)(?:\uD83C[\uDFFB-\uDFFF])\u200D[\u2640\u2642]|(?:\uD83C[\uDFC3\uDFC4\uDFCA]|\uD83D[\uDC6E\uDC71\uDC73\uDC77\uDC81\uDC82\uDC86\uDC87\uDE45-\uDE47\uDE4B\uDE4D\uDE4E\uDEA3\uDEB4-\uDEB6]|\uD83E[\uDD26\uDD37-\uDD39\uDD3D\uDD3E\uDDB8\uDDB9\uDDCD-\uDDCF\uDDD6-\uDDDD])(?:(?:\uD83C[\uDFFB-\uDFFF])\u200D[\u2640\u2642]|\u200D[\u2640\u2642])|\uD83C\uDFF4\u200D\u2620)\uFE0F|\uD83D\uDC69\u200D\uD83D\uDC67\u200D(?:\uD83D[\uDC66\uDC67])|\uD83C\uDFF3\uFE0F\u200D\uD83C\uDF08|\uD83D\uDC15\u200D\uD83E\uDDBA|\uD83D\uDC69\u200D\uD83D\uDC66|\uD83D\uDC69\u200D\uD83D\uDC67|\uD83C\uDDFD\uD83C\uDDF0|\uD83C\uDDF4\uD83C\uDDF2|\uD83C\uDDF6\uD83C\uDDE6|[#\*0-9]\uFE0F\u20E3|\uD83C\uDDE7(?:\uD83C[\uDDE6\uDDE7\uDDE9-\uDDEF\uDDF1-\uDDF4\uDDF6-\uDDF9\uDDFB\uDDFC\uDDFE\uDDFF])|\uD83C\uDDF9(?:\uD83C[\uDDE6\uDDE8\uDDE9\uDDEB-\uDDED\uDDEF-\uDDF4\uDDF7\uDDF9\uDDFB\uDDFC\uDDFF])|\uD83C\uDDEA(?:\uD83C[\uDDE6\uDDE8\uDDEA\uDDEC\uDDED\uDDF7-\uDDFA])|\uD83E\uDDD1(?:\uD83C[\uDFFB-\uDFFF])|\uD83C\uDDF7(?:\uD83C[\uDDEA\uDDF4\uDDF8\uDDFA\uDDFC])|\uD83D\uDC69(?:\uD83C[\uDFFB-\uDFFF])|\uD83C\uDDF2(?:\uD83C[\uDDE6\uDDE8-\uDDED\uDDF0-\uDDFF])|\uD83C\uDDE6(?:\uD83C[\uDDE8-\uDDEC\uDDEE\uDDF1\uDDF2\uDDF4\uDDF6-\uDDFA\uDDFC\uDDFD\uDDFF])|\uD83C\uDDF0(?:\uD83C[\uDDEA\uDDEC-\uDDEE\uDDF2\uDDF3\uDDF5\uDDF7\uDDFC\uDDFE\uDDFF])|\uD83C\uDDED(?:\uD83C[\uDDF0\uDDF2\uDDF3\uDDF7\uDDF9\uDDFA])|\uD83C\uDDE9(?:\uD83C[\uDDEA\uDDEC\uDDEF\uDDF0\uDDF2\uDDF4\uDDFF])|\uD83C\uDDFE(?:\uD83C[\uDDEA\uDDF9])|\uD83C\uDDEC(?:\uD83C[\uDDE6\uDDE7\uDDE9-\uDDEE\uDDF1-\uDDF3\uDDF5-\uDDFA\uDDFC\uDDFE])|\uD83C\uDDF8(?:\uD83C[\uDDE6-\uDDEA\uDDEC-\uDDF4\uDDF7-\uDDF9\uDDFB\uDDFD-\uDDFF])|\uD83C\uDDEB(?:\uD83C[\uDDEE-\uDDF0\uDDF2\uDDF4\uDDF7])|\uD83C\uDDF5(?:\uD83C[\uDDE6\uDDEA-\uDDED\uDDF0-\uDDF3\uDDF7-\uDDF9\uDDFC\uDDFE])|\uD83C\uDDFB(?:\uD83C[\uDDE6\uDDE8\uDDEA\uDDEC\uDDEE\uDDF3\uDDFA])|\uD83C\uDDF3(?:\uD83C[\uDDE6\uDDE8\uDDEA-\uDDEC\uDDEE\uDDF1\uDDF4\uDDF5\uDDF7\uDDFA\uDDFF])|\uD83C\uDDE8(?:\uD83C[\uDDE6\uDDE8\uDDE9\uDDEB-\uDDEE\uDDF0-\uDDF5\uDDF7\uDDFA-\uDDFF])|\uD83C\uDDF1(?:\uD83C[\uDDE6-\uDDE8\uDDEE\uDDF0\uDDF7-\uDDFB\uDDFE])|\uD83C\uDDFF(?:\uD83C[\uDDE6\uDDF2\uDDFC])|\uD83C\uDDFC(?:\uD83C[\uDDEB\uDDF8])|\uD83C\uDDFA(?:\uD83C[\uDDE6\uDDEC\uDDF2\uDDF3\uDDF8\uDDFE\uDDFF])|\uD83C\uDDEE(?:\uD83C[\uDDE8-\uDDEA\uDDF1-\uDDF4\uDDF6-\uDDF9])|\uD83C\uDDEF(?:\uD83C[\uDDEA\uDDF2\uDDF4\uDDF5])|(?:\uD83C[\uDFC3\uDFC4\uDFCA]|\uD83D[\uDC6E\uDC71\uDC73\uDC77\uDC81\uDC82\uDC86\uDC87\uDE45-\uDE47\uDE4B\uDE4D\uDE4E\uDEA3\uDEB4-\uDEB6]|\uD83E[\uDD26\uDD37-\uDD39\uDD3D\uDD3E\uDDB8\uDDB9\uDDCD-\uDDCF\uDDD6-\uDDDD])(?:\uD83C[\uDFFB-\uDFFF])|(?:\u26F9|\uD83C[\uDFCB\uDFCC]|\uD83D\uDD75)(?:\uD83C[\uDFFB-\uDFFF])|(?:[\u261D\u270A-\u270D]|\uD83C[\uDF85\uDFC2\uDFC7]|\uD83D[\uDC42\uDC43\uDC46-\uDC50\uDC66\uDC67\uDC6B-\uDC6D\uDC70\uDC72\uDC74-\uDC76\uDC78\uDC7C\uDC83\uDC85\uDCAA\uDD74\uDD7A\uDD90\uDD95\uDD96\uDE4C\uDE4F\uDEC0\uDECC]|\uD83E[\uDD0F\uDD18-\uDD1C\uDD1E\uDD1F\uDD30-\uDD36\uDDB5\uDDB6\uDDBB\uDDD2-\uDDD5])(?:\uD83C[\uDFFB-\uDFFF])|(?:[\u231A\u231B\u23E9-\u23EC\u23F0\u23F3\u25FD\u25FE\u2614\u2615\u2648-\u2653\u267F\u2693\u26A1\u26AA\u26AB\u26BD\u26BE\u26C4\u26C5\u26CE\u26D4\u26EA\u26F2\u26F3\u26F5\u26FA\u26FD\u2705\u270A\u270B\u2728\u274C\u274E\u2753-\u2755\u2757\u2795-\u2797\u27B0\u27BF\u2B1B\u2B1C\u2B50\u2B55]|\uD83C[\uDC04\uDCCF\uDD8E\uDD91-\uDD9A\uDDE6-\uDDFF\uDE01\uDE1A\uDE2F\uDE32-\uDE36\uDE38-\uDE3A\uDE50\uDE51\uDF00-\uDF20\uDF2D-\uDF35\uDF37-\uDF7C\uDF7E-\uDF93\uDFA0-\uDFCA\uDFCF-\uDFD3\uDFE0-\uDFF0\uDFF4\uDFF8-\uDFFF]|\uD83D[\uDC00-\uDC3E\uDC40\uDC42-\uDCFC\uDCFF-\uDD3D\uDD4B-\uDD4E\uDD50-\uDD67\uDD7A\uDD95\uDD96\uDDA4\uDDFB-\uDE4F\uDE80-\uDEC5\uDECC\uDED0-\uDED2\uDED5\uDEEB\uDEEC\uDEF4-\uDEFA\uDFE0-\uDFEB]|\uD83E[\uDD0D-\uDD3A\uDD3C-\uDD45\uDD47-\uDD71\uDD73-\uDD76\uDD7A-\uDDA2\uDDA5-\uDDAA\uDDAE-\uDDCA\uDDCD-\uDDFF\uDE70-\uDE73\uDE78-\uDE7A\uDE80-\uDE82\uDE90-\uDE95])|(?:[#\*0-9\xA9\xAE\u203C\u2049\u2122\u2139\u2194-\u2199\u21A9\u21AA\u231A\u231B\u2328\u23CF\u23E9-\u23F3\u23F8-\u23FA\u24C2\u25AA\u25AB\u25B6\u25C0\u25FB-\u25FE\u2600-\u2604\u260E\u2611\u2614\u2615\u2618\u261D\u2620\u2622\u2623\u2626\u262A\u262E\u262F\u2638-\u263A\u2640\u2642\u2648-\u2653\u265F\u2660\u2663\u2665\u2666\u2668\u267B\u267E\u267F\u2692-\u2697\u2699\u269B\u269C\u26A0\u26A1\u26AA\u26AB\u26B0\u26B1\u26BD\u26BE\u26C4\u26C5\u26C8\u26CE\u26CF\u26D1\u26D3\u26D4\u26E9\u26EA\u26F0-\u26F5\u26F7-\u26FA\u26FD\u2702\u2705\u2708-\u270D\u270F\u2712\u2714\u2716\u271D\u2721\u2728\u2733\u2734\u2744\u2747\u274C\u274E\u2753-\u2755\u2757\u2763\u2764\u2795-\u2797\u27A1\u27B0\u27BF\u2934\u2935\u2B05-\u2B07\u2B1B\u2B1C\u2B50\u2B55\u3030\u303D\u3297\u3299]|\uD83C[\uDC04\uDCCF\uDD70\uDD71\uDD7E\uDD7F\uDD8E\uDD91-\uDD9A\uDDE6-\uDDFF\uDE01\uDE02\uDE1A\uDE2F\uDE32-\uDE3A\uDE50\uDE51\uDF00-\uDF21\uDF24-\uDF93\uDF96\uDF97\uDF99-\uDF9B\uDF9E-\uDFF0\uDFF3-\uDFF5\uDFF7-\uDFFF]|\uD83D[\uDC00-\uDCFD\uDCFF-\uDD3D\uDD49-\uDD4E\uDD50-\uDD67\uDD6F\uDD70\uDD73-\uDD7A\uDD87\uDD8A-\uDD8D\uDD90\uDD95\uDD96\uDDA4\uDDA5\uDDA8\uDDB1\uDDB2\uDDBC\uDDC2-\uDDC4\uDDD1-\uDDD3\uDDDC-\uDDDE\uDDE1\uDDE3\uDDE8\uDDEF\uDDF3\uDDFA-\uDE4F\uDE80-\uDEC5\uDECB-\uDED2\uDED5\uDEE0-\uDEE5\uDEE9\uDEEB\uDEEC\uDEF0\uDEF3-\uDEFA\uDFE0-\uDFEB]|\uD83E[\uDD0D-\uDD3A\uDD3C-\uDD45\uDD47-\uDD71\uDD73-\uDD76\uDD7A-\uDDA2\uDDA5-\uDDAA\uDDAE-\uDDCA\uDDCD-\uDDFF\uDE70-\uDE73\uDE78-\uDE7A\uDE80-\uDE82\uDE90-\uDE95])\uFE0F|(?:[\u261D\u26F9\u270A-\u270D]|\uD83C[\uDF85\uDFC2-\uDFC4\uDFC7\uDFCA-\uDFCC]|\uD83D[\uDC42\uDC43\uDC46-\uDC50\uDC66-\uDC78\uDC7C\uDC81-\uDC83\uDC85-\uDC87\uDC8F\uDC91\uDCAA\uDD74\uDD75\uDD7A\uDD90\uDD95\uDD96\uDE45-\uDE47\uDE4B-\uDE4F\uDEA3\uDEB4-\uDEB6\uDEC0\uDECC]|\uD83E[\uDD0F\uDD18-\uDD1F\uDD26\uDD30-\uDD39\uDD3C-\uDD3E\uDDB5\uDDB6\uDDB8\uDDB9\uDDBB\uDDCD-\uDDCF\uDDD1-\uDDDD])/g;
 };
 
@@ -3364,16 +2878,16 @@ const stringWidth = string => {
   let width = 0;
 
   for (let i = 0; i < string.length; i++) {
-    const code = string.codePointAt(i); // Ignore control characters
+    const code = string.codePointAt(i);
 
     if (code <= 0x1F || code >= 0x7F && code <= 0x9F) {
       continue;
-    } // Ignore combining characters
+    }
 
 
     if (code >= 0x300 && code <= 0x36F) {
       continue;
-    } // Surrogates
+    }
 
 
     if (code > 0xFFFF) {
@@ -3386,7 +2900,7 @@ const stringWidth = string => {
   return width;
 };
 
-var stringWidth_1 = stringWidth; // TODO: remove this in the next major version
+var stringWidth_1 = stringWidth;
 
 var _default$q = stringWidth;
 stringWidth_1.default = _default$q;
@@ -3394,8 +2908,7 @@ stringWidth_1.default = _default$q;
 var escapeStringRegexp$2 = string => {
   if (typeof string !== 'string') {
     throw new TypeError('Expected a string');
-  } // Escape characters with special meaning either inside or outside character sets.
-  // Use a simple backslash escape when it’s always valid, and a \unnnn escape when the simpler form would be disallowed by Unicode patterns’ stricter grammar.
+  }
 
 
   return string.replace(/[|\\{}()[\]^$+*?.]/g, '\\$&').replace(/-/g, '\\x2d');
@@ -3441,14 +2954,10 @@ function _objectWithoutProperties(source, excluded) {
   return target;
 }
 
-// `IsArray` abstract operation
-// https://tc39.es/ecma262/#sec-isarray
-// eslint-disable-next-line es/no-array-isarray -- safe
 var isArray$3 = Array.isArray || function isArray(arg) {
   return classofRaw(arg) == 'Array';
 };
 
-// optional / simple context binding
 var functionBindContext = function (fn, that, length) {
   aFunction(fn);
   if (that === undefined) return fn;
@@ -3466,13 +2975,11 @@ var functionBindContext = function (fn, that, length) {
       return fn.call(that, a, b, c);
     };
   }
-  return function (/* ...args */) {
+  return function () {
     return fn.apply(that, arguments);
   };
 };
 
-// `FlattenIntoArray` abstract operation
-// https://tc39.github.io/proposal-flatMap/#sec-FlattenIntoArray
 var flattenIntoArray = function (target, original, source, sourceLen, start, depth, mapper, thisArg) {
   var targetIndex = start;
   var sourceIndex = 0;
@@ -3499,19 +3006,13 @@ var flattenIntoArray = function (target, original, source, sourceLen, start, dep
 
 var flattenIntoArray_1 = flattenIntoArray;
 
-/* eslint-disable es/no-symbol -- required for testing */
 
-// eslint-disable-next-line es/no-object-getownpropertysymbols -- required for testing
 var nativeSymbol = !!Object.getOwnPropertySymbols && !fails(function () {
   var symbol = Symbol();
-  // Chrome 38 Symbol has incorrect toString conversion
-  // `get-own-property-symbols` polyfill symbols converted to object are not Symbol instances
   return !String(symbol) || !(Object(symbol) instanceof Symbol) ||
-    // Chrome 38-40 symbols are not inherited from DOM collections prototypes to instances
     !Symbol.sham && engineV8Version && engineV8Version < 41;
 });
 
-/* eslint-disable es/no-symbol -- required for testing */
 
 var useSymbolAsUid = nativeSymbol
   && !Symbol.sham
@@ -3533,13 +3034,10 @@ var wellKnownSymbol = function (name) {
 
 var SPECIES = wellKnownSymbol('species');
 
-// `ArraySpeciesCreate` abstract operation
-// https://tc39.es/ecma262/#sec-arrayspeciescreate
 var arraySpeciesCreate = function (originalArray, length) {
   var C;
   if (isArray$3(originalArray)) {
     C = originalArray.constructor;
-    // cross-realm fallback
     if (typeof C == 'function' && (C === Array || isArray$3(C.prototype))) C = undefined;
     else if (isObject$3(C)) {
       C = C[SPECIES];
@@ -3548,10 +3046,8 @@ var arraySpeciesCreate = function (originalArray, length) {
   } return new (C === undefined ? Array : C)(length === 0 ? 0 : length);
 };
 
-// `Array.prototype.flatMap` method
-// https://tc39.es/ecma262/#sec-array.prototype.flatmap
 _export({ target: 'Array', proto: true }, {
-  flatMap: function flatMap(callbackfn /* , thisArg */) {
+  flatMap: function flatMap(callbackfn) {
     var O = toObject(this);
     var sourceLen = toLength(O.length);
     var A;
@@ -3567,7 +3063,6 @@ var iterators = {};
 var ITERATOR$1 = wellKnownSymbol('iterator');
 var ArrayPrototype = Array.prototype;
 
-// check on default Array iterator
 var isArrayIteratorMethod = function (it) {
   return it !== undefined && (iterators.Array === it || ArrayPrototype[ITERATOR$1] === it);
 };
@@ -3580,25 +3075,19 @@ test[TO_STRING_TAG$1] = 'z';
 var toStringTagSupport = String(test) === '[object z]';
 
 var TO_STRING_TAG = wellKnownSymbol('toStringTag');
-// ES3 wrong here
 var CORRECT_ARGUMENTS = classofRaw(function () { return arguments; }()) == 'Arguments';
 
-// fallback for IE11 Script Access Denied error
 var tryGet = function (it, key) {
   try {
     return it[key];
-  } catch (error) { /* empty */ }
+  } catch (error) { }
 };
 
-// getting tag from ES6+ `Object.prototype.toString`
 var classof = toStringTagSupport ? classofRaw : function (it) {
   var O, tag, result;
   return it === undefined ? 'Undefined' : it === null ? 'Null'
-    // @@toStringTag case
     : typeof (tag = tryGet(O = Object(it), TO_STRING_TAG)) == 'string' ? tag
-    // builtinTag case
     : CORRECT_ARGUMENTS ? classofRaw(O)
-    // ES3 arguments fallback
     : (result = classofRaw(O)) == 'Object' && typeof O.callee == 'function' ? 'Arguments' : result;
 };
 
@@ -3647,7 +3136,6 @@ var iterate = function (iterable, unboundFunction, options) {
   } else {
     iterFn = getIteratorMethod(iterable);
     if (typeof iterFn != 'function') throw TypeError('Target is not iterable');
-    // optimisation for array iterators
     if (isArrayIteratorMethod(iterFn)) {
       for (index = 0, length = toLength(iterable.length); length > index; index++) {
         result = callFn(iterable[index]);
@@ -3675,8 +3163,6 @@ var createProperty = function (object, key, value) {
   else object[propertyKey] = value;
 };
 
-// `Object.fromEntries` method
-// https://github.com/tc39/proposal-object-from-entries
 _export({ target: 'Object', stat: true }, {
   fromEntries: function fromEntries(iterable) {
     var obj = {};
@@ -3690,13 +3176,10 @@ _export({ target: 'Object', stat: true }, {
 const debug = typeof process === 'object' && process.env && process.env.NODE_DEBUG && /\bsemver\b/i.test(process.env.NODE_DEBUG) ? (...args) => console.error('SEMVER', ...args) : () => {};
 var debug_1 = debug;
 
-// Note: this is the semver.org version of the spec that it implements
-// Not necessarily the package version of this code.
 const SEMVER_SPEC_VERSION = '2.0.0';
 const MAX_LENGTH$3 = 256;
 const MAX_SAFE_INTEGER$3 = Number.MAX_SAFE_INTEGER ||
-/* istanbul ignore next */
-9007199254740991; // Max safe segment length for coercion.
+9007199254740991;
 
 const MAX_SAFE_COMPONENT_LENGTH = 16;
 var constants$5 = {
@@ -3710,7 +3193,7 @@ var re_1 = createCommonjsModule(function (module, exports) {
   const {
     MAX_SAFE_COMPONENT_LENGTH
   } = constants$5;
-  exports = module.exports = {}; // The actual regexps go on exports.re
+  exports = module.exports = {};
 
   const re = exports.re = [];
   const src = exports.src = [];
@@ -3723,102 +3206,71 @@ var re_1 = createCommonjsModule(function (module, exports) {
     t[name] = index;
     src[index] = value;
     re[index] = new RegExp(value, isGlobal ? 'g' : undefined);
-  }; // The following Regular Expressions can be used for tokenizing,
-  // validating, and parsing SemVer version strings.
-  // ## Numeric Identifier
-  // A single `0`, or a non-zero digit followed by zero or more digits.
+  };
 
 
   createToken('NUMERICIDENTIFIER', '0|[1-9]\\d*');
-  createToken('NUMERICIDENTIFIERLOOSE', '[0-9]+'); // ## Non-numeric Identifier
-  // Zero or more digits, followed by a letter or hyphen, and then zero or
-  // more letters, digits, or hyphens.
+  createToken('NUMERICIDENTIFIERLOOSE', '[0-9]+');
 
-  createToken('NONNUMERICIDENTIFIER', '\\d*[a-zA-Z-][a-zA-Z0-9-]*'); // ## Main Version
-  // Three dot-separated numeric identifiers.
+  createToken('NONNUMERICIDENTIFIER', '\\d*[a-zA-Z-][a-zA-Z0-9-]*');
 
   createToken('MAINVERSION', `(${src[t.NUMERICIDENTIFIER]})\\.` + `(${src[t.NUMERICIDENTIFIER]})\\.` + `(${src[t.NUMERICIDENTIFIER]})`);
-  createToken('MAINVERSIONLOOSE', `(${src[t.NUMERICIDENTIFIERLOOSE]})\\.` + `(${src[t.NUMERICIDENTIFIERLOOSE]})\\.` + `(${src[t.NUMERICIDENTIFIERLOOSE]})`); // ## Pre-release Version Identifier
-  // A numeric identifier, or a non-numeric identifier.
+  createToken('MAINVERSIONLOOSE', `(${src[t.NUMERICIDENTIFIERLOOSE]})\\.` + `(${src[t.NUMERICIDENTIFIERLOOSE]})\\.` + `(${src[t.NUMERICIDENTIFIERLOOSE]})`);
 
   createToken('PRERELEASEIDENTIFIER', `(?:${src[t.NUMERICIDENTIFIER]}|${src[t.NONNUMERICIDENTIFIER]})`);
-  createToken('PRERELEASEIDENTIFIERLOOSE', `(?:${src[t.NUMERICIDENTIFIERLOOSE]}|${src[t.NONNUMERICIDENTIFIER]})`); // ## Pre-release Version
-  // Hyphen, followed by one or more dot-separated pre-release version
-  // identifiers.
+  createToken('PRERELEASEIDENTIFIERLOOSE', `(?:${src[t.NUMERICIDENTIFIERLOOSE]}|${src[t.NONNUMERICIDENTIFIER]})`);
 
   createToken('PRERELEASE', `(?:-(${src[t.PRERELEASEIDENTIFIER]}(?:\\.${src[t.PRERELEASEIDENTIFIER]})*))`);
-  createToken('PRERELEASELOOSE', `(?:-?(${src[t.PRERELEASEIDENTIFIERLOOSE]}(?:\\.${src[t.PRERELEASEIDENTIFIERLOOSE]})*))`); // ## Build Metadata Identifier
-  // Any combination of digits, letters, or hyphens.
+  createToken('PRERELEASELOOSE', `(?:-?(${src[t.PRERELEASEIDENTIFIERLOOSE]}(?:\\.${src[t.PRERELEASEIDENTIFIERLOOSE]})*))`);
 
-  createToken('BUILDIDENTIFIER', '[0-9A-Za-z-]+'); // ## Build Metadata
-  // Plus sign, followed by one or more period-separated build metadata
-  // identifiers.
+  createToken('BUILDIDENTIFIER', '[0-9A-Za-z-]+');
 
-  createToken('BUILD', `(?:\\+(${src[t.BUILDIDENTIFIER]}(?:\\.${src[t.BUILDIDENTIFIER]})*))`); // ## Full Version String
-  // A main version, followed optionally by a pre-release version and
-  // build metadata.
-  // Note that the only major, minor, patch, and pre-release sections of
-  // the version string are capturing groups.  The build metadata is not a
-  // capturing group, because it should not ever be used in version
-  // comparison.
+  createToken('BUILD', `(?:\\+(${src[t.BUILDIDENTIFIER]}(?:\\.${src[t.BUILDIDENTIFIER]})*))`);
 
   createToken('FULLPLAIN', `v?${src[t.MAINVERSION]}${src[t.PRERELEASE]}?${src[t.BUILD]}?`);
-  createToken('FULL', `^${src[t.FULLPLAIN]}$`); // like full, but allows v1.2.3 and =1.2.3, which people do sometimes.
-  // also, 1.0.0alpha1 (prerelease without the hyphen) which is pretty
-  // common in the npm registry.
+  createToken('FULL', `^${src[t.FULLPLAIN]}$`);
 
   createToken('LOOSEPLAIN', `[v=\\s]*${src[t.MAINVERSIONLOOSE]}${src[t.PRERELEASELOOSE]}?${src[t.BUILD]}?`);
   createToken('LOOSE', `^${src[t.LOOSEPLAIN]}$`);
-  createToken('GTLT', '((?:<|>)?=?)'); // Something like "2.*" or "1.2.x".
-  // Note that "x.x" is a valid xRange identifer, meaning "any version"
-  // Only the first item is strictly required.
+  createToken('GTLT', '((?:<|>)?=?)');
 
   createToken('XRANGEIDENTIFIERLOOSE', `${src[t.NUMERICIDENTIFIERLOOSE]}|x|X|\\*`);
   createToken('XRANGEIDENTIFIER', `${src[t.NUMERICIDENTIFIER]}|x|X|\\*`);
   createToken('XRANGEPLAIN', `[v=\\s]*(${src[t.XRANGEIDENTIFIER]})` + `(?:\\.(${src[t.XRANGEIDENTIFIER]})` + `(?:\\.(${src[t.XRANGEIDENTIFIER]})` + `(?:${src[t.PRERELEASE]})?${src[t.BUILD]}?` + `)?)?`);
   createToken('XRANGEPLAINLOOSE', `[v=\\s]*(${src[t.XRANGEIDENTIFIERLOOSE]})` + `(?:\\.(${src[t.XRANGEIDENTIFIERLOOSE]})` + `(?:\\.(${src[t.XRANGEIDENTIFIERLOOSE]})` + `(?:${src[t.PRERELEASELOOSE]})?${src[t.BUILD]}?` + `)?)?`);
   createToken('XRANGE', `^${src[t.GTLT]}\\s*${src[t.XRANGEPLAIN]}$`);
-  createToken('XRANGELOOSE', `^${src[t.GTLT]}\\s*${src[t.XRANGEPLAINLOOSE]}$`); // Coercion.
-  // Extract anything that could conceivably be a part of a valid semver
+  createToken('XRANGELOOSE', `^${src[t.GTLT]}\\s*${src[t.XRANGEPLAINLOOSE]}$`);
 
   createToken('COERCE', `${'(^|[^\\d])' + '(\\d{1,'}${MAX_SAFE_COMPONENT_LENGTH}})` + `(?:\\.(\\d{1,${MAX_SAFE_COMPONENT_LENGTH}}))?` + `(?:\\.(\\d{1,${MAX_SAFE_COMPONENT_LENGTH}}))?` + `(?:$|[^\\d])`);
-  createToken('COERCERTL', src[t.COERCE], true); // Tilde ranges.
-  // Meaning is "reasonably at or greater than"
+  createToken('COERCERTL', src[t.COERCE], true);
 
   createToken('LONETILDE', '(?:~>?)');
   createToken('TILDETRIM', `(\\s*)${src[t.LONETILDE]}\\s+`, true);
   exports.tildeTrimReplace = '$1~';
   createToken('TILDE', `^${src[t.LONETILDE]}${src[t.XRANGEPLAIN]}$`);
-  createToken('TILDELOOSE', `^${src[t.LONETILDE]}${src[t.XRANGEPLAINLOOSE]}$`); // Caret ranges.
-  // Meaning is "at least and backwards compatible with"
+  createToken('TILDELOOSE', `^${src[t.LONETILDE]}${src[t.XRANGEPLAINLOOSE]}$`);
 
   createToken('LONECARET', '(?:\\^)');
   createToken('CARETTRIM', `(\\s*)${src[t.LONECARET]}\\s+`, true);
   exports.caretTrimReplace = '$1^';
   createToken('CARET', `^${src[t.LONECARET]}${src[t.XRANGEPLAIN]}$`);
-  createToken('CARETLOOSE', `^${src[t.LONECARET]}${src[t.XRANGEPLAINLOOSE]}$`); // A simple gt/lt/eq thing, or just "" to indicate "any version"
+  createToken('CARETLOOSE', `^${src[t.LONECARET]}${src[t.XRANGEPLAINLOOSE]}$`);
 
   createToken('COMPARATORLOOSE', `^${src[t.GTLT]}\\s*(${src[t.LOOSEPLAIN]})$|^$`);
-  createToken('COMPARATOR', `^${src[t.GTLT]}\\s*(${src[t.FULLPLAIN]})$|^$`); // An expression to strip any whitespace between the gtlt and the thing
-  // it modifies, so that `> 1.2.3` ==> `>1.2.3`
+  createToken('COMPARATOR', `^${src[t.GTLT]}\\s*(${src[t.FULLPLAIN]})$|^$`);
 
   createToken('COMPARATORTRIM', `(\\s*)${src[t.GTLT]}\\s*(${src[t.LOOSEPLAIN]}|${src[t.XRANGEPLAIN]})`, true);
-  exports.comparatorTrimReplace = '$1$2$3'; // Something like `1.2.3 - 1.2.4`
-  // Note that these all use the loose form, because they'll be
-  // checked against either the strict or loose comparator form
-  // later.
+  exports.comparatorTrimReplace = '$1$2$3';
 
   createToken('HYPHENRANGE', `^\\s*(${src[t.XRANGEPLAIN]})` + `\\s+-\\s+` + `(${src[t.XRANGEPLAIN]})` + `\\s*$`);
-  createToken('HYPHENRANGELOOSE', `^\\s*(${src[t.XRANGEPLAINLOOSE]})` + `\\s+-\\s+` + `(${src[t.XRANGEPLAINLOOSE]})` + `\\s*$`); // Star ranges basically just allow anything at all.
+  createToken('HYPHENRANGELOOSE', `^\\s*(${src[t.XRANGEPLAINLOOSE]})` + `\\s+-\\s+` + `(${src[t.XRANGEPLAINLOOSE]})` + `\\s*$`);
 
-  createToken('STAR', '(<|>)?=?\\s*\\*'); // >=0.0.0 is like a star
+  createToken('STAR', '(<|>)?=?\\s*\\*');
 
   createToken('GTE0', '^\\s*>=\\s*0\.0\.0\\s*$');
   createToken('GTE0PRE', '^\\s*>=\\s*0\.0\.0-0\\s*$');
 });
 
-// parse out just the options we care about so we always get a consistent
-// obj with keys in a consistent order.
 const opts$1 = ['includePrerelease', 'loose', 'rtl'];
 
 const parseOptions = options => !options ? {} : typeof options !== 'object' ? {
@@ -3883,8 +3335,7 @@ class SemVer {
 
     debug_1('SemVer', version, options);
     this.options = options;
-    this.loose = !!options.loose; // this isn't actually relevant for versions, but keep it so that we
-    // don't run into trouble passing this.options around.
+    this.loose = !!options.loose;
 
     this.includePrerelease = !!options.includePrerelease;
     const m = version.trim().match(options.loose ? re[t.LOOSE] : re[t.FULL]);
@@ -3893,7 +3344,7 @@ class SemVer {
       throw new TypeError(`Invalid Version: ${version}`);
     }
 
-    this.raw = version; // these are actually numbers
+    this.raw = version;
 
     this.major = +m[1];
     this.minor = +m[2];
@@ -3909,7 +3360,7 @@ class SemVer {
 
     if (this.patch > MAX_SAFE_INTEGER$2 || this.patch < 0) {
       throw new TypeError('Invalid patch version');
-    } // numberify any prerelease numeric ids
+    }
 
 
     if (!m[4]) {
@@ -3975,7 +3426,7 @@ class SemVer {
   comparePre(other) {
     if (!(other instanceof SemVer)) {
       other = new SemVer(other, this.options);
-    } // NOT having a prerelease is > having one
+    }
 
 
     if (this.prerelease.length && !other.prerelease.length) {
@@ -4031,8 +3482,7 @@ class SemVer {
         return compareIdentifiers(a, b);
       }
     } while (++i);
-  } // preminor will bump the version up to the next minor release, and immediately
-  // down to pre-release. premajor and prepatch work the same way.
+  }
 
 
   inc(release, identifier) {
@@ -4053,15 +3503,10 @@ class SemVer {
         break;
 
       case 'prepatch':
-        // If this is already a prerelease, it will bump to the next version
-        // drop any prereleases that might already exist, since they are not
-        // relevant at this point.
         this.prerelease.length = 0;
         this.inc('patch', identifier);
         this.inc('pre', identifier);
         break;
-      // If the input is a non-prerelease version, this acts the same as
-      // prepatch.
 
       case 'prerelease':
         if (this.prerelease.length === 0) {
@@ -4072,10 +3517,6 @@ class SemVer {
         break;
 
       case 'major':
-        // If this is a pre-major version, bump up to the same major version.
-        // Otherwise increment major.
-        // 1.0.0-5 bumps to 1.0.0
-        // 1.1.0 bumps to 2.0.0
         if (this.minor !== 0 || this.patch !== 0 || this.prerelease.length === 0) {
           this.major++;
         }
@@ -4086,10 +3527,6 @@ class SemVer {
         break;
 
       case 'minor':
-        // If this is a pre-minor version, bump up to the same minor version.
-        // Otherwise increment minor.
-        // 1.2.0-5 bumps to 1.2.0
-        // 1.2.1 bumps to 1.3.0
         if (this.patch !== 0 || this.prerelease.length === 0) {
           this.minor++;
         }
@@ -4099,18 +3536,12 @@ class SemVer {
         break;
 
       case 'patch':
-        // If this is not a pre-release version, it will increment the patch.
-        // If it is a pre-release it will bump up to the same patch version.
-        // 1.2.0-5 patches to 1.2.0
-        // 1.2.0 patches to 1.2.1
         if (this.prerelease.length === 0) {
           this.patch++;
         }
 
         this.prerelease = [];
         break;
-      // This probably shouldn't be used publicly.
-      // 1.0.0 'pre' would become 1.0.0-0 which is the wrong direction.
 
       case 'pre':
         if (this.prerelease.length === 0) {
@@ -4126,14 +3557,11 @@ class SemVer {
           }
 
           if (i === -1) {
-            // didn't increment anything
             this.prerelease.push(0);
           }
         }
 
         if (identifier) {
-          // 1.2.0-beta.1 bumps to 1.2.0-beta.2,
-          // 1.2.0-beta.fooblz or 1.2.0-beta bumps to 1.2.0-beta.0
           if (this.prerelease[0] === identifier) {
             if (isNaN(this.prerelease[1])) {
               this.prerelease = [identifier, 0];
@@ -4179,7 +3607,7 @@ var lib$5 = createCommonjsModule(function (module, exports) {
   Object.defineProperty(exports, "__esModule", {
     value: true
   });
-  exports.outdent = void 0; // In the absence of a WeakSet or WeakMap implementation, don't break, but don't cache either.
+  exports.outdent = void 0;
 
   function noop() {
     var args = [];
@@ -4196,9 +3624,6 @@ var lib$5 = createCommonjsModule(function (module, exports) {
       return fakeSetOrMap();
     }
   }
-  /**
-   * Creates and returns a no-op implementation of a WeakMap / WeakSet that never stores anything.
-   */
 
 
   function fakeSetOrMap() {
@@ -4211,14 +3636,14 @@ var lib$5 = createCommonjsModule(function (module, exports) {
         return false;
       }
     };
-  } // Safe hasOwnProperty
+  }
 
 
   var hop = Object.prototype.hasOwnProperty;
 
   var has = function (obj, prop) {
     return hop.call(obj, prop);
-  }; // Copy all own enumerable properties from source to target
+  };
 
 
   function extend(target, source) {
@@ -4238,8 +3663,6 @@ var lib$5 = createCommonjsModule(function (module, exports) {
   var reOnlyWhitespaceWithAtLeastOneNewline = /^[ \t]*[\r\n][ \t\r\n]*$/;
 
   function _outdentArray(strings, firstInterpolatedValueSetsIndentationLevel, options) {
-    // If first interpolated value is a reference to outdent,
-    // determine indentation level from the indentation of the interpolated value.
     var indentationLevel = 0;
     var match = strings[0].match(reDetectIndentation);
 
@@ -4260,17 +3683,16 @@ var lib$5 = createCommonjsModule(function (module, exports) {
     var normalizeNewlines = typeof newline === "string";
     var l = strings.length;
     var outdentedStrings = strings.map(function (v, i) {
-      // Remove leading indentation from all lines
-      v = v.replace(reMatchIndent, "$1"); // Trim a leading newline from the first string
+      v = v.replace(reMatchIndent, "$1");
 
       if (i === 0 && trimLeadingNewline) {
         v = v.replace(reLeadingNewline, "");
-      } // Trim a trailing newline from the last string
+      }
 
 
       if (i === l - 1 && trimTrailingNewline) {
         v = v.replace(reTrailingNewline, "");
-      } // Normalize newlines
+      }
 
 
       if (normalizeNewlines) {
@@ -4301,21 +3723,10 @@ var lib$5 = createCommonjsModule(function (module, exports) {
   function isTemplateStringsArray(v) {
     return has(v, "raw") && has(v, "length");
   }
-  /**
-   * It is assumed that opts will not change.  If this is a problem, clone your options object and pass the clone to
-   * makeInstance
-   * @param options
-   * @return {outdent}
-   */
 
 
   function createInstance(options) {
-    /** Cache of pre-processed template literal arrays */
     var arrayAutoIndentCache = createWeakMap();
-    /**
-       * Cache of pre-processed template literal arrays, where first interpolated value is a reference to outdent,
-       * before interpolated values are injected.
-       */
 
     var arrayFirstInterpSetsIndentCache = createWeakMap();
 
@@ -4325,13 +3736,12 @@ var lib$5 = createCommonjsModule(function (module, exports) {
       for (var _i = 1; _i < arguments.length; _i++) {
         values[_i - 1] = arguments[_i];
       }
-      /* tslint:enable:no-shadowed-variable */
 
 
       if (isTemplateStringsArray(stringsOrOptions)) {
-        var strings = stringsOrOptions; // Is first interpolated value a reference to outdent, alone on its own line, without any preceding non-whitespace?
+        var strings = stringsOrOptions;
 
-        var firstInterpolatedValueSetsIndentationLevel = (values[0] === outdent || values[0] === defaultOutdent) && reOnlyWhitespaceWithAtLeastOneNewline.test(strings[0]) && reStartsWithNewlineOrIsEmpty.test(strings[1]); // Perform outdentation
+        var firstInterpolatedValueSetsIndentationLevel = (values[0] === outdent || values[0] === defaultOutdent) && reOnlyWhitespaceWithAtLeastOneNewline.test(strings[0]) && reStartsWithNewlineOrIsEmpty.test(strings[1]);
 
         var cache = firstInterpolatedValueSetsIndentationLevel ? arrayFirstInterpSetsIndentCache : arrayAutoIndentCache;
         var renderedArray = cache.get(strings);
@@ -4340,19 +3750,16 @@ var lib$5 = createCommonjsModule(function (module, exports) {
           renderedArray = _outdentArray(strings, firstInterpolatedValueSetsIndentationLevel, options);
           cache.set(strings, renderedArray);
         }
-        /** If no interpolated values, skip concatenation step */
 
 
         if (values.length === 0) {
           return renderedArray[0];
         }
-        /** Concatenate string literals with interpolated values */
 
 
         var rendered = concatStringsAndValues(renderedArray, firstInterpolatedValueSetsIndentationLevel ? values.slice(1) : values);
         return rendered;
       } else {
-        // Create and return a new instance of outdent with the given options
         return createInstance(extend(extend({}, options), stringsOrOptions || {}));
       }
     }
@@ -4369,14 +3776,11 @@ var lib$5 = createCommonjsModule(function (module, exports) {
     trimLeadingNewline: true,
     trimTrailingNewline: true
   });
-  exports.outdent = defaultOutdent; // Named exports.  Simple and preferred.
-  // import outdent from 'outdent';
+  exports.outdent = defaultOutdent;
 
   exports.default = defaultOutdent;
 
   {
-    // In webpack harmony-modules environments, module.exports is read-only,
-    // so we fail gracefully.
     try {
       module.exports = defaultOutdent;
       Object.defineProperty(defaultOutdent, "__esModule", {
@@ -4398,44 +3802,7 @@ const CATEGORY_OTHER = "Other";
 const CATEGORY_OUTPUT = "Output";
 const CATEGORY_GLOBAL = "Global";
 const CATEGORY_SPECIAL = "Special";
-/**
- * @typedef {Object} OptionInfo
- * @property {string} [since] - available since version
- * @property {string} category
- * @property {'int' | 'boolean' | 'choice' | 'path'} type
- * @property {boolean} [array] - indicate it's an array of the specified type
- * @property {OptionValueInfo} [default]
- * @property {OptionRangeInfo} [range] - for type int
- * @property {string} description
- * @property {string} [deprecated] - deprecated since version
- * @property {OptionRedirectInfo} [redirect] - redirect deprecated option
- * @property {(value: any) => boolean} [exception]
- * @property {OptionChoiceInfo[]} [choices] - for type choice
- * @property {string} [cliName]
- * @property {string} [cliCategory]
- * @property {string} [cliDescription]
- *
- * @typedef {number | boolean | string} OptionValue
- * @typedef {OptionValue | [{ value: OptionValue[] }] | Array<{ since: string, value: OptionValue}>} OptionValueInfo
- *
- * @typedef {Object} OptionRedirectInfo
- * @property {string} option
- * @property {OptionValue} value
- *
- * @typedef {Object} OptionRangeInfo
- * @property {number} start - recommended range start
- * @property {number} end - recommended range end
- * @property {number} step - recommended range step
- *
- * @typedef {Object} OptionChoiceInfo
- * @property {boolean | string} value - boolean for the option that is originally boolean type
- * @property {string} description
- * @property {string} [since] - undefined if available since the first version of the option
- * @property {string} [deprecated] - deprecated since version
- * @property {OptionValueInfo} [redirect] - redirect deprecated value
- */
 
-/** @type {{ [name: string]: OptionInfo }} */
 
 const options$7 = {
   cursorOffset: {
@@ -4745,16 +4112,6 @@ const semver$2 = {
 };
 const currentVersion = require$$0$8.version;
 const coreOptions = coreOptions$1.options;
-/**
- * Strings in `plugins` and `pluginSearchDirs` are handled by a wrapped version
- * of this function created by `withPlugins`. Don't pass them here directly.
- * @param {object} param0
- * @param {(string | object)[]=} param0.plugins Strings are resolved by `withPlugins`.
- * @param {string[]=} param0.pluginSearchDirs Added by `withPlugins`.
- * @param {boolean=} param0.showUnreleased
- * @param {boolean=} param0.showDeprecated
- * @param {boolean=} param0.showInternal
- */
 
 function getSupportInfo$3({
   plugins = [],
@@ -4762,8 +4119,6 @@ function getSupportInfo$3({
   showDeprecated = false,
   showInternal = false
 } = {}) {
-  // pre-release version is smaller than the normal version in semver,
-  // we need to treat it as the normal one so as to test new features.
   const version = currentVersion.split("-", 1)[0];
   const languages = plugins.flatMap(plugin => plugin.languages || []).filter(filterSince);
   const options = arrayify(Object.assign({}, ...plugins.map(({
@@ -4847,22 +4202,13 @@ const {
 const notAsciiRegex = /[^\x20-\x7F]/;
 
 const getPenultimate$1 = arr => arr[arr.length - 2];
-/**
- * @typedef {{backwards?: boolean}} SkipOptions
- */
 
-/**
- * @param {string | RegExp} chars
- * @returns {(text: string, index: number | false, opts?: SkipOptions) => number | false}
- */
 
 
 function skip$1(chars) {
   return (text, index, opts) => {
-    const backwards = opts && opts.backwards; // Allow `skip` functions to be threaded together without having
-    // to check for failures (did someone say monads?).
+    const backwards = opts && opts.backwards;
 
-    /* istanbul ignore next */
 
     if (index === false) {
       return false;
@@ -4888,45 +4234,23 @@ function skip$1(chars) {
     }
 
     if (cursor === -1 || cursor === length) {
-      // If we reached the beginning or end of the file, return the
-      // out-of-bounds cursor. It's up to the caller to handle this
-      // correctly. We don't want to indicate `false` though if it
-      // actually skipped valid characters.
       return cursor;
     }
 
     return false;
   };
 }
-/**
- * @type {(text: string, index: number | false, opts?: SkipOptions) => number | false}
- */
 
 
 const skipWhitespace$2 = skip$1(/\s/);
-/**
- * @type {(text: string, index: number | false, opts?: SkipOptions) => number | false}
- */
 
 const skipSpaces$2 = skip$1(" \t");
-/**
- * @type {(text: string, index: number | false, opts?: SkipOptions) => number | false}
- */
 
 const skipToLineEnd$1 = skip$1(",; \t");
-/**
- * @type {(text: string, index: number | false, opts?: SkipOptions) => number | false}
- */
 
 const skipEverythingButNewLine$2 = skip$1(/[^\n\r]/);
-/**
- * @param {string} text
- * @param {number | false} index
- * @returns {number | false}
- */
 
 function skipInlineComment$1(text, index) {
-  /* istanbul ignore next */
   if (index === false) {
     return false;
   }
@@ -4941,15 +4265,9 @@ function skipInlineComment$1(text, index) {
 
   return index;
 }
-/**
- * @param {string} text
- * @param {number | false} index
- * @returns {number | false}
- */
 
 
 function skipTrailingComment$1(text, index) {
-  /* istanbul ignore next */
   if (index === false) {
     return false;
   }
@@ -4959,16 +4277,8 @@ function skipTrailingComment$1(text, index) {
   }
 
   return index;
-} // This one doesn't use the above helper function because it wants to
-// test \r\n in order and `skip` doesn't support ordering and we only
-// want to skip one newline. It's simple to implement.
+}
 
-/**
- * @param {string} text
- * @param {number | false} index
- * @param {SkipOptions=} opts
- * @returns {number | false}
- */
 
 
 function skipNewline$2(text, index, opts) {
@@ -4981,9 +4291,7 @@ function skipNewline$2(text, index, opts) {
   const atIndex = text.charAt(index);
 
   if (backwards) {
-    // We already replace `\r\n` with `\n` before parsing
 
-    /* istanbul ignore next */
     if (text.charAt(index - 1) === "\r" && atIndex === "\n") {
       return index - 2;
     }
@@ -4992,9 +4300,7 @@ function skipNewline$2(text, index, opts) {
       return index - 1;
     }
   } else {
-    // We already replace `\r\n` with `\n` before parsing
 
-    /* istanbul ignore next */
     if (atIndex === "\r" && text.charAt(index + 1) === "\n") {
       return index + 2;
     }
@@ -5006,12 +4312,6 @@ function skipNewline$2(text, index, opts) {
 
   return index;
 }
-/**
- * @param {string} text
- * @param {number} index
- * @param {SkipOptions=} opts
- * @returns {boolean}
- */
 
 
 function hasNewline$a(text, index, opts = {}) {
@@ -5019,12 +4319,6 @@ function hasNewline$a(text, index, opts = {}) {
   const idx2 = skipNewline$2(text, idx, opts);
   return idx !== idx2;
 }
-/**
- * @param {string} text
- * @param {number} start
- * @param {number} end
- * @returns {boolean}
- */
 
 
 function hasNewlineInRange$5(text, start, end) {
@@ -5035,18 +4329,11 @@ function hasNewlineInRange$5(text, start, end) {
   }
 
   return false;
-} // Note: this function doesn't ignore leading comments unlike isNextLineEmpty
+}
 
-/**
- * @template N
- * @param {string} text
- * @param {N} node
- * @param {(node: N) => number} locStart
- */
 
 
 function isPreviousLineEmpty$3(text, node, locStart) {
-  /** @type {number | false} */
   let idx = locStart(node) - 1;
   idx = skipSpaces$2(text, idx, {
     backwards: true
@@ -5062,22 +4349,14 @@ function isPreviousLineEmpty$3(text, node, locStart) {
   });
   return idx !== idx2;
 }
-/**
- * @param {string} text
- * @param {number} index
- * @returns {boolean}
- */
 
 
 function isNextLineEmptyAfterIndex$3(text, index) {
-  /** @type {number | false} */
   let oldIdx = null;
-  /** @type {number | false} */
 
   let idx = index;
 
   while (idx !== oldIdx) {
-    // We need to skip all the potential trailing inline comments
     oldIdx = idx;
     idx = skipToLineEnd$1(text, idx);
     idx = skipInlineComment$1(text, idx);
@@ -5088,29 +4367,15 @@ function isNextLineEmptyAfterIndex$3(text, index) {
   idx = skipNewline$2(text, idx);
   return idx !== false && hasNewline$a(text, idx);
 }
-/**
- * @template N
- * @param {string} text
- * @param {N} node
- * @param {(node: N) => number} locEnd
- * @returns {boolean}
- */
 
 
 function isNextLineEmpty$e(text, node, locEnd) {
   return isNextLineEmptyAfterIndex$3(text, locEnd(node));
 }
-/**
- * @param {string} text
- * @param {number} idx
- * @returns {number | false}
- */
 
 
 function getNextNonSpaceNonCommentCharacterIndexWithStartIndex$1(text, idx) {
-  /** @type {number | false} */
   let oldIdx = null;
-  /** @type {number | false} */
 
   let nextIdx = idx;
 
@@ -5124,52 +4389,25 @@ function getNextNonSpaceNonCommentCharacterIndexWithStartIndex$1(text, idx) {
 
   return nextIdx;
 }
-/**
- * @template N
- * @param {string} text
- * @param {N} node
- * @param {(node: N) => number} locEnd
- * @returns {number | false}
- */
 
 
 function getNextNonSpaceNonCommentCharacterIndex$4(text, node, locEnd) {
   return getNextNonSpaceNonCommentCharacterIndexWithStartIndex$1(text, locEnd(node));
 }
-/**
- * @template N
- * @param {string} text
- * @param {N} node
- * @param {(node: N) => number} locEnd
- * @returns {string}
- */
 
 
 function getNextNonSpaceNonCommentCharacter$2(text, node, locEnd) {
-  return text.charAt( // @ts-ignore => TBD: can return false, should we define a fallback?
+  return text.charAt(
   getNextNonSpaceNonCommentCharacterIndex$4(text, node, locEnd));
-} // Not using, but it's public utils
+}
 
-/* istanbul ignore next */
 
-/**
- * @param {string} text
- * @param {number} index
- * @param {SkipOptions=} opts
- * @returns {boolean}
- */
 
 
 function hasSpaces$1(text, index, opts = {}) {
   const idx = skipSpaces$2(text, opts.backwards ? index - 1 : index, opts);
   return idx !== index;
 }
-/**
- * @param {string} value
- * @param {number} tabWidth
- * @param {number=} startIndex
- * @returns {number}
- */
 
 
 function getAlignmentSize$2(value, tabWidth, startIndex = 0) {
@@ -5177,10 +4415,6 @@ function getAlignmentSize$2(value, tabWidth, startIndex = 0) {
 
   for (let i = startIndex; i < value.length; ++i) {
     if (value[i] === "\t") {
-      // Tabs behave in a way that they are aligned to the nearest
-      // multiple of tabWidth:
-      // 0 -> 4, 1 -> 4, 2 -> 4, 3 -> 4
-      // 4 -> 8, 5 -> 8, 6 -> 8, 7 -> 8 ...
       size = size + tabWidth - size % tabWidth;
     } else {
       size++;
@@ -5189,11 +4423,6 @@ function getAlignmentSize$2(value, tabWidth, startIndex = 0) {
 
   return size;
 }
-/**
- * @param {string} value
- * @param {number} tabWidth
- * @returns {number}
- */
 
 
 function getIndentSize$2(value, tabWidth) {
@@ -5203,32 +4432,19 @@ function getIndentSize$2(value, tabWidth) {
     return 0;
   }
 
-  return getAlignmentSize$2( // All the leading whitespaces
+  return getAlignmentSize$2(
   value.slice(lastNewlineIndex + 1).match(/^[\t ]*/)[0], tabWidth);
 }
-/**
- * @typedef {'"' | "'"} Quote
- */
 
-/**
- *
- * @param {string} raw
- * @param {Quote} preferredQuote
- * @returns {Quote}
- */
 
 
 function getPreferredQuote$1(raw, preferredQuote) {
-  // `rawContent` is the string exactly like it appeared in the input source
-  // code, without its enclosing quotes.
   const rawContent = raw.slice(1, -1);
-  /** @type {{ quote: '"', regex: RegExp }} */
 
   const double = {
     quote: '"',
     regex: /"/g
   };
-  /** @type {{ quote: "'", regex: RegExp }} */
 
   const single = {
     quote: "'",
@@ -5236,9 +4452,7 @@ function getPreferredQuote$1(raw, preferredQuote) {
   };
   const preferred = preferredQuote === "'" ? single : double;
   const alternate = preferred === single ? double : single;
-  let result = preferred.quote; // If `rawContent` contains at least one of the quote preferred for enclosing
-  // the string, we might want to enclose with the alternate quote instead, to
-  // minimize the number of escaped quotes.
+  let result = preferred.quote;
 
   if (rawContent.includes(preferred.quote) || rawContent.includes(alternate.quote)) {
     const numPreferredQuotes = (rawContent.match(preferred.regex) || []).length;
@@ -5250,41 +4464,23 @@ function getPreferredQuote$1(raw, preferredQuote) {
 }
 
 function printString$4(raw, options) {
-  // `rawContent` is the string exactly like it appeared in the input source
-  // code, without its enclosing quotes.
   const rawContent = raw.slice(1, -1);
-  /** @type {Quote} */
 
-  const enclosingQuote = options.parser === "json" || options.parser === "json5" && options.quoteProps === "preserve" && !options.singleQuote ? '"' : options.__isInHtmlAttribute ? "'" : getPreferredQuote$1(raw, options.preserveQuote ? raw[0] : options.singleQuote ? "'" : '"'); // It might sound unnecessary to use `makeString` even if the string already
-  // is enclosed with `enclosingQuote`, but it isn't. The string could contain
-  // unnecessary escapes (such as in `"\'"`). Always using `makeString` makes
-  // sure that we consistently output the minimum amount of escaped quotes.
+  const enclosingQuote = options.parser === "json" || options.parser === "json5" && options.quoteProps === "preserve" && !options.singleQuote ? '"' : options.__isInHtmlAttribute ? "'" : getPreferredQuote$1(raw, options.preserveQuote ? raw[0] : options.singleQuote ? "'" : '"');
 
   return makeString$1(rawContent, enclosingQuote, !(options.parser === "css" || options.parser === "less" || options.parser === "scss" || options.__embeddedInHtml));
 }
-/**
- * @param {string} rawContent
- * @param {Quote} enclosingQuote
- * @param {boolean=} unescapeUnnecessaryEscapes
- * @returns {string}
- */
 
 
 function makeString$1(rawContent, enclosingQuote, unescapeUnnecessaryEscapes) {
-  const otherQuote = enclosingQuote === '"' ? "'" : '"'; // Matches _any_ escape and unescaped quotes (both single and double).
+  const otherQuote = enclosingQuote === '"' ? "'" : '"';
 
-  const regex = /\\(.)|(["'])/gs; // Escape and unescape single and double quotes as needed to be able to
-  // enclose `rawContent` with `enclosingQuote`.
+  const regex = /\\(.)|(["'])/gs;
 
   const newContent = rawContent.replace(regex, (match, escaped, quote) => {
-    // If we matched an escape, and the escaped character is a quote of the
-    // other type than we intend to enclose the string with, there's no need for
-    // it to be escaped, so return it _without_ the backslash.
     if (escaped === otherQuote) {
       return escaped;
-    } // If we matched an unescaped quote and it is of the _same_ type as we
-    // intend to enclose the string with, it must be escaped, so return it with
-    // a backslash.
+    }
 
 
     if (quote === enclosingQuote) {
@@ -5293,8 +4489,7 @@ function makeString$1(rawContent, enclosingQuote, unescapeUnnecessaryEscapes) {
 
     if (quote) {
       return quote;
-    } // Unescape any unnecessarily escaped character.
-    // Adapted from https://github.com/eslint/eslint/blob/de0b4ad7bd820ade41b1f606008bea68683dc11a/lib/rules/no-useless-escape.js#L27
+    }
 
 
     return unescapeUnnecessaryEscapes && /^[^\n\r"'0-7\\bfnrt-vx\u2028\u2029]$/.test(escaped) ? escaped : "\\" + escaped;
@@ -5303,18 +4498,13 @@ function makeString$1(rawContent, enclosingQuote, unescapeUnnecessaryEscapes) {
 }
 
 function printNumber$4(rawNumber) {
-  return rawNumber.toLowerCase() // Remove unnecessary plus and zeroes from scientific notation.
-  .replace(/^([+-]?[\d.]+e)(?:\+|(-))?0*(\d)/, "$1$2$3") // Remove unnecessary scientific notation (1e0).
-  .replace(/^([+-]?[\d.]+)e[+-]?0+$/, "$1") // Make sure numbers always start with a digit.
-  .replace(/^([+-])?\./, "$10.") // Remove extraneous trailing decimal zeroes.
-  .replace(/(\.\d+?)0+(?=e|$)/, "$1") // Remove trailing dot.
+  return rawNumber.toLowerCase()
+  .replace(/^([+-]?[\d.]+e)(?:\+|(-))?0*(\d)/, "$1$2$3")
+  .replace(/^([+-]?[\d.]+)e[+-]?0+$/, "$1")
+  .replace(/^([+-])?\./, "$10.")
+  .replace(/(\.\d+?)0+(?=e|$)/, "$1")
   .replace(/\.(?=e|$)/, "");
 }
-/**
- * @param {string} str
- * @param {string} target
- * @returns {number}
- */
 
 
 function getMaxContinuousCount$3(str, target) {
@@ -5354,16 +4544,12 @@ function getMinNotPresentContinuousCount$1(str, target) {
 
   return max + 1;
 }
-/**
- * @param {string} text
- * @returns {number}
- */
 
 
 function getStringWidth$4(text) {
   if (!text) {
     return 0;
-  } // shortcut to avoid needless string `RegExp`s, replacements, and allocations within `string-width`
+  }
 
 
   if (!notAsciiRegex.test(text)) {
@@ -5436,19 +4622,11 @@ function getShebang$1(text) {
 
   return text.slice(0, index);
 }
-/**
- * @param {any} object
- * @returns {object is Array<any>}
- */
 
 
 function isNonEmptyArray$j(object) {
   return Array.isArray(object) && object.length > 0;
 }
-/**
- * @param {string} description
- * @returns {(node: any) => symbol}
- */
 
 
 function createGroupIdMapper$2(description) {
@@ -5537,7 +4715,6 @@ function convertEndOfLineToChars$1(value) {
 
 function countEndOfLineChars$1(text, eol) {
   let regex;
-  /* istanbul ignore else */
 
   if (eol === "\n") {
     regex = /\n/g;
@@ -5564,9 +4741,6 @@ var endOfLine = {
   normalizeEndOfLine: normalizeEndOfLine$2
 };
 
-/**
- * @class
- */
 
 
 class LineByLine {
@@ -5575,7 +4749,7 @@ class LineByLine {
     if (!options.readChunk) options.readChunk = 1024;
 
     if (!options.newLineCharacter) {
-      options.newLineCharacter = 0x0a; //linux line ending
+      options.newLineCharacter = 0x0a;
     } else {
       options.newLineCharacter = options.newLineCharacter.charCodeAt(0);
     }
@@ -5747,7 +4921,6 @@ OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
 PERFORMANCE OF THIS SOFTWARE.
 ***************************************************************************** */
 
-/* global Reflect, Promise */
 var extendStatics = function (d, b) {
   extendStatics = Object.setPrototypeOf || {
     __proto__: []
@@ -6357,11 +5530,7 @@ var colorName$2 = {
   "yellowgreen": [154, 205, 50]
 };
 
-/* MIT license */
 var conversions$2 = createCommonjsModule(function (module) {
-  // NOTE: conversions should only return primitive values (i.e. arrays, or
-  //       values that give correct `typeof` results).
-  //       do not use box values types (i.e. Number(), String(), etc.)
   var reverseKeywords = {};
 
   for (var key in colorName$2) {
@@ -6431,7 +5600,7 @@ var conversions$2 = createCommonjsModule(function (module) {
       channels: 1,
       labels: ['gray']
     }
-  }; // hide .channels and .labels properties
+  };
 
   for (var model in convert) {
     if (convert.hasOwnProperty(model)) {
@@ -6566,9 +5735,6 @@ var conversions$2 = createCommonjsModule(function (module) {
     y = (1 - b - k) / (1 - k) || 0;
     return [c * 100, m * 100, y * 100, k * 100];
   };
-  /**
-   * See https://en.m.wikipedia.org/wiki/Euclidean_distance#Squared_Euclidean_distance
-   * */
 
 
   function comparativeDistance(x, y) {
@@ -6587,9 +5753,9 @@ var conversions$2 = createCommonjsModule(function (module) {
 
     for (var keyword in colorName$2) {
       if (colorName$2.hasOwnProperty(keyword)) {
-        var value = colorName$2[keyword]; // Compute comparative distance
+        var value = colorName$2[keyword];
 
-        var distance = comparativeDistance(rgb, value); // Check if its less, if so set as closest
+        var distance = comparativeDistance(rgb, value);
 
         if (distance < currentClosestDistance) {
           currentClosestDistance = distance;
@@ -6608,7 +5774,7 @@ var conversions$2 = createCommonjsModule(function (module) {
   convert.rgb.xyz = function (rgb) {
     var r = rgb[0] / 255;
     var g = rgb[1] / 255;
-    var b = rgb[2] / 255; // assume sRGB
+    var b = rgb[2] / 255;
 
     r = r > 0.04045 ? Math.pow((r + 0.055) / 1.055, 2.4) : r / 12.92;
     g = g > 0.04045 ? Math.pow((g + 0.055) / 1.055, 2.4) : g / 12.92;
@@ -6753,7 +5919,7 @@ var conversions$2 = createCommonjsModule(function (module) {
     sl = sl || 0;
     l /= 2;
     return [h, sl * 100, l * 100];
-  }; // http://dev.w3.org/csswg/css-color/#hwb-to-rgb
+  };
 
 
   convert.hwb.rgb = function (hwb) {
@@ -6764,7 +5930,7 @@ var conversions$2 = createCommonjsModule(function (module) {
     var i;
     var v;
     var f;
-    var n; // wh + bl cant be > 1
+    var n;
 
     if (ratio > 1) {
       wh /= ratio;
@@ -6779,7 +5945,7 @@ var conversions$2 = createCommonjsModule(function (module) {
       f = 1 - f;
     }
 
-    n = wh + f * (v - wh); // linear interpolation
+    n = wh + f * (v - wh);
 
     var r;
     var g;
@@ -6851,7 +6017,7 @@ var conversions$2 = createCommonjsModule(function (module) {
     var b;
     r = x * 3.2406 + y * -1.5372 + z * -0.4986;
     g = x * -0.9689 + y * 1.8758 + z * 0.0415;
-    b = x * 0.0557 + y * -0.2040 + z * 1.0570; // assume sRGB
+    b = x * 0.0557 + y * -0.2040 + z * 1.0570;
 
     r = r > 0.0031308 ? 1.055 * Math.pow(r, 1.0 / 2.4) - 0.055 : r * 12.92;
     g = g > 0.0031308 ? 1.055 * Math.pow(g, 1.0 / 2.4) - 0.055 : g * 12.92;
@@ -6938,7 +6104,7 @@ var conversions$2 = createCommonjsModule(function (module) {
     var r = args[0];
     var g = args[1];
     var b = args[2];
-    var value = 1 in arguments ? arguments[1] : convert.rgb.hsv(args)[2]; // hsv -> ansi16 optimization
+    var value = 1 in arguments ? arguments[1] : convert.rgb.hsv(args)[2];
 
     value = Math.round(value / 50);
 
@@ -6956,16 +6122,13 @@ var conversions$2 = createCommonjsModule(function (module) {
   };
 
   convert.hsv.ansi16 = function (args) {
-    // optimization here; we already know the value and don't need to get
-    // it converted for us.
     return convert.rgb.ansi16(convert.hsv.rgb(args), args[2]);
   };
 
   convert.rgb.ansi256 = function (args) {
     var r = args[0];
     var g = args[1];
-    var b = args[2]; // we use the extended greyscale palette here, with the exception of
-    // black and white. normal palette only has 4 greyscale shades.
+    var b = args[2];
 
     if (r === g && g === b) {
       if (r < 8) {
@@ -6984,7 +6147,7 @@ var conversions$2 = createCommonjsModule(function (module) {
   };
 
   convert.ansi16.rgb = function (args) {
-    var color = args % 10; // handle greyscale
+    var color = args % 10;
 
     if (color === 0 || color === 7) {
       if (args > 50) {
@@ -7003,7 +6166,6 @@ var conversions$2 = createCommonjsModule(function (module) {
   };
 
   convert.ansi256.rgb = function (args) {
-    // handle greyscale
     if (args >= 232) {
       var c = (args - 232) * 10 + 8;
       return [c, c, c];
@@ -7254,38 +6416,26 @@ var conversions$2 = createCommonjsModule(function (module) {
   };
 });
 
-/*
-	this function routes a model to all other models.
-
-	all functions that are routed have a property `.conversion` attached
-	to the returned synthetic function. This property is an array
-	of strings, each with the steps in between the 'from' and 'to'
-	color models (inclusive).
-
-	conversions that are not possible simply are not included.
-*/
 
 function buildGraph$2() {
-  var graph = {}; // https://jsperf.com/object-keys-vs-for-in-with-closure/3
+  var graph = {};
 
   var models = Object.keys(conversions$2);
 
   for (var len = models.length, i = 0; i < len; i++) {
     graph[models[i]] = {
-      // http://jsperf.com/1-vs-infinity
-      // micro-opt, but this is simple.
       distance: -1,
       parent: null
     };
   }
 
   return graph;
-} // https://en.wikipedia.org/wiki/Breadth-first_search
+}
 
 
 function deriveBFS$2(fromModel) {
   var graph = buildGraph$2();
-  var queue = [fromModel]; // unshift -> queue -> pop
+  var queue = [fromModel];
 
   graph[fromModel].distance = 0;
 
@@ -7339,7 +6489,6 @@ var route$2 = function (fromModel) {
     var node = graph[toModel];
 
     if (node.parent === null) {
-      // no possible conversion, or this node is the source model.
       continue;
     }
 
@@ -7363,7 +6512,7 @@ function wrapRaw$2(fn) {
     }
 
     return fn(args);
-  }; // preserve .conversion property if there is one
+  };
 
 
   if ('conversion' in fn) {
@@ -7383,9 +6532,7 @@ function wrapRounded$2(fn) {
       args = Array.prototype.slice.call(arguments);
     }
 
-    var result = fn(args); // we're assuming the result is an array here.
-    // see notice in conversions.js; don't use box types
-    // in conversion functions.
+    var result = fn(args);
 
     if (typeof result === 'object') {
       for (var len = result.length, i = 0; i < len; i++) {
@@ -7394,7 +6541,7 @@ function wrapRounded$2(fn) {
     }
 
     return result;
-  }; // preserve .conversion property if there is one
+  };
 
 
   if ('conversion' in fn) {
@@ -7444,7 +6591,6 @@ var ansiStyles$2 = createCommonjsModule(function (module) {
     const styles = {
       modifier: {
         reset: [0, 0],
-        // 21 isn't widely supported and 22 does the same thing
         bold: [1, 22],
         dim: [2, 22],
         italic: [3, 23],
@@ -7463,7 +6609,6 @@ var ansiStyles$2 = createCommonjsModule(function (module) {
         cyan: [36, 39],
         white: [37, 39],
         gray: [90, 39],
-        // Bright color
         redBright: [91, 39],
         greenBright: [92, 39],
         yellowBright: [93, 39],
@@ -7481,7 +6626,6 @@ var ansiStyles$2 = createCommonjsModule(function (module) {
         bgMagenta: [45, 49],
         bgCyan: [46, 49],
         bgWhite: [47, 49],
-        // Bright color
         bgBlackBright: [100, 49],
         bgRedBright: [101, 49],
         bgGreenBright: [102, 49],
@@ -7491,7 +6635,7 @@ var ansiStyles$2 = createCommonjsModule(function (module) {
         bgCyanBright: [106, 49],
         bgWhiteBright: [107, 49]
       }
-    }; // Fix humans
+    };
 
     styles.color.grey = styles.color.gray;
 
@@ -7571,7 +6715,7 @@ var ansiStyles$2 = createCommonjsModule(function (module) {
     }
 
     return styles;
-  } // Make the export immutable
+  }
 
 
   Object.defineProperty(module, 'exports', {
@@ -7634,12 +6778,6 @@ function supportsColor$2(stream) {
   const min = forceColor$2 ? 1 : 0;
 
   if (process.platform === 'win32') {
-    // Node.js 7.5.0 is the first version of Node.js to include a patch to
-    // libuv that enables 256 color output on Windows. Anything earlier and it
-    // won't work. However, here we target Node.js 8 at minimum as it is an LTS
-    // release, and Node.js 7 is not. Windows 10 build 10586 is the first Windows
-    // release that supports 256 colors. Windows 10 build 14931 is the first release
-    // that supports 16m/TrueColor.
     const osRelease = os__default['default'].release().split('.');
 
     if (Number(process.versions.node.split('.')[0]) >= 8 && Number(osRelease[0]) >= 10 && Number(osRelease[2]) >= 10586) {
@@ -7674,7 +6812,6 @@ function supportsColor$2(stream) {
 
       case 'Apple_Terminal':
         return 2;
-      // No default
     }
   }
 
@@ -7790,7 +6927,7 @@ function buildStyle$2(chalk, styles) {
 var templates$2 = (chalk, tmp) => {
   const styles = [];
   const chunks = [];
-  let chunk = []; // eslint-disable-next-line max-params
+  let chunk = [];
 
   tmp.replace(TEMPLATE_REGEX$2, (m, escapeChar, inverse, style, close, chr) => {
     if (escapeChar) {
@@ -7828,15 +6965,15 @@ var templates$2 = (chalk, tmp) => {
 var chalk$2 = createCommonjsModule(function (module) {
 
   const stdoutColor = supportsColor_1$2.stdout;
-  const isSimpleWindowsTerm = process.platform === 'win32' && !(process.env.TERM || '').toLowerCase().startsWith('xterm'); // `supportsColor.level` → `ansiStyles.color[name]` mapping
+  const isSimpleWindowsTerm = process.platform === 'win32' && !(process.env.TERM || '').toLowerCase().startsWith('xterm');
 
-  const levelMapping = ['ansi', 'ansi', 'ansi256', 'ansi16m']; // `color-convert` models to exclude from the Chalk API due to conflicts and such
+  const levelMapping = ['ansi', 'ansi', 'ansi256', 'ansi16m'];
 
   const skipModels = new Set(['gray']);
   const styles = Object.create(null);
 
   function applyOptions(obj, options) {
-    options = options || {}; // Detect level if not set manually
+    options = options || {};
 
     const scLevel = stdoutColor ? stdoutColor.level : 0;
     obj.level = options.level === undefined ? scLevel : options.level;
@@ -7844,8 +6981,6 @@ var chalk$2 = createCommonjsModule(function (module) {
   }
 
   function Chalk(options) {
-    // We check for this.template here since calling `chalk.constructor()`
-    // by itself will have a `this` of a previously constructed chalk object
     if (!this || !(this instanceof Chalk) || this.template) {
       const chalk = {};
       applyOptions(chalk, options);
@@ -7862,7 +6997,7 @@ var chalk$2 = createCommonjsModule(function (module) {
     }
 
     applyOptions(this, options);
-  } // Use bright blue on Windows as the normal blue color is illegible
+  }
 
 
   if (isSimpleWindowsTerm) {
@@ -7968,18 +7103,16 @@ var chalk$2 = createCommonjsModule(function (module) {
         self.enabled = enabled;
       }
 
-    }); // See below for fix regarding invisible grey/dim combination on Windows
+    });
 
-    builder.hasGrey = this.hasGrey || key === 'gray' || key === 'grey'; // `__proto__` is used because we must return a function, but there is
-    // no way to create a function with a different prototype
+    builder.hasGrey = this.hasGrey || key === 'gray' || key === 'grey';
 
-    builder.__proto__ = proto; // eslint-disable-line no-proto
+    builder.__proto__ = proto;
 
     return builder;
   }
 
   function applyStyle() {
-    // Support varags, but simply cast to string in case there's only one arg
     const args = arguments;
     const argsLen = args.length;
     let str = String(arguments[0]);
@@ -7989,7 +7122,6 @@ var chalk$2 = createCommonjsModule(function (module) {
     }
 
     if (argsLen > 1) {
-      // Don't slice `arguments`, it prevents V8 optimizations
       for (let a = 1; a < argsLen; a++) {
         str += ' ' + args[a];
       }
@@ -7997,9 +7129,7 @@ var chalk$2 = createCommonjsModule(function (module) {
 
     if (!this.enabled || this.level <= 0 || !str) {
       return this._empty ? '' : str;
-    } // Turns out that on Windows dimmed gray text becomes invisible in cmd.exe,
-    // see https://github.com/chalk/chalk/issues/58
-    // If we're on Windows and we're dealing with a gray color, temporarily make 'dim' a noop.
+    }
 
 
     const originalDim = ansiStyles$2.dim.open;
@@ -8009,15 +7139,10 @@ var chalk$2 = createCommonjsModule(function (module) {
     }
 
     for (const code of this._styles.slice().reverse()) {
-      // Replace any instances already present with a re-opening code
-      // otherwise only the part of the string until said closing code
-      // will be colored, and the rest will simply be 'plain'.
-      str = code.open + str.replace(code.closeRe, code.open) + code.close; // Close the styling before a linebreak and reopen
-      // after next line to fix a bleed issue on macOS
-      // https://github.com/chalk/chalk/pull/92
+      str = code.open + str.replace(code.closeRe, code.open) + code.close;
 
       str = str.replace(/\r?\n/g, `${code.close}$&${code.open}`);
-    } // Reset the original `dim` if we changed it to work around the Windows dimmed gray issue
+    }
 
 
     ansiStyles$2.dim.open = originalDim;
@@ -8026,8 +7151,6 @@ var chalk$2 = createCommonjsModule(function (module) {
 
   function chalkTag(chalk, strings) {
     if (!Array.isArray(strings)) {
-      // If chalk() was called by itself or with a string,
-      // return the string itself as a string.
       return [].slice.call(arguments, 1).join(' ');
     }
 
@@ -8043,10 +7166,10 @@ var chalk$2 = createCommonjsModule(function (module) {
   }
 
   Object.defineProperties(Chalk.prototype, styles);
-  module.exports = Chalk(); // eslint-disable-line new-cap
+  module.exports = Chalk();
 
   module.exports.supportsColor = stdoutColor;
-  module.exports.default = module.exports; // For TypeScript
+  module.exports.default = module.exports;
 });
 
 var commonDeprecatedHandler = (keyOrPair, redirectTo, {
@@ -8093,7 +7216,6 @@ var invalid = createCommonjsModule(function (module, exports) {
   tslib_es6.__exportStar(common$2, exports);
 });
 
-/* eslint-disable no-nested-ternary */
 
 var arr = [];
 var charCodeCache$1 = [];
@@ -8103,8 +7225,7 @@ var leven$1 = function (a, b) {
     return 0;
   }
 
-  var swap = a; // Swapping the strings if `a` is longer than `b` so we know which one is the
-  // shortest & which one is the longest
+  var swap = a;
 
   if (a.length > b.length) {
     a = b;
@@ -8120,10 +7241,7 @@ var leven$1 = function (a, b) {
 
   if (bLen === 0) {
     return aLen;
-  } // Performing suffix trimming:
-  // We can linearly drop suffix common to both strings since they
-  // don't increase distance at all
-  // Note: `~-` is the bitwise way to perform a `- 1` operation
+  }
 
 
   while (aLen > 0 && a.charCodeAt(~-aLen) === b.charCodeAt(~-bLen)) {
@@ -8133,9 +7251,7 @@ var leven$1 = function (a, b) {
 
   if (aLen === 0) {
     return bLen;
-  } // Performing prefix trimming
-  // We can linearly drop prefix common to both strings since they
-  // don't increase distance at all
+  }
 
 
   var start = 0;
@@ -8247,18 +7363,17 @@ class Schema {
   }
 
   static create(parameters) {
-    // @ts-ignore: https://github.com/Microsoft/TypeScript/issues/5863
     return createSchema(this, parameters);
   }
 
   default(_utils) {
     return undefined;
-  } // istanbul ignore next: this is actually an abstract method but we need a placeholder to get `function.length`
+  }
 
 
   expected(_utils) {
     return 'nothing';
-  } // istanbul ignore next: this is actually an abstract method but we need a placeholder to get `function.length`
+  }
 
 
   validate(_value, _utils) {
@@ -8484,11 +7599,11 @@ function recordFromArray(array, mainKey) {
   const record = Object.create(null);
 
   for (const value of array) {
-    const key = value[mainKey]; // istanbul ignore next
+    const key = value[mainKey];
 
     if (record[key]) {
       throw new Error(`Duplicate ${mainKey} ${JSON.stringify(key)}`);
-    } // @ts-ignore
+    }
 
 
     record[key] = value;
@@ -8503,7 +7618,7 @@ function mapFromArray(array, mainKey) {
   const map = new Map();
 
   for (const value of array) {
-    const key = value[mainKey]; // istanbul ignore next
+    const key = value[mainKey];
 
     if (map.has(key)) {
       throw new Error(`Duplicate ${mainKey} ${JSON.stringify(key)}`);
@@ -8796,7 +7911,6 @@ var normalize_1 = (options, schemas, opts) => new Normalizer(schemas, opts).norm
 
 class Normalizer {
   constructor(schemas, opts) {
-    // istanbul ignore next
     const {
       logger = console,
       descriptor = defaults.defaultDescriptor,
@@ -8807,7 +7921,6 @@ class Normalizer {
     this._utils = {
       descriptor,
       logger:
-      /* istanbul ignore next */
       logger || {
         warn: () => {}
       },
@@ -8888,7 +8001,6 @@ class Normalizer {
         const errorMessageOrError = this._invalidHandler(key, invalidValue, this._utils);
 
         throw typeof errorMessageOrError === 'string' ? new Error(errorMessageOrError) :
-        /* istanbul ignore next*/
         errorMessageOrError;
       }
 
@@ -8908,7 +8020,6 @@ class Normalizer {
         redirectTo
       }) => {
         const deprecatedResult = utils$b.normalizeDeprecatedResult(schema.deprecated(currentValue, this._utils), value,
-        /* doNotNormalizeTrue */
         true);
 
         if (deprecatedResult === false) {
@@ -9022,8 +8133,7 @@ const leven = (left, right) => {
     return 0;
   }
 
-  const swap = left; // Swapping the strings if `a` is longer than `b` so we know which one is the
-  // shortest & which one is the longest
+  const swap = left;
 
   if (left.length > right.length) {
     left = right;
@@ -9031,17 +8141,12 @@ const leven = (left, right) => {
   }
 
   let leftLength = left.length;
-  let rightLength = right.length; // Performing suffix trimming:
-  // We can linearly drop suffix common to both strings since they
-  // don't increase distance at all
-  // Note: `~-` is the bitwise way to perform a `- 1` operation
+  let rightLength = right.length;
 
   while (leftLength > 0 && left.charCodeAt(~-leftLength) === right.charCodeAt(~-rightLength)) {
     leftLength--;
     rightLength--;
-  } // Performing prefix trimming
-  // We can linearly drop prefix common to both strings since they
-  // don't increase distance at all
+  }
 
 
   let start = 0;
@@ -9076,7 +8181,7 @@ const leven = (left, right) => {
 
     for (i = 0; i < leftLength; i++) {
       temp2 = bCharCode === charCodeCache[i] ? temp : temp + 1;
-      temp = array$2[i]; // eslint-disable-next-line no-multi-assign
+      temp = array$2[i];
 
       result = array$2[i] = temp > result ? temp2 > result ? result + 1 : temp2 : temp2 > temp ? temp + 1 : temp2;
     }
@@ -9085,7 +8190,7 @@ const leven = (left, right) => {
   return result;
 };
 
-var leven_1 = leven; // TODO: Remove this for the next major release
+var leven_1 = leven;
 
 var _default$p = leven;
 leven_1.default = _default$p;
@@ -9241,11 +8346,6 @@ var colorName$1 = {
   "yellowgreen": [154, 205, 50]
 };
 
-/* MIT license */
-/* eslint-disable no-mixed-operators */
-// NOTE: conversions should only return primitive values (i.e. arrays, or
-//       values that give correct `typeof` results).
-//       do not use box values types (i.e. Number(), String(), etc.)
 
 const reverseKeywords = {};
 
@@ -9315,7 +8415,7 @@ const convert$2 = {
     labels: ['gray']
   }
 };
-var conversions$1 = convert$2; // Hide .channels and .labels properties
+var conversions$1 = convert$2;
 
 for (const model of Object.keys(convert$2)) {
   if (!('channels' in convert$2[model])) {
@@ -9448,9 +8548,6 @@ convert$2.rgb.cmyk = function (rgb) {
 };
 
 function comparativeDistance(x, y) {
-  /*
-  	See https://en.m.wikipedia.org/wiki/Euclidean_distance#Squared_Euclidean_distance
-  */
   return (x[0] - y[0]) ** 2 + (x[1] - y[1]) ** 2 + (x[2] - y[2]) ** 2;
 }
 
@@ -9465,9 +8562,9 @@ convert$2.rgb.keyword = function (rgb) {
   let currentClosestKeyword;
 
   for (const keyword of Object.keys(colorName$1)) {
-    const value = colorName$1[keyword]; // Compute comparative distance
+    const value = colorName$1[keyword];
 
-    const distance = comparativeDistance(rgb, value); // Check if its less, if so set as closest
+    const distance = comparativeDistance(rgb, value);
 
     if (distance < currentClosestDistance) {
       currentClosestDistance = distance;
@@ -9485,7 +8582,7 @@ convert$2.keyword.rgb = function (keyword) {
 convert$2.rgb.xyz = function (rgb) {
   let r = rgb[0] / 255;
   let g = rgb[1] / 255;
-  let b = rgb[2] / 255; // Assume sRGB
+  let b = rgb[2] / 255;
 
   r = r > 0.04045 ? ((r + 0.055) / 1.055) ** 2.4 : r / 12.92;
   g = g > 0.04045 ? ((g + 0.055) / 1.055) ** 2.4 : g / 12.92;
@@ -9622,7 +8719,7 @@ convert$2.hsv.hsl = function (hsv) {
   sl = sl || 0;
   l /= 2;
   return [h, sl * 100, l * 100];
-}; // http://dev.w3.org/csswg/css-color/#hwb-to-rgb
+};
 
 
 convert$2.hwb.rgb = function (hwb) {
@@ -9630,7 +8727,7 @@ convert$2.hwb.rgb = function (hwb) {
   let wh = hwb[1] / 100;
   let bl = hwb[2] / 100;
   const ratio = wh + bl;
-  let f; // Wh + bl cant be > 1
+  let f;
 
   if (ratio > 1) {
     wh /= ratio;
@@ -9645,12 +8742,11 @@ convert$2.hwb.rgb = function (hwb) {
     f = 1 - f;
   }
 
-  const n = wh + f * (v - wh); // Linear interpolation
+  const n = wh + f * (v - wh);
 
   let r;
   let g;
   let b;
-  /* eslint-disable max-statements-per-line,no-multi-spaces */
 
   switch (i) {
     default:
@@ -9691,7 +8787,6 @@ convert$2.hwb.rgb = function (hwb) {
       b = n;
       break;
   }
-  /* eslint-enable max-statements-per-line,no-multi-spaces */
 
 
   return [r * 255, g * 255, b * 255];
@@ -9717,7 +8812,7 @@ convert$2.xyz.rgb = function (xyz) {
   let b;
   r = x * 3.2406 + y * -1.5372 + z * -0.4986;
   g = x * -0.9689 + y * 1.8758 + z * 0.0415;
-  b = x * 0.0557 + y * -0.2040 + z * 1.0570; // Assume sRGB
+  b = x * 0.0557 + y * -0.2040 + z * 1.0570;
 
   r = r > 0.0031308 ? 1.055 * r ** (1.0 / 2.4) - 0.055 : r * 12.92;
   g = g > 0.0031308 ? 1.055 * g ** (1.0 / 2.4) - 0.055 : g * 12.92;
@@ -9794,7 +8889,7 @@ convert$2.lch.lab = function (lch) {
 
 convert$2.rgb.ansi16 = function (args, saturation = null) {
   const [r, g, b] = args;
-  let value = saturation === null ? convert$2.rgb.hsv(args)[2] : saturation; // Hsv -> ansi16 optimization
+  let value = saturation === null ? convert$2.rgb.hsv(args)[2] : saturation;
 
   value = Math.round(value / 50);
 
@@ -9812,16 +8907,13 @@ convert$2.rgb.ansi16 = function (args, saturation = null) {
 };
 
 convert$2.hsv.ansi16 = function (args) {
-  // Optimization here; we already know the value and don't need to get
-  // it converted for us.
   return convert$2.rgb.ansi16(convert$2.hsv.rgb(args), args[2]);
 };
 
 convert$2.rgb.ansi256 = function (args) {
   const r = args[0];
   const g = args[1];
-  const b = args[2]; // We use the extended greyscale palette here, with the exception of
-  // black and white. normal palette only has 4 greyscale shades.
+  const b = args[2];
 
   if (r === g && g === b) {
     if (r < 8) {
@@ -9840,7 +8932,7 @@ convert$2.rgb.ansi256 = function (args) {
 };
 
 convert$2.ansi16.rgb = function (args) {
-  let color = args % 10; // Handle greyscale
+  let color = args % 10;
 
   if (color === 0 || color === 7) {
     if (args > 50) {
@@ -9859,7 +8951,6 @@ convert$2.ansi16.rgb = function (args) {
 };
 
 convert$2.ansi256.rgb = function (args) {
-  // Handle greyscale
   if (args >= 232) {
     const c = (args - 232) * 10 + 8;
     return [c, c, c];
@@ -9972,7 +9063,6 @@ convert$2.hcg.rgb = function (hcg) {
   const v = hi % 1;
   const w = 1 - v;
   let mg = 0;
-  /* eslint-disable max-statements-per-line */
 
   switch (Math.floor(hi)) {
     case 0:
@@ -10010,7 +9100,6 @@ convert$2.hcg.rgb = function (hcg) {
       pure[1] = 0;
       pure[2] = w;
   }
-  /* eslint-enable max-statements-per-line */
 
 
   mg = (1.0 - c) * g;
@@ -10108,38 +9197,26 @@ convert$2.rgb.gray = function (rgb) {
   return [val / 255 * 100];
 };
 
-/*
-	This function routes a model to all other models.
-
-	all functions that are routed have a property `.conversion` attached
-	to the returned synthetic function. This property is an array
-	of strings, each with the steps in between the 'from' and 'to'
-	color models (inclusive).
-
-	conversions that are not possible simply are not included.
-*/
 
 function buildGraph$1() {
-  const graph = {}; // https://jsperf.com/object-keys-vs-for-in-with-closure/3
+  const graph = {};
 
   const models = Object.keys(conversions$1);
 
   for (let len = models.length, i = 0; i < len; i++) {
     graph[models[i]] = {
-      // http://jsperf.com/1-vs-infinity
-      // micro-opt, but this is simple.
       distance: -1,
       parent: null
     };
   }
 
   return graph;
-} // https://en.wikipedia.org/wiki/Breadth-first_search
+}
 
 
 function deriveBFS$1(fromModel) {
   const graph = buildGraph$1();
-  const queue = [fromModel]; // Unshift -> queue -> pop
+  const queue = [fromModel];
 
   graph[fromModel].distance = 0;
 
@@ -10193,7 +9270,6 @@ var route$1 = function (fromModel) {
     const node = graph[toModel];
 
     if (node.parent === null) {
-      // No possible conversion, or this node is the source model.
       continue;
     }
 
@@ -10219,7 +9295,7 @@ function wrapRaw$1(fn) {
     }
 
     return fn(args);
-  }; // Preserve .conversion property if there is one
+  };
 
 
   if ('conversion' in fn) {
@@ -10241,9 +9317,7 @@ function wrapRounded$1(fn) {
       args = arg0;
     }
 
-    const result = fn(args); // We're assuming the result is an array here.
-    // see notice in conversions.js; don't use box types
-    // in conversion functions.
+    const result = fn(args);
 
     if (typeof result === 'object') {
       for (let len = result.length, i = 0; i < len; i++) {
@@ -10252,7 +9326,7 @@ function wrapRounded$1(fn) {
     }
 
     return result;
-  }; // Preserve .conversion property if there is one
+  };
 
 
   if ('conversion' in fn) {
@@ -10316,7 +9390,6 @@ var ansiStyles$1 = createCommonjsModule(function (module) {
       configurable: true
     });
   };
-  /** @type {typeof import('color-convert')} */
 
 
   let colorConvert;
@@ -10347,7 +9420,6 @@ var ansiStyles$1 = createCommonjsModule(function (module) {
     const styles = {
       modifier: {
         reset: [0, 0],
-        // 21 isn't widely supported and 22 does the same thing
         bold: [1, 22],
         dim: [2, 22],
         italic: [3, 23],
@@ -10365,7 +9437,6 @@ var ansiStyles$1 = createCommonjsModule(function (module) {
         magenta: [35, 39],
         cyan: [36, 39],
         white: [37, 39],
-        // Bright color
         blackBright: [90, 39],
         redBright: [91, 39],
         greenBright: [92, 39],
@@ -10384,7 +9455,6 @@ var ansiStyles$1 = createCommonjsModule(function (module) {
         bgMagenta: [45, 49],
         bgCyan: [46, 49],
         bgWhite: [47, 49],
-        // Bright color
         bgBlackBright: [100, 49],
         bgRedBright: [101, 49],
         bgGreenBright: [102, 49],
@@ -10394,7 +9464,7 @@ var ansiStyles$1 = createCommonjsModule(function (module) {
         bgCyanBright: [106, 49],
         bgWhiteBright: [107, 49]
       }
-    }; // Alias bright black as gray (and grey)
+    };
 
     styles.color.gray = styles.color.blackBright;
     styles.bgColor.bgGray = styles.bgColor.bgBlackBright;
@@ -10430,7 +9500,7 @@ var ansiStyles$1 = createCommonjsModule(function (module) {
     setLazyProperty(styles.bgColor, 'ansi256', () => makeDynamicStyles(wrapAnsi256, 'ansi256', ansi2ansi, true));
     setLazyProperty(styles.bgColor, 'ansi16m', () => makeDynamicStyles(wrapAnsi16m, 'rgb', rgb2rgb, true));
     return styles;
-  } // Make the export immutable
+  }
 
 
   Object.defineProperty(module, 'exports', {
@@ -10504,8 +9574,6 @@ function supportsColor$1(haveStream, streamIsTTY) {
   }
 
   if (process.platform === 'win32') {
-    // Windows 10 build 10586 is the first Windows release that supports 256 colors.
-    // Windows 10 build 14931 is the first release that supports 16m/TrueColor.
     const osRelease = os__default['default'].release().split('.');
 
     if (Number(osRelease[0]) >= 10 && Number(osRelease[2]) >= 10586) {
@@ -10540,7 +9608,6 @@ function supportsColor$1(haveStream, streamIsTTY) {
 
       case 'Apple_Terminal':
         return 2;
-      // No default
     }
   }
 
@@ -10700,7 +9767,7 @@ function buildStyle$1(chalk, styles) {
 var templates$1 = (chalk, temporary) => {
   const styles = [];
   const chunks = [];
-  let chunk = []; // eslint-disable-next-line max-params
+  let chunk = [];
 
   temporary.replace(TEMPLATE_REGEX$1, (m, escapeCharacter, inverse, style, close, character) => {
     if (escapeCharacter) {
@@ -10745,7 +9812,7 @@ const {
 } = util$4;
 const {
   isArray: isArray$2
-} = Array; // `supportsColor.level` → `ansiStyles.color[name]` mapping
+} = Array;
 
 const levelMapping = ['ansi', 'ansi', 'ansi256', 'ansi16m'];
 const styles = Object.create(null);
@@ -10753,7 +9820,7 @@ const styles = Object.create(null);
 const applyOptions = (object, options = {}) => {
   if (options.level && !(Number.isInteger(options.level) && options.level >= 0 && options.level <= 3)) {
     throw new Error('The `level` option should be an integer from 0 to 3');
-  } // Detect level if not set manually
+  }
 
 
   const colorLevel = stdoutColor ? stdoutColor.level : 0;
@@ -10762,7 +9829,6 @@ const applyOptions = (object, options = {}) => {
 
 class ChalkClass {
   constructor(options) {
-    // eslint-disable-next-line no-constructor-return
     return chalkFactory(options);
   }
 
@@ -10884,15 +9950,12 @@ const createStyler = (open, close, parent) => {
 const createBuilder = (self, _styler, _isEmpty) => {
   const builder = (...arguments_) => {
     if (isArray$2(arguments_[0]) && isArray$2(arguments_[0].raw)) {
-      // Called as a template literal, for example: chalk.red`2 + 3 = {bold ${2+3}}`
       return applyStyle(builder, chalkTag(builder, ...arguments_));
-    } // Single argument is hot path, implicit coercion is faster than anything
-    // eslint-disable-next-line no-implicit-coercion
+    }
 
 
     return applyStyle(builder, arguments_.length === 1 ? '' + arguments_[0] : arguments_.join(' '));
-  }; // We alter the prototype because we must return a function, but there is
-  // no way to create a function with a different prototype
+  };
 
 
   Object.setPrototypeOf(builder, proto);
@@ -10920,15 +9983,10 @@ const applyStyle = (self, string) => {
 
   if (string.indexOf('\u001B') !== -1) {
     while (styler !== undefined) {
-      // Replace any instances already present with a re-opening code
-      // otherwise only the part of the string until said closing code
-      // will be colored, and the rest will simply be 'plain'.
       string = stringReplaceAll(string, styler.close, styler.open);
       styler = styler.parent;
     }
-  } // We can move both next actions out of loop, because remaining actions in loop won't have
-  // any/visible effect on parts we add here. Close the styling before a linebreak and reopen
-  // after next line to fix a bleed issue on macOS: https://github.com/chalk/chalk/pull/92
+  }
 
 
   const lfIndex = string.indexOf('\n');
@@ -10946,8 +10004,6 @@ const chalkTag = (chalk, ...strings) => {
   const [firstString] = strings;
 
   if (!isArray$2(firstString) || !isArray$2(firstString.raw)) {
-    // If chalk() was called by itself or with a string,
-    // return the string itself as a string.
     return strings.join(' ');
   }
 
@@ -10966,12 +10022,12 @@ const chalkTag = (chalk, ...strings) => {
 };
 
 Object.defineProperties(Chalk.prototype, styles);
-const chalk$1 = Chalk(); // eslint-disable-line new-cap
+const chalk$1 = Chalk();
 
 chalk$1.supportsColor = stdoutColor;
 chalk$1.stderr = Chalk({
   level: stderrColor ? stderrColor.level : 0
-}); // eslint-disable-line new-cap
+});
 
 chalk$1.stderr.supportsColor = stderrColor;
 var source$2 = chalk$1;
@@ -11026,7 +10082,6 @@ function normalizeOptions$3(options, optionInfos, {
   passThrough = false
 } = {}) {
   const unknown = !passThrough ? (key, value, options) => {
-    // Don't suggest `_` for unknown flags
     const _options$schemas = options.schemas,
           schemas = _objectWithoutProperties(_options$schemas, _excluded$2);
 
@@ -11140,7 +10195,6 @@ function optionInfoToSchema(optionInfo, {
       break;
 
     default:
-      /* istanbul ignore next */
       throw new Error(`Unexpected type ${optionInfo.type}`);
   }
 
@@ -11149,7 +10203,6 @@ function optionInfoToSchema(optionInfo, {
   } else {
     parameters.validate = (value, schema, utils) => value === undefined || schema.validate(value, utils);
   }
-  /* istanbul ignore next */
 
 
   if (optionInfo.redirect) {
@@ -11160,12 +10213,11 @@ function optionInfoToSchema(optionInfo, {
       }
     };
   }
-  /* istanbul ignore next */
 
 
   if (optionInfo.deprecated) {
     handlers.deprecated = true;
-  } // allow CLI overriding, e.g., prettier package.json --tab-width 1 --tab-width 2
+  }
 
 
   if (isCLI && !optionInfo.array) {
@@ -11199,14 +10251,11 @@ var optionsNormalizer = {
 const {
   isNonEmptyArray: isNonEmptyArray$i
 } = util$5;
-/**
- * @typedef {import("./types/estree").Node} Node
- */
 
 function locStart$q(node, opts) {
   const {
     ignoreDecorators
-  } = opts || {}; // Handle nodes with decorators. They should start at the first decorator
+  } = opts || {};
 
   if (!ignoreDecorators) {
     const decorators = node.declaration && node.declaration.decorators || node.decorators;
@@ -11222,31 +10271,16 @@ function locStart$q(node, opts) {
 function locEnd$p(node) {
   return node.range ? node.range[1] : node.end;
 }
-/**
- * @param {Node} nodeA
- * @param {Node} nodeB
- * @returns {boolean}
- */
 
 
 function hasSameLocStart$1(nodeA, nodeB) {
   return locStart$q(nodeA) === locStart$q(nodeB);
 }
-/**
- * @param {Node} nodeA
- * @param {Node} nodeB
- * @returns {boolean}
- */
 
 
 function hasSameLocEnd(nodeA, nodeB) {
   return locEnd$p(nodeA) === locEnd$p(nodeB);
 }
-/**
- * @param {Node} nodeA
- * @param {Node} nodeB
- * @returns {boolean}
- */
 
 
 function hasSameLoc$1(nodeA, nodeB) {
@@ -11260,10 +10294,6 @@ var loc$6 = {
   hasSameLoc: hasSameLoc$1
 };
 
-// Copyright 2014, 2015, 2016, 2017, 2018 Simon Lydell
-// License: MIT. (See LICENSE.)
-// This regex comes from regex.coffee, and is inserted here by generate-index.js
-// (run `npm run build`).
 var _default$o = /((['"])(?:(?!\2|\\).|\\(?:\r\n|[\s\S]))*(\2)?|`(?:[^`\\$]|\\[\s\S]|\$(?!\{)|\$\{(?:[^{}]|\{[^}]*\}?)*\}?)*(`)?)|(\/\/.*)|(\/\*(?:[^*]|\*(?!\/))*(\*\/)?)|(\/(?!\*)(?:\[(?:(?![\]\\]).|\\.)*\]|(?![\/\]\\]).|\\.)+\/(?:(?!\s*(?:\b|[\u0080-\uFFFF$\\'"~({]|[+\-!](?!=)|\.?\d))|[gmiyus]{1,6}\b(?![\u0080-\uFFFF$\\]|\s*(?:[+\-*%&|^<>!=?({]|\/(?![\/*])))))|(0[xX][\da-fA-F]+|0[oO][0-7]+|0[bB][01]+|(?:\d*\.\d+|\d+\.?)(?:[eE][+-]?\d+)?)|((?!\d)(?:(?!\s)[$\w\u0080-\uFFFF]|\\u[\da-fA-F]{4}|\\u\{[\da-fA-F]+\})+)|(--|\+\+|&&|\|\||=>|\.{3}|(?:[+\-\/%&|^]|\*{1,2}|<{1,2}|>{1,3}|!=?|={1,2})=?|[?~.,:;[\](){}])|(\s+)|(^$|[\s\S])/g;
 
 var matchToToken = function (match) {
@@ -11631,11 +10661,7 @@ var colorName = {
   "yellowgreen": [154, 205, 50]
 };
 
-/* MIT license */
 var conversions = createCommonjsModule(function (module) {
-  // NOTE: conversions should only return primitive values (i.e. arrays, or
-  //       values that give correct `typeof` results).
-  //       do not use box values types (i.e. Number(), String(), etc.)
   var reverseKeywords = {};
 
   for (var key in colorName) {
@@ -11705,7 +10731,7 @@ var conversions = createCommonjsModule(function (module) {
       channels: 1,
       labels: ['gray']
     }
-  }; // hide .channels and .labels properties
+  };
 
   for (var model in convert) {
     if (convert.hasOwnProperty(model)) {
@@ -11840,9 +10866,6 @@ var conversions = createCommonjsModule(function (module) {
     y = (1 - b - k) / (1 - k) || 0;
     return [c * 100, m * 100, y * 100, k * 100];
   };
-  /**
-   * See https://en.m.wikipedia.org/wiki/Euclidean_distance#Squared_Euclidean_distance
-   * */
 
 
   function comparativeDistance(x, y) {
@@ -11861,9 +10884,9 @@ var conversions = createCommonjsModule(function (module) {
 
     for (var keyword in colorName) {
       if (colorName.hasOwnProperty(keyword)) {
-        var value = colorName[keyword]; // Compute comparative distance
+        var value = colorName[keyword];
 
-        var distance = comparativeDistance(rgb, value); // Check if its less, if so set as closest
+        var distance = comparativeDistance(rgb, value);
 
         if (distance < currentClosestDistance) {
           currentClosestDistance = distance;
@@ -11882,7 +10905,7 @@ var conversions = createCommonjsModule(function (module) {
   convert.rgb.xyz = function (rgb) {
     var r = rgb[0] / 255;
     var g = rgb[1] / 255;
-    var b = rgb[2] / 255; // assume sRGB
+    var b = rgb[2] / 255;
 
     r = r > 0.04045 ? Math.pow((r + 0.055) / 1.055, 2.4) : r / 12.92;
     g = g > 0.04045 ? Math.pow((g + 0.055) / 1.055, 2.4) : g / 12.92;
@@ -12027,7 +11050,7 @@ var conversions = createCommonjsModule(function (module) {
     sl = sl || 0;
     l /= 2;
     return [h, sl * 100, l * 100];
-  }; // http://dev.w3.org/csswg/css-color/#hwb-to-rgb
+  };
 
 
   convert.hwb.rgb = function (hwb) {
@@ -12038,7 +11061,7 @@ var conversions = createCommonjsModule(function (module) {
     var i;
     var v;
     var f;
-    var n; // wh + bl cant be > 1
+    var n;
 
     if (ratio > 1) {
       wh /= ratio;
@@ -12053,7 +11076,7 @@ var conversions = createCommonjsModule(function (module) {
       f = 1 - f;
     }
 
-    n = wh + f * (v - wh); // linear interpolation
+    n = wh + f * (v - wh);
 
     var r;
     var g;
@@ -12125,7 +11148,7 @@ var conversions = createCommonjsModule(function (module) {
     var b;
     r = x * 3.2406 + y * -1.5372 + z * -0.4986;
     g = x * -0.9689 + y * 1.8758 + z * 0.0415;
-    b = x * 0.0557 + y * -0.2040 + z * 1.0570; // assume sRGB
+    b = x * 0.0557 + y * -0.2040 + z * 1.0570;
 
     r = r > 0.0031308 ? 1.055 * Math.pow(r, 1.0 / 2.4) - 0.055 : r * 12.92;
     g = g > 0.0031308 ? 1.055 * Math.pow(g, 1.0 / 2.4) - 0.055 : g * 12.92;
@@ -12212,7 +11235,7 @@ var conversions = createCommonjsModule(function (module) {
     var r = args[0];
     var g = args[1];
     var b = args[2];
-    var value = 1 in arguments ? arguments[1] : convert.rgb.hsv(args)[2]; // hsv -> ansi16 optimization
+    var value = 1 in arguments ? arguments[1] : convert.rgb.hsv(args)[2];
 
     value = Math.round(value / 50);
 
@@ -12230,16 +11253,13 @@ var conversions = createCommonjsModule(function (module) {
   };
 
   convert.hsv.ansi16 = function (args) {
-    // optimization here; we already know the value and don't need to get
-    // it converted for us.
     return convert.rgb.ansi16(convert.hsv.rgb(args), args[2]);
   };
 
   convert.rgb.ansi256 = function (args) {
     var r = args[0];
     var g = args[1];
-    var b = args[2]; // we use the extended greyscale palette here, with the exception of
-    // black and white. normal palette only has 4 greyscale shades.
+    var b = args[2];
 
     if (r === g && g === b) {
       if (r < 8) {
@@ -12258,7 +11278,7 @@ var conversions = createCommonjsModule(function (module) {
   };
 
   convert.ansi16.rgb = function (args) {
-    var color = args % 10; // handle greyscale
+    var color = args % 10;
 
     if (color === 0 || color === 7) {
       if (args > 50) {
@@ -12277,7 +11297,6 @@ var conversions = createCommonjsModule(function (module) {
   };
 
   convert.ansi256.rgb = function (args) {
-    // handle greyscale
     if (args >= 232) {
       var c = (args - 232) * 10 + 8;
       return [c, c, c];
@@ -12528,38 +11547,26 @@ var conversions = createCommonjsModule(function (module) {
   };
 });
 
-/*
-	this function routes a model to all other models.
-
-	all functions that are routed have a property `.conversion` attached
-	to the returned synthetic function. This property is an array
-	of strings, each with the steps in between the 'from' and 'to'
-	color models (inclusive).
-
-	conversions that are not possible simply are not included.
-*/
 
 function buildGraph() {
-  var graph = {}; // https://jsperf.com/object-keys-vs-for-in-with-closure/3
+  var graph = {};
 
   var models = Object.keys(conversions);
 
   for (var len = models.length, i = 0; i < len; i++) {
     graph[models[i]] = {
-      // http://jsperf.com/1-vs-infinity
-      // micro-opt, but this is simple.
       distance: -1,
       parent: null
     };
   }
 
   return graph;
-} // https://en.wikipedia.org/wiki/Breadth-first_search
+}
 
 
 function deriveBFS(fromModel) {
   var graph = buildGraph();
-  var queue = [fromModel]; // unshift -> queue -> pop
+  var queue = [fromModel];
 
   graph[fromModel].distance = 0;
 
@@ -12613,7 +11620,6 @@ var route = function (fromModel) {
     var node = graph[toModel];
 
     if (node.parent === null) {
-      // no possible conversion, or this node is the source model.
       continue;
     }
 
@@ -12637,7 +11643,7 @@ function wrapRaw(fn) {
     }
 
     return fn(args);
-  }; // preserve .conversion property if there is one
+  };
 
 
   if ('conversion' in fn) {
@@ -12657,9 +11663,7 @@ function wrapRounded(fn) {
       args = Array.prototype.slice.call(arguments);
     }
 
-    var result = fn(args); // we're assuming the result is an array here.
-    // see notice in conversions.js; don't use box types
-    // in conversion functions.
+    var result = fn(args);
 
     if (typeof result === 'object') {
       for (var len = result.length, i = 0; i < len; i++) {
@@ -12668,7 +11672,7 @@ function wrapRounded(fn) {
     }
 
     return result;
-  }; // preserve .conversion property if there is one
+  };
 
 
   if ('conversion' in fn) {
@@ -12718,7 +11722,6 @@ var ansiStyles = createCommonjsModule(function (module) {
     const styles = {
       modifier: {
         reset: [0, 0],
-        // 21 isn't widely supported and 22 does the same thing
         bold: [1, 22],
         dim: [2, 22],
         italic: [3, 23],
@@ -12737,7 +11740,6 @@ var ansiStyles = createCommonjsModule(function (module) {
         cyan: [36, 39],
         white: [37, 39],
         gray: [90, 39],
-        // Bright color
         redBright: [91, 39],
         greenBright: [92, 39],
         yellowBright: [93, 39],
@@ -12755,7 +11757,6 @@ var ansiStyles = createCommonjsModule(function (module) {
         bgMagenta: [45, 49],
         bgCyan: [46, 49],
         bgWhite: [47, 49],
-        // Bright color
         bgBlackBright: [100, 49],
         bgRedBright: [101, 49],
         bgGreenBright: [102, 49],
@@ -12765,7 +11766,7 @@ var ansiStyles = createCommonjsModule(function (module) {
         bgCyanBright: [106, 49],
         bgWhiteBright: [107, 49]
       }
-    }; // Fix humans
+    };
 
     styles.color.grey = styles.color.gray;
 
@@ -12845,7 +11846,7 @@ var ansiStyles = createCommonjsModule(function (module) {
     }
 
     return styles;
-  } // Make the export immutable
+  }
 
 
   Object.defineProperty(module, 'exports', {
@@ -12908,12 +11909,6 @@ function supportsColor(stream) {
   const min = forceColor ? 1 : 0;
 
   if (process.platform === 'win32') {
-    // Node.js 7.5.0 is the first version of Node.js to include a patch to
-    // libuv that enables 256 color output on Windows. Anything earlier and it
-    // won't work. However, here we target Node.js 8 at minimum as it is an LTS
-    // release, and Node.js 7 is not. Windows 10 build 10586 is the first Windows
-    // release that supports 256 colors. Windows 10 build 14931 is the first release
-    // that supports 16m/TrueColor.
     const osRelease = os__default['default'].release().split('.');
 
     if (Number(process.versions.node.split('.')[0]) >= 8 && Number(osRelease[0]) >= 10 && Number(osRelease[2]) >= 10586) {
@@ -12948,7 +11943,6 @@ function supportsColor(stream) {
 
       case 'Apple_Terminal':
         return 2;
-      // No default
     }
   }
 
@@ -13064,7 +12058,7 @@ function buildStyle(chalk, styles) {
 var templates = (chalk, tmp) => {
   const styles = [];
   const chunks = [];
-  let chunk = []; // eslint-disable-next-line max-params
+  let chunk = [];
 
   tmp.replace(TEMPLATE_REGEX, (m, escapeChar, inverse, style, close, chr) => {
     if (escapeChar) {
@@ -13102,15 +12096,15 @@ var templates = (chalk, tmp) => {
 var chalk = createCommonjsModule(function (module) {
 
   const stdoutColor = supportsColor_1.stdout;
-  const isSimpleWindowsTerm = process.platform === 'win32' && !(process.env.TERM || '').toLowerCase().startsWith('xterm'); // `supportsColor.level` → `ansiStyles.color[name]` mapping
+  const isSimpleWindowsTerm = process.platform === 'win32' && !(process.env.TERM || '').toLowerCase().startsWith('xterm');
 
-  const levelMapping = ['ansi', 'ansi', 'ansi256', 'ansi16m']; // `color-convert` models to exclude from the Chalk API due to conflicts and such
+  const levelMapping = ['ansi', 'ansi', 'ansi256', 'ansi16m'];
 
   const skipModels = new Set(['gray']);
   const styles = Object.create(null);
 
   function applyOptions(obj, options) {
-    options = options || {}; // Detect level if not set manually
+    options = options || {};
 
     const scLevel = stdoutColor ? stdoutColor.level : 0;
     obj.level = options.level === undefined ? scLevel : options.level;
@@ -13118,8 +12112,6 @@ var chalk = createCommonjsModule(function (module) {
   }
 
   function Chalk(options) {
-    // We check for this.template here since calling `chalk.constructor()`
-    // by itself will have a `this` of a previously constructed chalk object
     if (!this || !(this instanceof Chalk) || this.template) {
       const chalk = {};
       applyOptions(chalk, options);
@@ -13136,7 +12128,7 @@ var chalk = createCommonjsModule(function (module) {
     }
 
     applyOptions(this, options);
-  } // Use bright blue on Windows as the normal blue color is illegible
+  }
 
 
   if (isSimpleWindowsTerm) {
@@ -13242,18 +12234,16 @@ var chalk = createCommonjsModule(function (module) {
         self.enabled = enabled;
       }
 
-    }); // See below for fix regarding invisible grey/dim combination on Windows
+    });
 
-    builder.hasGrey = this.hasGrey || key === 'gray' || key === 'grey'; // `__proto__` is used because we must return a function, but there is
-    // no way to create a function with a different prototype
+    builder.hasGrey = this.hasGrey || key === 'gray' || key === 'grey';
 
-    builder.__proto__ = proto; // eslint-disable-line no-proto
+    builder.__proto__ = proto;
 
     return builder;
   }
 
   function applyStyle() {
-    // Support varags, but simply cast to string in case there's only one arg
     const args = arguments;
     const argsLen = args.length;
     let str = String(arguments[0]);
@@ -13263,7 +12253,6 @@ var chalk = createCommonjsModule(function (module) {
     }
 
     if (argsLen > 1) {
-      // Don't slice `arguments`, it prevents V8 optimizations
       for (let a = 1; a < argsLen; a++) {
         str += ' ' + args[a];
       }
@@ -13271,9 +12260,7 @@ var chalk = createCommonjsModule(function (module) {
 
     if (!this.enabled || this.level <= 0 || !str) {
       return this._empty ? '' : str;
-    } // Turns out that on Windows dimmed gray text becomes invisible in cmd.exe,
-    // see https://github.com/chalk/chalk/issues/58
-    // If we're on Windows and we're dealing with a gray color, temporarily make 'dim' a noop.
+    }
 
 
     const originalDim = ansiStyles.dim.open;
@@ -13283,15 +12270,10 @@ var chalk = createCommonjsModule(function (module) {
     }
 
     for (const code of this._styles.slice().reverse()) {
-      // Replace any instances already present with a re-opening code
-      // otherwise only the part of the string until said closing code
-      // will be colored, and the rest will simply be 'plain'.
-      str = code.open + str.replace(code.closeRe, code.open) + code.close; // Close the styling before a linebreak and reopen
-      // after next line to fix a bleed issue on macOS
-      // https://github.com/chalk/chalk/pull/92
+      str = code.open + str.replace(code.closeRe, code.open) + code.close;
 
       str = str.replace(/\r?\n/g, `${code.close}$&${code.open}`);
-    } // Reset the original `dim` if we changed it to work around the Windows dimmed gray issue
+    }
 
 
     ansiStyles.dim.open = originalDim;
@@ -13300,8 +12282,6 @@ var chalk = createCommonjsModule(function (module) {
 
   function chalkTag(chalk, strings) {
     if (!Array.isArray(strings)) {
-      // If chalk() was called by itself or with a string,
-      // return the string itself as a string.
       return [].slice.call(arguments, 1).join(' ');
     }
 
@@ -13317,10 +12297,10 @@ var chalk = createCommonjsModule(function (module) {
   }
 
   Object.defineProperties(Chalk.prototype, styles);
-  module.exports = Chalk(); // eslint-disable-line new-cap
+  module.exports = Chalk();
 
   module.exports.supportsColor = stdoutColor;
-  module.exports.default = module.exports; // For TypeScript
+  module.exports.default = module.exports;
 });
 
 var shouldHighlight_1 = shouldHighlight;
@@ -13605,8 +12585,7 @@ const {
 const {
   locStart: locStart$p,
   locEnd: locEnd$o
-} = loc$6; // Use defineProperties()/getOwnPropertyDescriptor() to prevent
-// triggering the parsers getters.
+} = loc$6;
 
 const ownNames = Object.getOwnPropertyNames;
 const ownDescriptor = Object.getOwnPropertyDescriptor;
@@ -13615,9 +12594,7 @@ function getParsers(options) {
   const parsers = {};
 
   for (const plugin of options.plugins) {
-    // TODO: test this with plugins
 
-    /* istanbul ignore next */
     if (!plugin.parsers) {
       continue;
     }
@@ -13632,7 +12609,6 @@ function getParsers(options) {
 
 function resolveParser$1(opts, parsers = getParsers(opts)) {
   if (typeof opts.parser === "function") {
-    // Custom parser API always works with JavaScript.
     return {
       parse: opts.parser,
       astFormat: "estree",
@@ -13654,15 +12630,13 @@ function resolveParser$1(opts, parsers = getParsers(opts)) {
         locEnd: locEnd$o
       };
     } catch {
-      /* istanbul ignore next */
       throw new ConfigError(`Couldn't resolve parser "${opts.parser}"`);
     }
   }
 }
 
 function parse$a(text, opts) {
-  const parsers = getParsers(opts); // Create a new object {parserName: parseFn}. Uses defineProperty() to only call
-  // the parsers getters when actually calling the parser `parse` function.
+  const parsers = getParsers(opts);
 
   const parsersForCustomParserApi = Object.defineProperties({}, Object.fromEntries(Object.keys(parsers).map(parserName => [parserName, {
     enumerable: true,
@@ -13698,7 +12672,6 @@ function parse$a(text, opts) {
       error.message += "\n" + error.codeFrame;
       throw error;
     }
-    /* istanbul ignore next */
 
 
     throw error.stack;
@@ -13725,7 +12698,7 @@ const hiddenDefaults = {
   originalText: undefined,
   locStart: null,
   locEnd: null
-}; // Copy options and fill in default values.
+};
 
 function normalize$1(options, opts = {}) {
   const rawOptions = Object.assign({}, options);
@@ -13780,17 +12753,15 @@ function normalize$1(options, opts = {}) {
 function getPlugin(options) {
   const {
     astFormat
-  } = options; // TODO: test this with plugins
+  } = options;
 
-  /* istanbul ignore next */
 
   if (!astFormat) {
     throw new Error("getPlugin() requires astFormat to be set");
   }
 
-  const printerPlugin = options.plugins.find(plugin => plugin.printers && plugin.printers[astFormat]); // TODO: test this with plugins
+  const printerPlugin = options.plugins.find(plugin => plugin.printers && plugin.printers[astFormat]);
 
-  /* istanbul ignore next */
 
   if (!printerPlugin) {
     throw new Error(`Couldn't find plugin for AST format "${astFormat}"`);
@@ -13800,7 +12771,6 @@ function getPlugin(options) {
 }
 
 function getInterpreter(filepath) {
-  /* istanbul ignore next */
   if (typeof filepath !== "string") {
     return "";
   }
@@ -13810,19 +12780,18 @@ function getInterpreter(filepath) {
   try {
     fd = fs__default['default'].openSync(filepath, "r");
   } catch {
-    // istanbul ignore next
     return "";
   }
 
   try {
     const liner = new readlines(fd);
-    const firstLine = liner.next().toString("utf8"); // #!/bin/env node, #!/usr/bin/env node
+    const firstLine = liner.next().toString("utf8");
 
     const m1 = firstLine.match(/^#!\/(?:usr\/)?bin\/env\s+(\S+)/);
 
     if (m1) {
       return m1[1];
-    } // #!/bin/node, #!/usr/bin/node, #!/usr/local/bin/node
+    }
 
 
     const m2 = firstLine.match(/^#!\/(?:usr\/(?:local\/)?)?bin\/(\S+)/);
@@ -13833,17 +12802,12 @@ function getInterpreter(filepath) {
 
     return "";
   } catch {
-    // There are some weird cases where paths are missing, causing Jest
-    // failures. It's unclear what these correspond to in the real world.
 
-    /* istanbul ignore next */
     return "";
   } finally {
     try {
-      // There are some weird cases where paths are missing, causing Jest
-      // failures. It's unclear what these correspond to in the real world.
       fs__default['default'].closeSync(fd);
-    } catch {// nop
+    } catch {
     }
   }
 }
@@ -13852,9 +12816,7 @@ function inferParser(filepath, plugins) {
   const filename = path__default['default'].basename(filepath).toLowerCase();
   const languages = getSupportInfo$1({
     plugins
-  }).languages.filter(language => language.since !== null); // If the file has no extension, we can try to infer the language from the
-  // interpreter in the shebang line, if any; but since this requires FS access,
-  // do it last.
+  }).languages.filter(language => language.since !== null);
 
   let language = languages.find(language => language.extensions && language.extensions.some(extension => filename.endsWith(extension)) || language.filenames && language.filenames.some(name => name.toLowerCase() === filename));
 
@@ -13950,9 +12912,6 @@ function getSortedChildNodes(node, options, resultArray) {
 
   if (resultArray) {
     if (printer.canAttachComment && printer.canAttachComment(node)) {
-      // This reverse insertion sort almost always takes constant
-      // time because we almost always (maybe always?) append the
-      // nodes in order anyway.
       let i;
 
       for (i = resultArray.length - 1; i >= 0; --i) {
@@ -13984,9 +12943,7 @@ function getSortedChildNodes(node, options, resultArray) {
   }
 
   return resultArray;
-} // As efficiently as possible, decorate the comment object with
-// .precedingNode, .enclosingNode, and/or .followingNode properties, at
-// least one of which is guaranteed to be defined.
+}
 
 
 function decorateComment(node, comment, options, enclosingNode) {
@@ -13998,7 +12955,7 @@ function decorateComment(node, comment, options, enclosingNode) {
   const commentEnd = locEnd(comment);
   const childNodes = getSortedChildNodes(node, options);
   let precedingNode;
-  let followingNode; // Time to dust off the old binary search robes and wizard hat.
+  let followingNode;
 
   let left = 0;
   let right = childNodes.length;
@@ -14007,38 +12964,27 @@ function decorateComment(node, comment, options, enclosingNode) {
     const middle = left + right >> 1;
     const child = childNodes[middle];
     const start = locStart(child);
-    const end = locEnd(child); // The comment is completely contained by this child node.
+    const end = locEnd(child);
 
     if (start <= commentStart && commentEnd <= end) {
-      // Abandon the binary search at this level.
       return decorateComment(child, comment, options, child);
     }
 
     if (end <= commentStart) {
-      // This child node falls completely before the comment.
-      // Because we will never consider this node or any nodes
-      // before it again, this node must be the closest preceding
-      // node we have encountered so far.
       precedingNode = child;
       left = middle + 1;
       continue;
     }
 
     if (commentEnd <= start) {
-      // This child node falls completely after the comment.
-      // Because we will never consider this node or any nodes after
-      // it again, this node must be the closest following node we
-      // have encountered so far.
       followingNode = child;
       right = middle;
       continue;
     }
-    /* istanbul ignore next */
 
 
     throw new Error("Comment location overlaps with node location");
-  } // We don't want comments inside of different expressions inside of the same
-  // template literal to move to another expression.
+  }
 
 
   if (enclosingNode && enclosingNode.type === "TemplateLiteral") {
@@ -14077,7 +13023,7 @@ function attach(comments, ast, text, options) {
     printer: {
       handleComments = {}
     }
-  } = options; // TODO: Make this as default behavior
+  } = options;
 
   const {
     avoidAstMutation,
@@ -14129,48 +13075,35 @@ function attach(comments, ast, text, options) {
     }
 
     if (isOwnLineComment(text, options, decoratedComments, index)) {
-      comment.placement = "ownLine"; // If a comment exists on its own line, prefer a leading comment.
-      // We also need to check if it's the first line of the file.
+      comment.placement = "ownLine";
 
       if (handleOwnLineComment(...args)) ; else if (followingNode) {
-        // Always a leading comment.
         addLeadingComment$2(followingNode, comment);
       } else if (precedingNode) {
         addTrailingComment$2(precedingNode, comment);
       } else if (enclosingNode) {
         addDanglingComment$2(enclosingNode, comment);
       } else {
-        // There are no nodes, let's attach it to the root of the ast
 
-        /* istanbul ignore next */
         addDanglingComment$2(ast, comment);
       }
     } else if (isEndOfLineComment(text, options, decoratedComments, index)) {
       comment.placement = "endOfLine";
 
       if (handleEndOfLineComment(...args)) ; else if (precedingNode) {
-        // There is content before this comment on the same line, but
-        // none after it, so prefer a trailing comment of the previous node.
         addTrailingComment$2(precedingNode, comment);
       } else if (followingNode) {
         addLeadingComment$2(followingNode, comment);
       } else if (enclosingNode) {
         addDanglingComment$2(enclosingNode, comment);
       } else {
-        // There are no nodes, let's attach it to the root of the ast
 
-        /* istanbul ignore next */
         addDanglingComment$2(ast, comment);
       }
     } else {
       comment.placement = "remaining";
 
       if (handleRemainingComment(...args)) ; else if (precedingNode && followingNode) {
-        // Otherwise, text exists both before and after the comment on
-        // the same line. If there is both a preceding and following
-        // node, use a tie-breaking algorithm to determine if it should
-        // be attached to the next or previous node. In the last case,
-        // simply attach the right node;
         const tieCount = tiesToBreak.length;
 
         if (tieCount > 0) {
@@ -14189,9 +13122,7 @@ function attach(comments, ast, text, options) {
       } else if (enclosingNode) {
         addDanglingComment$2(enclosingNode, comment);
       } else {
-        // There are no nodes, let's attach it to the root of the ast
 
-        /* istanbul ignore next */
         addDanglingComment$2(ast, comment);
       }
     }
@@ -14201,9 +13132,6 @@ function attach(comments, ast, text, options) {
 
   if (!avoidAstMutation) {
     for (const comment of comments) {
-      // These node references were useful for breaking ties, but we
-      // don't need them anymore, and they create cycles in the AST that
-      // may lead to infinite recursion if we don't delete them here.
       delete comment.precedingNode;
       delete comment.enclosingNode;
       delete comment.followingNode;
@@ -14225,7 +13153,6 @@ function isOwnLineComment(text, options, decoratedComments, commentIndex) {
   let start = locStart(comment);
 
   if (precedingNode) {
-    // Find first comment on the same line
     for (let index = commentIndex - 1; index >= 0; index--) {
       const {
         comment,
@@ -14257,7 +13184,6 @@ function isEndOfLineComment(text, options, decoratedComments, commentIndex) {
   let end = locEnd(comment);
 
   if (followingNode) {
-    // Find last comment on the same line
     for (let index = commentIndex + 1; index < decoratedComments.length; index++) {
       const {
         comment,
@@ -14288,11 +13214,7 @@ function breakTies(tiesToBreak, text, options) {
     enclosingNode
   } = tiesToBreak[0];
   const gapRegExp = options.printer.getGapRegex && options.printer.getGapRegex(enclosingNode) || /^[\s(]*$/;
-  let gapEndPos = options.locStart(followingNode); // Iterate backwards through tiesToBreak, examining the gaps
-  // between the tied comments. In order to qualify as leading, a
-  // comment must be separated from followingNode by an unbroken series of
-  // gaps (or other comments). Gaps should only contain whitespace or open
-  // parentheses.
+  let gapEndPos = options.locStart(followingNode);
 
   let indexOfFirstLeadingComment;
 
@@ -14309,8 +13231,6 @@ function breakTies(tiesToBreak, text, options) {
     if (gapRegExp.test(gap)) {
       gapEndPos = options.locStart(comment);
     } else {
-      // The gap string contained something other than whitespace or open
-      // parentheses.
       break;
     }
   }
@@ -14347,10 +13267,8 @@ function findExpressionIndexForComment(quasis, comment, options) {
     if (startPos < options.locStart(quasis[i])) {
       return i - 1;
     }
-  } // We haven't found it, it probably means that some of the locations are off.
-  // Let's just return the first one.
+  }
 
-  /* istanbul ignore next */
 
 
   return 0;
@@ -14365,8 +13283,7 @@ function printLeadingComment(path, options) {
     locStart,
     locEnd
   } = options;
-  const isBlock = printer.isBlockComment && printer.isBlockComment(comment); // Leading block comments should see if they need to stay on the
-  // same line or not.
+  const isBlock = printer.isBlockComment && printer.isBlockComment(comment);
 
   if (isBlock) {
     const lineBreak = hasNewline$9(originalText, locEnd(comment)) ? hasNewline$9(originalText, locStart(comment), {
@@ -14399,22 +13316,11 @@ function printTrailingComment(path, options) {
   if (hasNewline$9(originalText, locStart(comment), {
     backwards: true
   })) {
-    // This allows comments at the end of nested structures:
-    // {
-    //   x: 1,
-    //   y: 2
-    //   // A comment
-    // }
-    // Those kinds of comments are almost always leading comments, but
-    // here it doesn't go "outside" the block and turns it into a
-    // trailing comment for `2`. We can simulate the above by checking
-    // if this a comment on its own line; normal trailing comments are
-    // always at the end of another expression.
     const isLineBeforeEmpty = isPreviousLineEmpty$2(originalText, comment, locStart);
     return lineSuffix$1([hardline$z, isLineBeforeEmpty ? hardline$z : "", printed]);
   }
 
-  let parts = [" ", printed]; // Trailing block comments never need a newline
+  let parts = [" ", printed];
 
   if (!isBlock) {
     parts = [lineSuffix$1(parts), breakParent$8];
@@ -14561,8 +13467,7 @@ function getNodeStackIndexHelper(stack, count) {
 class AstPath {
   constructor(value) {
     this.stack = [value];
-  } // The name of the current property is always the penultimate element of
-  // this.stack, and always a String.
+  }
 
 
   getName() {
@@ -14575,15 +13480,12 @@ class AstPath {
 
     if (length > 1) {
       return stack[length - 2];
-    } // Since the name is always a string, null is a safe sentinel value to
-    // return if we do not know the name of the (root) value.
+    }
 
-    /* istanbul ignore next */
 
 
     return null;
-  } // The value of the current property is always the final element of
-  // this.stack.
+  }
 
 
   getValue() {
@@ -14596,11 +13498,7 @@ class AstPath {
 
   getParentNode(count = 0) {
     return getNodeHelper(this, count + 1);
-  } // Temporarily push properties named by string arguments given after the
-  // callback function onto this.stack, then call the callback with a
-  // reference to this (modified) AstPath object. Note that the stack will
-  // be restored to its original state after the callback is finished, so it
-  // is probably a mistake to retain a reference to the path.
+  }
 
 
   call(callback, ...names) {
@@ -14628,10 +13526,7 @@ class AstPath {
     const result = callback(this);
     this.stack.push(...parentValues);
     return result;
-  } // Similar to AstPath.prototype.call, except that the value obtained by
-  // accessing this.getValue()[name1][name2]... should be array. The
-  // callback will be called with a reference to this path object for each
-  // element of the array.
+  }
 
 
   each(callback, ...names) {
@@ -14655,9 +13550,7 @@ class AstPath {
     }
 
     stack.length = length;
-  } // Similar to AstPath.prototype.each, except that the results of the
-  // callback function invocations are stored in an array and returned at
-  // the end of the iteration.
+  }
 
 
   map(callback, ...names) {
@@ -14667,10 +13560,6 @@ class AstPath {
     }, ...names);
     return result;
   }
-  /**
-   * @param {() => void} callback
-   * @internal Unstable API. Don't use in plugins for now.
-   */
 
 
   try(callback) {
@@ -14686,12 +13575,6 @@ class AstPath {
       stack.push(...stackBackup);
     }
   }
-  /**
-   * @param {...(
-   *   | ((node: any, name: string | null, number: number | null) => boolean)
-   *   | undefined
-   * )} predicates
-   */
 
 
   match(...predicates) {
@@ -14700,10 +13583,9 @@ class AstPath {
     let node = this.stack[stackPointer--];
 
     for (const predicate of predicates) {
-      /* istanbul ignore next */
       if (node === undefined) {
         return false;
-      } // skip index/array
+      }
 
 
       let number = null;
@@ -14724,13 +13606,6 @@ class AstPath {
 
     return true;
   }
-  /**
-   * Traverses the ancestors of the current node heading toward the tree root
-   * until it finds a node that matches the provided predicate function. Will
-   * return the first matching ancestor. If no such node exists, returns undefined.
-   * @param {(node: any, name: string, number: number | null) => boolean} predicate
-   * @internal Unstable API. Don't use in plugins for now.
-   */
 
 
   findAncestor(predicate) {
@@ -14739,7 +13614,6 @@ class AstPath {
     let node = this.stack[stackPointer--];
 
     while (node) {
-      // skip index/array
       let number = null;
 
       if (typeof name === "number") {
@@ -14776,7 +13650,7 @@ function printSubtree(path, print, options, printAstToDoc) {
   }
 }
 
-function textToDoc(text, partialNextOptions, parentOptions, printAstToDoc, // TODO: remove `stripTrailingHardline` in v3.0.0
+function textToDoc(text, partialNextOptions, parentOptions, printAstToDoc,
 {
   stripTrailingHardline: shouldStripTrailingHardline = false
 } = {}) {
@@ -14800,14 +13674,12 @@ function textToDoc(text, partialNextOptions, parentOptions, printAstToDoc, // TO
   comments$1.ensureAllCommentsPrinted(astComments);
 
   if (shouldStripTrailingHardline) {
-    // TODO: move this to `stripTrailingHardline` function in `/src/document/doc-utils.js`
     if (typeof doc === "string") {
       return doc.replace(/(?:\r?\n)*$/, "");
     }
 
     return stripTrailingHardline(doc);
   }
-  /* istanbul ignore next */
 
 
   return doc;
@@ -14829,27 +13701,6 @@ const {
 const {
   printComments: printComments$6
 } = comments$1;
-/**
- * Takes an abstract syntax tree (AST) and recursively converts it to a
- * document (series of printing primitives).
- *
- * This is done by descending down the AST recursively. The recursion
- * involves two functions that call each other:
- *
- * 1. mainPrint(), which is defined as an inner function here.
- *    It basically takes care of node caching.
- * 2. callPluginPrintFunction(), which checks for some options, and
- *    ultimately calls the print() function provided by the plugin.
- *
- * The plugin function will call mainPrint() again for child nodes
- * of the current node. mainPrint() will do its housekeeping, then call
- * the plugin function again, and so on.
- *
- * All the while, these functions pass a "path" variable around, which
- * is a stack-like data structure (AstPath) that maintains the current
- * state of the recursion. It is called "path", because it represents
- * the path to the current node through the Abstract Syntax Tree.
- */
 
 function printAstToDoc(ast, options, alignmentSize = 0) {
   const {
@@ -14865,8 +13716,6 @@ function printAstToDoc(ast, options, alignmentSize = 0) {
   let doc = mainPrint();
 
   if (alignmentSize > 0) {
-    // Add a hardline to make the indents take effect
-    // It should be removed in index.js format()
     doc = addAlignmentToDoc$1([hardline$y, doc], alignmentSize, options.tabWidth);
   }
 
@@ -14933,7 +13782,7 @@ function callPluginPrintFunction(path, options, printPath, args) {
     printer
   } = options;
   let doc;
-  let printedComments; // Escape hatch
+  let printedComments;
 
   if (printer.hasPrettierIgnore && printer.hasPrettierIgnore(path)) {
     ({
@@ -14943,13 +13792,11 @@ function callPluginPrintFunction(path, options, printPath, args) {
   } else {
     if (node) {
       try {
-        // Potentially switch to a different parser
         doc = multiparser.printSubtree(path, printPath, options, printAstToDoc);
       } catch (error) {
-        /* istanbul ignore if */
         if (process.env.PRETTIER_DEBUG) {
           throw error;
-        } // Continue with current parser
+        }
 
       }
     }
@@ -14957,13 +13804,10 @@ function callPluginPrintFunction(path, options, printPath, args) {
     if (!doc) {
       doc = printer.print(path, options, printPath, args);
     }
-  } // We let JSXElement print its comments itself because it adds () around
-  // UnionTypeAnnotation has to align the child without the comments
+  }
 
 
   if (!printer.willPrintOwnComments || !printer.willPrintOwnComments(path, options)) {
-    // printComments will call the plugin print function and check for
-    // comments to print
     doc = printComments$6(path, doc, options, printedComments);
   }
 
@@ -15064,7 +13908,7 @@ function findNodeAtOffset(node, offset, options, predicate, parentNodes = [], ty
       parentNodes
     };
   }
-} // See https://www.ecma-international.org/ecma-262/5.1/#sec-A.5
+}
 
 
 function isJsSourceElement(type, parentType) {
@@ -15075,7 +13919,6 @@ const jsonSourceElements = new Set(["ObjectExpression", "ArrayExpression", "Stri
 const graphqlSourceElements = new Set(["OperationDefinition", "FragmentDefinition", "VariableDefinition", "TypeExtensionDefinition", "ObjectTypeDefinition", "FieldDefinition", "DirectiveDefinition", "EnumTypeDefinition", "EnumValueDefinition", "InputValueDefinition", "InputObjectTypeDefinition", "SchemaDefinition", "OperationTypeDefinition", "InterfaceTypeDefinition", "UnionTypeDefinition", "ScalarTypeDefinition"]);
 
 function isSourceElement(opts, node, parentNode) {
-  /* istanbul ignore next */
   if (!node) {
     return false;
   }
@@ -15113,8 +13956,7 @@ function calculateRange(text, opts, ast) {
     locStart,
     locEnd
   } = opts;
-  assert__default['default'].ok(end > start); // Contract the range so that it has non-whitespace characters at its endpoints.
-  // This ensures we can format a range that doesn't end on a node.
+  assert__default['default'].ok(end > start);
 
   const firstNonWhitespaceCharacterIndex = text.slice(start, end).search(/\S/);
   const isAllWhitespace = firstNonWhitespaceCharacterIndex === -1;
@@ -15130,7 +13972,7 @@ function calculateRange(text, opts, ast) {
   }
 
   const startNodeAndParents = findNodeAtOffset(ast, start, opts, (node, parentNode) => isSourceElement(opts, node, parentNode), [], "rangeStart");
-  const endNodeAndParents = // No need find Node at `end`, it will be the same as `startNodeAndParents`
+  const endNodeAndParents =
   isAllWhitespace ? startNodeAndParents : findNodeAtOffset(ast, end, opts, node => isSourceElement(opts, node), [], "rangeEnd");
 
   if (!startNodeAndParents || !endNodeAndParents) {
@@ -15225,7 +14067,7 @@ function coreFormat(originalText, opts, addAlignmentSize = 0) {
   const astComments = attachComments(text, ast, opts);
   const doc = astToDoc(ast, opts, addAlignmentSize);
   const result = printDocToString$2(doc, opts);
-  comments$1.ensureAllCommentsPrinted(astComments); // Remove extra leading indentation as well as the added indentation after last newline
+  comments$1.ensureAllCommentsPrinted(astComments);
 
   if (addAlignmentSize > 0) {
     const trimmed = result.formatted.trim();
@@ -15264,8 +14106,7 @@ function coreFormat(originalText, opts, addAlignmentSize = 0) {
         cursorOffset: newCursorNodeStart + cursorOffsetRelativeToOldCursorNode,
         comments: astComments
       };
-    } // diff old and new cursor node texts, with a special cursor
-    // symbol inserted to find out where it moves to
+    }
 
 
     const oldCursorNodeCharArray = oldCursorNodeText.split("");
@@ -15307,9 +14148,7 @@ function formatRange(originalText, opts) {
     rangeStart,
     rangeEnd
   } = rangeUtil.calculateRange(text, opts, ast);
-  const rangeString = text.slice(rangeStart, rangeEnd); // Try to extend the range backwards to the beginning of the line.
-  // This is so we can detect indentation correctly and restore it.
-  // Use `Math.min` since `lastIndexOf` returns 0 when `rangeStart` is 0
+  const rangeString = text.slice(rangeStart, rangeEnd);
 
   const rangeStart2 = Math.min(rangeStart, text.lastIndexOf("\n", rangeStart) + 1);
   const indentString = text.slice(rangeStart2, rangeStart).match(/^\s*/)[0];
@@ -15317,12 +14156,9 @@ function formatRange(originalText, opts) {
   const rangeResult = coreFormat(rangeString, Object.assign(Object.assign({}, opts), {}, {
     rangeStart: 0,
     rangeEnd: Number.POSITIVE_INFINITY,
-    // Track the cursor offset only if it's within our range
     cursorOffset: opts.cursorOffset > rangeStart && opts.cursorOffset <= rangeEnd ? opts.cursorOffset - rangeStart : -1,
-    // Always use `lf` to format, we'll replace it later
     endOfLine: "lf"
-  }), alignmentSize); // Since the range contracts to avoid trailing whitespace,
-  // we need to remove the newline that was inserted by the `format` call.
+  }), alignmentSize);
 
   const rangeTrimmed = rangeResult.formatted.trimEnd();
   let {
@@ -15330,12 +14166,10 @@ function formatRange(originalText, opts) {
   } = opts;
 
   if (cursorOffset > rangeEnd) {
-    // handle the case where the cursor was past the end of the range
     cursorOffset += rangeTrimmed.length - rangeString.length;
   } else if (rangeResult.cursorOffset >= 0) {
-    // handle the case where the cursor was in the range
     cursorOffset = rangeResult.cursorOffset + rangeStart;
-  } // keep the cursor as it was if it was before the start of the range
+  }
 
 
   let formatted = text.slice(0, rangeStart) + rangeTrimmed + text.slice(rangeEnd);
@@ -15399,7 +14233,7 @@ function normalizeInputAndOptions(text, options) {
 
   if (endOfLine === "auto") {
     endOfLine = guessEndOfLine(text);
-  } // get rid of CR/CRLF parsing
+  }
 
 
   if (text.includes("\r")) {
@@ -15489,7 +14323,6 @@ var core$1 = {
     return printDocToString$2(doc, options);
   },
 
-  // Doesn't handle shebang for now
   formatDoc(doc, options) {
     return formatWithCursor$1(printDocToDebug(doc), Object.assign(Object.assign({}, options), {}, {
       parser: "__js_expression"
@@ -15608,9 +14441,7 @@ function escapeBraces(str) {
 
 function unescapeBraces(str) {
   return str.split(escSlash).join('\\').split(escOpen).join('{').split(escClose).join('}').split(escComma).join(',').split(escPeriod).join('.');
-} // Basically just str.split(","), but handling cases
-// where we have nested braced sections, which should be
-// treated as individual members, like {a,{b,c},d}
+}
 
 
 function parseCommaParts(str) {
@@ -15635,12 +14466,7 @@ function parseCommaParts(str) {
 }
 
 function expandTop(str) {
-  if (!str) return []; // I don't know why Bash 4.3 does this, but it does.
-  // Anything starting with {} will have the first two bytes preserved
-  // but *only* at the top level, so {},a}b will not expand to anything,
-  // but a{},b}c will be expanded to [a}c,abc].
-  // One could argue that this is a bug in Bash, but since the goal of
-  // this module is to match Bash's rules, we escape a leading {}
+  if (!str) return [];
 
   if (str.substr(0, 2) === '{}') {
     str = '\\{\\}' + str.substr(2);
@@ -15675,7 +14501,6 @@ function expand$1(str, isTop) {
   var isOptions = m.body.indexOf(',') >= 0;
 
   if (!isSequence && !isOptions) {
-    // {a},b}
     if (m.post.match(/,.*\}/)) {
       str = m.pre + '{' + m.body + escClose + m.post;
       return expand$1(str);
@@ -15692,7 +14517,6 @@ function expand$1(str, isTop) {
     n = parseCommaParts(m.body);
 
     if (n.length === 1) {
-      // x{{a,b}}y ==> x{a}y x{b}y
       n = expand$1(n[0], false).map(embrace);
 
       if (n.length === 1) {
@@ -15702,9 +14526,7 @@ function expand$1(str, isTop) {
         });
       }
     }
-  } // at this point, n is the parts, and we know it's not a comma set
-  // with a single entry.
-  // no need to expand pre, since it is guaranteed to be free of brace-sets
+  }
 
 
   var pre = m.pre;
@@ -15796,28 +14618,24 @@ var plTypes = {
     open: '(?:',
     close: ')'
   }
-}; // any single thing other than /
-// don't need to escape / when using new RegExp()
+};
 
-var qmark = '[^/]'; // * => any number of characters
+var qmark = '[^/]';
 
-var star = qmark + '*?'; // ** when dots are allowed.  Anything goes, except .. and .
-// not (^ or / followed by one or two dots followed by $ or /),
-// followed by anything, any number of times.
+var star = qmark + '*?';
 
-var twoStarDot = '(?:(?!(?:\\\/|^)(?:\\.{1,2})($|\\\/)).)*?'; // not a ^ or / followed by a dot,
-// followed by anything, any number of times.
+var twoStarDot = '(?:(?!(?:\\\/|^)(?:\\.{1,2})($|\\\/)).)*?';
 
-var twoStarNoDot = '(?:(?!(?:\\\/|^)\\.).)*?'; // characters that need to be escaped in RegExp.
+var twoStarNoDot = '(?:(?!(?:\\\/|^)\\.).)*?';
 
-var reSpecials = charSet('().*{}+?[]^$\\!'); // "abc" -> { a:true, b:true, c:true }
+var reSpecials = charSet('().*{}+?[]^$\\!');
 
 function charSet(s) {
   return s.split('').reduce(function (set, c) {
     set[c] = true;
     return set;
   }, {});
-} // normalizes slashes.
+}
 
 
 var slashSplit = /\/+/;
@@ -15868,11 +14686,11 @@ function minimatch(p, pattern, options) {
     throw new TypeError('glob pattern string required');
   }
 
-  if (!options) options = {}; // shortcut: comments match nothing.
+  if (!options) options = {};
 
   if (!options.nocomment && pattern.charAt(0) === '#') {
     return false;
-  } // "" only matches ""
+  }
 
 
   if (pattern.trim() === '') return p === '';
@@ -15889,7 +14707,7 @@ function Minimatch(pattern, options) {
   }
 
   if (!options) options = {};
-  pattern = pattern.trim(); // windows support: need to use /, not \
+  pattern = pattern.trim();
 
   if (path$3.sep !== '/') {
     pattern = pattern.split(path$3.sep).join('/');
@@ -15901,7 +14719,7 @@ function Minimatch(pattern, options) {
   this.regexp = null;
   this.negate = false;
   this.comment = false;
-  this.empty = false; // make the set of regexps etc.
+  this.empty = false;
 
   this.make();
 }
@@ -15911,10 +14729,9 @@ Minimatch.prototype.debug = function () {};
 Minimatch.prototype.make = make;
 
 function make() {
-  // don't do it more than once.
   if (this._made) return;
   var pattern = this.pattern;
-  var options = this.options; // empty patterns and comments match nothing.
+  var options = this.options;
 
   if (!options.nocomment && pattern.charAt(0) === '#') {
     this.comment = true;
@@ -15924,28 +14741,24 @@ function make() {
   if (!pattern) {
     this.empty = true;
     return;
-  } // step 1: figure out negation, etc.
+  }
 
 
-  this.parseNegate(); // step 2: expand braces
+  this.parseNegate();
 
   var set = this.globSet = this.braceExpand();
   if (options.debug) this.debug = console.error;
-  this.debug(this.pattern, set); // step 3: now we have a set, so turn each one into a series of path-portion
-  // matching patterns.
-  // These will be regexps, except in the case of "**", which is
-  // set to the GLOBSTAR object for globstar behavior,
-  // and will not contain any / characters
+  this.debug(this.pattern, set);
 
   set = this.globParts = set.map(function (s) {
     return s.split(slashSplit);
   });
-  this.debug(this.pattern, set); // glob --> regexps
+  this.debug(this.pattern, set);
 
   set = set.map(function (s, si, set) {
     return s.map(this.parse, this);
   }, this);
-  this.debug(this.pattern, set); // filter out everything that didn't compile properly.
+  this.debug(this.pattern, set);
 
   set = set.filter(function (s) {
     return s.indexOf(false) === -1;
@@ -15970,16 +14783,7 @@ function parseNegate() {
 
   if (negateOffset) this.pattern = pattern.substr(negateOffset);
   this.negate = negate;
-} // Brace expansion:
-// a{b,c}d -> abd acd
-// a{b,}c -> abc ac
-// a{0..3}d -> a0d a1d a2d a3d
-// a{b,c{d,e}f}g -> abg acdfg acefg
-// a{b,c}d{e,f}g -> abdeg acdeg abdeg abdfg
-//
-// Invalid sets are not expanded.
-// a{2..}b -> a{2..}b
-// a{b}c -> a{b}c
+}
 
 
 minimatch.braceExpand = function (pattern, options) {
@@ -16004,22 +14808,11 @@ function braceExpand(pattern, options) {
   }
 
   if (options.nobrace || !pattern.match(/\{.*\}/)) {
-    // shortcut. no need to expand.
     return [pattern];
   }
 
   return braceExpansion(pattern);
-} // parse a component of the expanded set.
-// At this point, no pattern may contain "/" in it
-// so we're going to return a 2d array, where each entry is the full
-// pattern, split on '/', and then turned into a regular expression.
-// A regexp is made at the end which joins each array with an
-// escaped /, and another full one which joins each regexp with |.
-//
-// Following the lead of Bash 4.1, note that "**" only has special meaning
-// when it is the *only* thing in a path portion.  Otherwise, any series
-// of * is equivalent to a single *.  Globstar behavior is enabled by
-// default, and can be disabled by setting options.noglobstar.
+}
 
 
 Minimatch.prototype.parse = parse$9;
@@ -16030,31 +14823,27 @@ function parse$9(pattern, isSub) {
     throw new TypeError('pattern is too long');
   }
 
-  var options = this.options; // shortcuts
+  var options = this.options;
 
   if (!options.noglobstar && pattern === '**') return GLOBSTAR;
   if (pattern === '') return '';
   var re = '';
   var hasMagic = !!options.nocase;
-  var escaping = false; // ? => one single character
+  var escaping = false;
 
   var patternListStack = [];
   var negativeLists = [];
   var stateChar;
   var inClass = false;
   var reClassStart = -1;
-  var classStart = -1; // . and .. never match anything that doesn't start with .,
-  // even when options.dot is set.
+  var classStart = -1;
 
-  var patternStart = pattern.charAt(0) === '.' ? '' // anything
-  // not (start or / followed by . or .. followed by / or end)
+  var patternStart = pattern.charAt(0) === '.' ? ''
   : options.dot ? '(?!(?:^|\\\/)\\.{1,2}(?:$|\\\/))' : '(?!\\.)';
   var self = this;
 
   function clearStateChar() {
     if (stateChar) {
-      // we had some state-tracking character
-      // that wasn't consumed by this pass.
       switch (stateChar) {
         case '*':
           re += star;
@@ -16077,7 +14866,7 @@ function parse$9(pattern, isSub) {
   }
 
   for (var i = 0, len = pattern.length, c; i < len && (c = pattern.charAt(i)); i++) {
-    this.debug('%s\t%s %s %j', pattern, i, re, c); // skip over any that are escaped.
+    this.debug('%s\t%s %s %j', pattern, i, re, c);
 
     if (escaping && reSpecials[c]) {
       re += '\\' + c;
@@ -16087,40 +14876,31 @@ function parse$9(pattern, isSub) {
 
     switch (c) {
       case '/':
-        // completely not allowed, even escaped.
-        // Should already be path-split by now.
         return false;
 
       case '\\':
         clearStateChar();
         escaping = true;
         continue;
-      // the various stateChar values
-      // for the "extglob" stuff.
 
       case '?':
       case '*':
       case '+':
       case '@':
       case '!':
-        this.debug('%s\t%s %s %j <-- stateChar', pattern, i, re, c); // all of those are literals inside a class, except that
-        // the glob [!a] means [^a] in regexp
+        this.debug('%s\t%s %s %j <-- stateChar', pattern, i, re, c);
 
         if (inClass) {
           this.debug('  in class');
           if (c === '!' && i === classStart + 1) c = '^';
           re += c;
           continue;
-        } // if we already have a stateChar, then it means
-        // that there was something like ** or +? in there.
-        // Handle the stateChar, then proceed with this one.
+        }
 
 
         self.debug('call clearStateChar %j', stateChar);
         clearStateChar();
-        stateChar = c; // if extglob is disabled, then +(asdf|foo) isn't a thing.
-        // just clear the statechar *now*, rather than even diving into
-        // the patternList stuff.
+        stateChar = c;
 
         if (options.noext) clearStateChar();
         continue;
@@ -16142,7 +14922,7 @@ function parse$9(pattern, isSub) {
           reStart: re.length,
           open: plTypes[stateChar].open,
           close: plTypes[stateChar].close
-        }); // negation is (?:(?!js)[^/]*)
+        });
 
         re += stateChar === '!' ? '(?:(?!(?:' : '(?:';
         this.debug('plType %j %j', stateChar, re);
@@ -16157,8 +14937,7 @@ function parse$9(pattern, isSub) {
 
         clearStateChar();
         hasMagic = true;
-        var pl = patternListStack.pop(); // negation is (?:(?!js)[^/]*)
-        // The others are (?:<pattern>)<type>
+        var pl = patternListStack.pop();
 
         re += pl.close;
 
@@ -16179,10 +14958,8 @@ function parse$9(pattern, isSub) {
         clearStateChar();
         re += '|';
         continue;
-      // these are mostly the same in regexp and glob
 
       case '[':
-        // swallow any state-tracking char before the [
         clearStateChar();
 
         if (inClass) {
@@ -16197,39 +14974,26 @@ function parse$9(pattern, isSub) {
         continue;
 
       case ']':
-        //  a right bracket shall lose its special
-        //  meaning and represent itself in
-        //  a bracket expression if it occurs
-        //  first in the list.  -- POSIX.2 2.8.3.2
         if (i === classStart + 1 || !inClass) {
           re += '\\' + c;
           escaping = false;
           continue;
-        } // handle the case where we left a class open.
-        // "[z-a]" is valid, equivalent to "\[z-a\]"
+        }
 
 
         if (inClass) {
-          // split where the last [ was, make sure we don't have
-          // an invalid re. if so, re-walk the contents of the
-          // would-be class to re-translate any characters that
-          // were passed through as-is
-          // TODO: It would probably be faster to determine this
-          // without a try/catch and a new RegExp, but it's tricky
-          // to do safely.  For now, this is safe and works.
           var cs = pattern.substring(classStart + 1, i);
 
           try {
             RegExp('[' + cs + ']');
           } catch (er) {
-            // not a valid class!
             var sp = this.parse(cs, SUBPARSE);
             re = re.substr(0, reClassStart) + '\\[' + sp[0] + '\\]';
             hasMagic = hasMagic || sp[1];
             inClass = false;
             continue;
           }
-        } // finish up the class.
+        }
 
 
         hasMagic = true;
@@ -16238,55 +15002,36 @@ function parse$9(pattern, isSub) {
         continue;
 
       default:
-        // swallow any state char that wasn't consumed
         clearStateChar();
 
         if (escaping) {
-          // no need
           escaping = false;
         } else if (reSpecials[c] && !(c === '^' && inClass)) {
           re += '\\';
         }
 
         re += c;
-    } // switch
+    }
 
-  } // for
-  // handle the case where we left a class open.
-  // "[abc" is valid, equivalent to "\[abc"
+  }
 
 
   if (inClass) {
-    // split where the last [ was, and escape it
-    // this is a huge pita.  We now have to re-walk
-    // the contents of the would-be class to re-translate
-    // any characters that were passed through as-is
     cs = pattern.substr(classStart + 1);
     sp = this.parse(cs, SUBPARSE);
     re = re.substr(0, reClassStart) + '\\[' + sp[0];
     hasMagic = hasMagic || sp[1];
-  } // handle the case where we had a +( thing at the *end*
-  // of the pattern.
-  // each pattern list stack adds 3 chars, and we need to go through
-  // and escape any | chars that were passed through as-is for the regexp.
-  // Go through and escape them, taking care not to double-escape any
-  // | chars that were already escaped.
+  }
 
 
   for (pl = patternListStack.pop(); pl; pl = patternListStack.pop()) {
     var tail = re.slice(pl.reStart + pl.open.length);
-    this.debug('setting tail', re, pl); // maybe some even number of \, then maybe 1 \, followed by a |
+    this.debug('setting tail', re, pl);
 
     tail = tail.replace(/((?:\\{2}){0,64})(\\?)\|/g, function (_, $1, $2) {
       if (!$2) {
-        // the | isn't already escaped, so escape it.
         $2 = '\\';
-      } // need to escape all those slashes *again*, without escaping the
-      // one that we need for escaping the | character.  As it works out,
-      // escaping an even number of slashes can be done by simply repeating
-      // it exactly after itself.  That's why this trick works.
-      //
-      // I am sorry that you have to see this.
+      }
 
 
       return $1 + $1 + $2 + '|';
@@ -16295,16 +15040,14 @@ function parse$9(pattern, isSub) {
     var t = pl.type === '*' ? star : pl.type === '?' ? qmark : '\\' + pl.type;
     hasMagic = true;
     re = re.slice(0, pl.reStart) + t + '\\(' + tail;
-  } // handle trailing things that only matter at the very end.
+  }
 
 
   clearStateChar();
 
   if (escaping) {
-    // trailing \\
     re += '\\\\';
-  } // only need to apply the nodot start if the re starts with
-  // something that could conceivably capture a dot
+  }
 
 
   var addPatternStart = false;
@@ -16314,11 +15057,7 @@ function parse$9(pattern, isSub) {
     case '[':
     case '(':
       addPatternStart = true;
-  } // Hack to work around lack of negative lookbehind in JS
-  // A pattern like: *.!(x).!(y|z) needs to ensure that a name
-  // like 'a.xyz.yz' doesn't match.  So, the first negative
-  // lookahead, has to look ALL the way ahead, to the end of
-  // the pattern.
+  }
 
 
   for (var n = negativeLists.length - 1; n > -1; n--) {
@@ -16327,9 +15066,7 @@ function parse$9(pattern, isSub) {
     var nlFirst = re.slice(nl.reStart, nl.reEnd - 8);
     var nlLast = re.slice(nl.reEnd - 8, nl.reEnd);
     var nlAfter = re.slice(nl.reEnd);
-    nlLast += nlAfter; // Handle nested stuff like *(*.js|!(*.json)), where open parens
-    // mean that we should *not* include the ) in the bit that is considered
-    // "after" the negated section.
+    nlLast += nlAfter;
 
     var openParensBefore = nlBefore.split('(').length - 1;
     var cleanAfter = nlAfter;
@@ -16347,9 +15084,7 @@ function parse$9(pattern, isSub) {
 
     var newRe = nlBefore + nlFirst + nlAfter + dollar + nlLast;
     re = newRe;
-  } // if the re is not "" at this point, then we need to make sure
-  // it doesn't match against an empty path part.
-  // Otherwise a/* will match a/, which it should not.
+  }
 
 
   if (re !== '' && hasMagic) {
@@ -16358,14 +15093,12 @@ function parse$9(pattern, isSub) {
 
   if (addPatternStart) {
     re = patternStart + re;
-  } // parsing just a piece of a larger pattern.
+  }
 
 
   if (isSub === SUBPARSE) {
     return [re, hasMagic];
-  } // skip the regexp for non-magical patterns
-  // unescape anything in it, though, so that it'll be
-  // an exact match against a file etc.
+  }
 
 
   if (!hasMagic) {
@@ -16377,10 +15110,6 @@ function parse$9(pattern, isSub) {
   try {
     var regExp = new RegExp('^' + re + '$', flags);
   } catch (er) {
-    // If it was an invalid regular expression, then it can't match
-    // anything.  This trick looks for a character after the end of
-    // the string, which is of course impossible, except in multi-line
-    // mode, but it's not a /m regex.
     return new RegExp('$.');
   }
 
@@ -16396,12 +15125,7 @@ minimatch.makeRe = function (pattern, options) {
 Minimatch.prototype.makeRe = makeRe;
 
 function makeRe() {
-  if (this.regexp || this.regexp === false) return this.regexp; // at this point, this.set is a 2d array of partial
-  // pattern strings, or "**".
-  //
-  // It's better to use .match().  This function shouldn't
-  // be used, really, but it's pretty convenient sometimes,
-  // when you just want to work with a regex.
+  if (this.regexp || this.regexp === false) return this.regexp;
 
   var set = this.set;
 
@@ -16417,10 +15141,9 @@ function makeRe() {
     return pattern.map(function (p) {
       return p === GLOBSTAR ? twoStar : typeof p === 'string' ? regExpEscape(p) : p._src;
     }).join('\\\/');
-  }).join('|'); // must match entire pattern
-  // ending in a * or ** will make it less strict.
+  }).join('|');
 
-  re = '^(?:' + re + ')$'; // can match anything, as long as it's not this.
+  re = '^(?:' + re + ')$';
 
   if (this.negate) re = '^(?!' + re + ').*$';
 
@@ -16450,27 +15173,23 @@ minimatch.match = function (list, pattern, options) {
 Minimatch.prototype.match = match;
 
 function match(f, partial) {
-  this.debug('match', f, this.pattern); // short-circuit in the case of busted things.
-  // comments, etc.
+  this.debug('match', f, this.pattern);
 
   if (this.comment) return false;
   if (this.empty) return f === '';
   if (f === '/' && partial) return true;
-  var options = this.options; // windows: need to use /, not \
+  var options = this.options;
 
   if (path$3.sep !== '/') {
     f = f.split(path$3.sep).join('/');
-  } // treat the test path as a set of pathparts.
+  }
 
 
   f = f.split(slashSplit);
-  this.debug(this.pattern, 'split', f); // just ONE of the pattern sets in this.set needs to match
-  // in order for it to be valid.  If negating, then just one
-  // match means that we have failed.
-  // Either way, return on the first hit.
+  this.debug(this.pattern, 'split', f);
 
   var set = this.set;
-  this.debug(this.pattern, 'set', set); // Find the basename of the path by looking for the last non-empty segment
+  this.debug(this.pattern, 'set', set);
 
   var filename;
   var i;
@@ -16494,17 +15213,12 @@ function match(f, partial) {
       if (options.flipNegate) return true;
       return !this.negate;
     }
-  } // didn't get any hits.  this is success if it's a negative
-  // pattern, failure otherwise.
+  }
 
 
   if (options.flipNegate) return false;
   return this.negate;
-} // set partial to true to test if, for example,
-// "/a/b" matches the start of "/*/b/*/d"
-// Partial means, if you run out of file before you run
-// out of pattern, then that's fine, as long as all
-// the parts match.
+}
 
 
 Minimatch.prototype.matchOne = function (file, pattern, partial) {
@@ -16520,89 +15234,55 @@ Minimatch.prototype.matchOne = function (file, pattern, partial) {
     this.debug('matchOne loop');
     var p = pattern[pi];
     var f = file[fi];
-    this.debug(pattern, p, f); // should be impossible.
-    // some invalid regexp stuff in the set.
+    this.debug(pattern, p, f);
 
     if (p === false) return false;
 
     if (p === GLOBSTAR) {
-      this.debug('GLOBSTAR', [pattern, p, f]); // "**"
-      // a/**/b/**/c would match the following:
-      // a/b/x/y/z/c
-      // a/x/y/z/b/c
-      // a/b/x/b/x/c
-      // a/b/c
-      // To do this, take the rest of the pattern after
-      // the **, and see if it would match the file remainder.
-      // If so, return success.
-      // If not, the ** "swallows" a segment, and try again.
-      // This is recursively awful.
-      //
-      // a/**/b/**/c matching a/b/x/y/z/c
-      // - a matches a
-      // - doublestar
-      //   - matchOne(b/x/y/z/c, b/**/c)
-      //     - b matches b
-      //     - doublestar
-      //       - matchOne(x/y/z/c, c) -> no
-      //       - matchOne(y/z/c, c) -> no
-      //       - matchOne(z/c, c) -> no
-      //       - matchOne(c, c) yes, hit
+      this.debug('GLOBSTAR', [pattern, p, f]);
 
       var fr = fi;
       var pr = pi + 1;
 
       if (pr === pl) {
-        this.debug('** at the end'); // a ** at the end will just swallow the rest.
-        // We have found a match.
-        // however, it will not swallow /.x, unless
-        // options.dot is set.
-        // . and .. are *never* matched by **, for explosively
-        // exponential reasons.
+        this.debug('** at the end');
 
         for (; fi < fl; fi++) {
           if (file[fi] === '.' || file[fi] === '..' || !options.dot && file[fi].charAt(0) === '.') return false;
         }
 
         return true;
-      } // ok, let's see if we can swallow whatever we can.
+      }
 
 
       while (fr < fl) {
         var swallowee = file[fr];
-        this.debug('\nglobstar while', file, fr, pattern, pr, swallowee); // XXX remove this slice.  Just pass the start index.
+        this.debug('\nglobstar while', file, fr, pattern, pr, swallowee);
 
         if (this.matchOne(file.slice(fr), pattern.slice(pr), partial)) {
-          this.debug('globstar found match!', fr, fl, swallowee); // found a match.
+          this.debug('globstar found match!', fr, fl, swallowee);
 
           return true;
         } else {
-          // can't swallow "." or ".." ever.
-          // can only swallow ".foo" when explicitly asked.
           if (swallowee === '.' || swallowee === '..' || !options.dot && swallowee.charAt(0) === '.') {
             this.debug('dot detected!', file, fr, pattern, pr);
             break;
-          } // ** swallows a segment, and continue.
+          }
 
 
           this.debug('globstar swallow a segment, and continue');
           fr++;
         }
-      } // no match was found.
-      // However, in partial mode, we can't say this is necessarily over.
-      // If there's more *pattern* left, then
+      }
 
 
       if (partial) {
-        // ran out of file
         this.debug('\n>>> no match, partial?', file, fr, pattern, pr);
         if (fr === fl) return true;
       }
 
       return false;
-    } // something other than **
-    // non-magic patterns just have to match exactly
-    // patterns with magic have been turned into regexps.
+    }
 
 
     var hit;
@@ -16621,40 +15301,21 @@ Minimatch.prototype.matchOne = function (file, pattern, partial) {
     }
 
     if (!hit) return false;
-  } // Note: ending in / means that we'll get a final ""
-  // at the end of the pattern.  This can only match a
-  // corresponding "" at the end of the file.
-  // If the file ends in /, then it can only match a
-  // a pattern that ends in /, unless the pattern just
-  // doesn't have any more for it. But, a/b/ should *not*
-  // match "a/b/*", even though "" matches against the
-  // [^/]*? pattern, except in partial mode, where it might
-  // simply not be reached yet.
-  // However, a/b/ should still satisfy a/*
-  // now either we fell off the end of the pattern, or we're done.
+  }
 
 
   if (fi === fl && pi === pl) {
-    // ran out of pattern and filename at the same time.
-    // an exact hit!
     return true;
   } else if (fi === fl) {
-    // ran out of file, but still had pattern left.
-    // this is ok if we're doing the match as part of
-    // a glob fs traversal.
     return partial;
   } else if (pi === pl) {
-    // ran out of pattern, still have file left.
-    // this is only acceptable if we're on the very last
-    // empty segment of a file with a trailing slash.
-    // a/* should match a/b/
     var emptyFileEnd = fi === fl - 1 && file[fi] === '';
     return emptyFileEnd;
-  } // should be unreachable.
+  }
 
 
   throw new Error('wtf?');
-}; // replace stuff like \* with *
+};
 
 
 function globUnescape(s) {
@@ -16666,11 +15327,9 @@ function regExpEscape(s) {
 }
 
 const copyProperty = (to, from, property, ignoreNonConfigurable) => {
-  // `Function#length` should reflect the parameters of `to` not `from` since we keep its body.
-  // `Function#prototype` is non-writable and non-configurable so can never be modified.
   if (property === 'length' || property === 'prototype') {
     return;
-  } // `Function#arguments` and `Function#caller` should not be copied. They were reported to be present in `Reflect.ownKeys` for some devices in React Native (#41), so we explicitly ignore them here.
+  }
 
 
   if (property === 'arguments' || property === 'caller') {
@@ -16685,9 +15344,7 @@ const copyProperty = (to, from, property, ignoreNonConfigurable) => {
   }
 
   Object.defineProperty(to, property, fromDescriptor);
-}; // `Object.defineProperty()` throws if the property exists, is not configurable and either:
-//  - one its descriptors is changed
-//  - it is non-writable and its value is changed
+};
 
 
 const canCopyProperty = function (toDescriptor, fromDescriptor) {
@@ -16707,13 +15364,11 @@ const changePrototype = (to, from) => {
 const wrappedToString = (withName, fromBody) => `/* Wrapped ${withName}*/\n${fromBody}`;
 
 const toStringDescriptor = Object.getOwnPropertyDescriptor(Function.prototype, 'toString');
-const toStringName = Object.getOwnPropertyDescriptor(Function.prototype.toString, 'name'); // We call `from.toString()` early (not lazily) to ensure `from` can be garbage collected.
-// We use `bind()` instead of a closure for the same reason.
-// Calling `from.toString()` early also allows caching it in case `to.toString()` is called several times.
+const toStringName = Object.getOwnPropertyDescriptor(Function.prototype.toString, 'name');
 
 const changeToString = (to, from, name) => {
   const withName = name === '' ? '' : `with ${name.trim()}() `;
-  const newToString = wrappedToString.bind(null, withName, from.toString()); // Ensure `to.toString.toString` is non-enumerable and has the same `same`
+  const newToString = wrappedToString.bind(null, withName, from.toString());
 
   Object.defineProperty(newToString, 'name', toStringName);
   Object.defineProperty(to, 'toString', Object.assign(Object.assign({}, toStringDescriptor), {}, {
@@ -16797,7 +15452,6 @@ var dist$2 = createCommonjsModule(function (module, exports) {
 
     const cleanup = () => __awaiter(this, void 0, void 0, function* () {
       if (processingKey !== undefined) {
-        // If we are already processing an item, we can safely exit
         return;
       }
 
@@ -16806,25 +15460,22 @@ var dist$2 = createCommonjsModule(function (module, exports) {
         const delay = item[1][property] - Date.now();
 
         if (delay <= 0) {
-          // Remove the item immediately if the delay is equal to or below 0
           map.delete(item[0]);
           processingDeferred.resolve();
           return;
-        } // Keep track of the current processed key
+        }
 
 
         processingKey = item[0];
         processingTimer = setTimeout(() => {
-          // Remove the item when the timeout fires
           map.delete(item[0]);
 
           if (processingDeferred) {
             processingDeferred.resolve();
           }
-        }, delay); // tslint:disable-next-line:strict-type-predicates
+        }, delay);
 
         if (typeof processingTimer.unref === 'function') {
-          // Don't hold up the process from exiting
           processingTimer.unref();
         }
 
@@ -16835,7 +15486,7 @@ var dist$2 = createCommonjsModule(function (module, exports) {
         for (const entry of map) {
           yield setupTimer(entry);
         }
-      } catch (_a) {// Do nothing if an error occurs, this means the timer was cleaned up and we should stop processing
+      } catch (_a) {
       }
 
       processingKey = undefined;
@@ -16850,7 +15501,6 @@ var dist$2 = createCommonjsModule(function (module, exports) {
       }
 
       if (processingDeferred !== undefined) {
-        // tslint:disable-line:early-exit
         processingDeferred.reject(undefined);
         processingDeferred = undefined;
       }
@@ -16860,29 +15510,28 @@ var dist$2 = createCommonjsModule(function (module, exports) {
 
     map.set = (key, value) => {
       if (map.has(key)) {
-        // If the key already exist, remove it so we can add it back at the end of the map.
         map.delete(key);
-      } // Call the original `map.set`
+      }
 
 
-      const result = originalSet(key, value); // If we are already processing a key and the key added is the current processed key, stop processing it
+      const result = originalSet(key, value);
 
       if (processingKey && processingKey === key) {
         reset();
-      } // Always run the cleanup method in case it wasn't started yet
+      }
 
 
-      cleanup(); // tslint:disable-line:no-floating-promises
+      cleanup();
 
       return result;
     };
 
-    cleanup(); // tslint:disable-line:no-floating-promises
+    cleanup();
 
     return map;
   }
 
-  exports.default = mapAgeCleaner; // Add support for CJS
+  exports.default = mapAgeCleaner;
 
   module.exports = mapAgeCleaner;
   module.exports.default = mapAgeCleaner;
@@ -16890,34 +15539,6 @@ var dist$2 = createCommonjsModule(function (module, exports) {
 
 const decoratorInstanceMap = new WeakMap();
 const cacheStore = new WeakMap();
-/**
-[Memoize](https://en.wikipedia.org/wiki/Memoization) functions - An optimization used to speed up consecutive function calls by caching the result of calls with identical input.
-
-@param fn - Function to be memoized.
-
-@example
-```
-import mem = require('mem');
-
-let i = 0;
-const counter = () => ++i;
-const memoized = mem(counter);
-
-memoized('foo');
-//=> 1
-
-// Cached as it's the same arguments
-memoized('foo');
-//=> 1
-
-// Not cached anymore as the arguments changed
-memoized('bar');
-//=> 2
-
-memoized('bar');
-//=> 2
-```
-*/
 
 const mem = (fn, {
   cacheKey,
@@ -16925,8 +15546,6 @@ const mem = (fn, {
   maxAge
 } = {}) => {
   if (typeof maxAge === 'number') {
-    // TODO: Drop after https://github.com/SamVerschueren/map-age-cleaner/issues/5
-    // @ts-expect-error
     dist$2(cache);
   }
 
@@ -16952,32 +15571,6 @@ const mem = (fn, {
   cacheStore.set(memoized, cache);
   return memoized;
 };
-/**
-@returns A [decorator](https://github.com/tc39/proposal-decorators) to memoize class methods or static class methods.
-
-@example
-```
-import mem = require('mem');
-
-class Example {
-    index = 0
-
-    @mem.decorator()
-    counter() {
-        return ++this.index;
-    }
-}
-
-class ExampleWithOptions {
-    index = 0
-
-    @mem.decorator({maxAge: 1000})
-    counter() {
-        return ++this.index;
-    }
-}
-```
-*/
 
 
 mem.decorator = (options = {}) => (target, propertyKey, descriptor) => {
@@ -17000,11 +15593,6 @@ mem.decorator = (options = {}) => (target, propertyKey, descriptor) => {
     return decoratorInstanceMap.get(this);
   };
 };
-/**
-Clear all cached data of a memoized function.
-
-@param fn - Memoized function.
-*/
 
 
 mem.clear = fn => {
@@ -17028,7 +15616,6 @@ var thirdParty = require("./third-party.js");
 const ParserEND = 0x110000;
 
 class ParserError extends Error {
-  /* istanbul ignore next */
   constructor(msg, filename, linenumber) {
     super('[ParserError] ' + msg, filename, linenumber);
     this.name = 'ParserError';
@@ -17065,7 +15652,6 @@ class Parser {
   }
 
   parse(str) {
-    /* istanbul ignore next */
     if (str.length === 0 || str.length == null) return;
     this._buf = String(str);
     this.ii = -1;
@@ -17116,7 +15702,6 @@ class Parser {
   }
 
   next(fn) {
-    /* istanbul ignore next */
     if (typeof fn !== 'function') throw new ParserError('Tried to set state to non-existent state: ' + JSON.stringify(fn));
     this.state.parser = fn;
   }
@@ -17138,7 +15723,6 @@ class Parser {
   }
 
   return(value) {
-    /* istanbul ignore next */
     if (this.stack.length === 0) throw this.error(new ParserError('Stack underflow'));
     if (value === undefined) value = this.state.buf;
     this.state = this.stack.pop();
@@ -17151,7 +15735,6 @@ class Parser {
   }
 
   consume() {
-    /* istanbul ignore next */
     if (this.char === ParserEND) throw this.error(new ParserError('Unexpected end-of-buffer'));
     this.state.buf += this._buf[this.ii];
   }
@@ -17162,7 +15745,6 @@ class Parser {
     err.pos = this.pos;
     return err;
   }
-  /* istanbul ignore next */
 
 
   parseStart() {
@@ -17177,7 +15759,6 @@ var parser = Parser;
 
 var createDatetime = value => {
   const date = new Date(value);
-  /* istanbul ignore if */
 
   if (isNaN(date)) {
     throw new TypeError('Invalid Datetime');
@@ -17210,7 +15791,6 @@ class FloatingDateTime extends Date {
 
 var createDatetimeFloat = value => {
   const date = new FloatingDateTime(value);
-  /* istanbul ignore if */
 
   if (isNaN(date)) {
     throw new TypeError('Invalid Datetime');
@@ -17235,7 +15815,6 @@ class Date$1 extends DateTime {
 
 var createDate = value => {
   const date = new Date$1(value);
-  /* istanbul ignore if */
 
   if (isNaN(date)) {
     throw new TypeError('Invalid Datetime');
@@ -17258,7 +15837,6 @@ class Time extends Date {
 
 var createTime = value => {
   const date = new Time(value);
-  /* istanbul ignore if */
 
   if (isNaN(date)) {
     throw new TypeError('Invalid Datetime');
@@ -17267,7 +15845,6 @@ var createTime = value => {
   }
 };
 
-/* eslint-disable no-new-wrappers, no-eval, camelcase, operator-linebreak */
 
 
 var tomlParser = makeParserClass(parser);
@@ -17277,7 +15854,6 @@ class TomlError extends Error {
   constructor(msg) {
     super(msg);
     this.name = 'TomlError';
-    /* istanbul ignore next */
 
     if (Error.captureStackTrace) Error.captureStackTrace(this, TomlError);
     this.fromTOML = true;
@@ -17297,7 +15873,7 @@ var TomlError_1 = TomlError;
 const CTRL_I = 0x09;
 const CTRL_J = 0x0A;
 const CTRL_M = 0x0D;
-const CTRL_CHAR_BOUNDARY = 0x1F; // the last non-character in the latin1 region of unicode, except DEL
+const CTRL_CHAR_BOUNDARY = 0x1F;
 
 const CHAR_SP = 0x20;
 const CHAR_QUOT = 0x22;
@@ -17462,7 +16038,7 @@ function List() {
 function isList(obj) {
   if (obj === null || typeof obj !== 'object') return false;
   return obj[_type] === LIST;
-} // in an eval, to let bundlers not slurp in a util proxy
+}
 
 
 let _custom;
@@ -17472,9 +16048,7 @@ try {
 
   _custom = utilInspect.custom;
 } catch (_) {
-  /* eval require not available in transpiled bundle */
 }
-/* istanbul ignore next */
 
 
 const _inspect = _custom || 'inspect';
@@ -17484,7 +16058,6 @@ class BoxedBigInt {
     try {
       this.value = global.BigInt.asIntN(64, value);
     } catch (_) {
-      /* istanbul ignore next */
       this.value = null;
     }
 
@@ -17496,13 +16069,11 @@ class BoxedBigInt {
   isNaN() {
     return this.value === null;
   }
-  /* istanbul ignore next */
 
 
   toString() {
     return String(this.value);
   }
-  /* istanbul ignore next */
 
 
   [_inspect]() {
@@ -17518,15 +16089,13 @@ class BoxedBigInt {
 const INTEGER = Symbol('integer');
 
 function Integer(value) {
-  let num = Number(value); // -0 is a float thing, not an int thing
+  let num = Number(value);
 
   if (Object.is(num, -0)) num = 0;
-  /* istanbul ignore else */
 
   if (global.BigInt && !Number.isSafeInteger(num)) {
     return new BoxedBigInt(value);
   } else {
-    /* istanbul ignore next */
     return Object.defineProperties(new Number(num), {
       isNaN: {
         value: function () {
@@ -17551,7 +16120,6 @@ function isInteger(obj) {
 const FLOAT = Symbol('float');
 
 function Float(value) {
-  /* istanbul ignore next */
   return Object.defineProperties(new Number(value), {
     [_type]: {
       value: FLOAT
@@ -17571,10 +16139,8 @@ function tomlType(value) {
   const type = typeof value;
 
   if (type === 'object') {
-    /* istanbul ignore if */
     if (value === null) return 'null';
     if (value instanceof Date) return 'datetime';
-    /* istanbul ignore else */
 
     if (_type in value) {
       switch (value[_type]) {
@@ -17584,12 +16150,10 @@ function tomlType(value) {
         case INLINE_LIST:
           return 'inline-list';
 
-        /* istanbul ignore next */
 
         case TABLE:
           return 'table';
 
-        /* istanbul ignore next */
 
         case LIST:
           return 'list';
@@ -17612,7 +16176,6 @@ function makeParserClass(Parser) {
       super();
       this.ctx = this.obj = Table();
     }
-    /* MATCH HELPER */
 
 
     atEndOfWord() {
@@ -17637,8 +16200,7 @@ function makeParserClass(Parser) {
       } else {
         throw this.error(new TomlError(`Unknown character "${this.char}"`));
       }
-    } // HELPER, this strips any whitespace and comments to the end of the line
-    // then RETURNS. Last state in a production.
+    }
 
 
     parseWhitespaceToEOL() {
@@ -17652,7 +16214,6 @@ function makeParserClass(Parser) {
         throw this.error(new TomlError('Unexpected character, expected only whitespace or comments till end of line'));
       }
     }
-    /* ASSIGNMENT: key = value */
 
 
     parseAssignStatement() {
@@ -17673,7 +16234,7 @@ function makeParserClass(Parser) {
 
       if (hasKey(target, finalKey)) {
         throw this.error(new TomlError("Can't redefine existing key"));
-      } // unbox our numbers
+      }
 
 
       if (isInteger(kv.value) || isFloat(kv.value)) {
@@ -17684,7 +16245,6 @@ function makeParserClass(Parser) {
 
       return this.goto(this.parseWhitespaceToEOL);
     }
-    /* ASSSIGNMENT expression, key = value possibly inside an inline table */
 
 
     parseAssign() {
@@ -17737,7 +16297,6 @@ function makeParserClass(Parser) {
         value: value
       });
     }
-    /* COMMENTS: #...eol */
 
 
     parseComment() {
@@ -17747,7 +16306,6 @@ function makeParserClass(Parser) {
         }
       } while (this.nextChar());
     }
-    /* TABLES AND LISTS, [foo] and [[foo]] */
 
 
     parseTableOrList() {
@@ -17757,7 +16315,6 @@ function makeParserClass(Parser) {
         return this.goto(this.parseTable);
       }
     }
-    /* TABLE [foo.bar.baz] */
 
 
     parseTable() {
@@ -17801,7 +16358,6 @@ function makeParserClass(Parser) {
         throw this.error(new TomlError('Unexpected character, expected whitespace, . or ]'));
       }
     }
-    /* LIST [[a.b.c]] */
 
 
     parseList() {
@@ -17864,7 +16420,6 @@ function makeParserClass(Parser) {
         throw this.error(new TomlError('Unexpected character, expected whitespace, . or ]'));
       }
     }
-    /* VALUE string, number, boolean, inline list, inline object */
 
 
     parseValue() {
@@ -17934,7 +16489,6 @@ function makeParserClass(Parser) {
         throw this.error(new TomlError('Unexpected character, expected "nan"'));
       }
     }
-    /* KEYS, barewords or basic, literal, or dotted */
 
 
     parseKeyword() {
@@ -17946,7 +16500,6 @@ function makeParserClass(Parser) {
         return this.goto(this.parseBareKey);
       }
     }
-    /* KEYS: barewords */
 
 
     parseBareKey() {
@@ -17962,7 +16515,6 @@ function makeParserClass(Parser) {
         }
       } while (this.nextChar());
     }
-    /* STRINGS, single quoted (literal) */
 
 
     parseSingleString() {
@@ -18036,7 +16588,6 @@ function makeParserClass(Parser) {
         return this.goto(this.parseLiteralMultiStringContent);
       }
     }
-    /* STRINGS double quoted */
 
 
     parseDoubleString() {
@@ -18157,7 +16708,6 @@ function makeParserClass(Parser) {
     }
 
     parseMultiTrim() {
-      // explicitly whitespace here, END should follow the same path as chars
       if (this.char === CTRL_J || this.char === CHAR_SP || this.char === CTRL_I || this.char === CTRL_M) {
         return null;
       } else {
@@ -18208,7 +16758,6 @@ function makeParserClass(Parser) {
         if (this.state.buf.length >= 8) return this.return();
       }
     }
-    /* NUMBERS */
 
 
     parseNumberSign() {
@@ -18260,7 +16809,6 @@ function makeParserClass(Parser) {
         return this.call(this.parseNoUnder, this.parseNumberFloat);
       } else {
         const result = Integer(this.state.buf);
-        /* istanbul ignore if */
 
         if (result.isNaN()) {
           throw this.error(new TomlError('Invalid number'));
@@ -18323,7 +16871,6 @@ function makeParserClass(Parser) {
         return this.returnNow(Float(this.state.buf));
       }
     }
-    /* NUMBERS or DATETIMES  */
 
 
     parseNumberOrDateTime() {
@@ -18336,7 +16883,6 @@ function makeParserClass(Parser) {
     }
 
     parseNumberOrDateTimeOnly() {
-      // note, if two zeros are in a row then it MUST be a date
       if (this.char === CHAR_LOWBAR) {
         return this.call(this.parseNoUnder, this.parseNumberInteger);
       } else if (isDigit(this.char)) {
@@ -18401,7 +16947,6 @@ function makeParserClass(Parser) {
         return this.call(this.parseNoUnderHexOctBinLiteral);
       } else {
         const result = Integer(this.state.buf);
-        /* istanbul ignore if */
 
         if (result.isNaN()) {
           throw this.error(new TomlError('Invalid number'));
@@ -18418,7 +16963,6 @@ function makeParserClass(Parser) {
         return this.call(this.parseNoUnderHexOctBinLiteral);
       } else {
         const result = Integer(this.state.buf);
-        /* istanbul ignore if */
 
         if (result.isNaN()) {
           throw this.error(new TomlError('Invalid number'));
@@ -18435,7 +16979,6 @@ function makeParserClass(Parser) {
         return this.call(this.parseNoUnderHexOctBinLiteral);
       } else {
         const result = Integer(this.state.buf);
-        /* istanbul ignore if */
 
         if (result.isNaN()) {
           throw this.error(new TomlError('Invalid number'));
@@ -18444,11 +16987,9 @@ function makeParserClass(Parser) {
         }
       }
     }
-    /* DATETIME */
 
 
     parseDateTime() {
-      // we enter here having just consumed the year and about to consume the hyphen
       if (this.state.buf.length < 4) {
         throw this.error(new TomlError('Years less than 1000 must be zero padded to four characters'));
       }
@@ -18543,7 +17084,6 @@ function makeParserClass(Parser) {
     }
 
     parseOnlyTimeHour() {
-      /* istanbul ignore else */
       if (this.char === CHAR_COLON) {
         if (this.state.buf.length < 2) {
           throw this.error(new TomlError('Hours less than 10 must be zero padded to two characters'));
@@ -18640,7 +17180,7 @@ function makeParserClass(Parser) {
 
     parseTimeZoneHour() {
       if (isDigit(this.char)) {
-        this.consume(); // FIXME: No more regexps
+        this.consume();
 
         if (/\d\d$/.test(this.state.buf)) return this.next(this.parseTimeZoneSep);
       } else {
@@ -18665,11 +17205,9 @@ function makeParserClass(Parser) {
         throw this.error(new TomlError('Unexpected character in datetime, expected digit'));
       }
     }
-    /* BOOLEAN */
 
 
     parseBoolean() {
-      /* istanbul ignore else */
       if (this.char === CHAR_t) {
         this.consume();
         return this.next(this.parseTrue_r);
@@ -18739,7 +17277,6 @@ function makeParserClass(Parser) {
         throw this.error(new TomlError('Invalid boolean, expected true or false'));
       }
     }
-    /* INLINE LISTS */
 
 
     parseInlineList() {
@@ -18769,7 +17306,6 @@ function makeParserClass(Parser) {
       }
 
       if (isFloat(value) || isInteger(value)) {
-        // unbox now that we've verified they're ok
         this.state.resultArr.push(value.valueOf());
       } else {
         this.state.resultArr.push(value);
@@ -18791,7 +17327,6 @@ function makeParserClass(Parser) {
         throw this.error(new TomlError('Invalid character, expected whitespace, comma (,) or close bracket (])'));
       }
     }
-    /* INLINE TABLE */
 
 
     parseInlineTable() {
@@ -18856,11 +17391,9 @@ tomlParser.TomlError = TomlError_1;
 var parsePrettyError = prettyError;
 
 function prettyError(err, buf) {
-  /* istanbul ignore if */
   if (err.pos == null || err.line == null) return err;
   let msg = err.message;
   msg += ` at row ${err.line + 1}, col ${err.col + 1}, pos ${err.pos}:\n`;
-  /* istanbul ignore else */
 
   if (buf && buf.split) {
     const lines = buf.split(/\n/);
@@ -18918,7 +17451,6 @@ var loadToml = function (filePath, content) {
   }
 };
 
-// This is a generated file. Do not edit.
 var Space_Separator = /[\u1680\u2000-\u200A\u202F\u205F\u3000]/;
 var ID_Start = /[\xAA\xB5\xBA\xC0-\xD6\xD8-\xF6\xF8-\u02C1\u02C6-\u02D1\u02E0-\u02E4\u02EC\u02EE\u0370-\u0374\u0376\u0377\u037A-\u037D\u037F\u0386\u0388-\u038A\u038C\u038E-\u03A1\u03A3-\u03F5\u03F7-\u0481\u048A-\u052F\u0531-\u0556\u0559\u0561-\u0587\u05D0-\u05EA\u05F0-\u05F2\u0620-\u064A\u066E\u066F\u0671-\u06D3\u06D5\u06E5\u06E6\u06EE\u06EF\u06FA-\u06FC\u06FF\u0710\u0712-\u072F\u074D-\u07A5\u07B1\u07CA-\u07EA\u07F4\u07F5\u07FA\u0800-\u0815\u081A\u0824\u0828\u0840-\u0858\u0860-\u086A\u08A0-\u08B4\u08B6-\u08BD\u0904-\u0939\u093D\u0950\u0958-\u0961\u0971-\u0980\u0985-\u098C\u098F\u0990\u0993-\u09A8\u09AA-\u09B0\u09B2\u09B6-\u09B9\u09BD\u09CE\u09DC\u09DD\u09DF-\u09E1\u09F0\u09F1\u09FC\u0A05-\u0A0A\u0A0F\u0A10\u0A13-\u0A28\u0A2A-\u0A30\u0A32\u0A33\u0A35\u0A36\u0A38\u0A39\u0A59-\u0A5C\u0A5E\u0A72-\u0A74\u0A85-\u0A8D\u0A8F-\u0A91\u0A93-\u0AA8\u0AAA-\u0AB0\u0AB2\u0AB3\u0AB5-\u0AB9\u0ABD\u0AD0\u0AE0\u0AE1\u0AF9\u0B05-\u0B0C\u0B0F\u0B10\u0B13-\u0B28\u0B2A-\u0B30\u0B32\u0B33\u0B35-\u0B39\u0B3D\u0B5C\u0B5D\u0B5F-\u0B61\u0B71\u0B83\u0B85-\u0B8A\u0B8E-\u0B90\u0B92-\u0B95\u0B99\u0B9A\u0B9C\u0B9E\u0B9F\u0BA3\u0BA4\u0BA8-\u0BAA\u0BAE-\u0BB9\u0BD0\u0C05-\u0C0C\u0C0E-\u0C10\u0C12-\u0C28\u0C2A-\u0C39\u0C3D\u0C58-\u0C5A\u0C60\u0C61\u0C80\u0C85-\u0C8C\u0C8E-\u0C90\u0C92-\u0CA8\u0CAA-\u0CB3\u0CB5-\u0CB9\u0CBD\u0CDE\u0CE0\u0CE1\u0CF1\u0CF2\u0D05-\u0D0C\u0D0E-\u0D10\u0D12-\u0D3A\u0D3D\u0D4E\u0D54-\u0D56\u0D5F-\u0D61\u0D7A-\u0D7F\u0D85-\u0D96\u0D9A-\u0DB1\u0DB3-\u0DBB\u0DBD\u0DC0-\u0DC6\u0E01-\u0E30\u0E32\u0E33\u0E40-\u0E46\u0E81\u0E82\u0E84\u0E87\u0E88\u0E8A\u0E8D\u0E94-\u0E97\u0E99-\u0E9F\u0EA1-\u0EA3\u0EA5\u0EA7\u0EAA\u0EAB\u0EAD-\u0EB0\u0EB2\u0EB3\u0EBD\u0EC0-\u0EC4\u0EC6\u0EDC-\u0EDF\u0F00\u0F40-\u0F47\u0F49-\u0F6C\u0F88-\u0F8C\u1000-\u102A\u103F\u1050-\u1055\u105A-\u105D\u1061\u1065\u1066\u106E-\u1070\u1075-\u1081\u108E\u10A0-\u10C5\u10C7\u10CD\u10D0-\u10FA\u10FC-\u1248\u124A-\u124D\u1250-\u1256\u1258\u125A-\u125D\u1260-\u1288\u128A-\u128D\u1290-\u12B0\u12B2-\u12B5\u12B8-\u12BE\u12C0\u12C2-\u12C5\u12C8-\u12D6\u12D8-\u1310\u1312-\u1315\u1318-\u135A\u1380-\u138F\u13A0-\u13F5\u13F8-\u13FD\u1401-\u166C\u166F-\u167F\u1681-\u169A\u16A0-\u16EA\u16EE-\u16F8\u1700-\u170C\u170E-\u1711\u1720-\u1731\u1740-\u1751\u1760-\u176C\u176E-\u1770\u1780-\u17B3\u17D7\u17DC\u1820-\u1877\u1880-\u1884\u1887-\u18A8\u18AA\u18B0-\u18F5\u1900-\u191E\u1950-\u196D\u1970-\u1974\u1980-\u19AB\u19B0-\u19C9\u1A00-\u1A16\u1A20-\u1A54\u1AA7\u1B05-\u1B33\u1B45-\u1B4B\u1B83-\u1BA0\u1BAE\u1BAF\u1BBA-\u1BE5\u1C00-\u1C23\u1C4D-\u1C4F\u1C5A-\u1C7D\u1C80-\u1C88\u1CE9-\u1CEC\u1CEE-\u1CF1\u1CF5\u1CF6\u1D00-\u1DBF\u1E00-\u1F15\u1F18-\u1F1D\u1F20-\u1F45\u1F48-\u1F4D\u1F50-\u1F57\u1F59\u1F5B\u1F5D\u1F5F-\u1F7D\u1F80-\u1FB4\u1FB6-\u1FBC\u1FBE\u1FC2-\u1FC4\u1FC6-\u1FCC\u1FD0-\u1FD3\u1FD6-\u1FDB\u1FE0-\u1FEC\u1FF2-\u1FF4\u1FF6-\u1FFC\u2071\u207F\u2090-\u209C\u2102\u2107\u210A-\u2113\u2115\u2119-\u211D\u2124\u2126\u2128\u212A-\u212D\u212F-\u2139\u213C-\u213F\u2145-\u2149\u214E\u2160-\u2188\u2C00-\u2C2E\u2C30-\u2C5E\u2C60-\u2CE4\u2CEB-\u2CEE\u2CF2\u2CF3\u2D00-\u2D25\u2D27\u2D2D\u2D30-\u2D67\u2D6F\u2D80-\u2D96\u2DA0-\u2DA6\u2DA8-\u2DAE\u2DB0-\u2DB6\u2DB8-\u2DBE\u2DC0-\u2DC6\u2DC8-\u2DCE\u2DD0-\u2DD6\u2DD8-\u2DDE\u2E2F\u3005-\u3007\u3021-\u3029\u3031-\u3035\u3038-\u303C\u3041-\u3096\u309D-\u309F\u30A1-\u30FA\u30FC-\u30FF\u3105-\u312E\u3131-\u318E\u31A0-\u31BA\u31F0-\u31FF\u3400-\u4DB5\u4E00-\u9FEA\uA000-\uA48C\uA4D0-\uA4FD\uA500-\uA60C\uA610-\uA61F\uA62A\uA62B\uA640-\uA66E\uA67F-\uA69D\uA6A0-\uA6EF\uA717-\uA71F\uA722-\uA788\uA78B-\uA7AE\uA7B0-\uA7B7\uA7F7-\uA801\uA803-\uA805\uA807-\uA80A\uA80C-\uA822\uA840-\uA873\uA882-\uA8B3\uA8F2-\uA8F7\uA8FB\uA8FD\uA90A-\uA925\uA930-\uA946\uA960-\uA97C\uA984-\uA9B2\uA9CF\uA9E0-\uA9E4\uA9E6-\uA9EF\uA9FA-\uA9FE\uAA00-\uAA28\uAA40-\uAA42\uAA44-\uAA4B\uAA60-\uAA76\uAA7A\uAA7E-\uAAAF\uAAB1\uAAB5\uAAB6\uAAB9-\uAABD\uAAC0\uAAC2\uAADB-\uAADD\uAAE0-\uAAEA\uAAF2-\uAAF4\uAB01-\uAB06\uAB09-\uAB0E\uAB11-\uAB16\uAB20-\uAB26\uAB28-\uAB2E\uAB30-\uAB5A\uAB5C-\uAB65\uAB70-\uABE2\uAC00-\uD7A3\uD7B0-\uD7C6\uD7CB-\uD7FB\uF900-\uFA6D\uFA70-\uFAD9\uFB00-\uFB06\uFB13-\uFB17\uFB1D\uFB1F-\uFB28\uFB2A-\uFB36\uFB38-\uFB3C\uFB3E\uFB40\uFB41\uFB43\uFB44\uFB46-\uFBB1\uFBD3-\uFD3D\uFD50-\uFD8F\uFD92-\uFDC7\uFDF0-\uFDFB\uFE70-\uFE74\uFE76-\uFEFC\uFF21-\uFF3A\uFF41-\uFF5A\uFF66-\uFFBE\uFFC2-\uFFC7\uFFCA-\uFFCF\uFFD2-\uFFD7\uFFDA-\uFFDC]|\uD800[\uDC00-\uDC0B\uDC0D-\uDC26\uDC28-\uDC3A\uDC3C\uDC3D\uDC3F-\uDC4D\uDC50-\uDC5D\uDC80-\uDCFA\uDD40-\uDD74\uDE80-\uDE9C\uDEA0-\uDED0\uDF00-\uDF1F\uDF2D-\uDF4A\uDF50-\uDF75\uDF80-\uDF9D\uDFA0-\uDFC3\uDFC8-\uDFCF\uDFD1-\uDFD5]|\uD801[\uDC00-\uDC9D\uDCB0-\uDCD3\uDCD8-\uDCFB\uDD00-\uDD27\uDD30-\uDD63\uDE00-\uDF36\uDF40-\uDF55\uDF60-\uDF67]|\uD802[\uDC00-\uDC05\uDC08\uDC0A-\uDC35\uDC37\uDC38\uDC3C\uDC3F-\uDC55\uDC60-\uDC76\uDC80-\uDC9E\uDCE0-\uDCF2\uDCF4\uDCF5\uDD00-\uDD15\uDD20-\uDD39\uDD80-\uDDB7\uDDBE\uDDBF\uDE00\uDE10-\uDE13\uDE15-\uDE17\uDE19-\uDE33\uDE60-\uDE7C\uDE80-\uDE9C\uDEC0-\uDEC7\uDEC9-\uDEE4\uDF00-\uDF35\uDF40-\uDF55\uDF60-\uDF72\uDF80-\uDF91]|\uD803[\uDC00-\uDC48\uDC80-\uDCB2\uDCC0-\uDCF2]|\uD804[\uDC03-\uDC37\uDC83-\uDCAF\uDCD0-\uDCE8\uDD03-\uDD26\uDD50-\uDD72\uDD76\uDD83-\uDDB2\uDDC1-\uDDC4\uDDDA\uDDDC\uDE00-\uDE11\uDE13-\uDE2B\uDE80-\uDE86\uDE88\uDE8A-\uDE8D\uDE8F-\uDE9D\uDE9F-\uDEA8\uDEB0-\uDEDE\uDF05-\uDF0C\uDF0F\uDF10\uDF13-\uDF28\uDF2A-\uDF30\uDF32\uDF33\uDF35-\uDF39\uDF3D\uDF50\uDF5D-\uDF61]|\uD805[\uDC00-\uDC34\uDC47-\uDC4A\uDC80-\uDCAF\uDCC4\uDCC5\uDCC7\uDD80-\uDDAE\uDDD8-\uDDDB\uDE00-\uDE2F\uDE44\uDE80-\uDEAA\uDF00-\uDF19]|\uD806[\uDCA0-\uDCDF\uDCFF\uDE00\uDE0B-\uDE32\uDE3A\uDE50\uDE5C-\uDE83\uDE86-\uDE89\uDEC0-\uDEF8]|\uD807[\uDC00-\uDC08\uDC0A-\uDC2E\uDC40\uDC72-\uDC8F\uDD00-\uDD06\uDD08\uDD09\uDD0B-\uDD30\uDD46]|\uD808[\uDC00-\uDF99]|\uD809[\uDC00-\uDC6E\uDC80-\uDD43]|[\uD80C\uD81C-\uD820\uD840-\uD868\uD86A-\uD86C\uD86F-\uD872\uD874-\uD879][\uDC00-\uDFFF]|\uD80D[\uDC00-\uDC2E]|\uD811[\uDC00-\uDE46]|\uD81A[\uDC00-\uDE38\uDE40-\uDE5E\uDED0-\uDEED\uDF00-\uDF2F\uDF40-\uDF43\uDF63-\uDF77\uDF7D-\uDF8F]|\uD81B[\uDF00-\uDF44\uDF50\uDF93-\uDF9F\uDFE0\uDFE1]|\uD821[\uDC00-\uDFEC]|\uD822[\uDC00-\uDEF2]|\uD82C[\uDC00-\uDD1E\uDD70-\uDEFB]|\uD82F[\uDC00-\uDC6A\uDC70-\uDC7C\uDC80-\uDC88\uDC90-\uDC99]|\uD835[\uDC00-\uDC54\uDC56-\uDC9C\uDC9E\uDC9F\uDCA2\uDCA5\uDCA6\uDCA9-\uDCAC\uDCAE-\uDCB9\uDCBB\uDCBD-\uDCC3\uDCC5-\uDD05\uDD07-\uDD0A\uDD0D-\uDD14\uDD16-\uDD1C\uDD1E-\uDD39\uDD3B-\uDD3E\uDD40-\uDD44\uDD46\uDD4A-\uDD50\uDD52-\uDEA5\uDEA8-\uDEC0\uDEC2-\uDEDA\uDEDC-\uDEFA\uDEFC-\uDF14\uDF16-\uDF34\uDF36-\uDF4E\uDF50-\uDF6E\uDF70-\uDF88\uDF8A-\uDFA8\uDFAA-\uDFC2\uDFC4-\uDFCB]|\uD83A[\uDC00-\uDCC4\uDD00-\uDD43]|\uD83B[\uDE00-\uDE03\uDE05-\uDE1F\uDE21\uDE22\uDE24\uDE27\uDE29-\uDE32\uDE34-\uDE37\uDE39\uDE3B\uDE42\uDE47\uDE49\uDE4B\uDE4D-\uDE4F\uDE51\uDE52\uDE54\uDE57\uDE59\uDE5B\uDE5D\uDE5F\uDE61\uDE62\uDE64\uDE67-\uDE6A\uDE6C-\uDE72\uDE74-\uDE77\uDE79-\uDE7C\uDE7E\uDE80-\uDE89\uDE8B-\uDE9B\uDEA1-\uDEA3\uDEA5-\uDEA9\uDEAB-\uDEBB]|\uD869[\uDC00-\uDED6\uDF00-\uDFFF]|\uD86D[\uDC00-\uDF34\uDF40-\uDFFF]|\uD86E[\uDC00-\uDC1D\uDC20-\uDFFF]|\uD873[\uDC00-\uDEA1\uDEB0-\uDFFF]|\uD87A[\uDC00-\uDFE0]|\uD87E[\uDC00-\uDE1D]/;
 var ID_Continue = /[\xAA\xB5\xBA\xC0-\xD6\xD8-\xF6\xF8-\u02C1\u02C6-\u02D1\u02E0-\u02E4\u02EC\u02EE\u0300-\u0374\u0376\u0377\u037A-\u037D\u037F\u0386\u0388-\u038A\u038C\u038E-\u03A1\u03A3-\u03F5\u03F7-\u0481\u0483-\u0487\u048A-\u052F\u0531-\u0556\u0559\u0561-\u0587\u0591-\u05BD\u05BF\u05C1\u05C2\u05C4\u05C5\u05C7\u05D0-\u05EA\u05F0-\u05F2\u0610-\u061A\u0620-\u0669\u066E-\u06D3\u06D5-\u06DC\u06DF-\u06E8\u06EA-\u06FC\u06FF\u0710-\u074A\u074D-\u07B1\u07C0-\u07F5\u07FA\u0800-\u082D\u0840-\u085B\u0860-\u086A\u08A0-\u08B4\u08B6-\u08BD\u08D4-\u08E1\u08E3-\u0963\u0966-\u096F\u0971-\u0983\u0985-\u098C\u098F\u0990\u0993-\u09A8\u09AA-\u09B0\u09B2\u09B6-\u09B9\u09BC-\u09C4\u09C7\u09C8\u09CB-\u09CE\u09D7\u09DC\u09DD\u09DF-\u09E3\u09E6-\u09F1\u09FC\u0A01-\u0A03\u0A05-\u0A0A\u0A0F\u0A10\u0A13-\u0A28\u0A2A-\u0A30\u0A32\u0A33\u0A35\u0A36\u0A38\u0A39\u0A3C\u0A3E-\u0A42\u0A47\u0A48\u0A4B-\u0A4D\u0A51\u0A59-\u0A5C\u0A5E\u0A66-\u0A75\u0A81-\u0A83\u0A85-\u0A8D\u0A8F-\u0A91\u0A93-\u0AA8\u0AAA-\u0AB0\u0AB2\u0AB3\u0AB5-\u0AB9\u0ABC-\u0AC5\u0AC7-\u0AC9\u0ACB-\u0ACD\u0AD0\u0AE0-\u0AE3\u0AE6-\u0AEF\u0AF9-\u0AFF\u0B01-\u0B03\u0B05-\u0B0C\u0B0F\u0B10\u0B13-\u0B28\u0B2A-\u0B30\u0B32\u0B33\u0B35-\u0B39\u0B3C-\u0B44\u0B47\u0B48\u0B4B-\u0B4D\u0B56\u0B57\u0B5C\u0B5D\u0B5F-\u0B63\u0B66-\u0B6F\u0B71\u0B82\u0B83\u0B85-\u0B8A\u0B8E-\u0B90\u0B92-\u0B95\u0B99\u0B9A\u0B9C\u0B9E\u0B9F\u0BA3\u0BA4\u0BA8-\u0BAA\u0BAE-\u0BB9\u0BBE-\u0BC2\u0BC6-\u0BC8\u0BCA-\u0BCD\u0BD0\u0BD7\u0BE6-\u0BEF\u0C00-\u0C03\u0C05-\u0C0C\u0C0E-\u0C10\u0C12-\u0C28\u0C2A-\u0C39\u0C3D-\u0C44\u0C46-\u0C48\u0C4A-\u0C4D\u0C55\u0C56\u0C58-\u0C5A\u0C60-\u0C63\u0C66-\u0C6F\u0C80-\u0C83\u0C85-\u0C8C\u0C8E-\u0C90\u0C92-\u0CA8\u0CAA-\u0CB3\u0CB5-\u0CB9\u0CBC-\u0CC4\u0CC6-\u0CC8\u0CCA-\u0CCD\u0CD5\u0CD6\u0CDE\u0CE0-\u0CE3\u0CE6-\u0CEF\u0CF1\u0CF2\u0D00-\u0D03\u0D05-\u0D0C\u0D0E-\u0D10\u0D12-\u0D44\u0D46-\u0D48\u0D4A-\u0D4E\u0D54-\u0D57\u0D5F-\u0D63\u0D66-\u0D6F\u0D7A-\u0D7F\u0D82\u0D83\u0D85-\u0D96\u0D9A-\u0DB1\u0DB3-\u0DBB\u0DBD\u0DC0-\u0DC6\u0DCA\u0DCF-\u0DD4\u0DD6\u0DD8-\u0DDF\u0DE6-\u0DEF\u0DF2\u0DF3\u0E01-\u0E3A\u0E40-\u0E4E\u0E50-\u0E59\u0E81\u0E82\u0E84\u0E87\u0E88\u0E8A\u0E8D\u0E94-\u0E97\u0E99-\u0E9F\u0EA1-\u0EA3\u0EA5\u0EA7\u0EAA\u0EAB\u0EAD-\u0EB9\u0EBB-\u0EBD\u0EC0-\u0EC4\u0EC6\u0EC8-\u0ECD\u0ED0-\u0ED9\u0EDC-\u0EDF\u0F00\u0F18\u0F19\u0F20-\u0F29\u0F35\u0F37\u0F39\u0F3E-\u0F47\u0F49-\u0F6C\u0F71-\u0F84\u0F86-\u0F97\u0F99-\u0FBC\u0FC6\u1000-\u1049\u1050-\u109D\u10A0-\u10C5\u10C7\u10CD\u10D0-\u10FA\u10FC-\u1248\u124A-\u124D\u1250-\u1256\u1258\u125A-\u125D\u1260-\u1288\u128A-\u128D\u1290-\u12B0\u12B2-\u12B5\u12B8-\u12BE\u12C0\u12C2-\u12C5\u12C8-\u12D6\u12D8-\u1310\u1312-\u1315\u1318-\u135A\u135D-\u135F\u1380-\u138F\u13A0-\u13F5\u13F8-\u13FD\u1401-\u166C\u166F-\u167F\u1681-\u169A\u16A0-\u16EA\u16EE-\u16F8\u1700-\u170C\u170E-\u1714\u1720-\u1734\u1740-\u1753\u1760-\u176C\u176E-\u1770\u1772\u1773\u1780-\u17D3\u17D7\u17DC\u17DD\u17E0-\u17E9\u180B-\u180D\u1810-\u1819\u1820-\u1877\u1880-\u18AA\u18B0-\u18F5\u1900-\u191E\u1920-\u192B\u1930-\u193B\u1946-\u196D\u1970-\u1974\u1980-\u19AB\u19B0-\u19C9\u19D0-\u19D9\u1A00-\u1A1B\u1A20-\u1A5E\u1A60-\u1A7C\u1A7F-\u1A89\u1A90-\u1A99\u1AA7\u1AB0-\u1ABD\u1B00-\u1B4B\u1B50-\u1B59\u1B6B-\u1B73\u1B80-\u1BF3\u1C00-\u1C37\u1C40-\u1C49\u1C4D-\u1C7D\u1C80-\u1C88\u1CD0-\u1CD2\u1CD4-\u1CF9\u1D00-\u1DF9\u1DFB-\u1F15\u1F18-\u1F1D\u1F20-\u1F45\u1F48-\u1F4D\u1F50-\u1F57\u1F59\u1F5B\u1F5D\u1F5F-\u1F7D\u1F80-\u1FB4\u1FB6-\u1FBC\u1FBE\u1FC2-\u1FC4\u1FC6-\u1FCC\u1FD0-\u1FD3\u1FD6-\u1FDB\u1FE0-\u1FEC\u1FF2-\u1FF4\u1FF6-\u1FFC\u203F\u2040\u2054\u2071\u207F\u2090-\u209C\u20D0-\u20DC\u20E1\u20E5-\u20F0\u2102\u2107\u210A-\u2113\u2115\u2119-\u211D\u2124\u2126\u2128\u212A-\u212D\u212F-\u2139\u213C-\u213F\u2145-\u2149\u214E\u2160-\u2188\u2C00-\u2C2E\u2C30-\u2C5E\u2C60-\u2CE4\u2CEB-\u2CF3\u2D00-\u2D25\u2D27\u2D2D\u2D30-\u2D67\u2D6F\u2D7F-\u2D96\u2DA0-\u2DA6\u2DA8-\u2DAE\u2DB0-\u2DB6\u2DB8-\u2DBE\u2DC0-\u2DC6\u2DC8-\u2DCE\u2DD0-\u2DD6\u2DD8-\u2DDE\u2DE0-\u2DFF\u2E2F\u3005-\u3007\u3021-\u302F\u3031-\u3035\u3038-\u303C\u3041-\u3096\u3099\u309A\u309D-\u309F\u30A1-\u30FA\u30FC-\u30FF\u3105-\u312E\u3131-\u318E\u31A0-\u31BA\u31F0-\u31FF\u3400-\u4DB5\u4E00-\u9FEA\uA000-\uA48C\uA4D0-\uA4FD\uA500-\uA60C\uA610-\uA62B\uA640-\uA66F\uA674-\uA67D\uA67F-\uA6F1\uA717-\uA71F\uA722-\uA788\uA78B-\uA7AE\uA7B0-\uA7B7\uA7F7-\uA827\uA840-\uA873\uA880-\uA8C5\uA8D0-\uA8D9\uA8E0-\uA8F7\uA8FB\uA8FD\uA900-\uA92D\uA930-\uA953\uA960-\uA97C\uA980-\uA9C0\uA9CF-\uA9D9\uA9E0-\uA9FE\uAA00-\uAA36\uAA40-\uAA4D\uAA50-\uAA59\uAA60-\uAA76\uAA7A-\uAAC2\uAADB-\uAADD\uAAE0-\uAAEF\uAAF2-\uAAF6\uAB01-\uAB06\uAB09-\uAB0E\uAB11-\uAB16\uAB20-\uAB26\uAB28-\uAB2E\uAB30-\uAB5A\uAB5C-\uAB65\uAB70-\uABEA\uABEC\uABED\uABF0-\uABF9\uAC00-\uD7A3\uD7B0-\uD7C6\uD7CB-\uD7FB\uF900-\uFA6D\uFA70-\uFAD9\uFB00-\uFB06\uFB13-\uFB17\uFB1D-\uFB28\uFB2A-\uFB36\uFB38-\uFB3C\uFB3E\uFB40\uFB41\uFB43\uFB44\uFB46-\uFBB1\uFBD3-\uFD3D\uFD50-\uFD8F\uFD92-\uFDC7\uFDF0-\uFDFB\uFE00-\uFE0F\uFE20-\uFE2F\uFE33\uFE34\uFE4D-\uFE4F\uFE70-\uFE74\uFE76-\uFEFC\uFF10-\uFF19\uFF21-\uFF3A\uFF3F\uFF41-\uFF5A\uFF66-\uFFBE\uFFC2-\uFFC7\uFFCA-\uFFCF\uFFD2-\uFFD7\uFFDA-\uFFDC]|\uD800[\uDC00-\uDC0B\uDC0D-\uDC26\uDC28-\uDC3A\uDC3C\uDC3D\uDC3F-\uDC4D\uDC50-\uDC5D\uDC80-\uDCFA\uDD40-\uDD74\uDDFD\uDE80-\uDE9C\uDEA0-\uDED0\uDEE0\uDF00-\uDF1F\uDF2D-\uDF4A\uDF50-\uDF7A\uDF80-\uDF9D\uDFA0-\uDFC3\uDFC8-\uDFCF\uDFD1-\uDFD5]|\uD801[\uDC00-\uDC9D\uDCA0-\uDCA9\uDCB0-\uDCD3\uDCD8-\uDCFB\uDD00-\uDD27\uDD30-\uDD63\uDE00-\uDF36\uDF40-\uDF55\uDF60-\uDF67]|\uD802[\uDC00-\uDC05\uDC08\uDC0A-\uDC35\uDC37\uDC38\uDC3C\uDC3F-\uDC55\uDC60-\uDC76\uDC80-\uDC9E\uDCE0-\uDCF2\uDCF4\uDCF5\uDD00-\uDD15\uDD20-\uDD39\uDD80-\uDDB7\uDDBE\uDDBF\uDE00-\uDE03\uDE05\uDE06\uDE0C-\uDE13\uDE15-\uDE17\uDE19-\uDE33\uDE38-\uDE3A\uDE3F\uDE60-\uDE7C\uDE80-\uDE9C\uDEC0-\uDEC7\uDEC9-\uDEE6\uDF00-\uDF35\uDF40-\uDF55\uDF60-\uDF72\uDF80-\uDF91]|\uD803[\uDC00-\uDC48\uDC80-\uDCB2\uDCC0-\uDCF2]|\uD804[\uDC00-\uDC46\uDC66-\uDC6F\uDC7F-\uDCBA\uDCD0-\uDCE8\uDCF0-\uDCF9\uDD00-\uDD34\uDD36-\uDD3F\uDD50-\uDD73\uDD76\uDD80-\uDDC4\uDDCA-\uDDCC\uDDD0-\uDDDA\uDDDC\uDE00-\uDE11\uDE13-\uDE37\uDE3E\uDE80-\uDE86\uDE88\uDE8A-\uDE8D\uDE8F-\uDE9D\uDE9F-\uDEA8\uDEB0-\uDEEA\uDEF0-\uDEF9\uDF00-\uDF03\uDF05-\uDF0C\uDF0F\uDF10\uDF13-\uDF28\uDF2A-\uDF30\uDF32\uDF33\uDF35-\uDF39\uDF3C-\uDF44\uDF47\uDF48\uDF4B-\uDF4D\uDF50\uDF57\uDF5D-\uDF63\uDF66-\uDF6C\uDF70-\uDF74]|\uD805[\uDC00-\uDC4A\uDC50-\uDC59\uDC80-\uDCC5\uDCC7\uDCD0-\uDCD9\uDD80-\uDDB5\uDDB8-\uDDC0\uDDD8-\uDDDD\uDE00-\uDE40\uDE44\uDE50-\uDE59\uDE80-\uDEB7\uDEC0-\uDEC9\uDF00-\uDF19\uDF1D-\uDF2B\uDF30-\uDF39]|\uD806[\uDCA0-\uDCE9\uDCFF\uDE00-\uDE3E\uDE47\uDE50-\uDE83\uDE86-\uDE99\uDEC0-\uDEF8]|\uD807[\uDC00-\uDC08\uDC0A-\uDC36\uDC38-\uDC40\uDC50-\uDC59\uDC72-\uDC8F\uDC92-\uDCA7\uDCA9-\uDCB6\uDD00-\uDD06\uDD08\uDD09\uDD0B-\uDD36\uDD3A\uDD3C\uDD3D\uDD3F-\uDD47\uDD50-\uDD59]|\uD808[\uDC00-\uDF99]|\uD809[\uDC00-\uDC6E\uDC80-\uDD43]|[\uD80C\uD81C-\uD820\uD840-\uD868\uD86A-\uD86C\uD86F-\uD872\uD874-\uD879][\uDC00-\uDFFF]|\uD80D[\uDC00-\uDC2E]|\uD811[\uDC00-\uDE46]|\uD81A[\uDC00-\uDE38\uDE40-\uDE5E\uDE60-\uDE69\uDED0-\uDEED\uDEF0-\uDEF4\uDF00-\uDF36\uDF40-\uDF43\uDF50-\uDF59\uDF63-\uDF77\uDF7D-\uDF8F]|\uD81B[\uDF00-\uDF44\uDF50-\uDF7E\uDF8F-\uDF9F\uDFE0\uDFE1]|\uD821[\uDC00-\uDFEC]|\uD822[\uDC00-\uDEF2]|\uD82C[\uDC00-\uDD1E\uDD70-\uDEFB]|\uD82F[\uDC00-\uDC6A\uDC70-\uDC7C\uDC80-\uDC88\uDC90-\uDC99\uDC9D\uDC9E]|\uD834[\uDD65-\uDD69\uDD6D-\uDD72\uDD7B-\uDD82\uDD85-\uDD8B\uDDAA-\uDDAD\uDE42-\uDE44]|\uD835[\uDC00-\uDC54\uDC56-\uDC9C\uDC9E\uDC9F\uDCA2\uDCA5\uDCA6\uDCA9-\uDCAC\uDCAE-\uDCB9\uDCBB\uDCBD-\uDCC3\uDCC5-\uDD05\uDD07-\uDD0A\uDD0D-\uDD14\uDD16-\uDD1C\uDD1E-\uDD39\uDD3B-\uDD3E\uDD40-\uDD44\uDD46\uDD4A-\uDD50\uDD52-\uDEA5\uDEA8-\uDEC0\uDEC2-\uDEDA\uDEDC-\uDEFA\uDEFC-\uDF14\uDF16-\uDF34\uDF36-\uDF4E\uDF50-\uDF6E\uDF70-\uDF88\uDF8A-\uDFA8\uDFAA-\uDFC2\uDFC4-\uDFCB\uDFCE-\uDFFF]|\uD836[\uDE00-\uDE36\uDE3B-\uDE6C\uDE75\uDE84\uDE9B-\uDE9F\uDEA1-\uDEAF]|\uD838[\uDC00-\uDC06\uDC08-\uDC18\uDC1B-\uDC21\uDC23\uDC24\uDC26-\uDC2A]|\uD83A[\uDC00-\uDCC4\uDCD0-\uDCD6\uDD00-\uDD4A\uDD50-\uDD59]|\uD83B[\uDE00-\uDE03\uDE05-\uDE1F\uDE21\uDE22\uDE24\uDE27\uDE29-\uDE32\uDE34-\uDE37\uDE39\uDE3B\uDE42\uDE47\uDE49\uDE4B\uDE4D-\uDE4F\uDE51\uDE52\uDE54\uDE57\uDE59\uDE5B\uDE5D\uDE5F\uDE61\uDE62\uDE64\uDE67-\uDE6A\uDE6C-\uDE72\uDE74-\uDE77\uDE79-\uDE7C\uDE7E\uDE80-\uDE89\uDE8B-\uDE9B\uDEA1-\uDEA3\uDEA5-\uDEA9\uDEAB-\uDEBB]|\uD869[\uDC00-\uDED6\uDF00-\uDFFF]|\uD86D[\uDC00-\uDF34\uDF40-\uDFFF]|\uD86E[\uDC00-\uDC1D\uDC20-\uDFFF]|\uD873[\uDC00-\uDEA1\uDEB0-\uDFFF]|\uD87A[\uDC00-\uDFE0]|\uD87E[\uDC00-\uDE1D]|\uDB40[\uDD00-\uDDEF]/;
@@ -18971,10 +17503,7 @@ var parse$8 = function parse(text, reviver) {
   root$1 = undefined;
 
   do {
-    token = lex(); // This code is unreachable.
-    // if (!parseStates[parseState]) {
-    //     throw invalidParseState()
-    // }
+    token = lex();
 
     parseStates[parseState]();
   } while (token.type !== 'eof');
@@ -19019,10 +17548,7 @@ function lex() {
   sign = 1;
 
   for (;;) {
-    c = peek(); // This code is unreachable.
-    // if (!lexStates[lexState]) {
-    //     throw invalidLexState(lexState)
-    // }
+    c = peek();
 
     const token = lexStates[lexState]();
 
@@ -19086,10 +17612,7 @@ const lexStates = {
     if (util$3.isSpaceSeparator(c)) {
       read();
       return;
-    } // This code is unreachable.
-    // if (!lexStates[parseState]) {
-    //     throw invalidLexState(parseState)
-    // }
+    }
 
 
     return lexStates[parseState]();
@@ -19542,9 +18065,6 @@ const lexStates = {
       case '{':
       case '[':
         return newToken('punctuator', read());
-      // This code is unreachable since the default lexState handles eof.
-      // case undefined:
-      //     return newToken('eof')
     }
 
     lexState = 'value';
@@ -19623,11 +18143,6 @@ const lexStates = {
   },
 
   end() {
-    // This code is unreachable since it's handled by the default lexState.
-    // if (c === undefined) {
-    //     read()
-    //     return newToken('eof')
-    // }
     throw invalidChar(read());
   }
 
@@ -19786,25 +18301,16 @@ const parseStates = {
         return;
 
       case 'punctuator':
-        // This code is unreachable since it's handled by the lexState.
-        // if (token.value !== '}') {
-        //     throw invalidToken()
-        // }
         pop();
         return;
 
       case 'eof':
         throw invalidEOF();
-    } // This code is unreachable since it's handled by the lexState.
-    // throw invalidToken()
+    }
 
   },
 
   afterPropertyName() {
-    // This code is unreachable since it's handled by the lexState.
-    // if (token.type !== 'punctuator' || token.value !== ':') {
-    //     throw invalidToken()
-    // }
     if (token.type === 'eof') {
       throw invalidEOF();
     }
@@ -19834,10 +18340,6 @@ const parseStates = {
   },
 
   afterPropertyValue() {
-    // This code is unreachable since it's handled by the lexState.
-    // if (token.type !== 'punctuator') {
-    //     throw invalidToken()
-    // }
     if (token.type === 'eof') {
       throw invalidEOF();
     }
@@ -19849,16 +18351,11 @@ const parseStates = {
 
       case '}':
         pop();
-    } // This code is unreachable since it's handled by the lexState.
-    // throw invalidToken()
+    }
 
   },
 
   afterArrayValue() {
-    // This code is unreachable since it's handled by the lexState.
-    // if (token.type !== 'punctuator') {
-    //     throw invalidToken()
-    // }
     if (token.type === 'eof') {
       throw invalidEOF();
     }
@@ -19870,15 +18367,11 @@ const parseStates = {
 
       case ']':
         pop();
-    } // This code is unreachable since it's handled by the lexState.
-    // throw invalidToken()
+    }
 
   },
 
-  end() {// This code is unreachable since it's handled by the lexState.
-    // if (token.type !== 'eof') {
-    //     throw invalidToken()
-    // }
+  end() {
   }
 
 };
@@ -19906,9 +18399,6 @@ function push$1() {
     case 'string':
       value = token.value;
       break;
-    // This code is unreachable.
-    // default:
-    //     throw invalidToken()
   }
 
   if (root$1 === undefined) {
@@ -19955,14 +18445,7 @@ function pop() {
   } else {
     parseState = 'afterPropertyValue';
   }
-} // This code is unreachable.
-// function invalidParseState () {
-//     return new Error(`JSON5: invalid parse state '${parseState}'`)
-// }
-// This code is unreachable.
-// function invalidLexState (state) {
-//     return new Error(`JSON5: invalid lex state '${state}'`)
-// }
+}
 
 
 function invalidChar(c) {
@@ -19975,14 +18458,7 @@ function invalidChar(c) {
 
 function invalidEOF() {
   return syntaxError$2(`JSON5: invalid end of input at ${line$v}:${column}`);
-} // This code is unreachable.
-// function invalidToken () {
-//     if (token.type === 'eof') {
-//         return syntaxError(`JSON5: invalid end of input at ${line}:${column}`)
-//     }
-//     const c = String.fromCodePoint(token.value.codePointAt(0))
-//     return syntaxError(`JSON5: invalid character '${formatChar(c)}' at ${line}:${column}`)
-// }
+}
 
 
 function invalidIdentifier() {
@@ -20320,7 +18796,6 @@ var loadJson5 = function (filePath, content) {
 };
 
 var caller = function () {
-  // see https://code.google.com/p/v8/wiki/JavaScriptStackTraceApi
   var origPrepareStackTrace = Error.prepareStackTrace;
 
   Error.prepareStackTrace = function (_, stack) {
@@ -20334,7 +18809,7 @@ var caller = function () {
 
 var pathParse = createCommonjsModule(function (module) {
 
-  var isWindows = process.platform === 'win32'; // Regex to split a windows path into into [dir, root, basename, name, ext]
+  var isWindows = process.platform === 'win32';
 
   var splitWindowsRe = /^(((?:[a-zA-Z]:|[\\\/]{2}[^\\\/]+[\\\/]+[^\\\/]+)?[\\\/]?)(?:[^\\\/]*[\\\/])*)((\.{1,2}|[^\\\/]+?|)(\.[^.\/\\]*|))[\\\/]*$/;
   var win32 = {};
@@ -20361,8 +18836,7 @@ var pathParse = createCommonjsModule(function (module) {
       ext: allParts[4],
       name: allParts[3]
     };
-  }; // Split a filename into [dir, root, basename, name, ext], unix version
-  // 'root' is just a slash, or nothing.
+  };
 
 
   var splitPathRe = /^((\/?)(?:[^\/]*\/)*)((\.{1,2}|[^\/]+?|)(\.[^.\/]*|))[\/]*$/;
@@ -20393,7 +18867,6 @@ var pathParse = createCommonjsModule(function (module) {
   };
 
   if (isWindows) module.exports = win32.parse;else
-    /* posix */
     module.exports = posix.parse;
   module.exports.posix = posix.parse;
   module.exports.win32 = win32.parse;
@@ -20439,16 +18912,9 @@ var nodeModulesPaths = function nodeModulesPaths(start, opts, request) {
 };
 
 var normalizeOptions$1 = function (x, opts) {
-  /**
-   * This file is purposefully a passthrough. It's expected that third-party
-   * environments will override it at runtime in order to inject special logic
-   * into `resolve` (by manipulating the options). One such example is the PnP
-   * code path in Yarn.
-   */
   return opts || {};
 };
 
-/* eslint no-invalid-this: 1 */
 
 var ERROR_MESSAGE = 'Function.prototype.bind called on incompatible ';
 var slice$1 = Array.prototype.slice;
@@ -20751,7 +19217,7 @@ function specifierIncluded$1(current, specifier) {
     var ver = parseInt(versionParts[i] || 0, 10);
 
     if (cur === ver) {
-      continue; // eslint-disable-line no-restricted-syntax, no-continue
+      continue;
     }
 
     if (op === '<') {
@@ -20908,7 +19374,7 @@ var async$5 = function resolve(x, options, callback) {
   var includeCoreModules = opts.includeCoreModules !== false;
   var basedir = opts.basedir || path__default['default'].dirname(caller());
   var parent = opts.filename || basedir;
-  opts.paths = opts.paths || []; // ensure that `basedir` is an absolute path at this point, resolving against the process' current working directory
+  opts.paths = opts.paths || [];
 
   var absoluteStart = path__default['default'].resolve(basedir);
   maybeRealpath(realpath, absoluteStart, opts, function (err, realStart) {
@@ -21013,7 +19479,6 @@ var async$5 = function resolve(x, options, callback) {
       if (unwrapErr) return loadpkg(path__default['default'].dirname(dir), cb);
       var pkgfile = path__default['default'].join(pkgdir, 'package.json');
       isFile(pkgfile, function (err, ex) {
-        // on err, ex is false
         if (!ex) return loadpkg(path__default['default'].dirname(dir), cb);
         readPackage(readFile, pkgfile, function (err, pkgParam) {
           if (err) cb(err);
@@ -21299,7 +19764,7 @@ function specifierIncluded(specifier) {
     var ver = parseInt(versionParts[i] || 0, 10);
 
     if (cur === ver) {
-      continue; // eslint-disable-line no-restricted-syntax, no-continue
+      continue;
     }
 
     if (op === '<') {
@@ -21351,7 +19816,6 @@ function versionIncluded(specifierValue) {
 var core = {};
 
 for (var mod in data$1) {
-  // eslint-disable-line no-restricted-syntax
   if (Object.prototype.hasOwnProperty.call(data$1, mod)) {
     core[mod] = versionIncluded(data$1[mod]);
   }
@@ -21447,7 +19911,7 @@ var sync$9 = function resolveSync(x, options) {
   var includeCoreModules = opts.includeCoreModules !== false;
   var basedir = opts.basedir || path__default['default'].dirname(caller());
   var parent = opts.filename || basedir;
-  opts.paths = opts.paths || []; // ensure that `basedir` is an absolute path at this point, resolving against the process' current working directory
+  opts.paths = opts.paths || [];
 
   var absoluteStart = maybeRealpathSync(realpathSync, path__default['default'].resolve(basedir), opts);
 
@@ -21475,7 +19939,7 @@ var sync$9 = function resolveSync(x, options) {
       var r = opts.pathFilter(pkg.pkg, x, rfile);
 
       if (r) {
-        x = path__default['default'].resolve(pkg.dir, r); // eslint-disable-line no-param-reassign
+        x = path__default['default'].resolve(pkg.dir, r);
       }
     }
 
@@ -21509,10 +19973,8 @@ var sync$9 = function resolveSync(x, options) {
     var pkg = readPackageSync(readFileSync, pkgfile);
 
     if (pkg && opts.packageFilter) {
-      // v2 will pass pkgfile
       pkg = opts.packageFilter(pkg,
-      /*pkgfile,*/
-      dir); // eslint-disable-line spaced-comment
+      dir);
     }
 
     return {
@@ -21530,10 +19992,8 @@ var sync$9 = function resolveSync(x, options) {
       } catch (e) {}
 
       if (pkg && opts.packageFilter) {
-        // v2 will pass pkgfile
         pkg = opts.packageFilter(pkg,
-        /*pkgfile,*/
-        x); // eslint-disable-line spaced-comment
+        x);
       }
 
       if (pkg && pkg.main) {
@@ -21586,10 +20046,9 @@ var resolve$1 = async$5;
 
 let {
   resolve
-} = require; // In the VS Code and Atom extensions `require` is overridden and `require.resolve` doesn't support the 2nd argument.
+} = require;
 
 if (resolve.length === 1 || process.env.PRETTIER_FALLBACK_RESOLVE) {
-  // @ts-ignore
   resolve = (id, options) => {
     let basedir;
 
@@ -21608,7 +20067,6 @@ var resolve_1 = resolve;
 var semver$1 = createCommonjsModule(function (module, exports) {
   exports = module.exports = SemVer;
   var debug;
-  /* istanbul ignore next */
 
   if (typeof process === 'object' && process.env && process.env.NODE_DEBUG && /\bsemver\b/i.test(process.env.NODE_DEBUG)) {
     debug = function () {
@@ -21618,82 +20076,58 @@ var semver$1 = createCommonjsModule(function (module, exports) {
     };
   } else {
     debug = function () {};
-  } // Note: this is the semver.org version of the spec that it implements
-  // Not necessarily the package version of this code.
+  }
 
 
   exports.SEMVER_SPEC_VERSION = '2.0.0';
   var MAX_LENGTH = 256;
   var MAX_SAFE_INTEGER = Number.MAX_SAFE_INTEGER ||
-  /* istanbul ignore next */
-  9007199254740991; // Max safe segment length for coercion.
+  9007199254740991;
 
-  var MAX_SAFE_COMPONENT_LENGTH = 16; // The actual regexps go on exports.re
+  var MAX_SAFE_COMPONENT_LENGTH = 16;
 
   var re = exports.re = [];
   var src = exports.src = [];
-  var R = 0; // The following Regular Expressions can be used for tokenizing,
-  // validating, and parsing SemVer version strings.
-  // ## Numeric Identifier
-  // A single `0`, or a non-zero digit followed by zero or more digits.
+  var R = 0;
 
   var NUMERICIDENTIFIER = R++;
   src[NUMERICIDENTIFIER] = '0|[1-9]\\d*';
   var NUMERICIDENTIFIERLOOSE = R++;
-  src[NUMERICIDENTIFIERLOOSE] = '[0-9]+'; // ## Non-numeric Identifier
-  // Zero or more digits, followed by a letter or hyphen, and then zero or
-  // more letters, digits, or hyphens.
+  src[NUMERICIDENTIFIERLOOSE] = '[0-9]+';
 
   var NONNUMERICIDENTIFIER = R++;
-  src[NONNUMERICIDENTIFIER] = '\\d*[a-zA-Z-][a-zA-Z0-9-]*'; // ## Main Version
-  // Three dot-separated numeric identifiers.
+  src[NONNUMERICIDENTIFIER] = '\\d*[a-zA-Z-][a-zA-Z0-9-]*';
 
   var MAINVERSION = R++;
   src[MAINVERSION] = '(' + src[NUMERICIDENTIFIER] + ')\\.' + '(' + src[NUMERICIDENTIFIER] + ')\\.' + '(' + src[NUMERICIDENTIFIER] + ')';
   var MAINVERSIONLOOSE = R++;
-  src[MAINVERSIONLOOSE] = '(' + src[NUMERICIDENTIFIERLOOSE] + ')\\.' + '(' + src[NUMERICIDENTIFIERLOOSE] + ')\\.' + '(' + src[NUMERICIDENTIFIERLOOSE] + ')'; // ## Pre-release Version Identifier
-  // A numeric identifier, or a non-numeric identifier.
+  src[MAINVERSIONLOOSE] = '(' + src[NUMERICIDENTIFIERLOOSE] + ')\\.' + '(' + src[NUMERICIDENTIFIERLOOSE] + ')\\.' + '(' + src[NUMERICIDENTIFIERLOOSE] + ')';
 
   var PRERELEASEIDENTIFIER = R++;
   src[PRERELEASEIDENTIFIER] = '(?:' + src[NUMERICIDENTIFIER] + '|' + src[NONNUMERICIDENTIFIER] + ')';
   var PRERELEASEIDENTIFIERLOOSE = R++;
-  src[PRERELEASEIDENTIFIERLOOSE] = '(?:' + src[NUMERICIDENTIFIERLOOSE] + '|' + src[NONNUMERICIDENTIFIER] + ')'; // ## Pre-release Version
-  // Hyphen, followed by one or more dot-separated pre-release version
-  // identifiers.
+  src[PRERELEASEIDENTIFIERLOOSE] = '(?:' + src[NUMERICIDENTIFIERLOOSE] + '|' + src[NONNUMERICIDENTIFIER] + ')';
 
   var PRERELEASE = R++;
   src[PRERELEASE] = '(?:-(' + src[PRERELEASEIDENTIFIER] + '(?:\\.' + src[PRERELEASEIDENTIFIER] + ')*))';
   var PRERELEASELOOSE = R++;
-  src[PRERELEASELOOSE] = '(?:-?(' + src[PRERELEASEIDENTIFIERLOOSE] + '(?:\\.' + src[PRERELEASEIDENTIFIERLOOSE] + ')*))'; // ## Build Metadata Identifier
-  // Any combination of digits, letters, or hyphens.
+  src[PRERELEASELOOSE] = '(?:-?(' + src[PRERELEASEIDENTIFIERLOOSE] + '(?:\\.' + src[PRERELEASEIDENTIFIERLOOSE] + ')*))';
 
   var BUILDIDENTIFIER = R++;
-  src[BUILDIDENTIFIER] = '[0-9A-Za-z-]+'; // ## Build Metadata
-  // Plus sign, followed by one or more period-separated build metadata
-  // identifiers.
+  src[BUILDIDENTIFIER] = '[0-9A-Za-z-]+';
 
   var BUILD = R++;
-  src[BUILD] = '(?:\\+(' + src[BUILDIDENTIFIER] + '(?:\\.' + src[BUILDIDENTIFIER] + ')*))'; // ## Full Version String
-  // A main version, followed optionally by a pre-release version and
-  // build metadata.
-  // Note that the only major, minor, patch, and pre-release sections of
-  // the version string are capturing groups.  The build metadata is not a
-  // capturing group, because it should not ever be used in version
-  // comparison.
+  src[BUILD] = '(?:\\+(' + src[BUILDIDENTIFIER] + '(?:\\.' + src[BUILDIDENTIFIER] + ')*))';
 
   var FULL = R++;
   var FULLPLAIN = 'v?' + src[MAINVERSION] + src[PRERELEASE] + '?' + src[BUILD] + '?';
-  src[FULL] = '^' + FULLPLAIN + '$'; // like full, but allows v1.2.3 and =1.2.3, which people do sometimes.
-  // also, 1.0.0alpha1 (prerelease without the hyphen) which is pretty
-  // common in the npm registry.
+  src[FULL] = '^' + FULLPLAIN + '$';
 
   var LOOSEPLAIN = '[v=\\s]*' + src[MAINVERSIONLOOSE] + src[PRERELEASELOOSE] + '?' + src[BUILD] + '?';
   var LOOSE = R++;
   src[LOOSE] = '^' + LOOSEPLAIN + '$';
   var GTLT = R++;
-  src[GTLT] = '((?:<|>)?=?)'; // Something like "2.*" or "1.2.x".
-  // Note that "x.x" is a valid xRange identifer, meaning "any version"
-  // Only the first item is strictly required.
+  src[GTLT] = '((?:<|>)?=?)';
 
   var XRANGEIDENTIFIERLOOSE = R++;
   src[XRANGEIDENTIFIERLOOSE] = src[NUMERICIDENTIFIERLOOSE] + '|x|X|\\*';
@@ -21706,12 +20140,10 @@ var semver$1 = createCommonjsModule(function (module, exports) {
   var XRANGE = R++;
   src[XRANGE] = '^' + src[GTLT] + '\\s*' + src[XRANGEPLAIN] + '$';
   var XRANGELOOSE = R++;
-  src[XRANGELOOSE] = '^' + src[GTLT] + '\\s*' + src[XRANGEPLAINLOOSE] + '$'; // Coercion.
-  // Extract anything that could conceivably be a part of a valid semver
+  src[XRANGELOOSE] = '^' + src[GTLT] + '\\s*' + src[XRANGEPLAINLOOSE] + '$';
 
   var COERCE = R++;
-  src[COERCE] = '(?:^|[^\\d])' + '(\\d{1,' + MAX_SAFE_COMPONENT_LENGTH + '})' + '(?:\\.(\\d{1,' + MAX_SAFE_COMPONENT_LENGTH + '}))?' + '(?:\\.(\\d{1,' + MAX_SAFE_COMPONENT_LENGTH + '}))?' + '(?:$|[^\\d])'; // Tilde ranges.
-  // Meaning is "reasonably at or greater than"
+  src[COERCE] = '(?:^|[^\\d])' + '(\\d{1,' + MAX_SAFE_COMPONENT_LENGTH + '})' + '(?:\\.(\\d{1,' + MAX_SAFE_COMPONENT_LENGTH + '}))?' + '(?:\\.(\\d{1,' + MAX_SAFE_COMPONENT_LENGTH + '}))?' + '(?:$|[^\\d])';
 
   var LONETILDE = R++;
   src[LONETILDE] = '(?:~>?)';
@@ -21722,8 +20154,7 @@ var semver$1 = createCommonjsModule(function (module, exports) {
   var TILDE = R++;
   src[TILDE] = '^' + src[LONETILDE] + src[XRANGEPLAIN] + '$';
   var TILDELOOSE = R++;
-  src[TILDELOOSE] = '^' + src[LONETILDE] + src[XRANGEPLAINLOOSE] + '$'; // Caret ranges.
-  // Meaning is "at least and backwards compatible with"
+  src[TILDELOOSE] = '^' + src[LONETILDE] + src[XRANGEPLAINLOOSE] + '$';
 
   var LONECARET = R++;
   src[LONECARET] = '(?:\\^)';
@@ -21734,31 +20165,26 @@ var semver$1 = createCommonjsModule(function (module, exports) {
   var CARET = R++;
   src[CARET] = '^' + src[LONECARET] + src[XRANGEPLAIN] + '$';
   var CARETLOOSE = R++;
-  src[CARETLOOSE] = '^' + src[LONECARET] + src[XRANGEPLAINLOOSE] + '$'; // A simple gt/lt/eq thing, or just "" to indicate "any version"
+  src[CARETLOOSE] = '^' + src[LONECARET] + src[XRANGEPLAINLOOSE] + '$';
 
   var COMPARATORLOOSE = R++;
   src[COMPARATORLOOSE] = '^' + src[GTLT] + '\\s*(' + LOOSEPLAIN + ')$|^$';
   var COMPARATOR = R++;
-  src[COMPARATOR] = '^' + src[GTLT] + '\\s*(' + FULLPLAIN + ')$|^$'; // An expression to strip any whitespace between the gtlt and the thing
-  // it modifies, so that `> 1.2.3` ==> `>1.2.3`
+  src[COMPARATOR] = '^' + src[GTLT] + '\\s*(' + FULLPLAIN + ')$|^$';
 
   var COMPARATORTRIM = R++;
-  src[COMPARATORTRIM] = '(\\s*)' + src[GTLT] + '\\s*(' + LOOSEPLAIN + '|' + src[XRANGEPLAIN] + ')'; // this one has to use the /g flag
+  src[COMPARATORTRIM] = '(\\s*)' + src[GTLT] + '\\s*(' + LOOSEPLAIN + '|' + src[XRANGEPLAIN] + ')';
 
   re[COMPARATORTRIM] = new RegExp(src[COMPARATORTRIM], 'g');
-  var comparatorTrimReplace = '$1$2$3'; // Something like `1.2.3 - 1.2.4`
-  // Note that these all use the loose form, because they'll be
-  // checked against either the strict or loose comparator form
-  // later.
+  var comparatorTrimReplace = '$1$2$3';
 
   var HYPHENRANGE = R++;
   src[HYPHENRANGE] = '^\\s*(' + src[XRANGEPLAIN] + ')' + '\\s+-\\s+' + '(' + src[XRANGEPLAIN] + ')' + '\\s*$';
   var HYPHENRANGELOOSE = R++;
-  src[HYPHENRANGELOOSE] = '^\\s*(' + src[XRANGEPLAINLOOSE] + ')' + '\\s+-\\s+' + '(' + src[XRANGEPLAINLOOSE] + ')' + '\\s*$'; // Star ranges basically just allow anything at all.
+  src[HYPHENRANGELOOSE] = '^\\s*(' + src[XRANGEPLAINLOOSE] + ')' + '\\s+-\\s+' + '(' + src[XRANGEPLAINLOOSE] + ')' + '\\s*$';
 
   var STAR = R++;
-  src[STAR] = '(<|>)?=?\\s*\\*'; // Compile to actual regexp objects.
-  // All are flag-free, unless they were created above with a flag.
+  src[STAR] = '(<|>)?=?\\s*\\*';
 
   for (var i = 0; i < R; i++) {
     debug(i, src[i]);
@@ -21854,7 +20280,7 @@ var semver$1 = createCommonjsModule(function (module, exports) {
       throw new TypeError('Invalid Version: ' + version);
     }
 
-    this.raw = version; // these are actually numbers
+    this.raw = version;
 
     this.major = +m[1];
     this.minor = +m[2];
@@ -21870,7 +20296,7 @@ var semver$1 = createCommonjsModule(function (module, exports) {
 
     if (this.patch > MAX_SAFE_INTEGER || this.patch < 0) {
       throw new TypeError('Invalid patch version');
-    } // numberify any prerelease numeric ids
+    }
 
 
     if (!m[4]) {
@@ -21928,7 +20354,7 @@ var semver$1 = createCommonjsModule(function (module, exports) {
   SemVer.prototype.comparePre = function (other) {
     if (!(other instanceof SemVer)) {
       other = new SemVer(other, this.options);
-    } // NOT having a prerelease is > having one
+    }
 
 
     if (this.prerelease.length && !other.prerelease.length) {
@@ -21958,8 +20384,7 @@ var semver$1 = createCommonjsModule(function (module, exports) {
         return compareIdentifiers(a, b);
       }
     } while (++i);
-  }; // preminor will bump the version up to the next minor release, and immediately
-  // down to pre-release. premajor and prepatch work the same way.
+  };
 
 
   SemVer.prototype.inc = function (release, identifier) {
@@ -21980,15 +20405,10 @@ var semver$1 = createCommonjsModule(function (module, exports) {
         break;
 
       case 'prepatch':
-        // If this is already a prerelease, it will bump to the next version
-        // drop any prereleases that might already exist, since they are not
-        // relevant at this point.
         this.prerelease.length = 0;
         this.inc('patch', identifier);
         this.inc('pre', identifier);
         break;
-      // If the input is a non-prerelease version, this acts the same as
-      // prepatch.
 
       case 'prerelease':
         if (this.prerelease.length === 0) {
@@ -21999,10 +20419,6 @@ var semver$1 = createCommonjsModule(function (module, exports) {
         break;
 
       case 'major':
-        // If this is a pre-major version, bump up to the same major version.
-        // Otherwise increment major.
-        // 1.0.0-5 bumps to 1.0.0
-        // 1.1.0 bumps to 2.0.0
         if (this.minor !== 0 || this.patch !== 0 || this.prerelease.length === 0) {
           this.major++;
         }
@@ -22013,10 +20429,6 @@ var semver$1 = createCommonjsModule(function (module, exports) {
         break;
 
       case 'minor':
-        // If this is a pre-minor version, bump up to the same minor version.
-        // Otherwise increment minor.
-        // 1.2.0-5 bumps to 1.2.0
-        // 1.2.1 bumps to 1.3.0
         if (this.patch !== 0 || this.prerelease.length === 0) {
           this.minor++;
         }
@@ -22026,18 +20438,12 @@ var semver$1 = createCommonjsModule(function (module, exports) {
         break;
 
       case 'patch':
-        // If this is not a pre-release version, it will increment the patch.
-        // If it is a pre-release it will bump up to the same patch version.
-        // 1.2.0-5 patches to 1.2.0
-        // 1.2.0 patches to 1.2.1
         if (this.prerelease.length === 0) {
           this.patch++;
         }
 
         this.prerelease = [];
         break;
-      // This probably shouldn't be used publicly.
-      // 1.0.0 "pre" would become 1.0.0-0 which is the wrong direction.
 
       case 'pre':
         if (this.prerelease.length === 0) {
@@ -22053,14 +20459,11 @@ var semver$1 = createCommonjsModule(function (module, exports) {
           }
 
           if (i === -1) {
-            // didn't increment anything
             this.prerelease.push(0);
           }
         }
 
         if (identifier) {
-          // 1.2.0-beta.1 bumps to 1.2.0-beta.2,
-          // 1.2.0-beta.fooblz or 1.2.0-beta bumps to 1.2.0-beta.0
           if (this.prerelease[0] === identifier) {
             if (isNaN(this.prerelease[1])) {
               this.prerelease = [identifier, 0];
@@ -22119,7 +20522,7 @@ var semver$1 = createCommonjsModule(function (module, exports) {
         }
       }
 
-      return defaultResult; // may be undefined
+      return defaultResult;
     }
   }
 
@@ -22321,7 +20724,7 @@ var semver$1 = createCommonjsModule(function (module, exports) {
 
     if (this.operator === '=') {
       this.operator = '';
-    } // if it literally is just '>' or '' then allow anything.
+    }
 
 
     if (!m[2]) {
@@ -22408,13 +20811,12 @@ var semver$1 = createCommonjsModule(function (module, exports) {
 
     this.options = options;
     this.loose = !!options.loose;
-    this.includePrerelease = !!options.includePrerelease; // First, split based on boolean or ||
+    this.includePrerelease = !!options.includePrerelease;
 
     this.raw = range;
     this.set = range.split(/\s*\|\|\s*/).map(function (range) {
       return this.parseRange(range.trim());
     }, this).filter(function (c) {
-      // throw out any that are not relevant for whatever reason
       return c.length;
     });
 
@@ -22438,21 +20840,20 @@ var semver$1 = createCommonjsModule(function (module, exports) {
 
   Range.prototype.parseRange = function (range) {
     var loose = this.options.loose;
-    range = range.trim(); // `1.2.3 - 1.2.4` => `>=1.2.3 <=1.2.4`
+    range = range.trim();
 
     var hr = loose ? re[HYPHENRANGELOOSE] : re[HYPHENRANGE];
     range = range.replace(hr, hyphenReplace);
-    debug('hyphen replace', range); // `> 1.2.3 < 1.2.5` => `>1.2.3 <1.2.5`
+    debug('hyphen replace', range);
 
     range = range.replace(re[COMPARATORTRIM], comparatorTrimReplace);
-    debug('comparator trim', range, re[COMPARATORTRIM]); // `~ 1.2.3` => `~1.2.3`
+    debug('comparator trim', range, re[COMPARATORTRIM]);
 
-    range = range.replace(re[TILDETRIM], tildeTrimReplace); // `^ 1.2.3` => `^1.2.3`
+    range = range.replace(re[TILDETRIM], tildeTrimReplace);
 
-    range = range.replace(re[CARETTRIM], caretTrimReplace); // normalize spaces
+    range = range.replace(re[CARETTRIM], caretTrimReplace);
 
-    range = range.split(/\s+/).join(' '); // At this point, the range is completely trimmed and
-    // ready to be split into comparators.
+    range = range.split(/\s+/).join(' ');
 
     var compRe = loose ? re[COMPARATORLOOSE] : re[COMPARATOR];
     var set = range.split(' ').map(function (comp) {
@@ -22460,7 +20861,6 @@ var semver$1 = createCommonjsModule(function (module, exports) {
     }, this).join(' ').split(/\s+/);
 
     if (this.options.loose) {
-      // in loose mode, throw out any that are not valid comparators
       set = set.filter(function (comp) {
         return !!comp.match(compRe);
       });
@@ -22486,7 +20886,7 @@ var semver$1 = createCommonjsModule(function (module, exports) {
         });
       });
     });
-  }; // Mostly just for testing and legacy API reasons
+  };
 
 
   exports.toComparators = toComparators;
@@ -22497,9 +20897,7 @@ var semver$1 = createCommonjsModule(function (module, exports) {
         return c.value;
       }).join(' ').trim().split(' ');
     });
-  } // comprised of xranges, tildes, stars, and gtlt's at this point.
-  // already replaced the hyphen ranges
-  // turn into a set of JUST comparators.
+  }
 
 
   function parseComparator(comp, options) {
@@ -22517,12 +20915,7 @@ var semver$1 = createCommonjsModule(function (module, exports) {
 
   function isX(id) {
     return !id || id.toLowerCase() === 'x' || id === '*';
-  } // ~, ~> --> * (any, kinda silly)
-  // ~2, ~2.x, ~2.x.x, ~>2, ~>2.x ~>2.x.x --> >=2.0.0 <3.0.0
-  // ~2.0, ~2.0.x, ~>2.0, ~>2.0.x --> >=2.0.0 <2.1.0
-  // ~1.2, ~1.2.x, ~>1.2, ~>1.2.x --> >=1.2.0 <1.3.0
-  // ~1.2.3, ~>1.2.3 --> >=1.2.3 <1.3.0
-  // ~1.2.0, ~>1.2.0 --> >=1.2.0 <1.3.0
+  }
 
 
   function replaceTildes(comp, options) {
@@ -22542,25 +20935,18 @@ var semver$1 = createCommonjsModule(function (module, exports) {
       } else if (isX(m)) {
         ret = '>=' + M + '.0.0 <' + (+M + 1) + '.0.0';
       } else if (isX(p)) {
-        // ~1.2 == >=1.2.0 <1.3.0
         ret = '>=' + M + '.' + m + '.0 <' + M + '.' + (+m + 1) + '.0';
       } else if (pr) {
         debug('replaceTilde pr', pr);
         ret = '>=' + M + '.' + m + '.' + p + '-' + pr + ' <' + M + '.' + (+m + 1) + '.0';
       } else {
-        // ~1.2.3 == >=1.2.3 <1.3.0
         ret = '>=' + M + '.' + m + '.' + p + ' <' + M + '.' + (+m + 1) + '.0';
       }
 
       debug('tilde return', ret);
       return ret;
     });
-  } // ^ --> * (any, kinda silly)
-  // ^2, ^2.x, ^2.x.x --> >=2.0.0 <3.0.0
-  // ^2.0, ^2.0.x --> >=2.0.0 <3.0.0
-  // ^1.2, ^1.2.x --> >=1.2.0 <2.0.0
-  // ^1.2.3 --> >=1.2.3 <2.0.0
-  // ^1.2.0 --> >=1.2.0 <2.0.0
+  }
 
 
   function replaceCarets(comp, options) {
@@ -22640,15 +21026,11 @@ var semver$1 = createCommonjsModule(function (module, exports) {
 
       if (xM) {
         if (gtlt === '>' || gtlt === '<') {
-          // nothing is allowed
           ret = '<0.0.0';
         } else {
-          // nothing is forbidden
           ret = '*';
         }
       } else if (gtlt && anyX) {
-        // we know patch is an x, because we have any x at all.
-        // replace X with 0
         if (xm) {
           m = 0;
         }
@@ -22656,9 +21038,6 @@ var semver$1 = createCommonjsModule(function (module, exports) {
         p = 0;
 
         if (gtlt === '>') {
-          // >1 => >=2.0.0
-          // >1.2 => >=1.3.0
-          // >1.2.3 => >= 1.2.4
           gtlt = '>=';
 
           if (xm) {
@@ -22670,8 +21049,6 @@ var semver$1 = createCommonjsModule(function (module, exports) {
             p = 0;
           }
         } else if (gtlt === '<=') {
-          // <=0.7.x is actually <0.8.0, since any 0.7.x should
-          // pass.  Similarly, <=7.x is actually <8.0.0, etc.
           gtlt = '<';
 
           if (xm) {
@@ -22691,19 +21068,14 @@ var semver$1 = createCommonjsModule(function (module, exports) {
       debug('xRange return', ret);
       return ret;
     });
-  } // Because * is AND-ed with everything else in the comparator,
-  // and '' means "any version", just remove the *s entirely.
+  }
 
 
   function replaceStars(comp, options) {
-    debug('replaceStars', comp, options); // Looseness is ignored here.  star is always as loose as it gets!
+    debug('replaceStars', comp, options);
 
     return comp.trim().replace(re[STAR], '');
-  } // This function is passed to string.replace(re[HYPHENRANGE])
-  // M, m, patch, prerelease, build
-  // 1.2 - 3.4.5 => >=1.2.0 <=3.4.5
-  // 1.2.3 - 3.4 => >=1.2.0 <3.5.0 Any 3.4.x will do
-  // 1.2 - 3.4 => >=1.2.0 <3.5.0
+  }
 
 
   function hyphenReplace($0, from, fM, fm, fp, fpr, fb, to, tM, tm, tp, tpr, tb) {
@@ -22730,7 +21102,7 @@ var semver$1 = createCommonjsModule(function (module, exports) {
     }
 
     return (from + ' ' + to).trim();
-  } // if ANY of the sets match ALL of its comparators, then pass
+  }
 
 
   Range.prototype.test = function (version) {
@@ -22759,11 +21131,6 @@ var semver$1 = createCommonjsModule(function (module, exports) {
     }
 
     if (version.prerelease.length && !options.includePrerelease) {
-      // Find the set of versions that are allowed to have prereleases
-      // For example, ^1.2.3-pr.1 desugars to >=1.2.3-pr.1 <2.0.0
-      // That should allow `1.2.3-pr.2` to pass.
-      // However, `1.2.4-alpha.notready` should NOT be allowed,
-      // even though it's within the range set by the comparators.
       for (i = 0; i < set.length; i++) {
         debug(set[i].semver);
 
@@ -22778,7 +21145,7 @@ var semver$1 = createCommonjsModule(function (module, exports) {
             return true;
           }
         }
-      } // Version has a -pre, but it's not one of the ones we like.
+      }
 
 
       return false;
@@ -22813,9 +21180,7 @@ var semver$1 = createCommonjsModule(function (module, exports) {
 
     versions.forEach(function (v) {
       if (rangeObj.test(v)) {
-        // satisfies(v, range, options)
         if (!max || maxSV.compare(v) === -1) {
-          // compare(max, v, true)
           max = v;
           maxSV = new SemVer(max, options);
         }
@@ -22838,9 +21203,7 @@ var semver$1 = createCommonjsModule(function (module, exports) {
 
     versions.forEach(function (v) {
       if (rangeObj.test(v)) {
-        // satisfies(v, range, options)
         if (!min || minSV.compare(v) === 1) {
-          // compare(min, v, true)
           min = v;
           minSV = new SemVer(min, options);
         }
@@ -22870,7 +21233,6 @@ var semver$1 = createCommonjsModule(function (module, exports) {
     for (var i = 0; i < range.set.length; ++i) {
       var comparators = range.set[i];
       comparators.forEach(function (comparator) {
-        // Clone to avoid manipulating the comparator's semver object.
         var compver = new SemVer(comparator.semver.version);
 
         switch (comparator.operator) {
@@ -22883,7 +21245,6 @@ var semver$1 = createCommonjsModule(function (module, exports) {
 
             compver.raw = compver.format();
 
-          /* fallthrough */
 
           case '':
           case '>=':
@@ -22895,10 +21256,8 @@ var semver$1 = createCommonjsModule(function (module, exports) {
 
           case '<':
           case '<=':
-            /* Ignore maximum versions */
             break;
 
-          /* istanbul ignore next */
 
           default:
             throw new Error('Unexpected operation: ' + comparator.operator);
@@ -22917,20 +21276,18 @@ var semver$1 = createCommonjsModule(function (module, exports) {
 
   function validRange(range, options) {
     try {
-      // Return '*' instead of '' so that truthiness works.
-      // This will throw if it's invalid anyway
       return new Range(range, options).range || '*';
     } catch (er) {
       return null;
     }
-  } // Determine if version is less than all the versions possible in the range
+  }
 
 
   exports.ltr = ltr;
 
   function ltr(version, range, options) {
     return outside(version, range, '<', options);
-  } // Determine if version is greater than all the versions possible in the range.
+  }
 
 
   exports.gtr = gtr;
@@ -22965,13 +21322,12 @@ var semver$1 = createCommonjsModule(function (module, exports) {
 
       default:
         throw new TypeError('Must provide a hilo val of "<" or ">"');
-    } // If it satisifes the range it is not outside
+    }
 
 
     if (satisfies(version, range, options)) {
       return false;
-    } // From now on, variable terms are as if we're in "gtr" mode.
-    // but note that everything is flipped for the "ltr" function.
+    }
 
 
     for (var i = 0; i < range.set.length; ++i) {
@@ -22991,13 +21347,11 @@ var semver$1 = createCommonjsModule(function (module, exports) {
         } else if (ltfn(comparator.semver, low.semver, options)) {
           low = comparator;
         }
-      }); // If the edge version comparator has a operator then our version
-      // isn't outside it
+      });
 
       if (high.operator === comp || high.operator === ecomp) {
         return false;
-      } // If the lowest version comparator has an operator and our version
-      // is less than it then it isn't higher than the range
+      }
 
 
       if ((!low.operator || low.operator === comp) && ltefn(version, low.semver)) {
@@ -23050,7 +21404,7 @@ var hasOwnProperty$9 = Object.prototype.hasOwnProperty;
 var pseudomap = PseudoMap;
 
 function PseudoMap(set) {
-  if (!(this instanceof PseudoMap)) // whyyyyyyy
+  if (!(this instanceof PseudoMap))
     throw new TypeError("Constructor PseudoMap requires 'new'");
   this.clear();
 
@@ -23114,7 +21468,7 @@ Object.defineProperty(PseudoMap.prototype, 'size', {
 
 PseudoMap.prototype.values = PseudoMap.prototype.keys = PseudoMap.prototype.entries = function () {
   throw new Error('iterators are not implemented in this version');
-}; // Either identical, or both NaN
+};
 
 
 function same(a, b) {
@@ -23337,7 +21691,6 @@ Yallist.prototype.forEachReverse = function (fn, thisp) {
 
 Yallist.prototype.get = function (n) {
   for (var i = 0, walker = this.head; walker !== null && i < n; i++) {
-    // abort out of the list early if we hit a cycle
     walker = walker.next;
   }
 
@@ -23348,7 +21701,6 @@ Yallist.prototype.get = function (n) {
 
 Yallist.prototype.getReverse = function (n) {
   for (var i = 0, walker = this.tail; walker !== null && i < n; i++) {
-    // abort out of the list early if we hit a cycle
     walker = walker.prev;
   }
 
@@ -23579,10 +21931,7 @@ function Node(value, prev, next, list) {
   }
 }
 
-var lruCache = LRUCache; // This will be a proper iterable 'Map' in engines that support it,
-// or a fakey-fake PseudoMap in older versions.
-// A linked list to keep track of recently-used-ness
-// use symbols if possible, otherwise just _props
+var lruCache = LRUCache;
 
 var hasSymbol = typeof Symbol === 'function' && process.env._nodeLRUCacheForceNoSymbol !== '1';
 var makeSymbol;
@@ -23609,14 +21958,7 @@ var CACHE = makeSymbol('cache');
 
 function naiveLength() {
   return 1;
-} // lruList is a yallist where the head is the youngest
-// item, and the tail is the oldest.  the list contains the Hit
-// objects as the entries.
-// Each Hit object has a reference to its Yallist.Node.  This
-// never changes.
-//
-// cache is a Map (or PseudoMap) that matches the keys to
-// the Yallist.Node object.
+}
 
 
 function LRUCache(options) {
@@ -23634,7 +21976,7 @@ function LRUCache(options) {
     options = {};
   }
 
-  var max = this[MAX] = options.max; // Kind of weird to have a default max of Infinity, but oh well.
+  var max = this[MAX] = options.max;
 
   if (!max || !(typeof max === 'number') || max <= 0) {
     this[MAX] = Infinity;
@@ -23652,7 +21994,7 @@ function LRUCache(options) {
   this[DISPOSE] = options.dispose;
   this[NO_DISPOSE_ON_SET] = options.noDisposeOnSet || false;
   this.reset();
-} // resize the cache when the max changes.
+}
 
 
 Object.defineProperty(LRUCache.prototype, 'max', {
@@ -23691,7 +22033,7 @@ Object.defineProperty(LRUCache.prototype, 'maxAge', {
     return this[MAX_AGE];
   },
   enumerable: true
-}); // resize the cache when the lengthCalculator changes.
+});
 
 Object.defineProperty(LRUCache.prototype, 'lengthCalculator', {
   set: function (lC) {
@@ -23783,11 +22125,11 @@ LRUCache.prototype.reset = function () {
     }, this);
   }
 
-  this[CACHE] = new map$1(); // hash of items by key
+  this[CACHE] = new map$1();
 
-  this[LRU_LIST] = new yallist(); // list of items in order of use recency
+  this[LRU_LIST] = new yallist();
 
-  this[LENGTH] = 0; // length of items in the list
+  this[LENGTH] = 0;
 };
 
 LRUCache.prototype.dump = function () {
@@ -23807,7 +22149,6 @@ LRUCache.prototype.dump = function () {
 LRUCache.prototype.dumpLru = function () {
   return this[LRU_LIST];
 };
-/* istanbul ignore next */
 
 
 LRUCache.prototype.inspect = function (n, opts) {
@@ -23907,8 +22248,7 @@ LRUCache.prototype.set = function (key, value, maxAge) {
     }
 
     var node = this[CACHE].get(key);
-    var item = node.value; // dispose of the old one before overwriting
-    // split out into 2 ifs for better coverage tracking
+    var item = node.value;
 
     if (this[DISPOSE]) {
       if (!this[NO_DISPOSE_ON_SET]) {
@@ -23926,7 +22266,7 @@ LRUCache.prototype.set = function (key, value, maxAge) {
     return true;
   }
 
-  var hit = new Entry(key, value, len, now, maxAge); // oversized objects fall out of cache automatically.
+  var hit = new Entry(key, value, len, now, maxAge);
 
   if (hit.length > this[MAX]) {
     if (this[DISPOSE]) {
@@ -23974,19 +22314,17 @@ LRUCache.prototype.del = function (key) {
 };
 
 LRUCache.prototype.load = function (arr) {
-  // reset the cache
   this.reset();
-  var now = Date.now(); // A previous serialized cache has the most recent items first
+  var now = Date.now();
 
   for (var l = arr.length - 1; l >= 0; l--) {
     var hit = arr[l];
     var expiresAt = hit.e || 0;
 
     if (expiresAt === 0) {
-      // the item was created without expiration in a non aged cache
       this.set(hit.k, hit.v);
     } else {
-      var maxAge = expiresAt - now; // dont add already expired items
+      var maxAge = expiresAt - now;
 
       if (maxAge > 0) {
         this.set(hit.k, hit.v, maxAge);
@@ -24043,9 +22381,6 @@ function isStale(self, hit) {
 function trim(self) {
   if (self[LENGTH] > self[MAX]) {
     for (var walker = self[LRU_LIST].tail; self[LENGTH] > self[MAX] && walker !== null;) {
-      // We know that we're about to delete this one, and also
-      // what the next least recently used key will be, so just
-      // go ahead and set it now.
       var prev = walker.prev;
       del$1(self, walker);
       walker = prev;
@@ -24065,7 +22400,7 @@ function del$1(self, node) {
     self[CACHE].delete(hit.key);
     self[LRU_LIST].removeNode(node);
   }
-} // classy, since V8 prefers predictable objects.
+}
 
 
 function Entry(key, value, length, now, maxAge) {
@@ -24100,7 +22435,6 @@ function sigmund(subject, maxSessions) {
     notes.push(subject);
     analysis += '{';
     Object.keys(subject).forEach(function (issue, _, __) {
-      // pseudo-private values.  skip those.
       if (issue.charAt(0) === '_') return;
       var to = typeof subject[issue];
       if (to === 'function' || to === 'undefined') return;
@@ -24111,10 +22445,9 @@ function sigmund(subject, maxSessions) {
 
   psychoAnalyze(subject, 0);
   return analysis;
-} // vim: set softtabstop=4 shiftwidth=4:
+}
 
 var fnmatch$1 = createCommonjsModule(function (module, exports) {
-  // Based on minimatch.js by isaacs <https://npmjs.org/package/minimatch>
   var platform = typeof process === "object" ? process.platform : "win32";
   if (module) module.exports = minimatch;else exports.minimatch = minimatch;
   minimatch.Minimatch = Minimatch;
@@ -24122,25 +22455,22 @@ var fnmatch$1 = createCommonjsModule(function (module, exports) {
     max: 100
   }),
       GLOBSTAR = minimatch.GLOBSTAR = Minimatch.GLOBSTAR = {};
-  var qmark = "[^/]" // * => any number of characters
+  var qmark = "[^/]"
   ,
-      star = qmark + "*?" // ** when dots are allowed.  Anything goes, except .. and .
-  // not (^ or / followed by one or two dots followed by $ or /),
-  // followed by anything, any number of times.
+      star = qmark + "*?"
   ,
-      twoStarDot = "(?:(?!(?:\\\/|^)(?:\\.{1,2})($|\\\/)).)*?" // not a ^ or / followed by a dot,
-  // followed by anything, any number of times.
+      twoStarDot = "(?:(?!(?:\\\/|^)(?:\\.{1,2})($|\\\/)).)*?"
   ,
-      twoStarNoDot = "(?:(?!(?:\\\/|^)\\.).)*?" // characters that need to be escaped in RegExp.
+      twoStarNoDot = "(?:(?!(?:\\\/|^)\\.).)*?"
   ,
-      reSpecials = charSet("().*{}+?[]^$\\!"); // "abc" -> { a:true, b:true, c:true }
+      reSpecials = charSet("().*{}+?[]^$\\!");
 
   function charSet(s) {
     return s.split("").reduce(function (set, c) {
       set[c] = true;
       return set;
     }, {});
-  } // normalizes slashes.
+  }
 
 
   var slashSplit = /\/+/;
@@ -24205,11 +22535,11 @@ var fnmatch$1 = createCommonjsModule(function (module, exports) {
       throw new TypeError("glob pattern string required");
     }
 
-    if (!options) options = {}; // shortcut: comments match nothing.
+    if (!options) options = {};
 
     if (!options.nocomment && pattern.charAt(0) === "#") {
       return false;
-    } // "" only matches ""
+    }
 
 
     if (pattern.trim() === "") return p === "";
@@ -24225,14 +22555,11 @@ var fnmatch$1 = createCommonjsModule(function (module, exports) {
       throw new TypeError("glob pattern string required");
     }
 
-    if (!options) options = {}; // windows: need to use /, not \
-    // On other platforms, \ is a valid (albeit bad) filename char.
+    if (!options) options = {};
 
     if (platform === "win32") {
       pattern = pattern.split("\\").join("/");
-    } // lru storage.
-    // these things aren't particularly big, but walking down the string
-    // and turning it into a regexp can get pretty costly.
+    }
 
 
     var cacheKey = pattern + "\n" + sigmund_1(options);
@@ -24245,7 +22572,7 @@ var fnmatch$1 = createCommonjsModule(function (module, exports) {
     this.regexp = null;
     this.negate = false;
     this.comment = false;
-    this.empty = false; // make the set of regexps etc.
+    this.empty = false;
 
     this.make();
   }
@@ -24253,10 +22580,9 @@ var fnmatch$1 = createCommonjsModule(function (module, exports) {
   Minimatch.prototype.make = make;
 
   function make() {
-    // don't do it more than once.
     if (this._made) return;
     var pattern = this.pattern;
-    var options = this.options; // empty patterns and comments match nothing.
+    var options = this.options;
 
     if (!options.nocomment && pattern.charAt(0) === "#") {
       this.comment = true;
@@ -24266,27 +22592,23 @@ var fnmatch$1 = createCommonjsModule(function (module, exports) {
     if (!pattern) {
       this.empty = true;
       return;
-    } // step 1: figure out negation, etc.
+    }
 
 
-    this.parseNegate(); // step 2: expand braces
+    this.parseNegate();
 
     var set = this.globSet = this.braceExpand();
-    if (options.debug) console.error(this.pattern, set); // step 3: now we have a set, so turn each one into a series of path-portion
-    // matching patterns.
-    // These will be regexps, except in the case of "**", which is
-    // set to the GLOBSTAR object for globstar behavior,
-    // and will not contain any / characters
+    if (options.debug) console.error(this.pattern, set);
 
     set = this.globParts = set.map(function (s) {
       return s.split(slashSplit);
     });
-    if (options.debug) console.error(this.pattern, set); // glob --> regexps
+    if (options.debug) console.error(this.pattern, set);
 
     set = set.map(function (s, si, set) {
       return s.map(this.parse, this);
     }, this);
-    if (options.debug) console.error(this.pattern, set); // filter out everything that didn't compile properly.
+    if (options.debug) console.error(this.pattern, set);
 
     set = set.filter(function (s) {
       return -1 === s.indexOf(false);
@@ -24311,16 +22633,7 @@ var fnmatch$1 = createCommonjsModule(function (module, exports) {
 
     if (negateOffset) this.pattern = pattern.substr(negateOffset);
     this.negate = negate;
-  } // Brace expansion:
-  // a{b,c}d -> abd acd
-  // a{b,}c -> abc ac
-  // a{0..3}d -> a0d a1d a2d a3d
-  // a{b,c{d,e}f}g -> abg acdfg acefg
-  // a{b,c}d{e,f}g -> abdeg acdeg abdeg abdfg
-  //
-  // Invalid sets are not expanded.
-  // a{2..}b -> a{2..}b
-  // a{b}c -> a{b}c
+  }
 
 
   minimatch.braceExpand = function (pattern, options) {
@@ -24338,33 +22651,16 @@ var fnmatch$1 = createCommonjsModule(function (module, exports) {
     }
 
     if (options.nobrace || !pattern.match(/\{.*\}/)) {
-      // shortcut. no need to expand.
       return [pattern];
     }
 
-    var escaping = false; // examples and comments refer to this crazy pattern:
-    // a{b,c{d,e},{f,g}h}x{y,z}
-    // expected:
-    // abxy
-    // abxz
-    // acdxy
-    // acdxz
-    // acexy
-    // acexz
-    // afhxy
-    // afhxz
-    // aghxy
-    // aghxz
-    // everything before the first \{ is just a prefix.
-    // So, we pluck that off, and work with the rest,
-    // and then prepend it to everything we find.
+    var escaping = false;
 
     if (pattern.charAt(0) !== "{") {
-      // console.error(pattern)
       var prefix = null;
 
       for (var i = 0, l = pattern.length; i < l; i++) {
-        var c = pattern.charAt(i); // console.error(i, c)
+        var c = pattern.charAt(i);
 
         if (c === "\\") {
           escaping = !escaping;
@@ -24372,11 +22668,10 @@ var fnmatch$1 = createCommonjsModule(function (module, exports) {
           prefix = pattern.substr(0, i);
           break;
         }
-      } // actually no sets, all { were escaped.
+      }
 
 
       if (prefix === null) {
-        // console.error("no sets")
         return [pattern];
       }
 
@@ -24384,18 +22679,12 @@ var fnmatch$1 = createCommonjsModule(function (module, exports) {
       return tail.map(function (t) {
         return prefix + t;
       });
-    } // now we have something like:
-    // {b,c{d,e},{f,g}h}x{y,z}
-    // walk through the set, expanding each part, until
-    // the set ends.  then, we'll expand the suffix.
-    // If the set only has a single member, then'll put the {} back
-    // first, handle numeric sets, since they're easier
+    }
 
 
     var numset = pattern.match(/^\{(-?[0-9]+)\.\.(-?[0-9]+)\}/);
 
     if (numset) {
-      // console.error("numset", numset[1], numset[2])
       var suf = braceExpand(pattern.substr(numset[0].length), options),
           start = +numset[1],
           end = +numset[2],
@@ -24403,22 +22692,16 @@ var fnmatch$1 = createCommonjsModule(function (module, exports) {
           set = [];
 
       for (var i = start; i != end + inc; i += inc) {
-        // append all the suffixes
         for (var ii = 0, ll = suf.length; ii < ll; ii++) {
           set.push(i + suf[ii]);
         }
       }
 
       return set;
-    } // ok, walk through the set
-    // We hope, somewhat optimistically, that there
-    // will be a } at the end.
-    // If the closing brace isn't found, then the pattern is
-    // interpreted as braceExpand("\\" + pattern) so that
-    // the leading \{ will be interpreted literally.
+    }
 
 
-    var i = 1 // skip the \{
+    var i = 1
     ,
         depth = 1,
         set = [],
@@ -24428,11 +22711,11 @@ var fnmatch$1 = createCommonjsModule(function (module, exports) {
     function addMember() {
       set.push(member);
       member = "";
-    } // console.error("Entering for")
+    }
 
 
     FOR: for (i = 1, l = pattern.length; i < l; i++) {
-      var c = pattern.charAt(i); // console.error("", i, c)
+      var c = pattern.charAt(i);
 
       if (escaping) {
         escaping = false;
@@ -24449,10 +22732,10 @@ var fnmatch$1 = createCommonjsModule(function (module, exports) {
             continue;
 
           case "}":
-            depth--; // if this closes the actual set, then we're done
+            depth--;
 
             if (depth === 0) {
-              addMember(); // pluck off the close-brace
+              addMember();
 
               i++;
               break FOR;
@@ -24473,34 +22756,25 @@ var fnmatch$1 = createCommonjsModule(function (module, exports) {
           default:
             member += c;
             continue;
-        } // switch
+        }
 
-      } // else
+      }
 
-    } // for
-    // now we've either finished the set, and the suffix is
-    // pattern.substr(i), or we have *not* closed the set,
-    // and need to escape the leading brace
+    }
 
 
     if (depth !== 0) {
-      // console.error("didn't close", pattern)
       return braceExpand("\\" + pattern, options);
-    } // x{y,z} -> ["xy", "xz"]
-    // console.error("set", set)
-    // console.error("suffix", pattern.substr(i))
+    }
 
 
-    var suf = braceExpand(pattern.substr(i), options); // ["b", "c{d,e}","{f,g}h"] ->
-    //   [["b"], ["cd", "ce"], ["fh", "gh"]]
+    var suf = braceExpand(pattern.substr(i), options);
 
-    var addBraces = set.length === 1; // console.error("set pre-expanded", set)
+    var addBraces = set.length === 1;
 
     set = set.map(function (p) {
       return braceExpand(p, options);
-    }); // console.error("set expanded", set)
-    // [["b"], ["cd", "ce"], ["fh", "gh"]] ->
-    //   ["b", "cd", "ce", "fh", "gh"]
+    });
 
     set = set.reduce(function (l, r) {
       return l.concat(r);
@@ -24510,7 +22784,7 @@ var fnmatch$1 = createCommonjsModule(function (module, exports) {
       set = set.map(function (s) {
         return "{" + s + "}";
       });
-    } // now attach the suffixes.
+    }
 
 
     var ret = [];
@@ -24522,47 +22796,33 @@ var fnmatch$1 = createCommonjsModule(function (module, exports) {
     }
 
     return ret;
-  } // parse a component of the expanded set.
-  // At this point, no pattern may contain "/" in it
-  // so we're going to return a 2d array, where each entry is the full
-  // pattern, split on '/', and then turned into a regular expression.
-  // A regexp is made at the end which joins each array with an
-  // escaped /, and another full one which joins each regexp with |.
-  //
-  // Following the lead of Bash 4.1, note that "**" only has special meaning
-  // when it is the *only* thing in a path portion.  Otherwise, any series
-  // of * is equivalent to a single *.  Globstar behavior is enabled by
-  // default, and can be disabled by setting options.noglobstar.
+  }
 
 
   Minimatch.prototype.parse = parse;
   var SUBPARSE = {};
 
   function parse(pattern, isSub) {
-    var options = this.options; // shortcuts
+    var options = this.options;
 
     if (!options.noglobstar && pattern === "**") return GLOBSTAR;
     if (pattern === "") return "";
     var re = "",
         hasMagic = !!options.nocase,
-        escaping = false // ? => one single character
+        escaping = false
     ,
         patternListStack = [],
         plType,
         stateChar,
         inClass = false,
         reClassStart = -1,
-        classStart = -1 // . and .. never match anything that doesn't start with .,
-    // even when options.dot is set.
+        classStart = -1
     ,
-        patternStart = pattern.charAt(0) === "." ? "" // anything
-    // not (start or / followed by . or .. followed by / or end)
+        patternStart = pattern.charAt(0) === "." ? ""
     : options.dot ? "(?!(?:^|\\\/)\\.{1,2}(?:$|\\\/))" : "(?!\\.)";
 
     function clearStateChar() {
       if (stateChar) {
-        // we had some state-tracking character
-        // that wasn't consumed by this pass.
         switch (stateChar) {
           case "*":
             re += star;
@@ -24586,7 +22846,7 @@ var fnmatch$1 = createCommonjsModule(function (module, exports) {
     for (var i = 0, len = pattern.length, c; i < len && (c = pattern.charAt(i)); i++) {
       if (options.debug) {
         console.error("%s\t%s %s %j", pattern, i, re, c);
-      } // skip over any that are escaped.
+      }
 
 
       if (escaping && reSpecials[c]) {
@@ -24597,16 +22857,12 @@ var fnmatch$1 = createCommonjsModule(function (module, exports) {
 
       switch (c) {
         case "/":
-          // completely not allowed, even escaped.
-          // Should already be path-split by now.
           return false;
 
         case "\\":
           clearStateChar();
           escaping = true;
           continue;
-        // the various stateChar values
-        // for the "extglob" stuff.
 
         case "?":
         case "*":
@@ -24615,23 +22871,18 @@ var fnmatch$1 = createCommonjsModule(function (module, exports) {
         case "!":
           if (options.debug) {
             console.error("%s\t%s %s %j <-- stateChar", pattern, i, re, c);
-          } // all of those are literals inside a class, except that
-          // the glob [!a] means [^a] in regexp
+          }
 
 
           if (inClass) {
             if (c === "!" && i === classStart + 1) c = "^";
             re += c;
             continue;
-          } // if we already have a stateChar, then it means
-          // that there was something like ** or +? in there.
-          // Handle the stateChar, then proceed with this one.
+          }
 
 
           clearStateChar();
-          stateChar = c; // if extglob is disabled, then +(asdf|foo) isn't a thing.
-          // just clear the statechar *now*, rather than even diving into
-          // the patternList stuff.
+          stateChar = c;
 
           if (options.noext) clearStateChar();
           continue;
@@ -24652,7 +22903,7 @@ var fnmatch$1 = createCommonjsModule(function (module, exports) {
             type: plType,
             start: i - 1,
             reStart: re.length
-          }); // negation is (?:(?!js)[^/]*)
+          });
 
           re += stateChar === "!" ? "(?:(?!" : "(?:";
           stateChar = false;
@@ -24666,8 +22917,7 @@ var fnmatch$1 = createCommonjsModule(function (module, exports) {
 
           hasMagic = true;
           re += ")";
-          plType = patternListStack.pop().type; // negation is (?:(?!js)[^/]*)
-          // The others are (?:<pattern>)<type>
+          plType = patternListStack.pop().type;
 
           switch (plType) {
             case "!":
@@ -24678,7 +22928,6 @@ var fnmatch$1 = createCommonjsModule(function (module, exports) {
             case "+":
             case "*":
               re += plType;
-            // the default anyway
           }
 
           continue;
@@ -24692,10 +22941,8 @@ var fnmatch$1 = createCommonjsModule(function (module, exports) {
 
           re += "|";
           continue;
-        // these are mostly the same in regexp and glob
 
         case "[":
-          // swallow any state-tracking char before the [
           clearStateChar();
 
           if (inClass) {
@@ -24710,15 +22957,11 @@ var fnmatch$1 = createCommonjsModule(function (module, exports) {
           continue;
 
         case "]":
-          //  a right bracket shall lose its special
-          //  meaning and represent itself in
-          //  a bracket expression if it occurs
-          //  first in the list.  -- POSIX.2 2.8.3.2
           if (i === classStart + 1 || !inClass) {
             re += "\\" + c;
             escaping = false;
             continue;
-          } // finish up the class.
+          }
 
 
           hasMagic = true;
@@ -24727,74 +22970,53 @@ var fnmatch$1 = createCommonjsModule(function (module, exports) {
           continue;
 
         default:
-          // swallow any state char that wasn't consumed
           clearStateChar();
 
           if (escaping) {
-            // no need
             escaping = false;
           } else if (reSpecials[c] && !(c === "^" && inClass)) {
             re += "\\";
           }
 
           re += c;
-      } // switch
+      }
 
-    } // for
-    // handle the case where we left a class open.
-    // "[abc" is valid, equivalent to "\[abc"
+    }
 
 
     if (inClass) {
-      // split where the last [ was, and escape it
-      // this is a huge pita.  We now have to re-walk
-      // the contents of the would-be class to re-translate
-      // any characters that were passed through as-is
       var cs = pattern.substr(classStart + 1),
           sp = this.parse(cs, SUBPARSE);
       re = re.substr(0, reClassStart) + "\\[" + sp[0];
       hasMagic = hasMagic || sp[1];
-    } // handle the case where we had a +( thing at the *end*
-    // of the pattern.
-    // each pattern list stack adds 3 chars, and we need to go through
-    // and escape any | chars that were passed through as-is for the regexp.
-    // Go through and escape them, taking care not to double-escape any
-    // | chars that were already escaped.
+    }
 
 
     var pl;
 
     while (pl = patternListStack.pop()) {
-      var tail = re.slice(pl.reStart + 3); // maybe some even number of \, then maybe 1 \, followed by a |
+      var tail = re.slice(pl.reStart + 3);
 
       tail = tail.replace(/((?:\\{2})*)(\\?)\|/g, function (_, $1, $2) {
         if (!$2) {
-          // the | isn't already escaped, so escape it.
           $2 = "\\";
-        } // need to escape all those slashes *again*, without escaping the
-        // one that we need for escaping the | character.  As it works out,
-        // escaping an even number of slashes can be done by simply repeating
-        // it exactly after itself.  That's why this trick works.
-        //
-        // I am sorry that you have to see this.
+        }
 
 
         return $1 + $1 + $2 + "|";
-      }); // console.error("tail=%j\n   %s", tail, tail)
+      });
 
       var t = pl.type === "*" ? star : pl.type === "?" ? qmark : "\\" + pl.type;
       hasMagic = true;
       re = re.slice(0, pl.reStart) + t + "\\(" + tail;
-    } // handle trailing things that only matter at the very end.
+    }
 
 
     clearStateChar();
 
     if (escaping) {
-      // trailing \\
       re += "\\\\";
-    } // only need to apply the nodot start if the re starts with
-    // something that could conceivably capture a dot
+    }
 
 
     var addPatternStart = false;
@@ -24804,19 +23026,15 @@ var fnmatch$1 = createCommonjsModule(function (module, exports) {
       case "[":
       case "(":
         addPatternStart = true;
-    } // if the re is not "" at this point, then we need to make sure
-    // it doesn't match against an empty path part.
-    // Otherwise a/* will match a/, which it should not.
+    }
 
 
     if (re !== "" && hasMagic) re = "(?=.)" + re;
-    if (addPatternStart) re = patternStart + re; // parsing just a piece of a larger pattern.
+    if (addPatternStart) re = patternStart + re;
 
     if (isSub === SUBPARSE) {
       return [re, hasMagic];
-    } // skip the regexp for non-magical patterns
-    // unescape anything in it, though, so that it'll be
-    // an exact match against a file etc.
+    }
 
 
     if (!hasMagic) {
@@ -24837,12 +23055,7 @@ var fnmatch$1 = createCommonjsModule(function (module, exports) {
   Minimatch.prototype.makeRe = makeRe;
 
   function makeRe() {
-    if (this.regexp || this.regexp === false) return this.regexp; // at this point, this.set is a 2d array of partial
-    // pattern strings, or "**".
-    //
-    // It's better to use .match().  This function shouldn't
-    // be used, really, but it's pretty convenient sometimes,
-    // when you just want to work with a regex.
+    if (this.regexp || this.regexp === false) return this.regexp;
 
     var set = this.set;
     if (!set.length) return this.regexp = false;
@@ -24853,10 +23066,9 @@ var fnmatch$1 = createCommonjsModule(function (module, exports) {
       return pattern.map(function (p) {
         return p === GLOBSTAR ? twoStar : typeof p === "string" ? regExpEscape(p) : p._src;
       }).join("\\\/");
-    }).join("|"); // must match entire pattern
-    // ending in a * or ** will make it less strict.
+    }).join("|");
 
-    re = "^(?:" + re + ")$"; // can match anything, as long as it's not this.
+    re = "^(?:" + re + ")$";
 
     if (this.negate) re = "^(?!" + re + ").*$";
 
@@ -24883,31 +23095,24 @@ var fnmatch$1 = createCommonjsModule(function (module, exports) {
   Minimatch.prototype.match = match;
 
   function match(f, partial) {
-    // console.error("match", f, this.pattern)
-    // short-circuit in the case of busted things.
-    // comments, etc.
     if (this.comment) return false;
     if (this.empty) return f === "";
     if (f === "/" && partial) return true;
-    var options = this.options; // windows: need to use /, not \
-    // On other platforms, \ is a valid (albeit bad) filename char.
+    var options = this.options;
 
     if (platform === "win32") {
       f = f.split("\\").join("/");
-    } // treat the test path as a set of pathparts.
+    }
 
 
     f = f.split(slashSplit);
 
     if (options.debug) {
       console.error(this.pattern, "split", f);
-    } // just ONE of the pattern sets in this.set needs to match
-    // in order for it to be valid.  If negating, then just one
-    // match means that we have failed.
-    // Either way, return on the first hit.
+    }
 
 
-    var set = this.set; // console.error(this.pattern, "set", set)
+    var set = this.set;
 
     for (var i = 0, l = set.length; i < l; i++) {
       var pattern = set[i];
@@ -24917,17 +23122,12 @@ var fnmatch$1 = createCommonjsModule(function (module, exports) {
         if (options.flipNegate) return true;
         return !this.negate;
       }
-    } // didn't get any hits.  this is success if it's a negative
-    // pattern, failure otherwise.
+    }
 
 
     if (options.flipNegate) return false;
     return this.negate;
-  } // set partial to true to test if, for example,
-  // "/a/b" matches the start of "/*/b/*/d"
-  // Partial means, if you run out of file before you run
-  // out of pattern, then that's fine, as long as all
-  // the parts match.
+  }
 
 
   Minimatch.prototype.matchOne = function (file, pattern, partial) {
@@ -24959,53 +23159,26 @@ var fnmatch$1 = createCommonjsModule(function (module, exports) {
 
       if (options.debug) {
         console.error(pattern, p, f);
-      } // should be impossible.
-      // some invalid regexp stuff in the set.
+      }
 
 
       if (p === false) return false;
 
       if (p === GLOBSTAR) {
-        if (options.debug) console.error('GLOBSTAR', [pattern, p, f]); // "**"
-        // a/**/b/**/c would match the following:
-        // a/b/x/y/z/c
-        // a/x/y/z/b/c
-        // a/b/x/b/x/c
-        // a/b/c
-        // To do this, take the rest of the pattern after
-        // the **, and see if it would match the file remainder.
-        // If so, return success.
-        // If not, the ** "swallows" a segment, and try again.
-        // This is recursively awful.
-        //
-        // a/**/b/**/c matching a/b/x/y/z/c
-        // - a matches a
-        // - doublestar
-        //   - matchOne(b/x/y/z/c, b/**/c)
-        //     - b matches b
-        //     - doublestar
-        //       - matchOne(x/y/z/c, c) -> no
-        //       - matchOne(y/z/c, c) -> no
-        //       - matchOne(z/c, c) -> no
-        //       - matchOne(c, c) yes, hit
+        if (options.debug) console.error('GLOBSTAR', [pattern, p, f]);
 
         var fr = fi,
             pr = pi + 1;
 
         if (pr === pl) {
-          if (options.debug) console.error('** at the end'); // a ** at the end will just swallow the rest.
-          // We have found a match.
-          // however, it will not swallow /.x, unless
-          // options.dot is set.
-          // . and .. are *never* matched by **, for explosively
-          // exponential reasons.
+          if (options.debug) console.error('** at the end');
 
           for (; fi < fl; fi++) {
             if (file[fi] === "." || file[fi] === ".." || !options.dot && file[fi].charAt(0) === ".") return false;
           }
 
           return true;
-        } // ok, let's see if we can swallow whatever we can.
+        }
 
 
         WHILE: while (fr < fl) {
@@ -25013,40 +23186,32 @@ var fnmatch$1 = createCommonjsModule(function (module, exports) {
 
           if (options.debug) {
             console.error('\nglobstar while', file, fr, pattern, pr, swallowee);
-          } // XXX remove this slice.  Just pass the start index.
+          }
 
 
           if (this.matchOne(file.slice(fr), pattern.slice(pr), partial)) {
-            if (options.debug) console.error('globstar found match!', fr, fl, swallowee); // found a match.
+            if (options.debug) console.error('globstar found match!', fr, fl, swallowee);
 
             return true;
           } else {
-            // can't swallow "." or ".." ever.
-            // can only swallow ".foo" when explicitly asked.
             if (swallowee === "." || swallowee === ".." || !options.dot && swallowee.charAt(0) === ".") {
               if (options.debug) console.error("dot detected!", file, fr, pattern, pr);
               break WHILE;
-            } // ** swallows a segment, and continue.
+            }
 
 
             if (options.debug) console.error('globstar swallow a segment, and continue');
             fr++;
           }
-        } // no match was found.
-        // However, in partial mode, we can't say this is necessarily over.
-        // If there's more *pattern* left, then
+        }
 
 
         if (partial) {
-          // ran out of file
-          // console.error("\n>>> no match, partial?", file, fr, pattern, pr)
           if (fr === fl) return true;
         }
 
         return false;
-      } // something other than **
-      // non-magic patterns just have to match exactly
-      // patterns with magic have been turned into regexps.
+      }
 
 
       var hit;
@@ -25070,40 +23235,21 @@ var fnmatch$1 = createCommonjsModule(function (module, exports) {
       }
 
       if (!hit) return false;
-    } // Note: ending in / means that we'll get a final ""
-    // at the end of the pattern.  This can only match a
-    // corresponding "" at the end of the file.
-    // If the file ends in /, then it can only match a
-    // a pattern that ends in /, unless the pattern just
-    // doesn't have any more for it. But, a/b/ should *not*
-    // match "a/b/*", even though "" matches against the
-    // [^/]*? pattern, except in partial mode, where it might
-    // simply not be reached yet.
-    // However, a/b/ should still satisfy a/*
-    // now either we fell off the end of the pattern, or we're done.
+    }
 
 
     if (fi === fl && pi === pl) {
-      // ran out of pattern and filename at the same time.
-      // an exact hit!
       return true;
     } else if (fi === fl) {
-      // ran out of file, but still had pattern left.
-      // this is ok if we're doing the match as part of
-      // a glob fs traversal.
       return partial;
     } else if (pi === pl) {
-      // ran out of pattern, still have file left.
-      // this is only acceptable if we're on the very last
-      // empty segment of a file with a trailing slash.
-      // a/* should match a/b/
       var emptyFileEnd = fi === fl - 1 && file[fi] === "";
       return emptyFileEnd;
-    } // should be unreachable.
+    }
 
 
     throw new Error("wtf?");
-  }; // replace stuff like \* with *
+  };
 
 
   function globUnescape(s) {
@@ -25261,12 +23407,6 @@ var __importStar$1 = undefined && undefined.__importStar || function (mod) {
 };
 
 var fs$3 = __importStar$1(fs__default['default']);
-/**
- * define the possible values:
- * section: [section]
- * param: key=value
- * comment: ;this is a comment
- */
 
 
 var regex = {
@@ -25274,16 +23414,11 @@ var regex = {
   param: /^\s*([\w\.\-\_]+)\s*[=:]\s*(.*?)\s*([#;].*)?$/,
   comment: /^\s*[#;].*$/
 };
-/**
- * Parses an .ini file
- * @param file The location of the .ini file
- */
 
 function parse$5(file) {
   return __awaiter$1(this, void 0, void 0, function () {
     return __generator$1(this, function (_a) {
       return [2
-      /*return*/
       , new Promise(function (resolve, reject) {
         fs$3.readFile(file, 'utf8', function (err, data) {
           if (err) {
@@ -25608,17 +23743,14 @@ function getConfigFileNames(filepath, options) {
 }
 
 function processMatches(matches, version) {
-  // Set indent_size to 'tab' if indent_size is unspecified and
-  // indent_style is set to 'tab'.
   if ('indent_style' in matches && matches.indent_style === 'tab' && !('indent_size' in matches) && semver.gte(version, '0.10.0')) {
     matches.indent_size = 'tab';
-  } // Set tab_width to indent_size if indent_size is specified and
-  // tab_width is unspecified
+  }
 
 
   if ('indent_size' in matches && !('tab_width' in matches) && matches.indent_size !== 'tab') {
     matches.tab_width = matches.indent_size;
-  } // Set indent_size to tab_width if indent_size is 'tab'
+  }
 
 
   if ('indent_size' in matches && 'tab_width' in matches && matches.indent_size === 'tab') {
@@ -25678,8 +23810,6 @@ function extendProps(props, options) {
       } catch (e) {}
 
       if (typeof value === 'undefined' || value === null) {
-        // null and undefined are values specific to JSON (no special meaning
-        // in editorconfig) & should just be returned as regular strings.
         value2 = String(value);
       }
 
@@ -25738,7 +23868,6 @@ function readConfigFiles(filepaths) {
   return __awaiter(this, void 0, void 0, function () {
     return __generator(this, function (_a) {
       return [2
-      /*return*/
       , Promise.all(filepaths.map(function (name) {
         return new Promise(function (resolve) {
           fs$2.readFile(name, 'utf8', function (err, data) {
@@ -25791,7 +23920,6 @@ function parseFromFiles(filepath, files, options) {
     return __generator(this, function (_b) {
       _a = opts(filepath, options), resolvedFilePath = _a[0], processedOptions = _a[1];
       return [2
-      /*return*/
       , files.then(getConfigsForFiles).then(function (configs) {
         return parseFromConfigs(configs, resolvedFilePath, processedOptions);
       })];
@@ -25827,7 +23955,6 @@ function parse$4(_filepath, _options) {
       _a = opts(_filepath, _options), resolvedFilePath = _a[0], processedOptions = _a[1];
       filepaths = getConfigFileNames(resolvedFilePath, processedOptions);
       return [2
-      /*return*/
       , readConfigFiles(filepaths).then(getConfigsForFiles).then(function (configs) {
         return parseFromConfigs(configs, resolvedFilePath, processedOptions);
       })];
@@ -25931,7 +24058,6 @@ function editorConfigToPrettier(editorConfig) {
   return result;
 }
 
-// https://github.com/kirstein/find-project-root/blob/master/index.js
 
 
 const MARKERS = [".git", ".hg"];
@@ -26027,10 +24153,8 @@ const getExplorerMemoized = dist$1(opts => {
 }, {
   cacheKey: JSON.stringify
 });
-/** @param {{ cache: boolean, sync: boolean }} opts */
 
 function getExplorer(opts) {
-  // Normalize opts before passing to a memoized function
   opts = Object.assign({
     sync: false,
     cache: false
@@ -26059,14 +24183,14 @@ function _resolveConfig(filePath, opts, sync) {
 
     for (const optionName of ["plugins", "pluginSearchDirs"]) {
       if (Array.isArray(merged[optionName])) {
-        merged[optionName] = merged[optionName].map(value => typeof value === "string" && value.startsWith(".") // relative path
+        merged[optionName] = merged[optionName].map(value => typeof value === "string" && value.startsWith(".")
         ? path__default['default'].resolve(path__default['default'].dirname(result.filepath), value) : value);
       }
     }
 
     if (!result && !editorConfigured) {
       return null;
-    } // We are not using this option
+    }
 
 
     delete merged.insertFinalNewline;
@@ -26132,7 +24256,7 @@ function mergeOverrides(configResult, filePath) {
   }
 
   return options;
-} // Based on eslint: https://github.com/eslint/eslint/blob/master/lib/config/config-ops.js
+}
 
 
 function pathMatchesGlobs(filePath, patterns, excludedPatterns = []) {
@@ -26151,7 +24275,6 @@ var resolveConfig_1 = {
   clearCache: clearCache$1
 };
 
-// A simple implementation of make-array
 function make_array(subject) {
   return Array.isArray(subject) ? subject : [subject];
 }
@@ -26161,140 +24284,60 @@ const REGEX_LEADING_EXCAPED_EXCLAMATION = /^\\!/;
 const REGEX_LEADING_EXCAPED_HASH = /^\\#/;
 const SLASH$1 = '/';
 const KEY_IGNORE$1 = typeof Symbol !== 'undefined' ? Symbol.for('node-ignore')
-/* istanbul ignore next */
 : 'node-ignore';
 
 const define$1 = (object, key, value) => Object.defineProperty(object, key, {
   value
 });
 
-const REGEX_REGEXP_RANGE$1 = /([0-z])-([0-z])/g; // Sanitize the range of a regular expression
-// The cases are complicated, see test cases for details
+const REGEX_REGEXP_RANGE$1 = /([0-z])-([0-z])/g;
 
-const sanitizeRange$1 = range => range.replace(REGEX_REGEXP_RANGE$1, (match, from, to) => from.charCodeAt(0) <= to.charCodeAt(0) ? match // Invalid range (out of order) which is ok for gitignore rules but
-//   fatal for JavaScript regular expression, so eliminate it.
-: ''); // > If the pattern ends with a slash,
-// > it is removed for the purpose of the following description,
-// > but it would only find a match with a directory.
-// > In other words, foo/ will match a directory foo and paths underneath it,
-// > but will not match a regular file or a symbolic link foo
-// >  (this is consistent with the way how pathspec works in general in Git).
-// '`foo/`' will not match regular file '`foo`' or symbolic link '`foo`'
-// -> ignore-rules will not deal with it, because it costs extra `fs.stat` call
-//      you could use option `mark: true` with `glob`
-// '`foo/`' should not continue with the '`..`'
+const sanitizeRange$1 = range => range.replace(REGEX_REGEXP_RANGE$1, (match, from, to) => from.charCodeAt(0) <= to.charCodeAt(0) ? match
+: '');
 
 
-const DEFAULT_REPLACER_PREFIX = [// > Trailing spaces are ignored unless they are quoted with backslash ("\")
-[// (a\ ) -> (a )
-// (a  ) -> (a)
-// (a \ ) -> (a  )
-/\\?\s+$/, match => match.indexOf('\\') === 0 ? ' ' : ''], // replace (\ ) with ' '
-[/\\\s/g, () => ' '], // Escape metacharacters
-// which is written down by users but means special for regular expressions.
-// > There are 12 characters with special meanings:
-// > - the backslash \,
-// > - the caret ^,
-// > - the dollar sign $,
-// > - the period or dot .,
-// > - the vertical bar or pipe symbol |,
-// > - the question mark ?,
-// > - the asterisk or star *,
-// > - the plus sign +,
-// > - the opening parenthesis (,
-// > - the closing parenthesis ),
-// > - and the opening square bracket [,
-// > - the opening curly brace {,
-// > These special characters are often called "metacharacters".
-[/[\\^$.|*+(){]/g, match => `\\${match}`], [// > [abc] matches any character inside the brackets
-// >    (in this case a, b, or c);
-/\[([^\]/]*)($|\])/g, (match, p1, p2) => p2 === ']' ? `[${sanitizeRange$1(p1)}]` : `\\${match}`], [// > a question mark (?) matches a single character
-/(?!\\)\?/g, () => '[^/]'], // leading slash
-[// > A leading slash matches the beginning of the pathname.
-// > For example, "/*.c" matches "cat-file.c" but not "mozilla-sha1/sha1.c".
-// A leading slash matches the beginning of the pathname
-/^\//, () => '^'], // replace special metacharacter slash after the leading slash
-[/\//g, () => '\\/'], [// > A leading "**" followed by a slash means match in all directories.
-// > For example, "**/foo" matches file or directory "foo" anywhere,
-// > the same as pattern "foo".
-// > "**/foo/bar" matches file or directory "bar" anywhere that is directly
-// >   under directory "foo".
-// Notice that the '*'s have been replaced as '\\*'
-/^\^*\\\*\\\*\\\//, // '**/foo' <-> 'foo'
+const DEFAULT_REPLACER_PREFIX = [
+[
+/\\?\s+$/, match => match.indexOf('\\') === 0 ? ' ' : ''],
+[/\\\s/g, () => ' '],
+[/[\\^$.|*+(){]/g, match => `\\${match}`], [
+/\[([^\]/]*)($|\])/g, (match, p1, p2) => p2 === ']' ? `[${sanitizeRange$1(p1)}]` : `\\${match}`], [
+/(?!\\)\?/g, () => '[^/]'],
+[
+/^\//, () => '^'],
+[/\//g, () => '\\/'], [
+/^\^*\\\*\\\*\\\//,
 () => '^(?:.*\\/)?']];
-const DEFAULT_REPLACER_SUFFIX = [// starting
-[// there will be no leading '/'
-//   (which has been replaced by section "leading slash")
-// If starts with '**', adding a '^' to the regular expression also works
+const DEFAULT_REPLACER_SUFFIX = [
+[
 /^(?=[^^])/, function startingReplacer() {
-  return !/\/(?!$)/.test(this) // > If the pattern does not contain a slash /,
-  // >   Git treats it as a shell glob pattern
-  // Actually, if there is only a trailing slash,
-  //   git also treats it as a shell glob pattern
-  ? '(?:^|\\/)' // > Otherwise, Git treats the pattern as a shell glob suitable for
-  // >   consumption by fnmatch(3)
+  return !/\/(?!$)/.test(this)
+  ? '(?:^|\\/)'
   : '^';
-}], // two globstars
-[// Use lookahead assertions so that we could match more than one `'/**'`
-/\\\/\\\*\\\*(?=\\\/|$)/g, // Zero, one or several directories
-// should not use '*', or it will be replaced by the next replacer
-// Check if it is not the last `'/**'`
-(match, index, str) => index + 6 < str.length // case: /**/
-// > A slash followed by two consecutive asterisks then a slash matches
-// >   zero or more directories.
-// > For example, "a/**/b" matches "a/b", "a/x/b", "a/x/y/b" and so on.
-// '/**/'
-? '(?:\\/[^\\/]+)*' // case: /**
-// > A trailing `"/**"` matches everything inside.
-// #21: everything inside but it should not include the current folder
-: '\\/.+'], // intermediate wildcards
-[// Never replace escaped '*'
-// ignore rule '\*' will match the path '*'
-// 'abc.*/' -> go
-// 'abc.*'  -> skip this rule
-/(^|[^\\]+)\\\*(?=.+)/g, // '*.js' matches '.js'
-// '*.js' doesn't match 'abc'
-(match, p1) => `${p1}[^\\/]*`], // trailing wildcard
+}],
+[
+/\\\/\\\*\\\*(?=\\\/|$)/g,
+(match, index, str) => index + 6 < str.length
+? '(?:\\/[^\\/]+)*'
+: '\\/.+'],
+[
+/(^|[^\\]+)\\\*(?=.+)/g,
+(match, p1) => `${p1}[^\\/]*`],
 [/(\^|\\\/)?\\\*$/, (match, p1) => {
-  const prefix = p1 // '\^':
-  // '/*' does not match ''
-  // '/*' does not match everything
-  // '\\\/':
-  // 'abc/*' does not match 'abc/'
-  ? `${p1}[^/]+` // 'a*' matches 'a'
-  // 'a*' matches 'aa'
+  const prefix = p1
+  ? `${p1}[^/]+`
   : '[^/]*';
   return `${prefix}(?=$|\\/$)`;
-}], [// unescape
+}], [
 /\\\\\\/g, () => '\\']];
-const POSITIVE_REPLACERS = [...DEFAULT_REPLACER_PREFIX, // 'f'
-// matches
-// - /f(end)
-// - /f/
-// - (start)f(end)
-// - (start)f/
-// doesn't match
-// - oof
-// - foo
-// pseudo:
-// -> (^|/)f(/|$)
-// ending
-[// 'js' will not match 'js.'
-// 'ab' will not match 'abc'
-/(?:[^*/])$/, // 'js*' will not match 'a.js'
-// 'js/' will not match 'a.js'
-// 'js' will match 'a.js' and 'a.js/'
+const POSITIVE_REPLACERS = [...DEFAULT_REPLACER_PREFIX,
+[
+/(?:[^*/])$/,
 match => `${match}(?=$|\\/)`], ...DEFAULT_REPLACER_SUFFIX];
-const NEGATIVE_REPLACERS = [...DEFAULT_REPLACER_PREFIX, // #24, #38
-// The MISSING rule of [gitignore docs](https://git-scm.com/docs/gitignore)
-// A negative pattern without a trailing wildcard should not
-// re-include the things inside that directory.
-// eg:
-// ['node_modules/*', '!node_modules']
-// should ignore `node_modules/a.js`
-[/(?:[^*])$/, match => `${match}(?=$|\\/$)`], ...DEFAULT_REPLACER_SUFFIX]; // A simple cache, because an ignore rule only has only one certain meaning
+const NEGATIVE_REPLACERS = [...DEFAULT_REPLACER_PREFIX,
+[/(?:[^*])$/, match => `${match}(?=$|\\/$)`], ...DEFAULT_REPLACER_SUFFIX];
 
-const cache = Object.create(null); // @param {pattern}
+const cache = Object.create(null);
 
 const make_regex = (pattern, negative, ignorecase) => {
   const r = cache[pattern];
@@ -26306,25 +24349,23 @@ const make_regex = (pattern, negative, ignorecase) => {
   const replacers = negative ? NEGATIVE_REPLACERS : POSITIVE_REPLACERS;
   const source = replacers.reduce((prev, current) => prev.replace(current[0], current[1].bind(pattern)), pattern);
   return cache[pattern] = ignorecase ? new RegExp(source, 'i') : new RegExp(source);
-}; // > A blank line matches no files, so it can serve as a separator for readability.
+};
 
 
-const checkPattern$1 = pattern => pattern && typeof pattern === 'string' && !REGEX_BLANK_LINE.test(pattern) // > A line starting with # serves as a comment.
+const checkPattern$1 = pattern => pattern && typeof pattern === 'string' && !REGEX_BLANK_LINE.test(pattern)
 && pattern.indexOf('#') !== 0;
 
 const createRule$1 = (pattern, ignorecase) => {
   const origin = pattern;
-  let negative = false; // > An optional prefix "!" which negates the pattern;
+  let negative = false;
 
   if (pattern.indexOf('!') === 0) {
     negative = true;
     pattern = pattern.substr(1);
   }
 
-  pattern = pattern // > Put a backslash ("\") in front of the first "!" for patterns that
-  // >   begin with a literal "!", for example, `"\!important!.txt"`.
-  .replace(REGEX_LEADING_EXCAPED_EXCLAMATION, '!') // > Put a backslash ("\") in front of the first hash for patterns that
-  // >   begin with a hash.
+  pattern = pattern
+  .replace(REGEX_LEADING_EXCAPED_EXCLAMATION, '!')
   .replace(REGEX_LEADING_EXCAPED_HASH, '#');
   const regex = make_regex(pattern, negative, ignorecase);
   return {
@@ -26348,7 +24389,7 @@ class IgnoreBase {
 
   _initCache() {
     this._cache = Object.create(null);
-  } // @param {Array.<string>|string|Ignore} pattern
+  }
 
 
   add(pattern) {
@@ -26358,15 +24399,14 @@ class IgnoreBase {
       pattern = pattern.split(/\r?\n/g);
     }
 
-    make_array(pattern).forEach(this._addPattern, this); // Some rules have just added to the ignore,
-    // making the behavior changed.
+    make_array(pattern).forEach(this._addPattern, this);
 
     if (this._added) {
       this._initCache();
     }
 
     return this;
-  } // legacy
+  }
 
 
   addPattern(pattern) {
@@ -26374,7 +24414,6 @@ class IgnoreBase {
   }
 
   _addPattern(pattern) {
-    // #32
     if (pattern && pattern[KEY_IGNORE$1]) {
       this._rules = this._rules.concat(pattern._rules);
       this._added = true;
@@ -26399,7 +24438,7 @@ class IgnoreBase {
 
   ignores(path) {
     return !this._filter(path);
-  } // @returns `Boolean` true if the `path` is NOT ignored
+  }
 
 
   _filter(path, slices) {
@@ -26412,27 +24451,20 @@ class IgnoreBase {
     }
 
     if (!slices) {
-      // path/to/a.js
-      // ['path', 'to', 'a.js']
       slices = path.split(SLASH$1);
     }
 
     slices.pop();
-    return this._cache[path] = slices.length // > It is not possible to re-include a file if a parent directory of
-    // >   that file is excluded.
-    // If the path contains a parent directory, check the parent first
-    ? this._filter(slices.join(SLASH$1) + SLASH$1, slices) && this._test(path) // Or only test the path
+    return this._cache[path] = slices.length
+    ? this._filter(slices.join(SLASH$1) + SLASH$1, slices) && this._test(path)
     : this._test(path);
-  } // @returns {Boolean} true if a file is NOT ignored
+  }
 
 
   _test(path) {
-    // Explicitly define variable type by setting matched to `0`
     let matched = 0;
 
     this._rules.forEach(rule => {
-      // if matched = true, then we only test negative rules
-      // if matched = false, then we test non-negative rules
       if (!(matched ^ rule.negative)) {
         matched = rule.negative ^ rule.regex.test(path);
       }
@@ -26441,16 +24473,13 @@ class IgnoreBase {
     return !matched;
   }
 
-} // Windows
-// --------------------------------------------------------------
-
-/* istanbul ignore if  */
+}
 
 
-if ( // Detect `process` so that it can run in browsers.
+
+if (
 typeof process !== 'undefined' && (process.env && process.env.IGNORE_TEST_WIN32 || process.platform === 'win32')) {
   const filter = IgnoreBase.prototype._filter;
-  /* eslint no-control-regex: "off" */
 
   const make_posix = str => /^\\\\\?\\/.test(str) || /[^\x00-\x80]+/.test(str) ? str : str.replace(/\\/g, '/');
 
@@ -26463,10 +24492,6 @@ typeof process !== 'undefined' && (process.env && process.env.IGNORE_TEST_WIN32 
 var ignore$1 = options => new IgnoreBase(options);
 
 const fsAsync = fs__default['default'].promises;
-/**
- * @param {string} filename
- * @returns {Promise<null | string>}
- */
 
 async function getFileContentOrNull(filename) {
   try {
@@ -26475,10 +24500,6 @@ async function getFileContentOrNull(filename) {
     return handleError(filename, error);
   }
 }
-/**
- * @param {string} filename
- * @returns {null | string}
- */
 
 
 getFileContentOrNull.sync = function (filename) {
@@ -26499,30 +24520,18 @@ function handleError(filename, error) {
 
 var getFileContentOrNull_1 = getFileContentOrNull;
 
-/**
- * @param {string?} ignorePath
- * @param {boolean?} withNodeModules
- */
 
 
 async function createIgnorer(ignorePath, withNodeModules) {
   const ignoreContent = ignorePath ? await getFileContentOrNull_1(path__default['default'].resolve(ignorePath)) : null;
   return _createIgnorer(ignoreContent, withNodeModules);
 }
-/**
- * @param {string?} ignorePath
- * @param {boolean?} withNodeModules
- */
 
 
 createIgnorer.sync = function (ignorePath, withNodeModules) {
   const ignoreContent = !ignorePath ? null : getFileContentOrNull_1.sync(path__default['default'].resolve(ignorePath));
   return _createIgnorer(ignoreContent, withNodeModules);
 };
-/**
- * @param {null | string} ignoreContent
- * @param {boolean?} withNodeModules
- */
 
 
 function _createIgnorer(ignoreContent, withNodeModules) {
@@ -26537,20 +24546,7 @@ function _createIgnorer(ignoreContent, withNodeModules) {
 
 var createIgnorer_1 = createIgnorer;
 
-/**
- * @typedef {{ ignorePath?: string, withNodeModules?: boolean, plugins: object }} FileInfoOptions
- * @typedef {{ ignored: boolean, inferredParser: string | null }} FileInfoResult
- */
 
-/**
- * @param {string} filePath
- * @param {FileInfoOptions} opts
- * @returns {Promise<FileInfoResult>}
- *
- * Please note that prettier.getFileInfo() expects opts.plugins to be an array of paths,
- * not an object. A transformation from this array to an object is automatically done
- * internally by the method wrapper. See withPlugins() in index.js.
- */
 
 
 async function getFileInfo(filePath, opts) {
@@ -26568,11 +24564,6 @@ async function getFileInfo(filePath, opts) {
     sync: false
   });
 }
-/**
- * @param {string} filePath
- * @param {FileInfoOptions} opts
- * @returns {FileInfoResult}
- */
 
 
 getFileInfo.sync = function (filePath, opts) {
@@ -26697,13 +24688,6 @@ var utilShared = {
   addTrailingComment: addTrailingComment$1
 };
 
-/**
- * Removes all key-value entries from the list cache.
- *
- * @private
- * @name clear
- * @memberOf ListCache
- */
 function listCacheClear() {
   this.__data__ = [];
   this.size = 0;
@@ -26711,52 +24695,12 @@ function listCacheClear() {
 
 var _listCacheClear = listCacheClear;
 
-/**
- * Performs a
- * [`SameValueZero`](http://ecma-international.org/ecma-262/7.0/#sec-samevaluezero)
- * comparison between two values to determine if they are equivalent.
- *
- * @static
- * @memberOf _
- * @since 4.0.0
- * @category Lang
- * @param {*} value The value to compare.
- * @param {*} other The other value to compare.
- * @returns {boolean} Returns `true` if the values are equivalent, else `false`.
- * @example
- *
- * var object = { 'a': 1 };
- * var other = { 'a': 1 };
- *
- * _.eq(object, object);
- * // => true
- *
- * _.eq(object, other);
- * // => false
- *
- * _.eq('a', 'a');
- * // => true
- *
- * _.eq('a', Object('a'));
- * // => false
- *
- * _.eq(NaN, NaN);
- * // => true
- */
 function eq(value, other) {
   return value === other || value !== value && other !== other;
 }
 
 var eq_1 = eq;
 
-/**
- * Gets the index at which the `key` is found in `array` of key-value pairs.
- *
- * @private
- * @param {Array} array The array to inspect.
- * @param {*} key The key to search for.
- * @returns {number} Returns the index of the matched value, else `-1`.
- */
 
 function assocIndexOf(array, key) {
   var length = array.length;
@@ -26772,21 +24716,10 @@ function assocIndexOf(array, key) {
 
 var _assocIndexOf = assocIndexOf;
 
-/** Used for built-in method references. */
 
 var arrayProto = Array.prototype;
-/** Built-in value references. */
 
 var splice = arrayProto.splice;
-/**
- * Removes `key` and its value from the list cache.
- *
- * @private
- * @name delete
- * @memberOf ListCache
- * @param {string} key The key of the value to remove.
- * @returns {boolean} Returns `true` if the entry was removed, else `false`.
- */
 
 function listCacheDelete(key) {
   var data = this.__data__,
@@ -26810,15 +24743,6 @@ function listCacheDelete(key) {
 
 var _listCacheDelete = listCacheDelete;
 
-/**
- * Gets the list cache value for `key`.
- *
- * @private
- * @name get
- * @memberOf ListCache
- * @param {string} key The key of the value to get.
- * @returns {*} Returns the entry value.
- */
 
 function listCacheGet(key) {
   var data = this.__data__,
@@ -26828,15 +24752,6 @@ function listCacheGet(key) {
 
 var _listCacheGet = listCacheGet;
 
-/**
- * Checks if a list cache value for `key` exists.
- *
- * @private
- * @name has
- * @memberOf ListCache
- * @param {string} key The key of the entry to check.
- * @returns {boolean} Returns `true` if an entry for `key` exists, else `false`.
- */
 
 function listCacheHas(key) {
   return _assocIndexOf(this.__data__, key) > -1;
@@ -26844,16 +24759,6 @@ function listCacheHas(key) {
 
 var _listCacheHas = listCacheHas;
 
-/**
- * Sets the list cache `key` to `value`.
- *
- * @private
- * @name set
- * @memberOf ListCache
- * @param {string} key The key of the value to set.
- * @param {*} value The value to set.
- * @returns {Object} Returns the list cache instance.
- */
 
 function listCacheSet(key, value) {
   var data = this.__data__,
@@ -26871,13 +24776,6 @@ function listCacheSet(key, value) {
 
 var _listCacheSet = listCacheSet;
 
-/**
- * Creates an list cache object.
- *
- * @private
- * @constructor
- * @param {Array} [entries] The key-value pairs to cache.
- */
 
 function ListCache(entries) {
   var index = -1,
@@ -26888,7 +24786,7 @@ function ListCache(entries) {
     var entry = entries[index];
     this.set(entry[0], entry[1]);
   }
-} // Add methods to `ListCache`.
+}
 
 
 ListCache.prototype.clear = _listCacheClear;
@@ -26898,13 +24796,6 @@ ListCache.prototype.has = _listCacheHas;
 ListCache.prototype.set = _listCacheSet;
 var _ListCache = ListCache;
 
-/**
- * Removes all key-value entries from the stack.
- *
- * @private
- * @name clear
- * @memberOf Stack
- */
 
 function stackClear() {
   this.__data__ = new _ListCache();
@@ -26913,15 +24804,6 @@ function stackClear() {
 
 var _stackClear = stackClear;
 
-/**
- * Removes `key` and its value from the stack.
- *
- * @private
- * @name delete
- * @memberOf Stack
- * @param {string} key The key of the value to remove.
- * @returns {boolean} Returns `true` if the entry was removed, else `false`.
- */
 function stackDelete(key) {
   var data = this.__data__,
       result = data['delete'](key);
@@ -26931,76 +24813,39 @@ function stackDelete(key) {
 
 var _stackDelete = stackDelete;
 
-/**
- * Gets the stack value for `key`.
- *
- * @private
- * @name get
- * @memberOf Stack
- * @param {string} key The key of the value to get.
- * @returns {*} Returns the entry value.
- */
 function stackGet(key) {
   return this.__data__.get(key);
 }
 
 var _stackGet = stackGet;
 
-/**
- * Checks if a stack value for `key` exists.
- *
- * @private
- * @name has
- * @memberOf Stack
- * @param {string} key The key of the entry to check.
- * @returns {boolean} Returns `true` if an entry for `key` exists, else `false`.
- */
 function stackHas(key) {
   return this.__data__.has(key);
 }
 
 var _stackHas = stackHas;
 
-/** Detect free variable `global` from Node.js. */
 var freeGlobal = typeof global == 'object' && global && global.Object === Object && global;
 var _freeGlobal = freeGlobal;
 
-/** Detect free variable `self`. */
 
 var freeSelf = typeof self == 'object' && self && self.Object === Object && self;
-/** Used as a reference to the global object. */
 
 var root = _freeGlobal || freeSelf || Function('return this')();
 var _root = root;
 
-/** Built-in value references. */
 
 var Symbol$1 = _root.Symbol;
 var _Symbol = Symbol$1;
 
-/** Used for built-in method references. */
 
 var objectProto$b = Object.prototype;
-/** Used to check objects for own properties. */
 
 var hasOwnProperty$8 = objectProto$b.hasOwnProperty;
-/**
- * Used to resolve the
- * [`toStringTag`](http://ecma-international.org/ecma-262/7.0/#sec-object.prototype.tostring)
- * of values.
- */
 
 var nativeObjectToString$1 = objectProto$b.toString;
-/** Built-in value references. */
 
 var symToStringTag$1 = _Symbol ? _Symbol.toStringTag : undefined;
-/**
- * A specialized version of `baseGetTag` which ignores `Symbol.toStringTag` values.
- *
- * @private
- * @param {*} value The value to query.
- * @returns {string} Returns the raw `toStringTag`.
- */
 
 function getRawTag(value) {
   var isOwn = hasOwnProperty$8.call(value, symToStringTag$1),
@@ -27026,22 +24871,9 @@ function getRawTag(value) {
 
 var _getRawTag = getRawTag;
 
-/** Used for built-in method references. */
 var objectProto$a = Object.prototype;
-/**
- * Used to resolve the
- * [`toStringTag`](http://ecma-international.org/ecma-262/7.0/#sec-object.prototype.tostring)
- * of values.
- */
 
 var nativeObjectToString = objectProto$a.toString;
-/**
- * Converts `value` to a string using `Object.prototype.toString`.
- *
- * @private
- * @param {*} value The value to convert.
- * @returns {string} Returns the converted string.
- */
 
 function objectToString(value) {
   return nativeObjectToString.call(value);
@@ -27049,20 +24881,11 @@ function objectToString(value) {
 
 var _objectToString = objectToString;
 
-/** `Object#toString` result references. */
 
 var nullTag = '[object Null]',
     undefinedTag = '[object Undefined]';
-/** Built-in value references. */
 
 var symToStringTag = _Symbol ? _Symbol.toStringTag : undefined;
-/**
- * The base implementation of `getTag` without fallbacks for buggy environments.
- *
- * @private
- * @param {*} value The value to query.
- * @returns {string} Returns the `toStringTag`.
- */
 
 function baseGetTag(value) {
   if (value == null) {
@@ -27074,31 +24897,6 @@ function baseGetTag(value) {
 
 var _baseGetTag = baseGetTag;
 
-/**
- * Checks if `value` is the
- * [language type](http://www.ecma-international.org/ecma-262/7.0/#sec-ecmascript-language-types)
- * of `Object`. (e.g. arrays, functions, objects, regexes, `new Number(0)`, and `new String('')`)
- *
- * @static
- * @memberOf _
- * @since 0.1.0
- * @category Lang
- * @param {*} value The value to check.
- * @returns {boolean} Returns `true` if `value` is an object, else `false`.
- * @example
- *
- * _.isObject({});
- * // => true
- *
- * _.isObject([1, 2, 3]);
- * // => true
- *
- * _.isObject(_.noop);
- * // => true
- *
- * _.isObject(null);
- * // => false
- */
 function isObject$2(value) {
   var type = typeof value;
   return value != null && (type == 'object' || type == 'function');
@@ -27106,35 +24904,16 @@ function isObject$2(value) {
 
 var isObject_1 = isObject$2;
 
-/** `Object#toString` result references. */
 
 var asyncTag = '[object AsyncFunction]',
     funcTag$1 = '[object Function]',
     genTag = '[object GeneratorFunction]',
     proxyTag = '[object Proxy]';
-/**
- * Checks if `value` is classified as a `Function` object.
- *
- * @static
- * @memberOf _
- * @since 0.1.0
- * @category Lang
- * @param {*} value The value to check.
- * @returns {boolean} Returns `true` if `value` is a function, else `false`.
- * @example
- *
- * _.isFunction(_);
- * // => true
- *
- * _.isFunction(/abc/);
- * // => false
- */
 
 function isFunction(value) {
   if (!isObject_1(value)) {
     return false;
-  } // The use of `Object#toString` avoids issues with the `typeof` operator
-  // in Safari 9 which returns 'object' for typed arrays and other constructors.
+  }
 
 
   var tag = _baseGetTag(value);
@@ -27143,24 +24922,15 @@ function isFunction(value) {
 
 var isFunction_1 = isFunction;
 
-/** Used to detect overreaching core-js shims. */
 
 var coreJsData = _root['__core-js_shared__'];
 var _coreJsData = coreJsData;
 
-/** Used to detect methods masquerading as native. */
 
 var maskSrcKey = function () {
   var uid = /[^.]+$/.exec(_coreJsData && _coreJsData.keys && _coreJsData.keys.IE_PROTO || '');
   return uid ? 'Symbol(src)_1.' + uid : '';
 }();
-/**
- * Checks if `func` has its source masked.
- *
- * @private
- * @param {Function} func The function to check.
- * @returns {boolean} Returns `true` if `func` is masked, else `false`.
- */
 
 
 function isMasked(func) {
@@ -27169,18 +24939,9 @@ function isMasked(func) {
 
 var _isMasked = isMasked;
 
-/** Used for built-in method references. */
 var funcProto$1 = Function.prototype;
-/** Used to resolve the decompiled source of functions. */
 
 var funcToString$1 = funcProto$1.toString;
-/**
- * Converts `func` to its source code.
- *
- * @private
- * @param {Function} func The function to convert.
- * @returns {string} Returns the source code.
- */
 
 function toSource(func) {
   if (func != null) {
@@ -27198,36 +24959,19 @@ function toSource(func) {
 
 var _toSource = toSource;
 
-/**
- * Used to match `RegExp`
- * [syntax characters](http://ecma-international.org/ecma-262/7.0/#sec-patterns).
- */
 
 var reRegExpChar = /[\\^$.*+?()[\]{}|]/g;
-/** Used to detect host constructors (Safari). */
 
 var reIsHostCtor = /^\[object .+?Constructor\]$/;
-/** Used for built-in method references. */
 
 var funcProto = Function.prototype,
     objectProto$9 = Object.prototype;
-/** Used to resolve the decompiled source of functions. */
 
 var funcToString = funcProto.toString;
-/** Used to check objects for own properties. */
 
 var hasOwnProperty$7 = objectProto$9.hasOwnProperty;
-/** Used to detect if a method is native. */
 
 var reIsNative = RegExp('^' + funcToString.call(hasOwnProperty$7).replace(reRegExpChar, '\\$&').replace(/hasOwnProperty|(function).*?(?=\\\()| for .+?(?=\\\])/g, '$1.*?') + '$');
-/**
- * The base implementation of `_.isNative` without bad shim checks.
- *
- * @private
- * @param {*} value The value to check.
- * @returns {boolean} Returns `true` if `value` is a native function,
- *  else `false`.
- */
 
 function baseIsNative(value) {
   if (!isObject_1(value) || _isMasked(value)) {
@@ -27240,28 +24984,12 @@ function baseIsNative(value) {
 
 var _baseIsNative = baseIsNative;
 
-/**
- * Gets the value at `key` of `object`.
- *
- * @private
- * @param {Object} [object] The object to query.
- * @param {string} key The key of the property to get.
- * @returns {*} Returns the property value.
- */
 function getValue(object, key) {
   return object == null ? undefined : object[key];
 }
 
 var _getValue = getValue;
 
-/**
- * Gets the native function at `key` of `object`.
- *
- * @private
- * @param {Object} object The object to query.
- * @param {string} key The key of the method to get.
- * @returns {*} Returns the function if it's native, else `undefined`.
- */
 
 function getNative(object, key) {
   var value = _getValue(object, key);
@@ -27270,23 +24998,14 @@ function getNative(object, key) {
 
 var _getNative = getNative;
 
-/* Built-in method references that are verified to be native. */
 
 var Map$1 = _getNative(_root, 'Map');
 var _Map = Map$1;
 
-/* Built-in method references that are verified to be native. */
 
 var nativeCreate = _getNative(Object, 'create');
 var _nativeCreate = nativeCreate;
 
-/**
- * Removes all key-value entries from the hash.
- *
- * @private
- * @name clear
- * @memberOf Hash
- */
 
 function hashClear() {
   this.__data__ = _nativeCreate ? _nativeCreate(null) : {};
@@ -27295,16 +25014,6 @@ function hashClear() {
 
 var _hashClear = hashClear;
 
-/**
- * Removes `key` and its value from the hash.
- *
- * @private
- * @name delete
- * @memberOf Hash
- * @param {Object} hash The hash to modify.
- * @param {string} key The key of the value to remove.
- * @returns {boolean} Returns `true` if the entry was removed, else `false`.
- */
 function hashDelete(key) {
   var result = this.has(key) && delete this.__data__[key];
   this.size -= result ? 1 : 0;
@@ -27313,24 +25022,12 @@ function hashDelete(key) {
 
 var _hashDelete = hashDelete;
 
-/** Used to stand-in for `undefined` hash values. */
 
 var HASH_UNDEFINED$2 = '__lodash_hash_undefined__';
-/** Used for built-in method references. */
 
 var objectProto$8 = Object.prototype;
-/** Used to check objects for own properties. */
 
 var hasOwnProperty$6 = objectProto$8.hasOwnProperty;
-/**
- * Gets the hash value for `key`.
- *
- * @private
- * @name get
- * @memberOf Hash
- * @param {string} key The key of the value to get.
- * @returns {*} Returns the entry value.
- */
 
 function hashGet(key) {
   var data = this.__data__;
@@ -27345,21 +25042,10 @@ function hashGet(key) {
 
 var _hashGet = hashGet;
 
-/** Used for built-in method references. */
 
 var objectProto$7 = Object.prototype;
-/** Used to check objects for own properties. */
 
 var hasOwnProperty$5 = objectProto$7.hasOwnProperty;
-/**
- * Checks if a hash value for `key` exists.
- *
- * @private
- * @name has
- * @memberOf Hash
- * @param {string} key The key of the entry to check.
- * @returns {boolean} Returns `true` if an entry for `key` exists, else `false`.
- */
 
 function hashHas(key) {
   var data = this.__data__;
@@ -27368,19 +25054,8 @@ function hashHas(key) {
 
 var _hashHas = hashHas;
 
-/** Used to stand-in for `undefined` hash values. */
 
 var HASH_UNDEFINED$1 = '__lodash_hash_undefined__';
-/**
- * Sets the hash `key` to `value`.
- *
- * @private
- * @name set
- * @memberOf Hash
- * @param {string} key The key of the value to set.
- * @param {*} value The value to set.
- * @returns {Object} Returns the hash instance.
- */
 
 function hashSet(key, value) {
   var data = this.__data__;
@@ -27391,13 +25066,6 @@ function hashSet(key, value) {
 
 var _hashSet = hashSet;
 
-/**
- * Creates a hash object.
- *
- * @private
- * @constructor
- * @param {Array} [entries] The key-value pairs to cache.
- */
 
 function Hash(entries) {
   var index = -1,
@@ -27408,7 +25076,7 @@ function Hash(entries) {
     var entry = entries[index];
     this.set(entry[0], entry[1]);
   }
-} // Add methods to `Hash`.
+}
 
 
 Hash.prototype.clear = _hashClear;
@@ -27418,13 +25086,6 @@ Hash.prototype.has = _hashHas;
 Hash.prototype.set = _hashSet;
 var _Hash = Hash;
 
-/**
- * Removes all key-value entries from the map.
- *
- * @private
- * @name clear
- * @memberOf MapCache
- */
 
 function mapCacheClear() {
   this.size = 0;
@@ -27437,13 +25098,6 @@ function mapCacheClear() {
 
 var _mapCacheClear = mapCacheClear;
 
-/**
- * Checks if `value` is suitable for use as unique object key.
- *
- * @private
- * @param {*} value The value to check.
- * @returns {boolean} Returns `true` if `value` is suitable, else `false`.
- */
 function isKeyable(value) {
   var type = typeof value;
   return type == 'string' || type == 'number' || type == 'symbol' || type == 'boolean' ? value !== '__proto__' : value === null;
@@ -27451,14 +25105,6 @@ function isKeyable(value) {
 
 var _isKeyable = isKeyable;
 
-/**
- * Gets the data for `map`.
- *
- * @private
- * @param {Object} map The map to query.
- * @param {string} key The reference key.
- * @returns {*} Returns the map data.
- */
 
 function getMapData(map, key) {
   var data = map.__data__;
@@ -27467,15 +25113,6 @@ function getMapData(map, key) {
 
 var _getMapData = getMapData;
 
-/**
- * Removes `key` and its value from the map.
- *
- * @private
- * @name delete
- * @memberOf MapCache
- * @param {string} key The key of the value to remove.
- * @returns {boolean} Returns `true` if the entry was removed, else `false`.
- */
 
 function mapCacheDelete(key) {
   var result = _getMapData(this, key)['delete'](key);
@@ -27485,15 +25122,6 @@ function mapCacheDelete(key) {
 
 var _mapCacheDelete = mapCacheDelete;
 
-/**
- * Gets the map value for `key`.
- *
- * @private
- * @name get
- * @memberOf MapCache
- * @param {string} key The key of the value to get.
- * @returns {*} Returns the entry value.
- */
 
 function mapCacheGet(key) {
   return _getMapData(this, key).get(key);
@@ -27501,15 +25129,6 @@ function mapCacheGet(key) {
 
 var _mapCacheGet = mapCacheGet;
 
-/**
- * Checks if a map value for `key` exists.
- *
- * @private
- * @name has
- * @memberOf MapCache
- * @param {string} key The key of the entry to check.
- * @returns {boolean} Returns `true` if an entry for `key` exists, else `false`.
- */
 
 function mapCacheHas(key) {
   return _getMapData(this, key).has(key);
@@ -27517,16 +25136,6 @@ function mapCacheHas(key) {
 
 var _mapCacheHas = mapCacheHas;
 
-/**
- * Sets the map `key` to `value`.
- *
- * @private
- * @name set
- * @memberOf MapCache
- * @param {string} key The key of the value to set.
- * @param {*} value The value to set.
- * @returns {Object} Returns the map cache instance.
- */
 
 function mapCacheSet(key, value) {
   var data = _getMapData(this, key),
@@ -27538,13 +25147,6 @@ function mapCacheSet(key, value) {
 
 var _mapCacheSet = mapCacheSet;
 
-/**
- * Creates a map cache object to store key-value pairs.
- *
- * @private
- * @constructor
- * @param {Array} [entries] The key-value pairs to cache.
- */
 
 function MapCache(entries) {
   var index = -1,
@@ -27555,7 +25157,7 @@ function MapCache(entries) {
     var entry = entries[index];
     this.set(entry[0], entry[1]);
   }
-} // Add methods to `MapCache`.
+}
 
 
 MapCache.prototype.clear = _mapCacheClear;
@@ -27565,19 +25167,8 @@ MapCache.prototype.has = _mapCacheHas;
 MapCache.prototype.set = _mapCacheSet;
 var _MapCache = MapCache;
 
-/** Used as the size to enable large array optimizations. */
 
 var LARGE_ARRAY_SIZE$1 = 200;
-/**
- * Sets the stack `key` to `value`.
- *
- * @private
- * @name set
- * @memberOf Stack
- * @param {string} key The key of the value to set.
- * @param {*} value The value to set.
- * @returns {Object} Returns the stack cache instance.
- */
 
 function stackSet(key, value) {
   var data = this.__data__;
@@ -27601,18 +25192,11 @@ function stackSet(key, value) {
 
 var _stackSet = stackSet;
 
-/**
- * Creates a stack cache object to store key-value pairs.
- *
- * @private
- * @constructor
- * @param {Array} [entries] The key-value pairs to cache.
- */
 
 function Stack(entries) {
   var data = this.__data__ = new _ListCache(entries);
   this.size = data.size;
-} // Add methods to `Stack`.
+}
 
 
 Stack.prototype.clear = _stackClear;
@@ -27622,18 +25206,7 @@ Stack.prototype.has = _stackHas;
 Stack.prototype.set = _stackSet;
 var _Stack = Stack;
 
-/** Used to stand-in for `undefined` hash values. */
 var HASH_UNDEFINED = '__lodash_hash_undefined__';
-/**
- * Adds `value` to the array cache.
- *
- * @private
- * @name add
- * @memberOf SetCache
- * @alias push
- * @param {*} value The value to cache.
- * @returns {Object} Returns the cache instance.
- */
 
 function setCacheAdd(value) {
   this.__data__.set(value, HASH_UNDEFINED);
@@ -27643,29 +25216,12 @@ function setCacheAdd(value) {
 
 var _setCacheAdd = setCacheAdd;
 
-/**
- * Checks if `value` is in the array cache.
- *
- * @private
- * @name has
- * @memberOf SetCache
- * @param {*} value The value to search for.
- * @returns {number} Returns `true` if `value` is found, else `false`.
- */
 function setCacheHas(value) {
   return this.__data__.has(value);
 }
 
 var _setCacheHas = setCacheHas;
 
-/**
- *
- * Creates an array cache object to store unique values.
- *
- * @private
- * @constructor
- * @param {Array} [values] The values to cache.
- */
 
 function SetCache(values) {
   var index = -1,
@@ -27675,23 +25231,13 @@ function SetCache(values) {
   while (++index < length) {
     this.add(values[index]);
   }
-} // Add methods to `SetCache`.
+}
 
 
 SetCache.prototype.add = SetCache.prototype.push = _setCacheAdd;
 SetCache.prototype.has = _setCacheHas;
 var _SetCache = SetCache;
 
-/**
- * A specialized version of `_.some` for arrays without support for iteratee
- * shorthands.
- *
- * @private
- * @param {Array} [array] The array to iterate over.
- * @param {Function} predicate The function invoked per iteration.
- * @returns {boolean} Returns `true` if any element passes the predicate check,
- *  else `false`.
- */
 function arraySome(array, predicate) {
   var index = -1,
       length = array == null ? 0 : array.length;
@@ -27707,37 +25253,15 @@ function arraySome(array, predicate) {
 
 var _arraySome = arraySome;
 
-/**
- * Checks if a `cache` value for `key` exists.
- *
- * @private
- * @param {Object} cache The cache to query.
- * @param {string} key The key of the entry to check.
- * @returns {boolean} Returns `true` if an entry for `key` exists, else `false`.
- */
 function cacheHas(cache, key) {
   return cache.has(key);
 }
 
 var _cacheHas = cacheHas;
 
-/** Used to compose bitmasks for value comparisons. */
 
 var COMPARE_PARTIAL_FLAG$5 = 1,
     COMPARE_UNORDERED_FLAG$3 = 2;
-/**
- * A specialized version of `baseIsEqualDeep` for arrays with support for
- * partial deep comparisons.
- *
- * @private
- * @param {Array} array The array to compare.
- * @param {Array} other The other array to compare.
- * @param {number} bitmask The bitmask flags. See `baseIsEqual` for more details.
- * @param {Function} customizer The function to customize comparisons.
- * @param {Function} equalFunc The function to determine equivalents of values.
- * @param {Object} stack Tracks traversed `array` and `other` objects.
- * @returns {boolean} Returns `true` if the arrays are equivalent, else `false`.
- */
 
 function equalArrays(array, other, bitmask, customizer, equalFunc, stack) {
   var isPartial = bitmask & COMPARE_PARTIAL_FLAG$5,
@@ -27746,7 +25270,7 @@ function equalArrays(array, other, bitmask, customizer, equalFunc, stack) {
 
   if (arrLength != othLength && !(isPartial && othLength > arrLength)) {
     return false;
-  } // Check that cyclic values are equal.
+  }
 
 
   var arrStacked = stack.get(array);
@@ -27760,7 +25284,7 @@ function equalArrays(array, other, bitmask, customizer, equalFunc, stack) {
       result = true,
       seen = bitmask & COMPARE_UNORDERED_FLAG$3 ? new _SetCache() : undefined;
   stack.set(array, other);
-  stack.set(other, array); // Ignore non-index properties.
+  stack.set(other, array);
 
   while (++index < arrLength) {
     var arrValue = array[index],
@@ -27777,7 +25301,7 @@ function equalArrays(array, other, bitmask, customizer, equalFunc, stack) {
 
       result = false;
       break;
-    } // Recursively compare arrays (susceptible to call stack limits).
+    }
 
 
     if (seen) {
@@ -27802,18 +25326,10 @@ function equalArrays(array, other, bitmask, customizer, equalFunc, stack) {
 
 var _equalArrays = equalArrays;
 
-/** Built-in value references. */
 
 var Uint8Array = _root.Uint8Array;
 var _Uint8Array = Uint8Array;
 
-/**
- * Converts `map` to its key-value pairs.
- *
- * @private
- * @param {Object} map The map to convert.
- * @returns {Array} Returns the key-value pairs.
- */
 function mapToArray(map) {
   var index = -1,
       result = Array(map.size);
@@ -27825,13 +25341,6 @@ function mapToArray(map) {
 
 var _mapToArray = mapToArray;
 
-/**
- * Converts `set` to an array of its values.
- *
- * @private
- * @param {Object} set The set to convert.
- * @returns {Array} Returns the values.
- */
 function setToArray(set) {
   var index = -1,
       result = Array(set.size);
@@ -27843,11 +25352,9 @@ function setToArray(set) {
 
 var _setToArray = setToArray;
 
-/** Used to compose bitmasks for value comparisons. */
 
 var COMPARE_PARTIAL_FLAG$4 = 1,
     COMPARE_UNORDERED_FLAG$2 = 2;
-/** `Object#toString` result references. */
 
 var boolTag$1 = '[object Boolean]',
     dateTag$1 = '[object Date]',
@@ -27860,27 +25367,9 @@ var boolTag$1 = '[object Boolean]',
     symbolTag$1 = '[object Symbol]';
 var arrayBufferTag$1 = '[object ArrayBuffer]',
     dataViewTag$2 = '[object DataView]';
-/** Used to convert symbols to primitives and strings. */
 
 var symbolProto$1 = _Symbol ? _Symbol.prototype : undefined,
     symbolValueOf = symbolProto$1 ? symbolProto$1.valueOf : undefined;
-/**
- * A specialized version of `baseIsEqualDeep` for comparing objects of
- * the same `toStringTag`.
- *
- * **Note:** This function only supports comparing values with tags of
- * `Boolean`, `Date`, `Error`, `Number`, `RegExp`, or `String`.
- *
- * @private
- * @param {Object} object The object to compare.
- * @param {Object} other The other object to compare.
- * @param {string} tag The `toStringTag` of the objects to compare.
- * @param {number} bitmask The bitmask flags. See `baseIsEqual` for more details.
- * @param {Function} customizer The function to customize comparisons.
- * @param {Function} equalFunc The function to determine equivalents of values.
- * @param {Object} stack Tracks traversed `object` and `other` objects.
- * @returns {boolean} Returns `true` if the objects are equivalent, else `false`.
- */
 
 function equalByTag(object, other, tag, bitmask, customizer, equalFunc, stack) {
   switch (tag) {
@@ -27902,8 +25391,6 @@ function equalByTag(object, other, tag, bitmask, customizer, equalFunc, stack) {
     case boolTag$1:
     case dateTag$1:
     case numberTag$1:
-      // Coerce booleans to `1` or `0` and dates to milliseconds.
-      // Invalid dates are coerced to `NaN`.
       return eq_1(+object, +other);
 
     case errorTag$1:
@@ -27911,9 +25398,6 @@ function equalByTag(object, other, tag, bitmask, customizer, equalFunc, stack) {
 
     case regexpTag$1:
     case stringTag$1:
-      // Coerce regexes to strings and treat strings, primitives and objects,
-      // as equal. See http://www.ecma-international.org/ecma-262/7.0/#sec-regexp.prototype.tostring
-      // for more details.
       return object == other + '';
 
     case mapTag$2:
@@ -27925,7 +25409,7 @@ function equalByTag(object, other, tag, bitmask, customizer, equalFunc, stack) {
 
       if (object.size != other.size && !isPartial) {
         return false;
-      } // Assume cyclic values are equal.
+      }
 
 
       var stacked = stack.get(object);
@@ -27934,7 +25418,7 @@ function equalByTag(object, other, tag, bitmask, customizer, equalFunc, stack) {
         return stacked == other;
       }
 
-      bitmask |= COMPARE_UNORDERED_FLAG$2; // Recursively compare objects (susceptible to call stack limits).
+      bitmask |= COMPARE_UNORDERED_FLAG$2;
 
       stack.set(object, other);
       var result = _equalArrays(convert(object), convert(other), bitmask, customizer, equalFunc, stack);
@@ -27953,14 +25437,6 @@ function equalByTag(object, other, tag, bitmask, customizer, equalFunc, stack) {
 
 var _equalByTag = equalByTag;
 
-/**
- * Appends the elements of `values` to `array`.
- *
- * @private
- * @param {Array} array The array to modify.
- * @param {Array} values The values to append.
- * @returns {Array} Returns `array`.
- */
 function arrayPush(array, values) {
   var index = -1,
       length = values.length,
@@ -27975,43 +25451,9 @@ function arrayPush(array, values) {
 
 var _arrayPush = arrayPush;
 
-/**
- * Checks if `value` is classified as an `Array` object.
- *
- * @static
- * @memberOf _
- * @since 0.1.0
- * @category Lang
- * @param {*} value The value to check.
- * @returns {boolean} Returns `true` if `value` is an array, else `false`.
- * @example
- *
- * _.isArray([1, 2, 3]);
- * // => true
- *
- * _.isArray(document.body.children);
- * // => false
- *
- * _.isArray('abc');
- * // => false
- *
- * _.isArray(_.noop);
- * // => false
- */
 var isArray = Array.isArray;
 var isArray_1 = isArray;
 
-/**
- * The base implementation of `getAllKeys` and `getAllKeysIn` which uses
- * `keysFunc` and `symbolsFunc` to get the enumerable property names and
- * symbols of `object`.
- *
- * @private
- * @param {Object} object The object to query.
- * @param {Function} keysFunc The function to get the keys of `object`.
- * @param {Function} symbolsFunc The function to get the symbols of `object`.
- * @returns {Array} Returns the array of property names and symbols.
- */
 
 function baseGetAllKeys(object, keysFunc, symbolsFunc) {
   var result = keysFunc(object);
@@ -28020,15 +25462,6 @@ function baseGetAllKeys(object, keysFunc, symbolsFunc) {
 
 var _baseGetAllKeys = baseGetAllKeys;
 
-/**
- * A specialized version of `_.filter` for arrays without support for
- * iteratee shorthands.
- *
- * @private
- * @param {Array} [array] The array to iterate over.
- * @param {Function} predicate The function invoked per iteration.
- * @returns {Array} Returns the new filtered array.
- */
 function arrayFilter(array, predicate) {
   var index = -1,
       length = array == null ? 0 : array.length,
@@ -28048,46 +25481,18 @@ function arrayFilter(array, predicate) {
 
 var _arrayFilter = arrayFilter;
 
-/**
- * This method returns a new empty array.
- *
- * @static
- * @memberOf _
- * @since 4.13.0
- * @category Util
- * @returns {Array} Returns the new empty array.
- * @example
- *
- * var arrays = _.times(2, _.stubArray);
- *
- * console.log(arrays);
- * // => [[], []]
- *
- * console.log(arrays[0] === arrays[1]);
- * // => false
- */
 function stubArray() {
   return [];
 }
 
 var stubArray_1 = stubArray;
 
-/** Used for built-in method references. */
 
 var objectProto$6 = Object.prototype;
-/** Built-in value references. */
 
 var propertyIsEnumerable$1 = objectProto$6.propertyIsEnumerable;
-/* Built-in method references for those with the same name as other `lodash` methods. */
 
 var nativeGetSymbols = Object.getOwnPropertySymbols;
-/**
- * Creates an array of the own enumerable symbols of `object`.
- *
- * @private
- * @param {Object} object The object to query.
- * @returns {Array} Returns the array of symbols.
- */
 
 var getSymbols = !nativeGetSymbols ? stubArray_1 : function (object) {
   if (object == null) {
@@ -28101,15 +25506,6 @@ var getSymbols = !nativeGetSymbols ? stubArray_1 : function (object) {
 };
 var _getSymbols = getSymbols;
 
-/**
- * The base implementation of `_.times` without support for iteratee shorthands
- * or max array length checks.
- *
- * @private
- * @param {number} n The number of times to invoke `iteratee`.
- * @param {Function} iteratee The function invoked per iteration.
- * @returns {Array} Returns the array of results.
- */
 function baseTimes(n, iteratee) {
   var index = -1,
       result = Array(n);
@@ -28123,46 +25519,14 @@ function baseTimes(n, iteratee) {
 
 var _baseTimes = baseTimes;
 
-/**
- * Checks if `value` is object-like. A value is object-like if it's not `null`
- * and has a `typeof` result of "object".
- *
- * @static
- * @memberOf _
- * @since 4.0.0
- * @category Lang
- * @param {*} value The value to check.
- * @returns {boolean} Returns `true` if `value` is object-like, else `false`.
- * @example
- *
- * _.isObjectLike({});
- * // => true
- *
- * _.isObjectLike([1, 2, 3]);
- * // => true
- *
- * _.isObjectLike(_.noop);
- * // => false
- *
- * _.isObjectLike(null);
- * // => false
- */
 function isObjectLike(value) {
   return value != null && typeof value == 'object';
 }
 
 var isObjectLike_1 = isObjectLike;
 
-/** `Object#toString` result references. */
 
 var argsTag$2 = '[object Arguments]';
-/**
- * The base implementation of `_.isArguments`.
- *
- * @private
- * @param {*} value The value to check.
- * @returns {boolean} Returns `true` if `value` is an `arguments` object,
- */
 
 function baseIsArguments(value) {
   return isObjectLike_1(value) && _baseGetTag(value) == argsTag$2;
@@ -28170,33 +25534,12 @@ function baseIsArguments(value) {
 
 var _baseIsArguments = baseIsArguments;
 
-/** Used for built-in method references. */
 
 var objectProto$5 = Object.prototype;
-/** Used to check objects for own properties. */
 
 var hasOwnProperty$4 = objectProto$5.hasOwnProperty;
-/** Built-in value references. */
 
 var propertyIsEnumerable = objectProto$5.propertyIsEnumerable;
-/**
- * Checks if `value` is likely an `arguments` object.
- *
- * @static
- * @memberOf _
- * @since 0.1.0
- * @category Lang
- * @param {*} value The value to check.
- * @returns {boolean} Returns `true` if `value` is an `arguments` object,
- *  else `false`.
- * @example
- *
- * _.isArguments(function() { return arguments; }());
- * // => true
- *
- * _.isArguments([1, 2, 3]);
- * // => false
- */
 
 var isArguments = _baseIsArguments(function () {
   return arguments;
@@ -28205,19 +25548,6 @@ var isArguments = _baseIsArguments(function () {
 };
 var isArguments_1 = isArguments;
 
-/**
- * This method returns `false`.
- *
- * @static
- * @memberOf _
- * @since 4.13.0
- * @category Util
- * @returns {boolean} Returns `false`.
- * @example
- *
- * _.times(2, _.stubFalse);
- * // => [false, false]
- */
 function stubFalse() {
   return false;
 }
@@ -28225,55 +25555,23 @@ function stubFalse() {
 var stubFalse_1 = stubFalse;
 
 var isBuffer_1 = createCommonjsModule(function (module, exports) {
-  /** Detect free variable `exports`. */
   var freeExports = exports && !exports.nodeType && exports;
-  /** Detect free variable `module`. */
 
   var freeModule = freeExports && 'object' == 'object' && module && !module.nodeType && module;
-  /** Detect the popular CommonJS extension `module.exports`. */
 
   var moduleExports = freeModule && freeModule.exports === freeExports;
-  /** Built-in value references. */
 
   var Buffer = moduleExports ? _root.Buffer : undefined;
-  /* Built-in method references for those with the same name as other `lodash` methods. */
 
   var nativeIsBuffer = Buffer ? Buffer.isBuffer : undefined;
-  /**
-   * Checks if `value` is a buffer.
-   *
-   * @static
-   * @memberOf _
-   * @since 4.3.0
-   * @category Lang
-   * @param {*} value The value to check.
-   * @returns {boolean} Returns `true` if `value` is a buffer, else `false`.
-   * @example
-   *
-   * _.isBuffer(new Buffer(2));
-   * // => true
-   *
-   * _.isBuffer(new Uint8Array(2));
-   * // => false
-   */
 
   var isBuffer = nativeIsBuffer || stubFalse_1;
   module.exports = isBuffer;
 });
 
-/** Used as references for various `Number` constants. */
 var MAX_SAFE_INTEGER$1 = 9007199254740991;
-/** Used to detect unsigned integer values. */
 
 var reIsUint = /^(?:0|[1-9]\d*)$/;
-/**
- * Checks if `value` is a valid array-like index.
- *
- * @private
- * @param {*} value The value to check.
- * @param {number} [length=MAX_SAFE_INTEGER] The upper bounds of a valid index.
- * @returns {boolean} Returns `true` if `value` is a valid index, else `false`.
- */
 
 function isIndex(value, length) {
   var type = typeof value;
@@ -28283,34 +25581,7 @@ function isIndex(value, length) {
 
 var _isIndex = isIndex;
 
-/** Used as references for various `Number` constants. */
 var MAX_SAFE_INTEGER = 9007199254740991;
-/**
- * Checks if `value` is a valid array-like length.
- *
- * **Note:** This method is loosely based on
- * [`ToLength`](http://ecma-international.org/ecma-262/7.0/#sec-tolength).
- *
- * @static
- * @memberOf _
- * @since 4.0.0
- * @category Lang
- * @param {*} value The value to check.
- * @returns {boolean} Returns `true` if `value` is a valid length, else `false`.
- * @example
- *
- * _.isLength(3);
- * // => true
- *
- * _.isLength(Number.MIN_VALUE);
- * // => false
- *
- * _.isLength(Infinity);
- * // => false
- *
- * _.isLength('3');
- * // => false
- */
 
 function isLength(value) {
   return typeof value == 'number' && value > -1 && value % 1 == 0 && value <= MAX_SAFE_INTEGER;
@@ -28318,7 +25589,6 @@ function isLength(value) {
 
 var isLength_1 = isLength;
 
-/** `Object#toString` result references. */
 
 var argsTag$1 = '[object Arguments]',
     arrayTag$1 = '[object Array]',
@@ -28344,18 +25614,10 @@ var arrayBufferTag = '[object ArrayBuffer]',
     uint8ClampedTag = '[object Uint8ClampedArray]',
     uint16Tag = '[object Uint16Array]',
     uint32Tag = '[object Uint32Array]';
-/** Used to identify `toStringTag` values of typed arrays. */
 
 var typedArrayTags = {};
 typedArrayTags[float32Tag] = typedArrayTags[float64Tag] = typedArrayTags[int8Tag] = typedArrayTags[int16Tag] = typedArrayTags[int32Tag] = typedArrayTags[uint8Tag] = typedArrayTags[uint8ClampedTag] = typedArrayTags[uint16Tag] = typedArrayTags[uint32Tag] = true;
 typedArrayTags[argsTag$1] = typedArrayTags[arrayTag$1] = typedArrayTags[arrayBufferTag] = typedArrayTags[boolTag] = typedArrayTags[dataViewTag$1] = typedArrayTags[dateTag] = typedArrayTags[errorTag] = typedArrayTags[funcTag] = typedArrayTags[mapTag$1] = typedArrayTags[numberTag] = typedArrayTags[objectTag$2] = typedArrayTags[regexpTag] = typedArrayTags[setTag$1] = typedArrayTags[stringTag] = typedArrayTags[weakMapTag$1] = false;
-/**
- * The base implementation of `_.isTypedArray` without Node.js optimizations.
- *
- * @private
- * @param {*} value The value to check.
- * @returns {boolean} Returns `true` if `value` is a typed array, else `false`.
- */
 
 function baseIsTypedArray(value) {
   return isObjectLike_1(value) && isLength_1(value.length) && !!typedArrayTags[_baseGetTag(value)];
@@ -28363,13 +25625,6 @@ function baseIsTypedArray(value) {
 
 var _baseIsTypedArray = baseIsTypedArray;
 
-/**
- * The base implementation of `_.unary` without support for storing metadata.
- *
- * @private
- * @param {Function} func The function to cap arguments for.
- * @returns {Function} Returns the new capped function.
- */
 function baseUnary(func) {
   return function (value) {
     return func(value);
@@ -28379,27 +25634,21 @@ function baseUnary(func) {
 var _baseUnary = baseUnary;
 
 var _nodeUtil = createCommonjsModule(function (module, exports) {
-  /** Detect free variable `exports`. */
   var freeExports = exports && !exports.nodeType && exports;
-  /** Detect free variable `module`. */
 
   var freeModule = freeExports && 'object' == 'object' && module && !module.nodeType && module;
-  /** Detect the popular CommonJS extension `module.exports`. */
 
   var moduleExports = freeModule && freeModule.exports === freeExports;
-  /** Detect free variable `process` from Node.js. */
 
   var freeProcess = moduleExports && _freeGlobal.process;
-  /** Used to access faster Node.js helpers. */
 
   var nodeUtil = function () {
     try {
-      // Use `util.types` for Node.js 10+.
       var types = freeModule && freeModule.require && freeModule.require('util').types;
 
       if (types) {
         return types;
-      } // Legacy `process.binding('util')` for Node.js < 10.
+      }
 
 
       return freeProcess && freeProcess.binding && freeProcess.binding('util');
@@ -28409,44 +25658,16 @@ var _nodeUtil = createCommonjsModule(function (module, exports) {
   module.exports = nodeUtil;
 });
 
-/* Node.js helper references. */
 
 var nodeIsTypedArray = _nodeUtil && _nodeUtil.isTypedArray;
-/**
- * Checks if `value` is classified as a typed array.
- *
- * @static
- * @memberOf _
- * @since 3.0.0
- * @category Lang
- * @param {*} value The value to check.
- * @returns {boolean} Returns `true` if `value` is a typed array, else `false`.
- * @example
- *
- * _.isTypedArray(new Uint8Array);
- * // => true
- *
- * _.isTypedArray([]);
- * // => false
- */
 
 var isTypedArray = nodeIsTypedArray ? _baseUnary(nodeIsTypedArray) : _baseIsTypedArray;
 var isTypedArray_1 = isTypedArray;
 
-/** Used for built-in method references. */
 
 var objectProto$4 = Object.prototype;
-/** Used to check objects for own properties. */
 
 var hasOwnProperty$3 = objectProto$4.hasOwnProperty;
-/**
- * Creates an array of the enumerable property names of the array-like `value`.
- *
- * @private
- * @param {*} value The value to query.
- * @param {boolean} inherited Specify returning inherited property names.
- * @returns {Array} Returns the array of property names.
- */
 
 function arrayLikeKeys(value, inherited) {
   var isArr = isArray_1(value),
@@ -28458,10 +25679,10 @@ function arrayLikeKeys(value, inherited) {
       length = result.length;
 
   for (var key in value) {
-    if ((inherited || hasOwnProperty$3.call(value, key)) && !(skipIndexes && ( // Safari 9 has enumerable `arguments.length` in strict mode.
-    key == 'length' || // Node.js 0.10 has enumerable non-index properties on buffers.
-    isBuff && (key == 'offset' || key == 'parent') || // PhantomJS 2 has enumerable non-index properties on typed arrays.
-    isType && (key == 'buffer' || key == 'byteLength' || key == 'byteOffset') || // Skip index properties.
+    if ((inherited || hasOwnProperty$3.call(value, key)) && !(skipIndexes && (
+    key == 'length' ||
+    isBuff && (key == 'offset' || key == 'parent') ||
+    isType && (key == 'buffer' || key == 'byteLength' || key == 'byteOffset') ||
     _isIndex(key, length)))) {
       result.push(key);
     }
@@ -28472,15 +25693,7 @@ function arrayLikeKeys(value, inherited) {
 
 var _arrayLikeKeys = arrayLikeKeys;
 
-/** Used for built-in method references. */
 var objectProto$3 = Object.prototype;
-/**
- * Checks if `value` is likely a prototype object.
- *
- * @private
- * @param {*} value The value to check.
- * @returns {boolean} Returns `true` if `value` is a prototype, else `false`.
- */
 
 function isPrototype(value) {
   var Ctor = value && value.constructor,
@@ -28490,14 +25703,6 @@ function isPrototype(value) {
 
 var _isPrototype = isPrototype;
 
-/**
- * Creates a unary function that invokes `func` with its argument transformed.
- *
- * @private
- * @param {Function} func The function to wrap.
- * @param {Function} transform The argument transform.
- * @returns {Function} Returns the new function.
- */
 function overArg(func, transform) {
   return function (arg) {
     return func(transform(arg));
@@ -28506,24 +25711,14 @@ function overArg(func, transform) {
 
 var _overArg = overArg;
 
-/* Built-in method references for those with the same name as other `lodash` methods. */
 
 var nativeKeys = _overArg(Object.keys, Object);
 var _nativeKeys = nativeKeys;
 
-/** Used for built-in method references. */
 
 var objectProto$2 = Object.prototype;
-/** Used to check objects for own properties. */
 
 var hasOwnProperty$2 = objectProto$2.hasOwnProperty;
-/**
- * The base implementation of `_.keys` which doesn't treat sparse arrays as dense.
- *
- * @private
- * @param {Object} object The object to query.
- * @returns {Array} Returns the array of property names.
- */
 
 function baseKeys(object) {
   if (!_isPrototype(object)) {
@@ -28543,31 +25738,6 @@ function baseKeys(object) {
 
 var _baseKeys = baseKeys;
 
-/**
- * Checks if `value` is array-like. A value is considered array-like if it's
- * not a function and has a `value.length` that's an integer greater than or
- * equal to `0` and less than or equal to `Number.MAX_SAFE_INTEGER`.
- *
- * @static
- * @memberOf _
- * @since 4.0.0
- * @category Lang
- * @param {*} value The value to check.
- * @returns {boolean} Returns `true` if `value` is array-like, else `false`.
- * @example
- *
- * _.isArrayLike([1, 2, 3]);
- * // => true
- *
- * _.isArrayLike(document.body.children);
- * // => true
- *
- * _.isArrayLike('abc');
- * // => true
- *
- * _.isArrayLike(_.noop);
- * // => false
- */
 
 function isArrayLike(value) {
   return value != null && isLength_1(value.length) && !isFunction_1(value);
@@ -28575,34 +25745,6 @@ function isArrayLike(value) {
 
 var isArrayLike_1 = isArrayLike;
 
-/**
- * Creates an array of the own enumerable property names of `object`.
- *
- * **Note:** Non-object values are coerced to objects. See the
- * [ES spec](http://ecma-international.org/ecma-262/7.0/#sec-object.keys)
- * for more details.
- *
- * @static
- * @since 0.1.0
- * @memberOf _
- * @category Object
- * @param {Object} object The object to query.
- * @returns {Array} Returns the array of property names.
- * @example
- *
- * function Foo() {
- *   this.a = 1;
- *   this.b = 2;
- * }
- *
- * Foo.prototype.c = 3;
- *
- * _.keys(new Foo);
- * // => ['a', 'b'] (iteration order is not guaranteed)
- *
- * _.keys('hi');
- * // => ['0', '1']
- */
 
 function keys(object) {
   return isArrayLike_1(object) ? _arrayLikeKeys(object) : _baseKeys(object);
@@ -28610,13 +25752,6 @@ function keys(object) {
 
 var keys_1 = keys;
 
-/**
- * Creates an array of own enumerable property names and symbols of `object`.
- *
- * @private
- * @param {Object} object The object to query.
- * @returns {Array} Returns the array of property names and symbols.
- */
 
 function getAllKeys(object) {
   return _baseGetAllKeys(object, keys_1, _getSymbols);
@@ -28624,28 +25759,12 @@ function getAllKeys(object) {
 
 var _getAllKeys = getAllKeys;
 
-/** Used to compose bitmasks for value comparisons. */
 
 var COMPARE_PARTIAL_FLAG$3 = 1;
-/** Used for built-in method references. */
 
 var objectProto$1 = Object.prototype;
-/** Used to check objects for own properties. */
 
 var hasOwnProperty$1 = objectProto$1.hasOwnProperty;
-/**
- * A specialized version of `baseIsEqualDeep` for objects with support for
- * partial deep comparisons.
- *
- * @private
- * @param {Object} object The object to compare.
- * @param {Object} other The other object to compare.
- * @param {number} bitmask The bitmask flags. See `baseIsEqual` for more details.
- * @param {Function} customizer The function to customize comparisons.
- * @param {Function} equalFunc The function to determine equivalents of values.
- * @param {Object} stack Tracks traversed `object` and `other` objects.
- * @returns {boolean} Returns `true` if the objects are equivalent, else `false`.
- */
 
 function equalObjects(object, other, bitmask, customizer, equalFunc, stack) {
   var isPartial = bitmask & COMPARE_PARTIAL_FLAG$3,
@@ -28666,7 +25785,7 @@ function equalObjects(object, other, bitmask, customizer, equalFunc, stack) {
     if (!(isPartial ? key in other : hasOwnProperty$1.call(other, key))) {
       return false;
     }
-  } // Check that cyclic values are equal.
+  }
 
 
   var objStacked = stack.get(object);
@@ -28688,7 +25807,7 @@ function equalObjects(object, other, bitmask, customizer, equalFunc, stack) {
 
     if (customizer) {
       var compared = isPartial ? customizer(othValue, objValue, key, other, object, stack) : customizer(objValue, othValue, key, object, other, stack);
-    } // Recursively compare objects (susceptible to call stack limits).
+    }
 
 
     if (!(compared === undefined ? objValue === othValue || equalFunc(objValue, othValue, bitmask, customizer, stack) : compared)) {
@@ -28701,7 +25820,7 @@ function equalObjects(object, other, bitmask, customizer, equalFunc, stack) {
 
   if (result && !skipCtor) {
     var objCtor = object.constructor,
-        othCtor = other.constructor; // Non `Object` object instances with different constructors are not equal.
+        othCtor = other.constructor;
 
     if (objCtor != othCtor && 'constructor' in object && 'constructor' in other && !(typeof objCtor == 'function' && objCtor instanceof objCtor && typeof othCtor == 'function' && othCtor instanceof othCtor)) {
       result = false;
@@ -28715,27 +25834,22 @@ function equalObjects(object, other, bitmask, customizer, equalFunc, stack) {
 
 var _equalObjects = equalObjects;
 
-/* Built-in method references that are verified to be native. */
 
 var DataView = _getNative(_root, 'DataView');
 var _DataView = DataView;
 
-/* Built-in method references that are verified to be native. */
 
 var Promise$1 = _getNative(_root, 'Promise');
 var _Promise = Promise$1;
 
-/* Built-in method references that are verified to be native. */
 
 var Set$1 = _getNative(_root, 'Set');
 var _Set = Set$1;
 
-/* Built-in method references that are verified to be native. */
 
 var WeakMap$1 = _getNative(_root, 'WeakMap');
 var _WeakMap = WeakMap$1;
 
-/** `Object#toString` result references. */
 
 var mapTag = '[object Map]',
     objectTag$1 = '[object Object]',
@@ -28743,22 +25857,14 @@ var mapTag = '[object Map]',
     setTag = '[object Set]',
     weakMapTag = '[object WeakMap]';
 var dataViewTag = '[object DataView]';
-/** Used to detect maps, sets, and weakmaps. */
 
 var dataViewCtorString = _toSource(_DataView),
     mapCtorString = _toSource(_Map),
     promiseCtorString = _toSource(_Promise),
     setCtorString = _toSource(_Set),
     weakMapCtorString = _toSource(_WeakMap);
-/**
- * Gets the `toStringTag` of `value`.
- *
- * @private
- * @param {*} value The value to query.
- * @returns {string} Returns the `toStringTag`.
- */
 
-var getTag = _baseGetTag; // Fallback for data views, maps, sets, and weak maps in IE 11 and promises in Node.js < 6.
+var getTag = _baseGetTag;
 
 if (_DataView && getTag(new _DataView(new ArrayBuffer(1))) != dataViewTag || _Map && getTag(new _Map()) != mapTag || _Promise && getTag(_Promise.resolve()) != promiseTag || _Set && getTag(new _Set()) != setTag || _WeakMap && getTag(new _WeakMap()) != weakMapTag) {
   getTag = function (value) {
@@ -28791,34 +25897,16 @@ if (_DataView && getTag(new _DataView(new ArrayBuffer(1))) != dataViewTag || _Ma
 
 var _getTag = getTag;
 
-/** Used to compose bitmasks for value comparisons. */
 
 var COMPARE_PARTIAL_FLAG$2 = 1;
-/** `Object#toString` result references. */
 
 var argsTag = '[object Arguments]',
     arrayTag = '[object Array]',
     objectTag = '[object Object]';
-/** Used for built-in method references. */
 
 var objectProto = Object.prototype;
-/** Used to check objects for own properties. */
 
 var hasOwnProperty = objectProto.hasOwnProperty;
-/**
- * A specialized version of `baseIsEqual` for arrays and objects which performs
- * deep comparisons and tracks traversed objects enabling objects with circular
- * references to be compared.
- *
- * @private
- * @param {Object} object The object to compare.
- * @param {Object} other The other object to compare.
- * @param {number} bitmask The bitmask flags. See `baseIsEqual` for more details.
- * @param {Function} customizer The function to customize comparisons.
- * @param {Function} equalFunc The function to determine equivalents of values.
- * @param {Object} [stack] Tracks traversed `object` and `other` objects.
- * @returns {boolean} Returns `true` if the objects are equivalent, else `false`.
- */
 
 function baseIsEqualDeep(object, other, bitmask, customizer, equalFunc, stack) {
   var objIsArr = isArray_1(object),
@@ -28867,20 +25955,6 @@ function baseIsEqualDeep(object, other, bitmask, customizer, equalFunc, stack) {
 
 var _baseIsEqualDeep = baseIsEqualDeep;
 
-/**
- * The base implementation of `_.isEqual` which supports partial comparisons
- * and tracks traversed objects.
- *
- * @private
- * @param {*} value The value to compare.
- * @param {*} other The other value to compare.
- * @param {boolean} bitmask The bitmask flags.
- *  1 - Unordered comparison
- *  2 - Partial comparison
- * @param {Function} [customizer] The function to customize comparisons.
- * @param {Object} [stack] Tracks traversed `value` and `other` objects.
- * @returns {boolean} Returns `true` if the values are equivalent, else `false`.
- */
 
 function baseIsEqual(value, other, bitmask, customizer, stack) {
   if (value === other) {
@@ -28896,20 +25970,9 @@ function baseIsEqual(value, other, bitmask, customizer, stack) {
 
 var _baseIsEqual = baseIsEqual;
 
-/** Used to compose bitmasks for value comparisons. */
 
 var COMPARE_PARTIAL_FLAG$1 = 1,
     COMPARE_UNORDERED_FLAG$1 = 2;
-/**
- * The base implementation of `_.isMatch` without support for iteratee shorthands.
- *
- * @private
- * @param {Object} object The object to inspect.
- * @param {Object} source The object of property values to match.
- * @param {Array} matchData The property names, values, and compare flags to match.
- * @param {Function} [customizer] The function to customize comparisons.
- * @returns {boolean} Returns `true` if `object` is a match, else `false`.
- */
 
 function baseIsMatch(object, source, matchData, customizer) {
   var index = matchData.length,
@@ -28958,14 +26021,6 @@ function baseIsMatch(object, source, matchData, customizer) {
 
 var _baseIsMatch = baseIsMatch;
 
-/**
- * Checks if `value` is suitable for strict equality comparisons, i.e. `===`.
- *
- * @private
- * @param {*} value The value to check.
- * @returns {boolean} Returns `true` if `value` if suitable for strict
- *  equality comparisons, else `false`.
- */
 
 function isStrictComparable(value) {
   return value === value && !isObject_1(value);
@@ -28973,13 +26028,6 @@ function isStrictComparable(value) {
 
 var _isStrictComparable = isStrictComparable;
 
-/**
- * Gets the property names, values, and compare flags of `object`.
- *
- * @private
- * @param {Object} object The object to query.
- * @returns {Array} Returns the match data of `object`.
- */
 
 function getMatchData(object) {
   var result = keys_1(object),
@@ -28996,15 +26044,6 @@ function getMatchData(object) {
 
 var _getMatchData = getMatchData;
 
-/**
- * A specialized version of `matchesProperty` for source values suitable
- * for strict equality comparisons, i.e. `===`.
- *
- * @private
- * @param {string} key The key of the property to get.
- * @param {*} srcValue The value to match.
- * @returns {Function} Returns the new spec function.
- */
 function matchesStrictComparable(key, srcValue) {
   return function (object) {
     if (object == null) {
@@ -29017,13 +26056,6 @@ function matchesStrictComparable(key, srcValue) {
 
 var _matchesStrictComparable = matchesStrictComparable;
 
-/**
- * The base implementation of `_.matches` which doesn't clone `source`.
- *
- * @private
- * @param {Object} source The object of property values to match.
- * @returns {Function} Returns the new spec function.
- */
 
 function baseMatches(source) {
   var matchData = _getMatchData(source);
@@ -29039,26 +26071,8 @@ function baseMatches(source) {
 
 var _baseMatches = baseMatches;
 
-/** `Object#toString` result references. */
 
 var symbolTag = '[object Symbol]';
-/**
- * Checks if `value` is classified as a `Symbol` primitive or object.
- *
- * @static
- * @memberOf _
- * @since 4.0.0
- * @category Lang
- * @param {*} value The value to check.
- * @returns {boolean} Returns `true` if `value` is a symbol, else `false`.
- * @example
- *
- * _.isSymbol(Symbol.iterator);
- * // => true
- *
- * _.isSymbol('abc');
- * // => false
- */
 
 function isSymbol(value) {
   return typeof value == 'symbol' || isObjectLike_1(value) && _baseGetTag(value) == symbolTag;
@@ -29066,18 +26080,9 @@ function isSymbol(value) {
 
 var isSymbol_1 = isSymbol;
 
-/** Used to match property names within property paths. */
 
 var reIsDeepProp = /\.|\[(?:[^[\]]*|(["'])(?:(?!\1)[^\\]|\\.)*?\1)\]/,
     reIsPlainProp = /^\w*$/;
-/**
- * Checks if `value` is a property name and not a property path.
- *
- * @private
- * @param {*} value The value to check.
- * @param {Object} [object] The object to query keys on.
- * @returns {boolean} Returns `true` if `value` is a property name, else `false`.
- */
 
 function isKey(value, object) {
   if (isArray_1(value)) {
@@ -29095,53 +26100,8 @@ function isKey(value, object) {
 
 var _isKey = isKey;
 
-/** Error message constants. */
 
 var FUNC_ERROR_TEXT = 'Expected a function';
-/**
- * Creates a function that memoizes the result of `func`. If `resolver` is
- * provided, it determines the cache key for storing the result based on the
- * arguments provided to the memoized function. By default, the first argument
- * provided to the memoized function is used as the map cache key. The `func`
- * is invoked with the `this` binding of the memoized function.
- *
- * **Note:** The cache is exposed as the `cache` property on the memoized
- * function. Its creation may be customized by replacing the `_.memoize.Cache`
- * constructor with one whose instances implement the
- * [`Map`](http://ecma-international.org/ecma-262/7.0/#sec-properties-of-the-map-prototype-object)
- * method interface of `clear`, `delete`, `get`, `has`, and `set`.
- *
- * @static
- * @memberOf _
- * @since 0.1.0
- * @category Function
- * @param {Function} func The function to have its output memoized.
- * @param {Function} [resolver] The function to resolve the cache key.
- * @returns {Function} Returns the new memoized function.
- * @example
- *
- * var object = { 'a': 1, 'b': 2 };
- * var other = { 'c': 3, 'd': 4 };
- *
- * var values = _.memoize(_.values);
- * values(object);
- * // => [1, 2]
- *
- * values(other);
- * // => [3, 4]
- *
- * object.a = 2;
- * values(object);
- * // => [1, 2]
- *
- * // Modify the result cache.
- * values.cache.set(object, ['a', 'b']);
- * values(object);
- * // => ['a', 'b']
- *
- * // Replace `_.memoize.Cache`.
- * _.memoize.Cache = WeakMap;
- */
 
 function memoize(func, resolver) {
   if (typeof func != 'function' || resolver != null && typeof resolver != 'function') {
@@ -29164,23 +26124,14 @@ function memoize(func, resolver) {
 
   memoized.cache = new (memoize.Cache || _MapCache)();
   return memoized;
-} // Expose `MapCache`.
+}
 
 
 memoize.Cache = _MapCache;
 var memoize_1 = memoize;
 
-/** Used as the maximum memoize cache size. */
 
 var MAX_MEMOIZE_SIZE = 500;
-/**
- * A specialized version of `_.memoize` which clears the memoized function's
- * cache when it exceeds `MAX_MEMOIZE_SIZE`.
- *
- * @private
- * @param {Function} func The function to have its output memoized.
- * @returns {Function} Returns the new memoized function.
- */
 
 function memoizeCapped(func) {
   var result = memoize_1(func, function (key) {
@@ -29196,25 +26147,15 @@ function memoizeCapped(func) {
 
 var _memoizeCapped = memoizeCapped;
 
-/** Used to match property names within property paths. */
 
 var rePropName = /[^.[\]]+|\[(?:(-?\d+(?:\.\d+)?)|(["'])((?:(?!\2)[^\\]|\\.)*?)\2)\]|(?=(?:\.|\[\])(?:\.|\[\]|$))/g;
-/** Used to match backslashes in property paths. */
 
 var reEscapeChar = /\\(\\)?/g;
-/**
- * Converts `string` to a property path array.
- *
- * @private
- * @param {string} string The string to convert.
- * @returns {Array} Returns the property path array.
- */
 
 var stringToPath = _memoizeCapped(function (string) {
   var result = [];
 
   if (string.charCodeAt(0) === 46
-  /* . */
   ) {
       result.push('');
     }
@@ -29226,15 +26167,6 @@ var stringToPath = _memoizeCapped(function (string) {
 });
 var _stringToPath = stringToPath;
 
-/**
- * A specialized version of `_.map` for arrays without support for iteratee
- * shorthands.
- *
- * @private
- * @param {Array} [array] The array to iterate over.
- * @param {Function} iteratee The function invoked per iteration.
- * @returns {Array} Returns the new mapped array.
- */
 function arrayMap(array, iteratee) {
   var index = -1,
       length = array == null ? 0 : array.length,
@@ -29249,30 +26181,18 @@ function arrayMap(array, iteratee) {
 
 var _arrayMap = arrayMap;
 
-/** Used as references for various `Number` constants. */
 
 var INFINITY$2 = 1 / 0;
-/** Used to convert symbols to primitives and strings. */
 
 var symbolProto = _Symbol ? _Symbol.prototype : undefined,
     symbolToString = symbolProto ? symbolProto.toString : undefined;
-/**
- * The base implementation of `_.toString` which doesn't convert nullish
- * values to empty strings.
- *
- * @private
- * @param {*} value The value to process.
- * @returns {string} Returns the string.
- */
 
 function baseToString(value) {
-  // Exit early for strings to avoid a performance hit in some environments.
   if (typeof value == 'string') {
     return value;
   }
 
   if (isArray_1(value)) {
-    // Recursively convert values (susceptible to call stack limits).
     return _arrayMap(value, baseToString) + '';
   }
 
@@ -29286,27 +26206,6 @@ function baseToString(value) {
 
 var _baseToString = baseToString;
 
-/**
- * Converts `value` to a string. An empty string is returned for `null`
- * and `undefined` values. The sign of `-0` is preserved.
- *
- * @static
- * @memberOf _
- * @since 4.0.0
- * @category Lang
- * @param {*} value The value to convert.
- * @returns {string} Returns the converted string.
- * @example
- *
- * _.toString(null);
- * // => ''
- *
- * _.toString(-0);
- * // => '-0'
- *
- * _.toString([1, 2, 3]);
- * // => '1,2,3'
- */
 
 function toString(value) {
   return value == null ? '' : _baseToString(value);
@@ -29314,14 +26213,6 @@ function toString(value) {
 
 var toString_1 = toString;
 
-/**
- * Casts `value` to a path array if it's not one.
- *
- * @private
- * @param {*} value The value to inspect.
- * @param {Object} [object] The object to query keys on.
- * @returns {Array} Returns the cast property path array.
- */
 
 function castPath(value, object) {
   if (isArray_1(value)) {
@@ -29333,16 +26224,8 @@ function castPath(value, object) {
 
 var _castPath = castPath;
 
-/** Used as references for various `Number` constants. */
 
 var INFINITY$1 = 1 / 0;
-/**
- * Converts `value` to a string key if it's not a string or symbol.
- *
- * @private
- * @param {*} value The value to inspect.
- * @returns {string|symbol} Returns the key.
- */
 
 function toKey(value) {
   if (typeof value == 'string' || isSymbol_1(value)) {
@@ -29355,14 +26238,6 @@ function toKey(value) {
 
 var _toKey = toKey;
 
-/**
- * The base implementation of `_.get` without support for default values.
- *
- * @private
- * @param {Object} object The object to query.
- * @param {Array|string} path The path of the property to get.
- * @returns {*} Returns the resolved value.
- */
 
 function baseGet(object, path) {
   path = _castPath(path, object);
@@ -29378,31 +26253,6 @@ function baseGet(object, path) {
 
 var _baseGet = baseGet;
 
-/**
- * Gets the value at `path` of `object`. If the resolved value is
- * `undefined`, the `defaultValue` is returned in its place.
- *
- * @static
- * @memberOf _
- * @since 3.7.0
- * @category Object
- * @param {Object} object The object to query.
- * @param {Array|string} path The path of the property to get.
- * @param {*} [defaultValue] The value returned for `undefined` resolved values.
- * @returns {*} Returns the resolved value.
- * @example
- *
- * var object = { 'a': [{ 'b': { 'c': 3 } }] };
- *
- * _.get(object, 'a[0].b.c');
- * // => 3
- *
- * _.get(object, ['a', '0', 'b', 'c']);
- * // => 3
- *
- * _.get(object, 'a.b.c', 'default');
- * // => 'default'
- */
 
 function get(object, path, defaultValue) {
   var result = object == null ? undefined : _baseGet(object, path);
@@ -29411,29 +26261,12 @@ function get(object, path, defaultValue) {
 
 var get_1 = get;
 
-/**
- * The base implementation of `_.hasIn` without support for deep paths.
- *
- * @private
- * @param {Object} [object] The object to query.
- * @param {Array|string} key The key to check.
- * @returns {boolean} Returns `true` if `key` exists, else `false`.
- */
 function baseHasIn(object, key) {
   return object != null && key in Object(object);
 }
 
 var _baseHasIn = baseHasIn;
 
-/**
- * Checks if `path` exists on `object`.
- *
- * @private
- * @param {Object} object The object to query.
- * @param {Array|string} path The path to check.
- * @param {Function} hasFunc The function to check properties.
- * @returns {boolean} Returns `true` if `path` exists, else `false`.
- */
 
 function hasPath(object, path, hasFunc) {
   path = _castPath(path, object);
@@ -29461,32 +26294,6 @@ function hasPath(object, path, hasFunc) {
 
 var _hasPath = hasPath;
 
-/**
- * Checks if `path` is a direct or inherited property of `object`.
- *
- * @static
- * @memberOf _
- * @since 4.0.0
- * @category Object
- * @param {Object} object The object to query.
- * @param {Array|string} path The path to check.
- * @returns {boolean} Returns `true` if `path` exists, else `false`.
- * @example
- *
- * var object = _.create({ 'a': _.create({ 'b': 2 }) });
- *
- * _.hasIn(object, 'a');
- * // => true
- *
- * _.hasIn(object, 'a.b');
- * // => true
- *
- * _.hasIn(object, ['a', 'b']);
- * // => true
- *
- * _.hasIn(object, 'b');
- * // => false
- */
 
 function hasIn(object, path) {
   return object != null && _hasPath(object, path, _baseHasIn);
@@ -29494,18 +26301,9 @@ function hasIn(object, path) {
 
 var hasIn_1 = hasIn;
 
-/** Used to compose bitmasks for value comparisons. */
 
 var COMPARE_PARTIAL_FLAG = 1,
     COMPARE_UNORDERED_FLAG = 2;
-/**
- * The base implementation of `_.matchesProperty` which doesn't clone `srcValue`.
- *
- * @private
- * @param {string} path The path of the property to get.
- * @param {*} srcValue The value to match.
- * @returns {Function} Returns the new spec function.
- */
 
 function baseMatchesProperty(path, srcValue) {
   if (_isKey(path) && _isStrictComparable(srcValue)) {
@@ -29520,35 +26318,12 @@ function baseMatchesProperty(path, srcValue) {
 
 var _baseMatchesProperty = baseMatchesProperty;
 
-/**
- * This method returns the first argument it receives.
- *
- * @static
- * @since 0.1.0
- * @memberOf _
- * @category Util
- * @param {*} value Any value.
- * @returns {*} Returns `value`.
- * @example
- *
- * var object = { 'a': 1 };
- *
- * console.log(_.identity(object) === object);
- * // => true
- */
 function identity$2(value) {
   return value;
 }
 
 var identity_1 = identity$2;
 
-/**
- * The base implementation of `_.property` without support for deep paths.
- *
- * @private
- * @param {string} key The key of the property to get.
- * @returns {Function} Returns the new accessor function.
- */
 function baseProperty(key) {
   return function (object) {
     return object == null ? undefined : object[key];
@@ -29557,13 +26332,6 @@ function baseProperty(key) {
 
 var _baseProperty = baseProperty;
 
-/**
- * A specialized version of `baseProperty` which supports deep paths.
- *
- * @private
- * @param {Array|string} path The path of the property to get.
- * @returns {Function} Returns the new accessor function.
- */
 
 function basePropertyDeep(path) {
   return function (object) {
@@ -29573,28 +26341,6 @@ function basePropertyDeep(path) {
 
 var _basePropertyDeep = basePropertyDeep;
 
-/**
- * Creates a function that returns the value at `path` of a given object.
- *
- * @static
- * @memberOf _
- * @since 2.4.0
- * @category Util
- * @param {Array|string} path The path of the property to get.
- * @returns {Function} Returns the new accessor function.
- * @example
- *
- * var objects = [
- *   { 'a': { 'b': 2 } },
- *   { 'a': { 'b': 1 } }
- * ];
- *
- * _.map(objects, _.property('a.b'));
- * // => [2, 1]
- *
- * _.map(_.sortBy(objects, _.property(['a', 'b'])), 'a.b');
- * // => [1, 2]
- */
 
 function property$1(path) {
   return _isKey(path) ? _baseProperty(_toKey(path)) : _basePropertyDeep(path);
@@ -29602,17 +26348,8 @@ function property$1(path) {
 
 var property_1 = property$1;
 
-/**
- * The base implementation of `_.iteratee`.
- *
- * @private
- * @param {*} [value=_.identity] The value to convert to an iteratee.
- * @returns {Function} Returns the iteratee.
- */
 
 function baseIteratee(value) {
-  // Don't store the `typeof` result in a variable to avoid a JIT bug in Safari 9.
-  // See https://bugs.webkit.org/show_bug.cgi?id=156034 for more details.
   if (typeof value == 'function') {
     return value;
   }
@@ -29630,17 +26367,6 @@ function baseIteratee(value) {
 
 var _baseIteratee = baseIteratee;
 
-/**
- * The base implementation of `_.findIndex` and `_.findLastIndex` without
- * support for iteratee shorthands.
- *
- * @private
- * @param {Array} array The array to inspect.
- * @param {Function} predicate The function invoked per iteration.
- * @param {number} fromIndex The index to search from.
- * @param {boolean} [fromRight] Specify iterating from right to left.
- * @returns {number} Returns the index of the matched value, else `-1`.
- */
 function baseFindIndex(array, predicate, fromIndex, fromRight) {
   var length = array.length,
       index = fromIndex + (fromRight ? 1 : -1);
@@ -29656,29 +26382,12 @@ function baseFindIndex(array, predicate, fromIndex, fromRight) {
 
 var _baseFindIndex = baseFindIndex;
 
-/**
- * The base implementation of `_.isNaN` without support for number objects.
- *
- * @private
- * @param {*} value The value to check.
- * @returns {boolean} Returns `true` if `value` is `NaN`, else `false`.
- */
 function baseIsNaN(value) {
   return value !== value;
 }
 
 var _baseIsNaN = baseIsNaN;
 
-/**
- * A specialized version of `_.indexOf` which performs strict equality
- * comparisons of values, i.e. `===`.
- *
- * @private
- * @param {Array} array The array to inspect.
- * @param {*} value The value to search for.
- * @param {number} fromIndex The index to search from.
- * @returns {number} Returns the index of the matched value, else `-1`.
- */
 function strictIndexOf(array, value, fromIndex) {
   var index = fromIndex - 1,
       length = array.length;
@@ -29694,15 +26403,6 @@ function strictIndexOf(array, value, fromIndex) {
 
 var _strictIndexOf = strictIndexOf;
 
-/**
- * The base implementation of `_.indexOf` without `fromIndex` bounds checks.
- *
- * @private
- * @param {Array} array The array to inspect.
- * @param {*} value The value to search for.
- * @param {number} fromIndex The index to search from.
- * @returns {number} Returns the index of the matched value, else `-1`.
- */
 
 function baseIndexOf(array, value, fromIndex) {
   return value === value ? _strictIndexOf(array, value, fromIndex) : _baseFindIndex(array, _baseIsNaN, fromIndex);
@@ -29710,15 +26410,6 @@ function baseIndexOf(array, value, fromIndex) {
 
 var _baseIndexOf = baseIndexOf;
 
-/**
- * A specialized version of `_.includes` for arrays without support for
- * specifying an index to search from.
- *
- * @private
- * @param {Array} [array] The array to inspect.
- * @param {*} target The value to search for.
- * @returns {boolean} Returns `true` if `target` is found, else `false`.
- */
 
 function arrayIncludes(array, value) {
   var length = array == null ? 0 : array.length;
@@ -29727,15 +26418,6 @@ function arrayIncludes(array, value) {
 
 var _arrayIncludes = arrayIncludes;
 
-/**
- * This function is like `arrayIncludes` except that it accepts a comparator.
- *
- * @private
- * @param {Array} [array] The array to inspect.
- * @param {*} target The value to search for.
- * @param {Function} comparator The comparator invoked per element.
- * @returns {boolean} Returns `true` if `target` is found, else `false`.
- */
 function arrayIncludesWith(array, value, comparator) {
   var index = -1,
       length = array == null ? 0 : array.length;
@@ -29751,51 +26433,21 @@ function arrayIncludesWith(array, value, comparator) {
 
 var _arrayIncludesWith = arrayIncludesWith;
 
-/**
- * This method returns `undefined`.
- *
- * @static
- * @memberOf _
- * @since 2.3.0
- * @category Util
- * @example
- *
- * _.times(2, _.noop);
- * // => [undefined, undefined]
- */
-function noop$1() {// No operation performed.
+function noop$1() {
 }
 
 var noop_1 = noop$1;
 
-/** Used as references for various `Number` constants. */
 
 var INFINITY = 1 / 0;
-/**
- * Creates a set object of `values`.
- *
- * @private
- * @param {Array} values The values to add to the set.
- * @returns {Object} Returns the new set.
- */
 
 var createSet = !(_Set && 1 / _setToArray(new _Set([, -0]))[1] == INFINITY) ? noop_1 : function (values) {
   return new _Set(values);
 };
 var _createSet = createSet;
 
-/** Used as the size to enable large array optimizations. */
 
 var LARGE_ARRAY_SIZE = 200;
-/**
- * The base implementation of `_.uniqBy` without support for iteratee shorthands.
- *
- * @private
- * @param {Array} array The array to inspect.
- * @param {Function} [iteratee] The iteratee invoked per element.
- * @param {Function} [comparator] The comparator invoked per element.
- * @returns {Array} Returns the new duplicate free array.
- */
 
 function baseUniq(array, iteratee, comparator) {
   var index = -1,
@@ -29855,29 +26507,6 @@ function baseUniq(array, iteratee, comparator) {
 
 var _baseUniq = baseUniq;
 
-/**
- * This method is like `_.uniq` except that it accepts `iteratee` which is
- * invoked for each element in `array` to generate the criterion by which
- * uniqueness is computed. The order of result values is determined by the
- * order they occur in the array. The iteratee is invoked with one argument:
- * (value).
- *
- * @static
- * @memberOf _
- * @since 4.0.0
- * @category Array
- * @param {Array} array The array to inspect.
- * @param {Function} [iteratee=_.identity] The iteratee invoked per element.
- * @returns {Array} Returns the new duplicate free array.
- * @example
- *
- * _.uniqBy([2.1, 1.2, 2.3], Math.floor);
- * // => [2.1, 1.2]
- *
- * // The `_.property` iteratee shorthand.
- * _.uniqBy([{ 'x': 1 }, { 'x': 2 }, { 'x': 1 }], 'x');
- * // => [{ 'x': 1 }, { 'x': 2 }]
- */
 
 function uniqBy(array, iteratee) {
   return array && array.length ? _baseUniq(array, _baseIteratee(iteratee)) : [];
@@ -29885,16 +26514,6 @@ function uniqBy(array, iteratee) {
 
 var uniqBy_1 = uniqBy;
 
-/**
- * A specialized version of `baseAggregator` for arrays.
- *
- * @private
- * @param {Array} [array] The array to iterate over.
- * @param {Function} setter The function to set `accumulator` values.
- * @param {Function} iteratee The iteratee to transform keys.
- * @param {Object} accumulator The initial aggregated object.
- * @returns {Function} Returns `accumulator`.
- */
 function arrayAggregator(array, setter, iteratee, accumulator) {
   var index = -1,
       length = array == null ? 0 : array.length;
@@ -29909,13 +26528,6 @@ function arrayAggregator(array, setter, iteratee, accumulator) {
 
 var _arrayAggregator = arrayAggregator;
 
-/**
- * Creates a base function for methods like `_.forIn` and `_.forOwn`.
- *
- * @private
- * @param {boolean} [fromRight] Specify iterating from right to left.
- * @returns {Function} Returns the new base function.
- */
 function createBaseFor(fromRight) {
   return function (object, iteratee, keysFunc) {
     var index = -1,
@@ -29937,29 +26549,10 @@ function createBaseFor(fromRight) {
 
 var _createBaseFor = createBaseFor;
 
-/**
- * The base implementation of `baseForOwn` which iterates over `object`
- * properties returned by `keysFunc` and invokes `iteratee` for each property.
- * Iteratee functions may exit iteration early by explicitly returning `false`.
- *
- * @private
- * @param {Object} object The object to iterate over.
- * @param {Function} iteratee The function invoked per iteration.
- * @param {Function} keysFunc The function to get the keys of `object`.
- * @returns {Object} Returns `object`.
- */
 
 var baseFor = _createBaseFor();
 var _baseFor = baseFor;
 
-/**
- * The base implementation of `_.forOwn` without support for iteratee shorthands.
- *
- * @private
- * @param {Object} object The object to iterate over.
- * @param {Function} iteratee The function invoked per iteration.
- * @returns {Object} Returns `object`.
- */
 
 function baseForOwn(object, iteratee) {
   return object && _baseFor(object, iteratee, keys_1);
@@ -29967,14 +26560,6 @@ function baseForOwn(object, iteratee) {
 
 var _baseForOwn = baseForOwn;
 
-/**
- * Creates a `baseEach` or `baseEachRight` function.
- *
- * @private
- * @param {Function} eachFunc The function to iterate over a collection.
- * @param {boolean} [fromRight] Specify iterating from right to left.
- * @returns {Function} Returns the new base function.
- */
 
 function createBaseEach(eachFunc, fromRight) {
   return function (collection, iteratee) {
@@ -30002,29 +26587,10 @@ function createBaseEach(eachFunc, fromRight) {
 
 var _createBaseEach = createBaseEach;
 
-/**
- * The base implementation of `_.forEach` without support for iteratee shorthands.
- *
- * @private
- * @param {Array|Object} collection The collection to iterate over.
- * @param {Function} iteratee The function invoked per iteration.
- * @returns {Array|Object} Returns `collection`.
- */
 
 var baseEach = _createBaseEach(_baseForOwn);
 var _baseEach = baseEach;
 
-/**
- * Aggregates elements of `collection` on `accumulator` with keys transformed
- * by `iteratee` and values set by `setter`.
- *
- * @private
- * @param {Array|Object} collection The collection to iterate over.
- * @param {Function} setter The function to set `accumulator` values.
- * @param {Function} iteratee The iteratee to transform keys.
- * @param {Object} accumulator The initial aggregated object.
- * @returns {Function} Returns `accumulator`.
- */
 
 function baseAggregator(collection, setter, iteratee, accumulator) {
   _baseEach(collection, function (value, key, collection) {
@@ -30035,14 +26601,6 @@ function baseAggregator(collection, setter, iteratee, accumulator) {
 
 var _baseAggregator = baseAggregator;
 
-/**
- * Creates a function like `_.groupBy`.
- *
- * @private
- * @param {Function} setter The function to set accumulator values.
- * @param {Function} [initializer] The accumulator object initializer.
- * @returns {Function} Returns the new aggregator function.
- */
 
 function createAggregator(setter, initializer) {
   return function (collection, iteratee) {
@@ -30054,42 +26612,6 @@ function createAggregator(setter, initializer) {
 
 var _createAggregator = createAggregator;
 
-/**
- * Creates an array of elements split into two groups, the first of which
- * contains elements `predicate` returns truthy for, the second of which
- * contains elements `predicate` returns falsey for. The predicate is
- * invoked with one argument: (value).
- *
- * @static
- * @memberOf _
- * @since 3.0.0
- * @category Collection
- * @param {Array|Object} collection The collection to iterate over.
- * @param {Function} [predicate=_.identity] The function invoked per iteration.
- * @returns {Array} Returns the array of grouped elements.
- * @example
- *
- * var users = [
- *   { 'user': 'barney',  'age': 36, 'active': false },
- *   { 'user': 'fred',    'age': 40, 'active': true },
- *   { 'user': 'pebbles', 'age': 1,  'active': false }
- * ];
- *
- * _.partition(users, function(o) { return o.active; });
- * // => objects for [['fred'], ['barney', 'pebbles']]
- *
- * // The `_.matches` iteratee shorthand.
- * _.partition(users, { 'age': 1, 'active': false });
- * // => objects for [['pebbles'], ['barney', 'fred']]
- *
- * // The `_.matchesProperty` iteratee shorthand.
- * _.partition(users, ['active', false]);
- * // => objects for [['barney', 'pebbles'], ['fred']]
- *
- * // The `_.property` iteratee shorthand.
- * _.partition(users, 'active');
- * // => objects for [['fred'], ['barney', 'pebbles']]
- */
 
 var partition = _createAggregator(function (result, value, key) {
   result[key ? 0 : 1].push(value);
@@ -30102,13 +26624,6 @@ var arrayUnion = (...arguments_) => {
   return [...new Set([].concat(...arguments_))];
 };
 
-/*
- * merge2
- * https://github.com/teambition/merge2
- *
- * Copyright (c) 2014-2020 Teambition
- * Licensed under the MIT license.
- */
 
 
 const PassThrough = stream_1__default['default'].PassThrough;
@@ -30191,7 +26706,7 @@ function merge2() {
 
       function onerror(err) {
         mergedStream.emit('error', err);
-      } // skip ended stream
+      }
 
 
       if (stream._readableState.endEmitted) {
@@ -30207,7 +26722,7 @@ function merge2() {
 
       stream.pipe(mergedStream, {
         end: false
-      }); // compatible for old stream
+      });
 
       stream.resume();
     }
@@ -30220,7 +26735,7 @@ function merge2() {
   }
 
   function endStream() {
-    merging = false; // emit 'queueDrain' when all streams merged.
+    merging = false;
 
     mergedStream.emit('queueDrain');
 
@@ -30240,12 +26755,11 @@ function merge2() {
   }
 
   return mergedStream;
-} // check and pause streams for pipe.
+}
 
 
 function pauseStreams(streams, options) {
   if (!Array.isArray(streams)) {
-    // Backwards-compat with old-style streams
     if (!streams._readableState && streams.pipe) {
       streams = streams.pipe(PassThrough(options));
     }
@@ -30344,12 +26858,9 @@ var path_1 = createCommonjsModule(function (module, exports) {
     value: true
   });
   exports.removeLeadingDotSegment = exports.escape = exports.makeAbsolute = exports.unixify = void 0;
-  const LEADING_DOT_SEGMENT_CHARACTERS_COUNT = 2; // ./ or .\\
+  const LEADING_DOT_SEGMENT_CHARACTERS_COUNT = 2;
 
   const UNESCAPED_GLOB_SYMBOLS_RE = /(\\?)([()*?[\]{|}]|^!|[!+@](?=\())/g;
-  /**
-   * Designed to work only with simple paths: `dir\\file`.
-   */
 
   function unixify(filepath) {
     return filepath.replace(/\\/g, '/');
@@ -30370,8 +26881,6 @@ var path_1 = createCommonjsModule(function (module, exports) {
   exports.escape = escape;
 
   function removeLeadingDotSegment(entry) {
-    // We do not use `startsWith` because this is 10x slower than current implementation for some cases.
-    // eslint-disable-next-line @typescript-eslint/prefer-string-starts-ends-with
     if (entry.charAt(0) === '.') {
       const secondCharactery = entry.charAt(1);
 
@@ -30431,7 +26940,7 @@ var isGlob = function isGlob(str, options) {
   }
 
   var regex = strictRegex;
-  var match; // optionally relax regex
+  var match;
 
   if (options && options.strict === false) {
     regex = relaxedRegex;
@@ -30439,8 +26948,7 @@ var isGlob = function isGlob(str, options) {
 
   while (match = regex.exec(str)) {
     if (match[2]) return true;
-    var idx = match.index + match[0].length; // if an open bracket/brace/paren is escaped,
-    // set the index to the next closing character
+    var idx = match.index + match[0].length;
 
     var open = match[1];
     var close = open ? chars$1[open] : null;
@@ -30466,33 +26974,27 @@ var backslash = /\\/g;
 var enclosure = /[\{\[].*[\}\]]$/;
 var globby$1 = /(^|[^\\])([\{\[]|\([^\)]+$)/;
 var escaped = /\\([\!\*\?\|\[\]\(\)\{\}])/g;
-/**
- * @param {string} str
- * @param {Object} opts
- * @param {boolean} [opts.flipBackslashes=true]
- * @returns {string}
- */
 
 var globParent = function globParent(str, opts) {
   var options = Object.assign({
     flipBackslashes: true
-  }, opts); // flip windows path separators
+  }, opts);
 
   if (options.flipBackslashes && isWin32 && str.indexOf(slash$1) < 0) {
     str = str.replace(backslash, slash$1);
-  } // special case for strings ending in enclosure containing path separator
+  }
 
 
   if (enclosure.test(str)) {
     str += slash$1;
-  } // preserves full path in case of trailing path separator
+  }
 
 
-  str += 'a'; // remove path parts that are globby
+  str += 'a';
 
   do {
     str = pathPosixDirname(str);
-  } while (isGlob(str) || globby$1.test(str)); // remove escape chars and return result
+  } while (isGlob(str) || globby$1.test(str));
 
 
   return str.replace(escaped, '$1');
@@ -30511,15 +27013,9 @@ var utils$a = createCommonjsModule(function (module, exports) {
 
     return false;
   };
-  /**
-   * Find a node of the given type
-   */
 
 
   exports.find = (node, type) => node.nodes.find(node => node.type === type);
-  /**
-   * Find a node of the given type
-   */
 
 
   exports.exceedsLimit = (min, max, step = 1, limit) => {
@@ -30527,9 +27023,6 @@ var utils$a = createCommonjsModule(function (module, exports) {
     if (!exports.isInteger(min) || !exports.isInteger(max)) return false;
     return (Number(max) - Number(min)) / Number(step) >= limit;
   };
-  /**
-   * Escape the given node with '\\' before node.value
-   */
 
 
   exports.escapeNode = (block, n = 0, type) => {
@@ -30543,9 +27036,6 @@ var utils$a = createCommonjsModule(function (module, exports) {
       }
     }
   };
-  /**
-   * Returns true if the given brace node should be enclosed in literal braces
-   */
 
 
   exports.encloseBrace = node => {
@@ -30558,9 +27048,6 @@ var utils$a = createCommonjsModule(function (module, exports) {
 
     return false;
   };
-  /**
-   * Returns true if a brace node is invalid.
-   */
 
 
   exports.isInvalidBrace = block => {
@@ -30579,9 +27066,6 @@ var utils$a = createCommonjsModule(function (module, exports) {
 
     return false;
   };
-  /**
-   * Returns true if a node is an open or close node
-   */
 
 
   exports.isOpenOrClose = node => {
@@ -30591,9 +27075,6 @@ var utils$a = createCommonjsModule(function (module, exports) {
 
     return node.open === true || node.close === true;
   };
-  /**
-   * Reduce an array of text nodes.
-   */
 
 
   exports.reduce = nodes => nodes.reduce((acc, node) => {
@@ -30601,9 +27082,6 @@ var utils$a = createCommonjsModule(function (module, exports) {
     if (node.type === 'range') node.type = 'text';
     return acc;
   }, []);
-  /**
-   * Flatten an array
-   */
 
 
   exports.flatten = (...args) => {
@@ -30791,12 +27269,6 @@ function splitToRanges(min, max) {
   stops.sort(compare);
   return stops;
 }
-/**
- * Convert a range to a regex pattern
- * @param {Number} `start`
- * @param {Number} `stop`
- * @return {String}
- */
 
 
 function rangeToPattern(start, stop, options) {
@@ -30877,11 +27349,11 @@ function filterPatterns(arr, comparison, prefix, intersection, options) {
   for (let ele of arr) {
     let {
       string
-    } = ele; // only push if _both_ are negative...
+    } = ele;
 
     if (!intersection && !contains(comparison, 'string', string)) {
       result.push(prefix + string);
-    } // or _both_ are positive
+    }
 
 
     if (intersection && contains(comparison, 'string', string)) {
@@ -30891,9 +27363,6 @@ function filterPatterns(arr, comparison, prefix, intersection, options) {
 
   return result;
 }
-/**
- * Zip strings
- */
 
 
 function zip(a, b) {
@@ -30962,17 +27431,11 @@ function padZeros(value, tok, options) {
       }
   }
 }
-/**
- * Cache
- */
 
 
 toRegexRange.cache = {};
 
 toRegexRange.clearCache = () => toRegexRange.cache = {};
-/**
- * Expose `toRegexRange`
- */
 
 
 var toRegexRange_1 = toRegexRange;
@@ -31111,7 +27574,7 @@ const fillNumbers = (start, end, step = 1, options = {}) => {
   if (!Number.isInteger(a) || !Number.isInteger(b)) {
     if (options.strictRanges === true) throw rangeError([start, end]);
     return [];
-  } // fix negative zero
+  }
 
 
   if (a === 0) a = 0;
@@ -31401,192 +27864,127 @@ var expand_1 = expand;
 
 var constants$2 = {
   MAX_LENGTH: 1024 * 64,
-  // Digits
   CHAR_0: '0',
 
-  /* 0 */
   CHAR_9: '9',
 
-  /* 9 */
-  // Alphabet chars.
   CHAR_UPPERCASE_A: 'A',
 
-  /* A */
   CHAR_LOWERCASE_A: 'a',
 
-  /* a */
   CHAR_UPPERCASE_Z: 'Z',
 
-  /* Z */
   CHAR_LOWERCASE_Z: 'z',
 
-  /* z */
   CHAR_LEFT_PARENTHESES: '(',
 
-  /* ( */
   CHAR_RIGHT_PARENTHESES: ')',
 
-  /* ) */
   CHAR_ASTERISK: '*',
 
-  /* * */
-  // Non-alphabetic chars.
   CHAR_AMPERSAND: '&',
 
-  /* & */
   CHAR_AT: '@',
 
-  /* @ */
   CHAR_BACKSLASH: '\\',
 
-  /* \ */
   CHAR_BACKTICK: '`',
 
-  /* ` */
   CHAR_CARRIAGE_RETURN: '\r',
 
-  /* \r */
   CHAR_CIRCUMFLEX_ACCENT: '^',
 
-  /* ^ */
   CHAR_COLON: ':',
 
-  /* : */
   CHAR_COMMA: ',',
 
-  /* , */
   CHAR_DOLLAR: '$',
 
-  /* . */
   CHAR_DOT: '.',
 
-  /* . */
   CHAR_DOUBLE_QUOTE: '"',
 
-  /* " */
   CHAR_EQUAL: '=',
 
-  /* = */
   CHAR_EXCLAMATION_MARK: '!',
 
-  /* ! */
   CHAR_FORM_FEED: '\f',
 
-  /* \f */
   CHAR_FORWARD_SLASH: '/',
 
-  /* / */
   CHAR_HASH: '#',
 
-  /* # */
   CHAR_HYPHEN_MINUS: '-',
 
-  /* - */
   CHAR_LEFT_ANGLE_BRACKET: '<',
 
-  /* < */
   CHAR_LEFT_CURLY_BRACE: '{',
 
-  /* { */
   CHAR_LEFT_SQUARE_BRACKET: '[',
 
-  /* [ */
   CHAR_LINE_FEED: '\n',
 
-  /* \n */
   CHAR_NO_BREAK_SPACE: '\u00A0',
 
-  /* \u00A0 */
   CHAR_PERCENT: '%',
 
-  /* % */
   CHAR_PLUS: '+',
 
-  /* + */
   CHAR_QUESTION_MARK: '?',
 
-  /* ? */
   CHAR_RIGHT_ANGLE_BRACKET: '>',
 
-  /* > */
   CHAR_RIGHT_CURLY_BRACE: '}',
 
-  /* } */
   CHAR_RIGHT_SQUARE_BRACKET: ']',
 
-  /* ] */
   CHAR_SEMICOLON: ';',
 
-  /* ; */
   CHAR_SINGLE_QUOTE: '\'',
 
-  /* ' */
   CHAR_SPACE: ' ',
 
-  /*   */
   CHAR_TAB: '\t',
 
-  /* \t */
   CHAR_UNDERSCORE: '_',
 
-  /* _ */
   CHAR_VERTICAL_LINE: '|',
 
-  /* | */
   CHAR_ZERO_WIDTH_NOBREAK_SPACE: '\uFEFF'
-  /* \uFEFF */
 
 };
 
-/**
- * Constants
- */
 
 
 const {
   MAX_LENGTH: MAX_LENGTH$1,
   CHAR_BACKSLASH,
 
-  /* \ */
   CHAR_BACKTICK,
 
-  /* ` */
   CHAR_COMMA: CHAR_COMMA$1,
 
-  /* , */
   CHAR_DOT: CHAR_DOT$1,
 
-  /* . */
   CHAR_LEFT_PARENTHESES: CHAR_LEFT_PARENTHESES$1,
 
-  /* ( */
   CHAR_RIGHT_PARENTHESES: CHAR_RIGHT_PARENTHESES$1,
 
-  /* ) */
   CHAR_LEFT_CURLY_BRACE: CHAR_LEFT_CURLY_BRACE$1,
 
-  /* { */
   CHAR_RIGHT_CURLY_BRACE: CHAR_RIGHT_CURLY_BRACE$1,
 
-  /* } */
   CHAR_LEFT_SQUARE_BRACKET: CHAR_LEFT_SQUARE_BRACKET$1,
 
-  /* [ */
   CHAR_RIGHT_SQUARE_BRACKET: CHAR_RIGHT_SQUARE_BRACKET$1,
 
-  /* ] */
   CHAR_DOUBLE_QUOTE,
 
-  /* " */
   CHAR_SINGLE_QUOTE,
 
-  /* ' */
   CHAR_NO_BREAK_SPACE,
   CHAR_ZERO_WIDTH_NOBREAK_SPACE
 } = constants$2;
-/**
- * parse
- */
 
 const parse$3 = (input, options = {}) => {
   if (typeof input !== 'string') {
@@ -31613,9 +28011,6 @@ const parse$3 = (input, options = {}) => {
   let index = 0;
   let depth = 0;
   let value;
-  /**
-   * Helpers
-   */
 
   const advance = () => input[index++];
 
@@ -31643,16 +28038,10 @@ const parse$3 = (input, options = {}) => {
   while (index < length) {
     block = stack[stack.length - 1];
     value = advance();
-    /**
-     * Invalid chars
-     */
 
     if (value === CHAR_ZERO_WIDTH_NOBREAK_SPACE || value === CHAR_NO_BREAK_SPACE) {
       continue;
     }
-    /**
-     * Escaped chars
-     */
 
 
     if (value === CHAR_BACKSLASH) {
@@ -31662,9 +28051,6 @@ const parse$3 = (input, options = {}) => {
       });
       continue;
     }
-    /**
-     * Right square bracket (literal): ']'
-     */
 
 
     if (value === CHAR_RIGHT_SQUARE_BRACKET$1) {
@@ -31674,9 +28060,6 @@ const parse$3 = (input, options = {}) => {
       });
       continue;
     }
-    /**
-     * Left square bracket: '['
-     */
 
 
     if (value === CHAR_LEFT_SQUARE_BRACKET$1) {
@@ -31711,9 +28094,6 @@ const parse$3 = (input, options = {}) => {
       });
       continue;
     }
-    /**
-     * Parentheses
-     */
 
 
     if (value === CHAR_LEFT_PARENTHESES$1) {
@@ -31746,9 +28126,6 @@ const parse$3 = (input, options = {}) => {
       block = stack[stack.length - 1];
       continue;
     }
-    /**
-     * Quotes: '|"|`
-     */
 
 
     if (value === CHAR_DOUBLE_QUOTE || value === CHAR_SINGLE_QUOTE || value === CHAR_BACKTICK) {
@@ -31779,9 +28156,6 @@ const parse$3 = (input, options = {}) => {
       });
       continue;
     }
-    /**
-     * Left curly brace: '{'
-     */
 
 
     if (value === CHAR_LEFT_CURLY_BRACE$1) {
@@ -31805,9 +28179,6 @@ const parse$3 = (input, options = {}) => {
       });
       continue;
     }
-    /**
-     * Right curly brace: '}'
-     */
 
 
     if (value === CHAR_RIGHT_CURLY_BRACE$1) {
@@ -31830,9 +28201,6 @@ const parse$3 = (input, options = {}) => {
       block = stack[stack.length - 1];
       continue;
     }
-    /**
-     * Comma: ','
-     */
 
 
     if (value === CHAR_COMMA$1 && depth > 0) {
@@ -31852,9 +28220,6 @@ const parse$3 = (input, options = {}) => {
       block.commas++;
       continue;
     }
-    /**
-     * Dot: '.'
-     */
 
 
     if (value === CHAR_DOT$1 && depth > 0 && block.commas === 0) {
@@ -31900,16 +28265,13 @@ const parse$3 = (input, options = {}) => {
       });
       continue;
     }
-    /**
-     * Text
-     */
 
 
     push({
       type: 'text',
       value
     });
-  } // Mark imbalanced braces and brackets as invalid
+  }
 
 
   do {
@@ -31923,10 +28285,10 @@ const parse$3 = (input, options = {}) => {
           if (!node.nodes) node.type = 'text';
           node.invalid = true;
         }
-      }); // get the location of the block on parent.nodes (block's siblings)
+      });
 
       let parent = stack[stack.length - 1];
-      let index = parent.nodes.indexOf(block); // replace the (invalid) block with it's nodes
+      let index = parent.nodes.indexOf(block);
 
       parent.nodes.splice(index, 1, ...block.nodes);
     }
@@ -31940,19 +28302,6 @@ const parse$3 = (input, options = {}) => {
 
 var parse_1$3 = parse$3;
 
-/**
- * Expand the given pattern or create a regex-compatible string.
- *
- * ```js
- * const braces = require('braces');
- * console.log(braces('{a,b,c}', { compile: true })); //=> ['(a|b|c)']
- * console.log(braces('{a,b,c}')); //=> ['a', 'b', 'c']
- * ```
- * @param {String} `str`
- * @param {Object} `options`
- * @return {String}
- * @api public
- */
 
 
 const braces = (input, options = {}) => {
@@ -31978,35 +28327,9 @@ const braces = (input, options = {}) => {
 
   return output;
 };
-/**
- * Parse the given `str` with the given `options`.
- *
- * ```js
- * // braces.parse(pattern, [, options]);
- * const ast = braces.parse('a/{b,c}/d');
- * console.log(ast);
- * ```
- * @param {String} pattern Brace pattern to parse
- * @param {Object} options
- * @return {Object} Returns an AST
- * @api public
- */
 
 
 braces.parse = (input, options = {}) => parse_1$3(input, options);
-/**
- * Creates a braces string from an AST, or an AST node.
- *
- * ```js
- * const braces = require('braces');
- * let ast = braces.parse('foo/{a,b}/bar');
- * console.log(stringify(ast.nodes[2])); //=> '{a,b}'
- * ```
- * @param {String} `input` Brace pattern or AST.
- * @param {Object} `options`
- * @return {Array} Returns an array of expanded values.
- * @api public
- */
 
 
 braces.stringify = (input, options = {}) => {
@@ -32016,20 +28339,6 @@ braces.stringify = (input, options = {}) => {
 
   return stringify$2(input, options);
 };
-/**
- * Compiles a brace pattern into a regex-compatible, optimized string.
- * This method is called by the main [braces](#braces) function by default.
- *
- * ```js
- * const braces = require('braces');
- * console.log(braces.compile('a/{b,c}/d'));
- * //=> ['a/(b|c)/d']
- * ```
- * @param {String} `input` Brace pattern or AST.
- * @param {Object} `options`
- * @return {Array} Returns an array of expanded values.
- * @api public
- */
 
 
 braces.compile = (input, options = {}) => {
@@ -32039,22 +28348,6 @@ braces.compile = (input, options = {}) => {
 
   return compile_1(input, options);
 };
-/**
- * Expands a brace pattern into an array. This method is called by the
- * main [braces](#braces) function when `options.expand` is true. Before
- * using this method it's recommended that you read the [performance notes](#performance))
- * and advantages of using [.compile](#compile) instead.
- *
- * ```js
- * const braces = require('braces');
- * console.log(braces.expand('a/{b,c}/d'));
- * //=> ['a/b/d', 'a/c/d'];
- * ```
- * @param {String} `pattern` Brace pattern
- * @param {Object} `options`
- * @return {Array} Returns an array of expanded values.
- * @api public
- */
 
 
 braces.expand = (input, options = {}) => {
@@ -32062,11 +28355,11 @@ braces.expand = (input, options = {}) => {
     input = braces.parse(input, options);
   }
 
-  let result = expand_1(input, options); // filter out empty strings if specified
+  let result = expand_1(input, options);
 
   if (options.noempty === true) {
     result = result.filter(Boolean);
-  } // filter out duplicates if specified
+  }
 
 
   if (options.nodupes === true) {
@@ -32075,21 +28368,6 @@ braces.expand = (input, options = {}) => {
 
   return result;
 };
-/**
- * Processes a brace pattern and returns either an expanded array
- * (if `options.expand` is true), a highly optimized regex-compatible string.
- * This method is called by the main [braces](#braces) function.
- *
- * ```js
- * const braces = require('braces');
- * console.log(braces.create('user-{200..300}/project-{a,b,c}-{1..10}'))
- * //=> 'user-(20[0-9]|2[1-9][0-9]|300)/project-(a|b|c)-([1-9]|10)'
- * ```
- * @param {String} `pattern` Brace pattern
- * @param {Object} `options`
- * @return {Array} Returns an array of expanded values.
- * @api public
- */
 
 
 braces.create = (input, options = {}) => {
@@ -32099,18 +28377,12 @@ braces.create = (input, options = {}) => {
 
   return options.expand !== true ? braces.compile(input, options) : braces.expand(input, options);
 };
-/**
- * Expose "braces"
- */
 
 
 var braces_1 = braces;
 
 const WIN_SLASH = '\\\\/';
 const WIN_NO_SLASH = `[^${WIN_SLASH}]`;
-/**
- * Posix glob regex
- */
 
 const DOT_LITERAL = '\\.';
 const PLUS_LITERAL = '\\+';
@@ -32144,9 +28416,6 @@ const POSIX_CHARS = {
   STAR,
   START_ANCHOR
 };
-/**
- * Windows glob regex
- */
 
 const WINDOWS_CHARS = Object.assign(Object.assign({}, POSIX_CHARS), {}, {
   SLASH_LITERAL: `[${WIN_SLASH}]`,
@@ -32161,9 +28430,6 @@ const WINDOWS_CHARS = Object.assign(Object.assign({}, POSIX_CHARS), {}, {
   START_ANCHOR: `(?:^|[${WIN_SLASH}])`,
   END_ANCHOR: `(?:[${WIN_SLASH}]|$)`
 });
-/**
- * POSIX Bracket Regex
- */
 
 const POSIX_REGEX_SOURCE$1 = {
   alnum: 'a-zA-Z0-9',
@@ -32184,156 +28450,105 @@ const POSIX_REGEX_SOURCE$1 = {
 var constants$1 = {
   MAX_LENGTH: 1024 * 64,
   POSIX_REGEX_SOURCE: POSIX_REGEX_SOURCE$1,
-  // regular expressions
   REGEX_BACKSLASH: /\\(?![*+?^${}(|)[\]])/g,
   REGEX_NON_SPECIAL_CHARS: /^[^@![\].,$*+?^{}()|\\/]+/,
   REGEX_SPECIAL_CHARS: /[-*+?.^${}(|)[\]]/,
   REGEX_SPECIAL_CHARS_BACKREF: /(\\?)((\W)(\3*))/g,
   REGEX_SPECIAL_CHARS_GLOBAL: /([-*+?.^${}(|)[\]])/g,
   REGEX_REMOVE_BACKSLASH: /(?:\[.*?[^\\]\]|\\(?=.))/g,
-  // Replace globs with equivalent patterns to reduce parsing time.
   REPLACEMENTS: {
     '***': '*',
     '**/**': '**',
     '**/**/**': '**'
   },
-  // Digits
   CHAR_0: 48,
 
-  /* 0 */
   CHAR_9: 57,
 
-  /* 9 */
-  // Alphabet chars.
   CHAR_UPPERCASE_A: 65,
 
-  /* A */
   CHAR_LOWERCASE_A: 97,
 
-  /* a */
   CHAR_UPPERCASE_Z: 90,
 
-  /* Z */
   CHAR_LOWERCASE_Z: 122,
 
-  /* z */
   CHAR_LEFT_PARENTHESES: 40,
 
-  /* ( */
   CHAR_RIGHT_PARENTHESES: 41,
 
-  /* ) */
   CHAR_ASTERISK: 42,
 
-  /* * */
-  // Non-alphabetic chars.
   CHAR_AMPERSAND: 38,
 
-  /* & */
   CHAR_AT: 64,
 
-  /* @ */
   CHAR_BACKWARD_SLASH: 92,
 
-  /* \ */
   CHAR_CARRIAGE_RETURN: 13,
 
-  /* \r */
   CHAR_CIRCUMFLEX_ACCENT: 94,
 
-  /* ^ */
   CHAR_COLON: 58,
 
-  /* : */
   CHAR_COMMA: 44,
 
-  /* , */
   CHAR_DOT: 46,
 
-  /* . */
   CHAR_DOUBLE_QUOTE: 34,
 
-  /* " */
   CHAR_EQUAL: 61,
 
-  /* = */
   CHAR_EXCLAMATION_MARK: 33,
 
-  /* ! */
   CHAR_FORM_FEED: 12,
 
-  /* \f */
   CHAR_FORWARD_SLASH: 47,
 
-  /* / */
   CHAR_GRAVE_ACCENT: 96,
 
-  /* ` */
   CHAR_HASH: 35,
 
-  /* # */
   CHAR_HYPHEN_MINUS: 45,
 
-  /* - */
   CHAR_LEFT_ANGLE_BRACKET: 60,
 
-  /* < */
   CHAR_LEFT_CURLY_BRACE: 123,
 
-  /* { */
   CHAR_LEFT_SQUARE_BRACKET: 91,
 
-  /* [ */
   CHAR_LINE_FEED: 10,
 
-  /* \n */
   CHAR_NO_BREAK_SPACE: 160,
 
-  /* \u00A0 */
   CHAR_PERCENT: 37,
 
-  /* % */
   CHAR_PLUS: 43,
 
-  /* + */
   CHAR_QUESTION_MARK: 63,
 
-  /* ? */
   CHAR_RIGHT_ANGLE_BRACKET: 62,
 
-  /* > */
   CHAR_RIGHT_CURLY_BRACE: 125,
 
-  /* } */
   CHAR_RIGHT_SQUARE_BRACKET: 93,
 
-  /* ] */
   CHAR_SEMICOLON: 59,
 
-  /* ; */
   CHAR_SINGLE_QUOTE: 39,
 
-  /* ' */
   CHAR_SPACE: 32,
 
-  /*   */
   CHAR_TAB: 9,
 
-  /* \t */
   CHAR_UNDERSCORE: 95,
 
-  /* _ */
   CHAR_VERTICAL_LINE: 124,
 
-  /* | */
   CHAR_ZERO_WIDTH_NOBREAK_SPACE: 65279,
 
-  /* \uFEFF */
   SEP: path__default['default'].sep,
 
-  /**
-   * Create EXTGLOB_CHARS
-   */
   extglobChars(chars) {
     return {
       '!': {
@@ -32364,9 +28579,6 @@ var constants$1 = {
     };
   },
 
-  /**
-   * Create GLOB_CHARS
-   */
   globChars(win32) {
     return win32 === true ? WINDOWS_CHARS : POSIX_CHARS;
   }
@@ -32451,48 +28663,33 @@ var utils$9 = createCommonjsModule(function (module, exports) {
 const {
   CHAR_ASTERISK,
 
-  /* * */
   CHAR_AT,
 
-  /* @ */
   CHAR_BACKWARD_SLASH,
 
-  /* \ */
   CHAR_COMMA,
 
-  /* , */
   CHAR_DOT,
 
-  /* . */
   CHAR_EXCLAMATION_MARK,
 
-  /* ! */
   CHAR_FORWARD_SLASH,
 
-  /* / */
   CHAR_LEFT_CURLY_BRACE,
 
-  /* { */
   CHAR_LEFT_PARENTHESES,
 
-  /* ( */
   CHAR_LEFT_SQUARE_BRACKET,
 
-  /* [ */
   CHAR_PLUS,
 
-  /* + */
   CHAR_QUESTION_MARK,
 
-  /* ? */
   CHAR_RIGHT_CURLY_BRACE,
 
-  /* } */
   CHAR_RIGHT_PARENTHESES,
 
-  /* ) */
   CHAR_RIGHT_SQUARE_BRACKET
-  /* ] */
 
 } = constants$1;
 
@@ -32505,22 +28702,6 @@ const depth = token => {
     token.depth = token.isGlobstar ? Infinity : 1;
   }
 };
-/**
- * Quickly scans a glob pattern and returns an object with a handful of
- * useful properties, like `isGlob`, `path` (the leading non-glob, if it exists),
- * `glob` (the actual pattern), `negated` (true if the path starts with `!` but not
- * with `!(`) and `negatedExtglob` (true if the path starts with `!(`).
- *
- * ```js
- * const pm = require('picomatch');
- * console.log(pm.scan('foo/bar/*.js'));
- * { isGlob: true, input: 'foo/bar/*.js', base: 'foo/bar', glob: '*.js' }
- * ```
- * @param {String} `str`
- * @param {Object} `options`
- * @return {Object} Returns an object with tokens and regex source string.
- * @api public
- */
 
 
 const scan = (input, options) => {
@@ -32885,9 +29066,6 @@ const scan = (input, options) => {
 
 var scan_1 = scan;
 
-/**
- * Constants
- */
 
 
 const {
@@ -32897,9 +29075,6 @@ const {
   REGEX_SPECIAL_CHARS_BACKREF,
   REPLACEMENTS
 } = constants$1;
-/**
- * Helpers
- */
 
 const expandRange = (args, options) => {
   if (typeof options.expandRange === 'function') {
@@ -32910,7 +29085,6 @@ const expandRange = (args, options) => {
   const value = `[${args.join('-')}]`;
 
   try {
-    /* eslint-disable-next-line no-new */
     new RegExp(value);
   } catch (ex) {
     return args.map(v => utils$9.escapeRegex(v)).join('..');
@@ -32918,20 +29092,11 @@ const expandRange = (args, options) => {
 
   return value;
 };
-/**
- * Create the message for a syntax error
- */
 
 
 const syntaxError$1 = (type, char) => {
   return `Missing ${type}: "${char}" - use "\\\\${char}" to match literal characters`;
 };
-/**
- * Parse the given input string.
- * @param {String} input
- * @param {Object} options
- * @return {Object}
- */
 
 
 const parse$2 = (input, options) => {
@@ -32955,7 +29120,7 @@ const parse$2 = (input, options) => {
   };
   const tokens = [bos];
   const capture = opts.capture ? '' : '?:';
-  const win32 = utils$9.isWindows(options); // create constants based on platform, for windows or posix
+  const win32 = utils$9.isWindows(options);
 
   const PLATFORM_CHARS = constants$1.globChars(win32);
   const EXTGLOB_CHARS = constants$1.extglobChars(PLATFORM_CHARS);
@@ -32984,7 +29149,7 @@ const parse$2 = (input, options) => {
 
   if (opts.capture) {
     star = `(${star})`;
-  } // minimatch options support
+  }
 
 
   if (typeof opts.noext === 'boolean') {
@@ -33015,9 +29180,6 @@ const parse$2 = (input, options) => {
   const stack = [];
   let prev = bos;
   let value;
-  /**
-   * Tokenizing helpers
-   */
 
   const eos = () => state.index === len - 1;
 
@@ -33064,13 +29226,6 @@ const parse$2 = (input, options) => {
     state[type]--;
     stack.pop();
   };
-  /**
-   * Push tokens onto the tokens array. This helper speeds up
-   * tokenizing by 1) helping us avoid backtracking as much as possible,
-   * and 2) helping us avoid creating extra tokens when consecutive
-   * characters are plain text. This improves performance and simplifies
-   * lookbehinds.
-   */
 
 
   const push = tok => {
@@ -33160,9 +29315,6 @@ const parse$2 = (input, options) => {
     });
     decrement('parens');
   };
-  /**
-   * Fast paths
-   */
 
 
   if (opts.fastpaths !== false && !/(^[*!]|[/()[\]{}"])/.test(input)) {
@@ -33218,9 +29370,6 @@ const parse$2 = (input, options) => {
     state.output = utils$9.wrapOutput(output, state, options);
     return state;
   }
-  /**
-   * Tokenize input until we reach end-of-string
-   */
 
 
   while (!eos()) {
@@ -33229,9 +29378,6 @@ const parse$2 = (input, options) => {
     if (value === '\u0000') {
       continue;
     }
-    /**
-     * Escaped characters
-     */
 
 
     if (value === '\\') {
@@ -33252,7 +29398,7 @@ const parse$2 = (input, options) => {
           value
         });
         continue;
-      } // collapse slashes to reduce potential for exploits
+      }
 
 
       const match = /^\\+/.exec(remaining());
@@ -33281,10 +29427,6 @@ const parse$2 = (input, options) => {
         continue;
       }
     }
-    /**
-     * If we're inside a regex character class, continue
-     * until we reach the closing bracket.
-     */
 
 
     if (state.brackets > 0 && (value !== ']' || prev.value === '[' || prev.value === '[^')) {
@@ -33333,10 +29475,6 @@ const parse$2 = (input, options) => {
       });
       continue;
     }
-    /**
-     * If we're inside a quoted string, continue
-     * until we reach the closing double quote.
-     */
 
 
     if (state.quotes === 1 && value !== '"') {
@@ -33347,9 +29485,6 @@ const parse$2 = (input, options) => {
       });
       continue;
     }
-    /**
-     * Double quotes
-     */
 
 
     if (value === '"') {
@@ -33364,9 +29499,6 @@ const parse$2 = (input, options) => {
 
       continue;
     }
-    /**
-     * Parentheses
-     */
 
 
     if (value === '(') {
@@ -33398,9 +29530,6 @@ const parse$2 = (input, options) => {
       decrement('parens');
       continue;
     }
-    /**
-     * Square brackets
-     */
 
 
     if (value === '[') {
@@ -33454,31 +29583,26 @@ const parse$2 = (input, options) => {
       prev.value += value;
       append({
         value
-      }); // when literal brackets are explicitly disabled
-      // assume we should match with a regex character class
+      });
 
       if (opts.literalBrackets === false || utils$9.hasRegexChars(prevValue)) {
         continue;
       }
 
       const escaped = utils$9.escapeRegex(prev.value);
-      state.output = state.output.slice(0, -prev.value.length); // when literal brackets are explicitly enabled
-      // assume we should escape the brackets to match literal characters
+      state.output = state.output.slice(0, -prev.value.length);
 
       if (opts.literalBrackets === true) {
         state.output += escaped;
         prev.value = escaped;
         continue;
-      } // when the user specifies nothing, try to match both
+      }
 
 
       prev.value = `(${capture}${escaped}|${prev.value})`;
       state.output += prev.value;
       continue;
     }
-    /**
-     * Braces
-     */
 
 
     if (value === '{' && opts.nobrace !== true) {
@@ -33550,9 +29674,6 @@ const parse$2 = (input, options) => {
       braces.pop();
       continue;
     }
-    /**
-     * Pipes
-     */
 
 
     if (value === '|') {
@@ -33566,9 +29687,6 @@ const parse$2 = (input, options) => {
       });
       continue;
     }
-    /**
-     * Commas
-     */
 
 
     if (value === ',') {
@@ -33587,22 +29705,15 @@ const parse$2 = (input, options) => {
       });
       continue;
     }
-    /**
-     * Slashes
-     */
 
 
     if (value === '/') {
-      // if the beginning of the glob is "./", advance the start
-      // to the current index, and don't add the "./" characters
-      // to the state. This greatly simplifies lookbehinds when
-      // checking for BOS characters like "!" and "." (not "./")
       if (prev.type === 'dot' && state.index === state.start + 1) {
         state.start = state.index + 1;
         state.consumed = '';
         state.output = '';
         tokens.pop();
-        prev = bos; // reset "prev" to the first token
+        prev = bos;
 
         continue;
       }
@@ -33614,9 +29725,6 @@ const parse$2 = (input, options) => {
       });
       continue;
     }
-    /**
-     * Dots
-     */
 
 
     if (value === '.') {
@@ -33646,9 +29754,6 @@ const parse$2 = (input, options) => {
       });
       continue;
     }
-    /**
-     * Question marks
-     */
 
 
     if (value === '?') {
@@ -33695,9 +29800,6 @@ const parse$2 = (input, options) => {
       });
       continue;
     }
-    /**
-     * Exclamation
-     */
 
 
     if (value === '!') {
@@ -33713,9 +29815,6 @@ const parse$2 = (input, options) => {
         continue;
       }
     }
-    /**
-     * Plus
-     */
 
 
     if (value === '+') {
@@ -33747,9 +29846,6 @@ const parse$2 = (input, options) => {
       });
       continue;
     }
-    /**
-     * Plain text
-     */
 
 
     if (value === '@') {
@@ -33769,9 +29865,6 @@ const parse$2 = (input, options) => {
       });
       continue;
     }
-    /**
-     * Plain text
-     */
 
 
     if (value !== '*') {
@@ -33792,9 +29885,6 @@ const parse$2 = (input, options) => {
       });
       continue;
     }
-    /**
-     * Stars
-     */
 
 
     if (prev && (prev.type === 'globstar' || prev.star === true)) {
@@ -33845,7 +29935,7 @@ const parse$2 = (input, options) => {
           output: ''
         });
         continue;
-      } // strip consecutive `/**/`
+      }
 
 
       while (rest.slice(0, 3) === '/**') {
@@ -33912,14 +30002,14 @@ const parse$2 = (input, options) => {
           output: ''
         });
         continue;
-      } // remove single star from output
+      }
 
 
-      state.output = state.output.slice(0, -prev.output.length); // reset previous token to globstar
+      state.output = state.output.slice(0, -prev.output.length);
 
       prev.type = 'globstar';
       prev.output = globstar(opts);
-      prev.value += value; // reset output with globstar
+      prev.value += value;
 
       state.output += prev.output;
       state.globstar = true;
@@ -33995,7 +30085,7 @@ const parse$2 = (input, options) => {
       value: '',
       output: `${SLASH_LITERAL}?`
     });
-  } // rebuild the output if we had to backtrack at any point
+  }
 
 
   if (state.backtrack === true) {
@@ -34012,11 +30102,6 @@ const parse$2 = (input, options) => {
 
   return state;
 };
-/**
- * Fast paths for creating regular expressions for common glob patterns.
- * This can significantly speed up processing and has very little downside
- * impact when none of the fast paths match.
- */
 
 
 parse$2.fastpaths = (input, options) => {
@@ -34029,7 +30114,7 @@ parse$2.fastpaths = (input, options) => {
   }
 
   input = REPLACEMENTS[input] || input;
-  const win32 = utils$9.isWindows(options); // create constants based on platform, for windows or posix
+  const win32 = utils$9.isWindows(options);
 
   const {
     DOT_LITERAL,
@@ -34110,27 +30195,6 @@ parse$2.fastpaths = (input, options) => {
 var parse_1$2 = parse$2;
 
 const isObject = val => val && typeof val === 'object' && !Array.isArray(val);
-/**
- * Creates a matcher function from one or more glob patterns. The
- * returned function takes a string to match as its first argument,
- * and returns true if the string is a match. The returned matcher
- * function also takes a boolean as the second argument that, when true,
- * returns an object with additional information.
- *
- * ```js
- * const picomatch = require('picomatch');
- * // picomatch(glob[, options]);
- *
- * const isMatch = picomatch('*.!(*a)');
- * console.log(isMatch('a.a')); //=> false
- * console.log(isMatch('a.b')); //=> true
- * ```
- * @name picomatch
- * @param {String|Array} `globs` One or more glob patterns.
- * @param {Object=} `options`
- * @return {Function=} Returns a matcher function.
- * @api public
- */
 
 
 const picomatch$1 = (glob, options, returnState = false) => {
@@ -34223,22 +30287,6 @@ const picomatch$1 = (glob, options, returnState = false) => {
 
   return matcher;
 };
-/**
- * Test `input` with the given `regex`. This is used by the main
- * `picomatch()` function to test the input string.
- *
- * ```js
- * const picomatch = require('picomatch');
- * // picomatch.test(input, regex[, options]);
- *
- * console.log(picomatch.test('foo/bar', /^(?:([^/]*?)\/([^/]*?))$/));
- * // { isMatch: true, match: [ 'foo/', 'foo', 'bar' ], output: 'foo/bar' }
- * ```
- * @param {String} `input` String to test.
- * @param {RegExp} `regex`
- * @return {Object} Returns an object with matching info.
- * @api public
- */
 
 
 picomatch$1.test = (input, regex, options, {
@@ -34280,57 +30328,15 @@ picomatch$1.test = (input, regex, options, {
     output
   };
 };
-/**
- * Match the basename of a filepath.
- *
- * ```js
- * const picomatch = require('picomatch');
- * // picomatch.matchBase(input, glob[, options]);
- * console.log(picomatch.matchBase('foo/bar.js', '*.js'); // true
- * ```
- * @param {String} `input` String to test.
- * @param {RegExp|String} `glob` Glob pattern or regex created by [.makeRe](#makeRe).
- * @return {Boolean}
- * @api public
- */
 
 
 picomatch$1.matchBase = (input, glob, options, posix = utils$9.isWindows(options)) => {
   const regex = glob instanceof RegExp ? glob : picomatch$1.makeRe(glob, options);
   return regex.test(path__default['default'].basename(input));
 };
-/**
- * Returns true if **any** of the given glob `patterns` match the specified `string`.
- *
- * ```js
- * const picomatch = require('picomatch');
- * // picomatch.isMatch(string, patterns[, options]);
- *
- * console.log(picomatch.isMatch('a.a', ['b.*', '*.a'])); //=> true
- * console.log(picomatch.isMatch('a.a', 'b.*')); //=> false
- * ```
- * @param {String|Array} str The string to test.
- * @param {String|Array} patterns One or more glob patterns to use for matching.
- * @param {Object} [options] See available [options](#options).
- * @return {Boolean} Returns true if any patterns match `str`
- * @api public
- */
 
 
 picomatch$1.isMatch = (str, patterns, options) => picomatch$1(patterns, options)(str);
-/**
- * Parse a glob pattern to create the source string for a regular
- * expression.
- *
- * ```js
- * const picomatch = require('picomatch');
- * const result = picomatch.parse(pattern[, options]);
- * ```
- * @param {String} `pattern`
- * @param {Object} `options`
- * @return {Object} Returns an object with useful properties and output to be used as a regex source string.
- * @api public
- */
 
 
 picomatch$1.parse = (pattern, options) => {
@@ -34339,46 +30345,9 @@ picomatch$1.parse = (pattern, options) => {
     fastpaths: false
   }));
 };
-/**
- * Scan a glob pattern to separate the pattern into segments.
- *
- * ```js
- * const picomatch = require('picomatch');
- * // picomatch.scan(input[, options]);
- *
- * const result = picomatch.scan('!./foo/*.js');
- * console.log(result);
- * { prefix: '!./',
- *   input: '!./foo/*.js',
- *   start: 3,
- *   base: 'foo',
- *   glob: '*.js',
- *   isBrace: false,
- *   isBracket: false,
- *   isGlob: true,
- *   isExtglob: false,
- *   isGlobstar: false,
- *   negated: true }
- * ```
- * @param {String} `input` Glob pattern to scan.
- * @param {Object} `options`
- * @return {Object} Returns an object with
- * @api public
- */
 
 
 picomatch$1.scan = (input, options) => scan_1(input, options);
-/**
- * Compile a regular expression from the `state` object returned by the
- * [parse()](#parse) method.
- *
- * @param {Object} `state`
- * @param {Object} `options`
- * @param {Boolean} `returnOutput` Intended for implementors, this argument allows you to return the raw output from the parser.
- * @param {Boolean} `returnState` Adds the state to a `state` property on the returned regex. Useful for implementors and debugging.
- * @return {RegExp}
- * @api public
- */
 
 
 picomatch$1.compileRe = (state, options, returnOutput = false, returnState = false) => {
@@ -34403,24 +30372,6 @@ picomatch$1.compileRe = (state, options, returnOutput = false, returnState = fal
 
   return regex;
 };
-/**
- * Create a regular expression from a parsed glob pattern.
- *
- * ```js
- * const picomatch = require('picomatch');
- * const state = picomatch.parse('*.js');
- * // picomatch.compileRe(state[, options]);
- *
- * console.log(picomatch.compileRe(state));
- * //=> /^(?:(?!\.)(?=.)[^/]*?\.js)$/
- * ```
- * @param {String} `state` The object returned from the `.parse` method.
- * @param {Object} `options`
- * @param {Boolean} `returnOutput` Implementors may use this argument to return the compiled output, instead of a regular expression. This is not exposed on the options to prevent end-users from mutating the result.
- * @param {Boolean} `returnState` Implementors may use this argument to return the state from the parsed glob with the returned regular expression.
- * @return {RegExp} Returns a regex created from the given pattern.
- * @api public
- */
 
 
 picomatch$1.makeRe = (input, options = {}, returnOutput = false, returnState = false) => {
@@ -34443,22 +30394,6 @@ picomatch$1.makeRe = (input, options = {}, returnOutput = false, returnState = f
 
   return picomatch$1.compileRe(parsed, options, returnOutput, returnState);
 };
-/**
- * Create a regular expression from the given regex source string.
- *
- * ```js
- * const picomatch = require('picomatch');
- * // picomatch.toRegex(source[, options]);
- *
- * const { output } = picomatch.parse('*.js');
- * console.log(picomatch.toRegex(output));
- * //=> /^(?:(?!\.)(?=.)[^/]*?\.js)$/
- * ```
- * @param {String} `source` Regular expression source string.
- * @param {Object} `options`
- * @return {RegExp}
- * @api public
- */
 
 
 picomatch$1.toRegex = (source, options) => {
@@ -34470,39 +30405,15 @@ picomatch$1.toRegex = (source, options) => {
     return /$^/;
   }
 };
-/**
- * Picomatch constants.
- * @return {Object}
- */
 
 
 picomatch$1.constants = constants$1;
-/**
- * Expose "picomatch"
- */
 
 var picomatch_1 = picomatch$1;
 
 var picomatch = picomatch_1;
 
 const isEmptyString = val => val === '' || val === './';
-/**
- * Returns an array of strings that match one or more glob patterns.
- *
- * ```js
- * const mm = require('micromatch');
- * // mm(list, patterns[, options]);
- *
- * console.log(mm(['a.js', 'a.txt'], ['*.js']));
- * //=> [ 'a.js' ]
- * ```
- * @param {String|Array<string>} `list` List of strings to match.
- * @param {String|Array<string>} `patterns` One or more glob patterns to use for matching.
- * @param {Object} `options` See available [options](#options)
- * @return {Array} Returns an array of matches
- * @summary false
- * @api public
- */
 
 
 const micromatch = (list, patterns, options) => {
@@ -34557,73 +30468,17 @@ const micromatch = (list, patterns, options) => {
 
   return matches;
 };
-/**
- * Backwards compatibility
- */
 
 
 micromatch.match = micromatch;
-/**
- * Returns a matcher function from the given glob `pattern` and `options`.
- * The returned function takes a string to match as its only argument and returns
- * true if the string is a match.
- *
- * ```js
- * const mm = require('micromatch');
- * // mm.matcher(pattern[, options]);
- *
- * const isMatch = mm.matcher('*.!(*a)');
- * console.log(isMatch('a.a')); //=> false
- * console.log(isMatch('a.b')); //=> true
- * ```
- * @param {String} `pattern` Glob pattern
- * @param {Object} `options`
- * @return {Function} Returns a matcher function.
- * @api public
- */
 
 micromatch.matcher = (pattern, options) => picomatch(pattern, options);
-/**
- * Returns true if **any** of the given glob `patterns` match the specified `string`.
- *
- * ```js
- * const mm = require('micromatch');
- * // mm.isMatch(string, patterns[, options]);
- *
- * console.log(mm.isMatch('a.a', ['b.*', '*.a'])); //=> true
- * console.log(mm.isMatch('a.a', 'b.*')); //=> false
- * ```
- * @param {String} `str` The string to test.
- * @param {String|Array} `patterns` One or more glob patterns to use for matching.
- * @param {Object} `[options]` See available [options](#options).
- * @return {Boolean} Returns true if any patterns match `str`
- * @api public
- */
 
 
 micromatch.isMatch = (str, patterns, options) => picomatch(patterns, options)(str);
-/**
- * Backwards compatibility
- */
 
 
 micromatch.any = micromatch.isMatch;
-/**
- * Returns a list of strings that _**do not match any**_ of the given `patterns`.
- *
- * ```js
- * const mm = require('micromatch');
- * // mm.not(list, patterns[, options]);
- *
- * console.log(mm.not(['a.a', 'b.b', 'c.c'], '*.a'));
- * //=> ['b.b', 'c.c']
- * ```
- * @param {Array} `list` Array of strings to match.
- * @param {String|Array} `patterns` One or more glob pattern to use for matching.
- * @param {Object} `options` See available [options](#options) for changing how matches are performed
- * @return {Array} Returns an array of strings that **do not match** the given patterns.
- * @api public
- */
 
 micromatch.not = (list, patterns, options = {}) => {
   patterns = [].concat(patterns).map(String);
@@ -34647,25 +30502,6 @@ micromatch.not = (list, patterns, options = {}) => {
 
   return [...result];
 };
-/**
- * Returns true if the given `string` contains the given pattern. Similar
- * to [.isMatch](#isMatch) but the pattern can match any part of the string.
- *
- * ```js
- * var mm = require('micromatch');
- * // mm.contains(string, pattern[, options]);
- *
- * console.log(mm.contains('aa/bb/cc', '*b'));
- * //=> true
- * console.log(mm.contains('aa/bb/cc', '*d'));
- * //=> false
- * ```
- * @param {String} `str` The string to match.
- * @param {String|Array} `patterns` Glob pattern to use for matching.
- * @param {Object} `options` See available [options](#options) for changing how matches are performed
- * @return {Boolean} Returns true if any of the patterns matches any part of `str`.
- * @api public
- */
 
 
 micromatch.contains = (str, pattern, options) => {
@@ -34691,25 +30527,6 @@ micromatch.contains = (str, pattern, options) => {
     contains: true
   }));
 };
-/**
- * Filter the keys of the given object with the given `glob` pattern
- * and `options`. Does not attempt to match nested keys. If you need this feature,
- * use [glob-object][] instead.
- *
- * ```js
- * const mm = require('micromatch');
- * // mm.matchKeys(object, patterns[, options]);
- *
- * const obj = { aa: 'a', ab: 'b', ac: 'c' };
- * console.log(mm.matchKeys(obj, '*b'));
- * //=> { ab: 'b' }
- * ```
- * @param {Object} `object` The object with keys to filter.
- * @param {String|Array} `patterns` One or more glob patterns to use for matching.
- * @param {Object} `options` See available [options](#options) for changing how matches are performed
- * @return {Object} Returns an object with only keys that match the given patterns.
- * @api public
- */
 
 
 micromatch.matchKeys = (obj, patterns, options) => {
@@ -34724,24 +30541,6 @@ micromatch.matchKeys = (obj, patterns, options) => {
 
   return res;
 };
-/**
- * Returns true if some of the strings in the given `list` match any of the given glob `patterns`.
- *
- * ```js
- * const mm = require('micromatch');
- * // mm.some(list, patterns[, options]);
- *
- * console.log(mm.some(['foo.js', 'bar.js'], ['*.js', '!foo.js']));
- * // true
- * console.log(mm.some(['foo.js'], ['*.js', '!foo.js']));
- * // false
- * ```
- * @param {String|Array} `list` The string or array of strings to test. Returns as soon as the first match is found.
- * @param {String|Array} `patterns` One or more glob patterns to use for matching.
- * @param {Object} `options` See available [options](#options) for changing how matches are performed
- * @return {Boolean} Returns true if any `patterns` matches any of the strings in `list`
- * @api public
- */
 
 
 micromatch.some = (list, patterns, options) => {
@@ -34757,29 +30556,6 @@ micromatch.some = (list, patterns, options) => {
 
   return false;
 };
-/**
- * Returns true if every string in the given `list` matches
- * any of the given glob `patterns`.
- *
- * ```js
- * const mm = require('micromatch');
- * // mm.every(list, patterns[, options]);
- *
- * console.log(mm.every('foo.js', ['foo.js']));
- * // true
- * console.log(mm.every(['foo.js', 'bar.js'], ['*.js']));
- * // true
- * console.log(mm.every(['foo.js', 'bar.js'], ['*.js', '!foo.js']));
- * // false
- * console.log(mm.every(['foo.js'], ['*.js', '!foo.js']));
- * // false
- * ```
- * @param {String|Array} `list` The string or array of strings to test.
- * @param {String|Array} `patterns` One or more glob patterns to use for matching.
- * @param {Object} `options` See available [options](#options) for changing how matches are performed
- * @return {Boolean} Returns true if all `patterns` matches all of the strings in `list`
- * @api public
- */
 
 
 micromatch.every = (list, patterns, options) => {
@@ -34795,32 +30571,6 @@ micromatch.every = (list, patterns, options) => {
 
   return true;
 };
-/**
- * Returns true if **all** of the given `patterns` match
- * the specified string.
- *
- * ```js
- * const mm = require('micromatch');
- * // mm.all(string, patterns[, options]);
- *
- * console.log(mm.all('foo.js', ['foo.js']));
- * // true
- *
- * console.log(mm.all('foo.js', ['*.js', '!foo.js']));
- * // false
- *
- * console.log(mm.all('foo.js', ['*.js', 'foo.js']));
- * // true
- *
- * console.log(mm.all('foo.js', ['*.js', 'f*', '*o*', '*o.js']));
- * // true
- * ```
- * @param {String|Array} `str` The string to test.
- * @param {String|Array} `patterns` One or more glob patterns to use for matching.
- * @param {Object} `options` See available [options](#options) for changing how matches are performed
- * @return {Boolean} Returns true if any patterns match `str`
- * @api public
- */
 
 
 micromatch.all = (str, patterns, options) => {
@@ -34830,24 +30580,6 @@ micromatch.all = (str, patterns, options) => {
 
   return [].concat(patterns).every(p => picomatch(p, options)(str));
 };
-/**
- * Returns an array of matches captured by `pattern` in `string, or `null` if the pattern did not match.
- *
- * ```js
- * const mm = require('micromatch');
- * // mm.capture(pattern, string[, options]);
- *
- * console.log(mm.capture('test/*.js', 'test/foo.js'));
- * //=> ['foo']
- * console.log(mm.capture('test/*.js', 'foo/bar.css'));
- * //=> null
- * ```
- * @param {String} `glob` Glob pattern to use for matching.
- * @param {String} `input` String to match
- * @param {Object} `options` See available [options](#options) for changing how matches are performed
- * @return {Array|null} Returns an array of captures if the input matches the glob pattern, otherwise `null`.
- * @api public
- */
 
 
 micromatch.capture = (glob, input, options) => {
@@ -34861,53 +30593,12 @@ micromatch.capture = (glob, input, options) => {
     return match.slice(1).map(v => v === void 0 ? '' : v);
   }
 };
-/**
- * Create a regular expression from the given glob `pattern`.
- *
- * ```js
- * const mm = require('micromatch');
- * // mm.makeRe(pattern[, options]);
- *
- * console.log(mm.makeRe('*.js'));
- * //=> /^(?:(\.[\\\/])?(?!\.)(?=.)[^\/]*?\.js)$/
- * ```
- * @param {String} `pattern` A glob pattern to convert to regex.
- * @param {Object} `options`
- * @return {RegExp} Returns a regex created from the given pattern.
- * @api public
- */
 
 
 micromatch.makeRe = (...args) => picomatch.makeRe(...args);
-/**
- * Scan a glob pattern to separate the pattern into segments. Used
- * by the [split](#split) method.
- *
- * ```js
- * const mm = require('micromatch');
- * const state = mm.scan(pattern[, options]);
- * ```
- * @param {String} `pattern`
- * @param {Object} `options`
- * @return {Object} Returns an object with
- * @api public
- */
 
 
 micromatch.scan = (...args) => picomatch.scan(...args);
-/**
- * Parse a glob pattern to create the source string for a regular
- * expression.
- *
- * ```js
- * const mm = require('micromatch');
- * const state = mm(pattern[, options]);
- * ```
- * @param {String} `glob`
- * @param {Object} `options`
- * @return {Object} Returns an object with useful properties and output to be used as regex source string.
- * @api public
- */
 
 
 micromatch.parse = (patterns, options) => {
@@ -34921,22 +30612,6 @@ micromatch.parse = (patterns, options) => {
 
   return res;
 };
-/**
- * Process the given brace `pattern`.
- *
- * ```js
- * const { braces } = require('micromatch');
- * console.log(braces('foo/{a,b,c}/bar'));
- * //=> [ 'foo/(a|b|c)/bar' ]
- *
- * console.log(braces('foo/{a,b,c}/bar', { expand: true }));
- * //=> [ 'foo/a/bar', 'foo/b/bar', 'foo/c/bar' ]
- * ```
- * @param {String} `pattern` String with brace pattern to process.
- * @param {Object} `options` Any [options](#options) to change how expansion is performed. See the [braces][] library for all available options.
- * @return {Array}
- * @api public
- */
 
 
 micromatch.braces = (pattern, options) => {
@@ -34948,9 +30623,6 @@ micromatch.braces = (pattern, options) => {
 
   return braces_1(pattern, options);
 };
-/**
- * Expand braces
- */
 
 
 micromatch.braceExpand = (pattern, options) => {
@@ -34959,9 +30631,6 @@ micromatch.braceExpand = (pattern, options) => {
     expand: true
   }));
 };
-/**
- * Expose micromatch
- */
 
 
 var micromatch_1 = micromatch;
@@ -34987,18 +30656,9 @@ var pattern = createCommonjsModule(function (module, exports) {
   exports.isStaticPattern = isStaticPattern;
 
   function isDynamicPattern(pattern, options = {}) {
-    /**
-     * A special case with an empty string is necessary for matching patterns that start with a forward slash.
-     * An empty string cannot be a dynamic pattern.
-     * For example, the pattern `/lib/*` will be spread into parts: '', 'lib', '*'.
-     */
     if (pattern === '') {
       return false;
     }
-    /**
-     * When the `caseSensitiveMatch` option is disabled, all patterns must be marked as dynamic, because we cannot check
-     * filepath directly (without read directory).
-     */
 
 
     if (options.caseSensitiveMatch === false || pattern.includes(ESCAPE_SYMBOL)) {
@@ -35108,18 +30768,10 @@ var pattern = createCommonjsModule(function (module, exports) {
     } = picomatch.scan(pattern, Object.assign(Object.assign({}, options), {
       parts: true
     }));
-    /**
-     * The scan method returns an empty array in some cases.
-     * See micromatch/picomatch#58 for more details.
-     */
 
     if (parts.length === 0) {
       parts = [pattern];
     }
-    /**
-     * The scan method does not return an empty part for the pattern with a forward slash.
-     * This is another part of micromatch/picomatch#58.
-     */
 
 
     if (parts[0].startsWith('/')) {
@@ -35223,10 +30875,8 @@ var tasks = createCommonjsModule(function (module, exports) {
     const staticPatterns = positivePatterns.filter(pattern => utils$8.pattern.isStaticPattern(pattern, settings));
     const dynamicPatterns = positivePatterns.filter(pattern => utils$8.pattern.isDynamicPattern(pattern, settings));
     const staticTasks = convertPatternsToTasks(staticPatterns, negativePatterns,
-    /* dynamic */
     false);
     const dynamicTasks = convertPatternsToTasks(dynamicPatterns, negativePatterns,
-    /* dynamic */
     true);
     return staticTasks.concat(dynamicTasks);
   }
@@ -35234,8 +30884,7 @@ var tasks = createCommonjsModule(function (module, exports) {
   exports.generate = generate;
 
   function convertPatternsToTasks(positive, negative, dynamic) {
-    const positivePatternsGroup = groupPatternsByBaseDirectory(positive); // When we have a global group – there is no reason to divide the patterns into independent tasks.
-    // In this case, the global task covers the rest.
+    const positivePatternsGroup = groupPatternsByBaseDirectory(positive);
 
     if ('.' in positivePatternsGroup) {
       const task = convertPatternGroupToTask('.', positive, negative, dynamic);
@@ -35466,7 +31115,7 @@ var out$3 = createCommonjsModule(function (module, exports) {
 
 /*! queue-microtask. MIT License. Feross Aboukhadijeh <https://feross.org/opensource> */
 let promise$1;
-var queueMicrotask_1 = typeof queueMicrotask === 'function' ? queueMicrotask.bind(typeof window !== 'undefined' ? window : global) // reuse resolved promise, and allocate it lazily
+var queueMicrotask_1 = typeof queueMicrotask === 'function' ? queueMicrotask.bind(typeof window !== 'undefined' ? window : global)
 : cb => (promise$1 || (promise$1 = Promise.resolve())).then(cb).catch(err => setTimeout(() => {
   throw err;
 }, 0));
@@ -35505,17 +31154,14 @@ function runParallel(tasks, cb) {
   }
 
   if (!pending) {
-    // empty
     done(null);
   } else if (keys) {
-    // object
     keys.forEach(function (key) {
       tasks[key](function (err, result) {
         each(key, err, result);
       });
     });
   } else {
-    // array
     tasks.forEach(function (task, i) {
       task(function (err, result) {
         each(i, err, result);
@@ -35544,9 +31190,6 @@ var constants = createCommonjsModule(function (module, exports) {
   const SUPPORTED_MINOR_VERSION = 10;
   const IS_MATCHED_BY_MAJOR = MAJOR_VERSION > SUPPORTED_MAJOR_VERSION;
   const IS_MATCHED_BY_MAJOR_AND_MINOR = MAJOR_VERSION === SUPPORTED_MAJOR_VERSION && MINOR_VERSION >= SUPPORTED_MINOR_VERSION;
-  /**
-   * IS `true` for Node.js 10.10 and greater.
-   */
 
   exports.IS_SUPPORT_READDIR_WITH_FILE_TYPES = IS_MATCHED_BY_MAJOR || IS_MATCHED_BY_MAJOR_AND_MINOR;
 });
@@ -35596,9 +31239,6 @@ var common$1 = createCommonjsModule(function (module, exports) {
   exports.joinPathSegments = void 0;
 
   function joinPathSegments(a, b, separator) {
-    /**
-     * The correct handling of cases when the first segment is a root (`/`, `C:/`) or UNC path (`//?/C:/`).
-     */
     if (a.endsWith(separator)) {
       return a + b;
     }
@@ -36208,9 +31848,6 @@ var common = createCommonjsModule(function (module, exports) {
     if (a === '') {
       return b;
     }
-    /**
-     * The correct handling of cases when the first segment is a root (`/`, `C:/`) or UNC path (`//?/C:/`).
-     */
 
 
     if (a.endsWith(separator)) {
@@ -36738,10 +32375,6 @@ class Matcher {
   }
 
   _fillStorage() {
-    /**
-     * The original pattern may include `{,*,**,a/*}`, which will lead to problems with matching (unresolved level).
-     * So, before expand patterns with brace expansion into separated patterns.
-     */
     const patterns = utils$8.pattern.expandPatternsWithBraceExpansion(this._patterns);
 
     for (const pattern of patterns) {
@@ -36800,13 +32433,6 @@ class PartialMatcher extends matcher.default {
 
     for (const pattern of patterns) {
       const section = pattern.sections[0];
-      /**
-       * In this case, the pattern has a globstar and we must read all directories unconditionally,
-       * but only if the level has reached the end of the first group.
-       *
-       * fixtures/{a,b}/**
-       *  ^ true/false  ^ always true
-      */
 
       if (!pattern.complete && levels > section.length) {
         return true;
@@ -36885,9 +32511,6 @@ class DeepFilter {
   }
 
   _isSkippedByDeep(basePath, entryPath) {
-    /**
-     * Avoid unnecessary depth calculations when it doesn't matter.
-     */
     if (this._settings.deep === Infinity) {
       return false;
     }
@@ -37284,10 +32907,6 @@ var settings = createCommonjsModule(function (module, exports) {
     value: true
   });
   exports.DEFAULT_FILE_SYSTEM_ADAPTER = void 0;
-  /**
-   * The `os.cpus` method can return zero. We expect the number of cores to be greater than zero.
-   * https://github.com/nodejs/node/blob/7faeddf23a98c53896f8b574a6e66589e8fb1eb8/lib/os.js#L106-L107
-   */
 
   const CPU_COUNT = Math.max(os__default['default'].cpus().length, 1);
   exports.DEFAULT_FILE_SYSTEM_ADAPTER = {
@@ -37351,8 +32970,7 @@ async function FastGlob(source, options) {
   const works = getWorks(source, async.default, options);
   const result = await Promise.all(works);
   return utils$8.array.flatten(result);
-} // https://github.com/typescript-eslint/typescript-eslint/issues/60
-// eslint-disable-next-line no-redeclare
+}
 
 
 (function (FastGlob) {
@@ -37367,11 +32985,6 @@ async function FastGlob(source, options) {
   function stream(source, options) {
     assertPatternsInput$1(source);
     const works = getWorks(source, stream$1.default, options);
-    /**
-     * The stream returned by the provider cannot work with an asynchronous iterator.
-     * To support asynchronous iterators, regardless of the number of tasks, we always multiplex streams.
-     * This affects performance (+25%). I don't see best solution right now.
-     */
 
     return utils$8.stream.merge(works);
   }
@@ -37526,7 +33139,7 @@ var dirGlob = async (input, options) => {
     const isDirectory = await pathType.isDirectory(getPath(x, options.cwd));
     return isDirectory ? getGlob(x, options) : x;
   }));
-  return [].concat.apply([], globs); // eslint-disable-line prefer-spread
+  return [].concat.apply([], globs);
 };
 
 var sync$2 = (input, options) => {
@@ -37539,11 +33152,10 @@ var sync$2 = (input, options) => {
   }
 
   const globs = [].concat(input).map(x => pathType.isDirectorySync(getPath(x, options.cwd)) ? getGlob(x, options) : x);
-  return [].concat.apply([], globs); // eslint-disable-line prefer-spread
+  return [].concat.apply([], globs);
 };
 dirGlob.sync = sync$2;
 
-// A simple implementation of make-array
 function makeArray(subject) {
   return Array.isArray(subject) ? subject : [subject];
 }
@@ -37554,28 +33166,21 @@ const ESCAPE = '\\';
 const REGEX_TEST_BLANK_LINE = /^\s+$/;
 const REGEX_REPLACE_LEADING_EXCAPED_EXCLAMATION = /^\\!/;
 const REGEX_REPLACE_LEADING_EXCAPED_HASH = /^\\#/;
-const REGEX_SPLITALL_CRLF = /\r?\n/g; // /foo,
-// ./foo,
-// ../foo,
-// .
-// ..
+const REGEX_SPLITALL_CRLF = /\r?\n/g;
 
 const REGEX_TEST_INVALID_PATH = /^\.*\/|^\.+$/;
 const SLASH = '/';
 const KEY_IGNORE = typeof Symbol !== 'undefined' ? Symbol.for('node-ignore')
-/* istanbul ignore next */
 : 'node-ignore';
 
 const define = (object, key, value) => Object.defineProperty(object, key, {
   value
 });
 
-const REGEX_REGEXP_RANGE = /([0-z])-([0-z])/g; // Sanitize the range of a regular expression
-// The cases are complicated, see test cases for details
+const REGEX_REGEXP_RANGE = /([0-z])-([0-z])/g;
 
-const sanitizeRange = range => range.replace(REGEX_REGEXP_RANGE, (match, from, to) => from.charCodeAt(0) <= to.charCodeAt(0) ? match // Invalid range (out of order) which is ok for gitignore rules but
-//   fatal for JavaScript regular expression, so eliminate it.
-: EMPTY); // See fixtures #59
+const sanitizeRange = range => range.replace(REGEX_REGEXP_RANGE, (match, from, to) => from.charCodeAt(0) <= to.charCodeAt(0) ? match
+: EMPTY);
 
 
 const cleanRangeBackSlash = slashes => {
@@ -37583,153 +33188,70 @@ const cleanRangeBackSlash = slashes => {
     length
   } = slashes;
   return slashes.slice(0, length - length % 2);
-}; // > If the pattern ends with a slash,
-// > it is removed for the purpose of the following description,
-// > but it would only find a match with a directory.
-// > In other words, foo/ will match a directory foo and paths underneath it,
-// > but will not match a regular file or a symbolic link foo
-// >  (this is consistent with the way how pathspec works in general in Git).
-// '`foo/`' will not match regular file '`foo`' or symbolic link '`foo`'
-// -> ignore-rules will not deal with it, because it costs extra `fs.stat` call
-//      you could use option `mark: true` with `glob`
-// '`foo/`' should not continue with the '`..`'
+};
 
 
-const REPLACERS = [// > Trailing spaces are ignored unless they are quoted with backslash ("\")
-[// (a\ ) -> (a )
-// (a  ) -> (a)
-// (a \ ) -> (a  )
-/\\?\s+$/, match => match.indexOf('\\') === 0 ? SPACE : EMPTY], // replace (\ ) with ' '
-[/\\\s/g, () => SPACE], // Escape metacharacters
-// which is written down by users but means special for regular expressions.
-// > There are 12 characters with special meanings:
-// > - the backslash \,
-// > - the caret ^,
-// > - the dollar sign $,
-// > - the period or dot .,
-// > - the vertical bar or pipe symbol |,
-// > - the question mark ?,
-// > - the asterisk or star *,
-// > - the plus sign +,
-// > - the opening parenthesis (,
-// > - the closing parenthesis ),
-// > - and the opening square bracket [,
-// > - the opening curly brace {,
-// > These special characters are often called "metacharacters".
-[/[\\$.|*+(){^]/g, match => `\\${match}`], [// > a question mark (?) matches a single character
-/(?!\\)\?/g, () => '[^/]'], // leading slash
-[// > A leading slash matches the beginning of the pathname.
-// > For example, "/*.c" matches "cat-file.c" but not "mozilla-sha1/sha1.c".
-// A leading slash matches the beginning of the pathname
-/^\//, () => '^'], // replace special metacharacter slash after the leading slash
-[/\//g, () => '\\/'], [// > A leading "**" followed by a slash means match in all directories.
-// > For example, "**/foo" matches file or directory "foo" anywhere,
-// > the same as pattern "foo".
-// > "**/foo/bar" matches file or directory "bar" anywhere that is directly
-// >   under directory "foo".
-// Notice that the '*'s have been replaced as '\\*'
-/^\^*\\\*\\\*\\\//, // '**/foo' <-> 'foo'
-() => '^(?:.*\\/)?'], // starting
-[// there will be no leading '/'
-//   (which has been replaced by section "leading slash")
-// If starts with '**', adding a '^' to the regular expression also works
+const REPLACERS = [
+[
+/\\?\s+$/, match => match.indexOf('\\') === 0 ? SPACE : EMPTY],
+[/\\\s/g, () => SPACE],
+[/[\\$.|*+(){^]/g, match => `\\${match}`], [
+/(?!\\)\?/g, () => '[^/]'],
+[
+/^\//, () => '^'],
+[/\//g, () => '\\/'], [
+/^\^*\\\*\\\*\\\//,
+() => '^(?:.*\\/)?'],
+[
 /^(?=[^^])/, function startingReplacer() {
-  // If has a slash `/` at the beginning or middle
-  return !/\/(?!$)/.test(this) // > Prior to 2.22.1
-  // > If the pattern does not contain a slash /,
-  // >   Git treats it as a shell glob pattern
-  // Actually, if there is only a trailing slash,
-  //   git also treats it as a shell glob pattern
-  // After 2.22.1 (compatible but clearer)
-  // > If there is a separator at the beginning or middle (or both)
-  // > of the pattern, then the pattern is relative to the directory
-  // > level of the particular .gitignore file itself.
-  // > Otherwise the pattern may also match at any level below
-  // > the .gitignore level.
-  ? '(?:^|\\/)' // > Otherwise, Git treats the pattern as a shell glob suitable for
-  // >   consumption by fnmatch(3)
+  return !/\/(?!$)/.test(this)
+  ? '(?:^|\\/)'
   : '^';
-}], // two globstars
-[// Use lookahead assertions so that we could match more than one `'/**'`
-/\\\/\\\*\\\*(?=\\\/|$)/g, // Zero, one or several directories
-// should not use '*', or it will be replaced by the next replacer
-// Check if it is not the last `'/**'`
-(_, index, str) => index + 6 < str.length // case: /**/
-// > A slash followed by two consecutive asterisks then a slash matches
-// >   zero or more directories.
-// > For example, "a/**/b" matches "a/b", "a/x/b", "a/x/y/b" and so on.
-// '/**/'
-? '(?:\\/[^\\/]+)*' // case: /**
-// > A trailing `"/**"` matches everything inside.
-// #21: everything inside but it should not include the current folder
-: '\\/.+'], // intermediate wildcards
-[// Never replace escaped '*'
-// ignore rule '\*' will match the path '*'
-// 'abc.*/' -> go
-// 'abc.*'  -> skip this rule
-/(^|[^\\]+)\\\*(?=.+)/g, // '*.js' matches '.js'
-// '*.js' doesn't match 'abc'
-(_, p1) => `${p1}[^\\/]*`], [// unescape, revert step 3 except for back slash
-// For example, if a user escape a '\\*',
-// after step 3, the result will be '\\\\\\*'
-/\\\\\\(?=[$.|*+(){^])/g, () => ESCAPE], [// '\\\\' -> '\\'
-/\\\\/g, () => ESCAPE], [// > The range notation, e.g. [a-zA-Z],
-// > can be used to match one of the characters in a range.
-// `\` is escaped by step 3
-/(\\)?\[([^\]/]*?)(\\*)($|\])/g, (match, leadEscape, range, endEscape, close) => leadEscape === ESCAPE // '\\[bar]' -> '\\\\[bar\\]'
-? `\\[${range}${cleanRangeBackSlash(endEscape)}${close}` : close === ']' ? endEscape.length % 2 === 0 // A normal case, and it is a range notation
-// '[bar]'
-// '[bar\\\\]'
-? `[${sanitizeRange(range)}${endEscape}]` // Invalid range notaton
-// '[bar\\]' -> '[bar\\\\]'
-: '[]' : '[]'], // ending
-[// 'js' will not match 'js.'
-// 'ab' will not match 'abc'
-/(?:[^*])$/, // WTF!
-// https://git-scm.com/docs/gitignore
-// changes in [2.22.1](https://git-scm.com/docs/gitignore/2.22.1)
-// which re-fixes #24, #38
-// > If there is a separator at the end of the pattern then the pattern
-// > will only match directories, otherwise the pattern can match both
-// > files and directories.
-// 'js*' will not match 'a.js'
-// 'js/' will not match 'a.js'
-// 'js' will match 'a.js' and 'a.js/'
-match => /\/$/.test(match) // foo/ will not match 'foo'
-? `${match}$` // foo matches 'foo' and 'foo/'
-: `${match}(?=$|\\/$)`], // trailing wildcard
+}],
+[
+/\\\/\\\*\\\*(?=\\\/|$)/g,
+(_, index, str) => index + 6 < str.length
+? '(?:\\/[^\\/]+)*'
+: '\\/.+'],
+[
+/(^|[^\\]+)\\\*(?=.+)/g,
+(_, p1) => `${p1}[^\\/]*`], [
+/\\\\\\(?=[$.|*+(){^])/g, () => ESCAPE], [
+/\\\\/g, () => ESCAPE], [
+/(\\)?\[([^\]/]*?)(\\*)($|\])/g, (match, leadEscape, range, endEscape, close) => leadEscape === ESCAPE
+? `\\[${range}${cleanRangeBackSlash(endEscape)}${close}` : close === ']' ? endEscape.length % 2 === 0
+? `[${sanitizeRange(range)}${endEscape}]`
+: '[]' : '[]'],
+[
+/(?:[^*])$/,
+match => /\/$/.test(match)
+? `${match}$`
+: `${match}(?=$|\\/$)`],
 [/(\^|\\\/)?\\\*$/, (_, p1) => {
-  const prefix = p1 // '\^':
-  // '/*' does not match EMPTY
-  // '/*' does not match everything
-  // '\\\/':
-  // 'abc/*' does not match 'abc/'
-  ? `${p1}[^/]+` // 'a*' matches 'a'
-  // 'a*' matches 'aa'
+  const prefix = p1
+  ? `${p1}[^/]+`
   : '[^/]*';
   return `${prefix}(?=$|\\/$)`;
-}]]; // A simple cache, because an ignore rule only has only one certain meaning
+}]];
 
-const regexCache = Object.create(null); // @param {pattern}
+const regexCache = Object.create(null);
 
 const makeRegex = (pattern, negative, ignorecase) => {
   const r = regexCache[pattern];
 
   if (r) {
     return r;
-  } // const replacers = negative
-  //   ? NEGATIVE_REPLACERS
-  //   : POSITIVE_REPLACERS
+  }
 
 
   const source = REPLACERS.reduce((prev, current) => prev.replace(current[0], current[1].bind(pattern)), pattern);
   return regexCache[pattern] = ignorecase ? new RegExp(source, 'i') : new RegExp(source);
 };
 
-const isString = subject => typeof subject === 'string'; // > A blank line matches no files, so it can serve as a separator for readability.
+const isString = subject => typeof subject === 'string';
 
 
-const checkPattern = pattern => pattern && isString(pattern) && !REGEX_TEST_BLANK_LINE.test(pattern) // > A line starting with # serves as a comment.
+const checkPattern = pattern => pattern && isString(pattern) && !REGEX_TEST_BLANK_LINE.test(pattern)
 && pattern.indexOf('#') !== 0;
 
 const splitPattern = pattern => pattern.split(REGEX_SPLITALL_CRLF);
@@ -37746,17 +33268,15 @@ class IgnoreRule {
 
 const createRule = (pattern, ignorecase) => {
   const origin = pattern;
-  let negative = false; // > An optional prefix "!" which negates the pattern;
+  let negative = false;
 
   if (pattern.indexOf('!') === 0) {
     negative = true;
     pattern = pattern.substr(1);
   }
 
-  pattern = pattern // > Put a backslash ("\") in front of the first "!" for patterns that
-  // >   begin with a literal "!", for example, `"\!important!.txt"`.
-  .replace(REGEX_REPLACE_LEADING_EXCAPED_EXCLAMATION, '!') // > Put a backslash ("\") in front of the first hash for patterns that
-  // >   begin with a hash.
+  pattern = pattern
+  .replace(REGEX_REPLACE_LEADING_EXCAPED_EXCLAMATION, '!')
   .replace(REGEX_REPLACE_LEADING_EXCAPED_HASH, '#');
   const regex = makeRegex(pattern, negative, ignorecase);
   return new IgnoreRule(origin, pattern, negative, regex);
@@ -37769,12 +33289,12 @@ const throwError = (message, Ctor) => {
 const checkPath = (path, originalPath, doThrow) => {
   if (!isString(path)) {
     return doThrow(`path must be a string, but got \`${originalPath}\``, TypeError);
-  } // We don't know if we should ignore EMPTY, so throw
+  }
 
 
   if (!path) {
     return doThrow(`path must not be empty`, TypeError);
-  } // Check if it is a relative path
+  }
 
 
   if (checkPath.isNotRelative(path)) {
@@ -37808,7 +33328,6 @@ class Ignore {
   }
 
   _addPattern(pattern) {
-    // #32
     if (pattern && pattern[KEY_IGNORE]) {
       this._rules = this._rules.concat(pattern._rules);
       this._added = true;
@@ -37821,37 +33340,24 @@ class Ignore {
 
       this._rules.push(rule);
     }
-  } // @param {Array<string> | string | Ignore} pattern
+  }
 
 
   add(pattern) {
     this._added = false;
-    makeArray(isString(pattern) ? splitPattern(pattern) : pattern).forEach(this._addPattern, this); // Some rules have just added to the ignore,
-    // making the behavior changed.
+    makeArray(isString(pattern) ? splitPattern(pattern) : pattern).forEach(this._addPattern, this);
 
     if (this._added) {
       this._initCache();
     }
 
     return this;
-  } // legacy
+  }
 
 
   addPattern(pattern) {
     return this.add(pattern);
-  } //          |           ignored : unignored
-  // negative |   0:0   |   0:1   |   1:0   |   1:1
-  // -------- | ------- | ------- | ------- | --------
-  //     0    |  TEST   |  TEST   |  SKIP   |    X
-  //     1    |  TESTIF |  SKIP   |  TEST   |    X
-  // - SKIP: always skip
-  // - TEST: always test
-  // - TESTIF: only test if checkUnignored
-  // - X: that never happen
-  // @param {boolean} whether should check if the path is unignored,
-  //   setting `checkUnignored` to `false` could reduce additional
-  //   path matching.
-  // @returns {TestResult} true if a file is ignored
+  }
 
 
   _testOne(path, checkUnignored) {
@@ -37879,11 +33385,11 @@ class Ignore {
       ignored,
       unignored
     };
-  } // @returns {TestResult}
+  }
 
 
   _test(originalPath, cache, checkUnignored, slices) {
-    const path = originalPath // Supports nullable path
+    const path = originalPath
     && checkPath.convert(originalPath);
     checkPath(path, originalPath, throwError);
     return this._t(path, cache, checkUnignored, slices);
@@ -37895,22 +33401,19 @@ class Ignore {
     }
 
     if (!slices) {
-      // path/to/a.js
-      // ['path', 'to', 'a.js']
       slices = path.split(SLASH);
     }
 
-    slices.pop(); // If the path has no parent directory, just test it
+    slices.pop();
 
     if (!slices.length) {
       return cache[path] = this._testOne(path, checkUnignored);
     }
 
-    const parent = this._t(slices.join(SLASH) + SLASH, cache, checkUnignored, slices); // If the path contains a parent directory, check the parent first
+    const parent = this._t(slices.join(SLASH) + SLASH, cache, checkUnignored, slices);
 
 
-    return cache[path] = parent.ignored // > It is not possible to re-include a file if a parent directory of
-    // >   that file is excluded.
+    return cache[path] = parent.ignored
     ? parent : this._testOne(path, checkUnignored);
   }
 
@@ -37924,7 +33427,7 @@ class Ignore {
 
   filter(paths) {
     return makeArray(paths).filter(this.createFilter());
-  } // @returns {TestResult}
+  }
 
 
   test(path) {
@@ -37939,21 +33442,17 @@ const returnFalse = () => false;
 
 const isPathValid = path => checkPath(path && checkPath.convert(path), path, returnFalse);
 
-factory.isPathValid = isPathValid; // Fixes typescript
+factory.isPathValid = isPathValid;
 
 factory.default = factory;
-var ignore = factory; // Windows
-// --------------------------------------------------------------
+var ignore = factory;
 
-/* istanbul ignore if  */
 
-if ( // Detect `process` so that it can run in browsers.
+if (
 typeof process !== 'undefined' && (process.env && process.env.IGNORE_TEST_WIN32 || process.platform === 'win32')) {
-  /* eslint no-control-regex: "off" */
   const makePosix = str => /^\\\\\?\\/.test(str) || /["<>|\u0000-\u001F]+/u.test(str) ? str : str.replace(/\\/g, '/');
 
-  checkPath.convert = makePosix; // 'C:\\foo'     <- 'C:\\foo' has been converted to 'C:/'
-  // 'd:\\foo'
+  checkPath.convert = makePosix;
 
   const REGIX_IS_WINDOWS_PATH_ABSOLUTE = /^[a-z]:\//i;
 
@@ -37962,7 +33461,7 @@ typeof process !== 'undefined' && (process.env && process.env.IGNORE_TEST_WIN32 
 
 var slash = path => {
   const isExtendedLengthPath = /^\\\\\?\\/.test(path);
-  const hasNonAscii = /[^\u0000-\u0080]+/.test(path); // eslint-disable-line no-control-regex
+  const hasNonAscii = /[^\u0000-\u0080]+/.test(path);
 
   if (isExtendedLengthPath || hasNonAscii) {
     return path;
@@ -38312,29 +33811,6 @@ var createLanguage = function (linguistData, override) {
   }, rest), override(linguistData));
 };
 
-/*
-  Copyright (C) 2013 Yusuke Suzuki <utatane.tea@gmail.com>
-
-  Redistribution and use in source and binary forms, with or without
-  modification, are permitted provided that the following conditions are met:
-
-    * Redistributions of source code must retain the above copyright
-      notice, this list of conditions and the following disclaimer.
-    * Redistributions in binary form must reproduce the above copyright
-      notice, this list of conditions and the following disclaimer in the
-      documentation and/or other materials provided with the distribution.
-
-  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS 'AS IS'
-  AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
-  IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
-  ARE DISCLAIMED. IN NO EVENT SHALL <COPYRIGHT HOLDER> BE LIABLE FOR ANY
-  DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-  (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-  LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
-  ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-  (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
-  THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-*/
 var ast = createCommonjsModule(function (module) {
   (function () {
 
@@ -38471,77 +33947,48 @@ var ast = createCommonjsModule(function (module) {
       trailingStatement: trailingStatement
     };
   })();
-  /* vim: set sw=4 ts=4 et tw=80 : */
 
 });
 
-/*
-  Copyright (C) 2013-2014 Yusuke Suzuki <utatane.tea@gmail.com>
-  Copyright (C) 2014 Ivan Nikulin <ifaaan@gmail.com>
-
-  Redistribution and use in source and binary forms, with or without
-  modification, are permitted provided that the following conditions are met:
-
-    * Redistributions of source code must retain the above copyright
-      notice, this list of conditions and the following disclaimer.
-    * Redistributions in binary form must reproduce the above copyright
-      notice, this list of conditions and the following disclaimer in the
-      documentation and/or other materials provided with the distribution.
-
-  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
-  AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
-  IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
-  ARE DISCLAIMED. IN NO EVENT SHALL <COPYRIGHT HOLDER> BE LIABLE FOR ANY
-  DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-  (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-  LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
-  ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-  (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
-  THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-*/
 var code = createCommonjsModule(function (module) {
   (function () {
 
-    var ES6Regex, ES5Regex, NON_ASCII_WHITESPACES, IDENTIFIER_START, IDENTIFIER_PART, ch; // See `tools/generate-identifier-regex.js`.
+    var ES6Regex, ES5Regex, NON_ASCII_WHITESPACES, IDENTIFIER_START, IDENTIFIER_PART, ch;
 
     ES5Regex = {
-      // ECMAScript 5.1/Unicode v9.0.0 NonAsciiIdentifierStart:
       NonAsciiIdentifierStart: /[\xAA\xB5\xBA\xC0-\xD6\xD8-\xF6\xF8-\u02C1\u02C6-\u02D1\u02E0-\u02E4\u02EC\u02EE\u0370-\u0374\u0376\u0377\u037A-\u037D\u037F\u0386\u0388-\u038A\u038C\u038E-\u03A1\u03A3-\u03F5\u03F7-\u0481\u048A-\u052F\u0531-\u0556\u0559\u0561-\u0587\u05D0-\u05EA\u05F0-\u05F2\u0620-\u064A\u066E\u066F\u0671-\u06D3\u06D5\u06E5\u06E6\u06EE\u06EF\u06FA-\u06FC\u06FF\u0710\u0712-\u072F\u074D-\u07A5\u07B1\u07CA-\u07EA\u07F4\u07F5\u07FA\u0800-\u0815\u081A\u0824\u0828\u0840-\u0858\u08A0-\u08B4\u08B6-\u08BD\u0904-\u0939\u093D\u0950\u0958-\u0961\u0971-\u0980\u0985-\u098C\u098F\u0990\u0993-\u09A8\u09AA-\u09B0\u09B2\u09B6-\u09B9\u09BD\u09CE\u09DC\u09DD\u09DF-\u09E1\u09F0\u09F1\u0A05-\u0A0A\u0A0F\u0A10\u0A13-\u0A28\u0A2A-\u0A30\u0A32\u0A33\u0A35\u0A36\u0A38\u0A39\u0A59-\u0A5C\u0A5E\u0A72-\u0A74\u0A85-\u0A8D\u0A8F-\u0A91\u0A93-\u0AA8\u0AAA-\u0AB0\u0AB2\u0AB3\u0AB5-\u0AB9\u0ABD\u0AD0\u0AE0\u0AE1\u0AF9\u0B05-\u0B0C\u0B0F\u0B10\u0B13-\u0B28\u0B2A-\u0B30\u0B32\u0B33\u0B35-\u0B39\u0B3D\u0B5C\u0B5D\u0B5F-\u0B61\u0B71\u0B83\u0B85-\u0B8A\u0B8E-\u0B90\u0B92-\u0B95\u0B99\u0B9A\u0B9C\u0B9E\u0B9F\u0BA3\u0BA4\u0BA8-\u0BAA\u0BAE-\u0BB9\u0BD0\u0C05-\u0C0C\u0C0E-\u0C10\u0C12-\u0C28\u0C2A-\u0C39\u0C3D\u0C58-\u0C5A\u0C60\u0C61\u0C80\u0C85-\u0C8C\u0C8E-\u0C90\u0C92-\u0CA8\u0CAA-\u0CB3\u0CB5-\u0CB9\u0CBD\u0CDE\u0CE0\u0CE1\u0CF1\u0CF2\u0D05-\u0D0C\u0D0E-\u0D10\u0D12-\u0D3A\u0D3D\u0D4E\u0D54-\u0D56\u0D5F-\u0D61\u0D7A-\u0D7F\u0D85-\u0D96\u0D9A-\u0DB1\u0DB3-\u0DBB\u0DBD\u0DC0-\u0DC6\u0E01-\u0E30\u0E32\u0E33\u0E40-\u0E46\u0E81\u0E82\u0E84\u0E87\u0E88\u0E8A\u0E8D\u0E94-\u0E97\u0E99-\u0E9F\u0EA1-\u0EA3\u0EA5\u0EA7\u0EAA\u0EAB\u0EAD-\u0EB0\u0EB2\u0EB3\u0EBD\u0EC0-\u0EC4\u0EC6\u0EDC-\u0EDF\u0F00\u0F40-\u0F47\u0F49-\u0F6C\u0F88-\u0F8C\u1000-\u102A\u103F\u1050-\u1055\u105A-\u105D\u1061\u1065\u1066\u106E-\u1070\u1075-\u1081\u108E\u10A0-\u10C5\u10C7\u10CD\u10D0-\u10FA\u10FC-\u1248\u124A-\u124D\u1250-\u1256\u1258\u125A-\u125D\u1260-\u1288\u128A-\u128D\u1290-\u12B0\u12B2-\u12B5\u12B8-\u12BE\u12C0\u12C2-\u12C5\u12C8-\u12D6\u12D8-\u1310\u1312-\u1315\u1318-\u135A\u1380-\u138F\u13A0-\u13F5\u13F8-\u13FD\u1401-\u166C\u166F-\u167F\u1681-\u169A\u16A0-\u16EA\u16EE-\u16F8\u1700-\u170C\u170E-\u1711\u1720-\u1731\u1740-\u1751\u1760-\u176C\u176E-\u1770\u1780-\u17B3\u17D7\u17DC\u1820-\u1877\u1880-\u1884\u1887-\u18A8\u18AA\u18B0-\u18F5\u1900-\u191E\u1950-\u196D\u1970-\u1974\u1980-\u19AB\u19B0-\u19C9\u1A00-\u1A16\u1A20-\u1A54\u1AA7\u1B05-\u1B33\u1B45-\u1B4B\u1B83-\u1BA0\u1BAE\u1BAF\u1BBA-\u1BE5\u1C00-\u1C23\u1C4D-\u1C4F\u1C5A-\u1C7D\u1C80-\u1C88\u1CE9-\u1CEC\u1CEE-\u1CF1\u1CF5\u1CF6\u1D00-\u1DBF\u1E00-\u1F15\u1F18-\u1F1D\u1F20-\u1F45\u1F48-\u1F4D\u1F50-\u1F57\u1F59\u1F5B\u1F5D\u1F5F-\u1F7D\u1F80-\u1FB4\u1FB6-\u1FBC\u1FBE\u1FC2-\u1FC4\u1FC6-\u1FCC\u1FD0-\u1FD3\u1FD6-\u1FDB\u1FE0-\u1FEC\u1FF2-\u1FF4\u1FF6-\u1FFC\u2071\u207F\u2090-\u209C\u2102\u2107\u210A-\u2113\u2115\u2119-\u211D\u2124\u2126\u2128\u212A-\u212D\u212F-\u2139\u213C-\u213F\u2145-\u2149\u214E\u2160-\u2188\u2C00-\u2C2E\u2C30-\u2C5E\u2C60-\u2CE4\u2CEB-\u2CEE\u2CF2\u2CF3\u2D00-\u2D25\u2D27\u2D2D\u2D30-\u2D67\u2D6F\u2D80-\u2D96\u2DA0-\u2DA6\u2DA8-\u2DAE\u2DB0-\u2DB6\u2DB8-\u2DBE\u2DC0-\u2DC6\u2DC8-\u2DCE\u2DD0-\u2DD6\u2DD8-\u2DDE\u2E2F\u3005-\u3007\u3021-\u3029\u3031-\u3035\u3038-\u303C\u3041-\u3096\u309D-\u309F\u30A1-\u30FA\u30FC-\u30FF\u3105-\u312D\u3131-\u318E\u31A0-\u31BA\u31F0-\u31FF\u3400-\u4DB5\u4E00-\u9FD5\uA000-\uA48C\uA4D0-\uA4FD\uA500-\uA60C\uA610-\uA61F\uA62A\uA62B\uA640-\uA66E\uA67F-\uA69D\uA6A0-\uA6EF\uA717-\uA71F\uA722-\uA788\uA78B-\uA7AE\uA7B0-\uA7B7\uA7F7-\uA801\uA803-\uA805\uA807-\uA80A\uA80C-\uA822\uA840-\uA873\uA882-\uA8B3\uA8F2-\uA8F7\uA8FB\uA8FD\uA90A-\uA925\uA930-\uA946\uA960-\uA97C\uA984-\uA9B2\uA9CF\uA9E0-\uA9E4\uA9E6-\uA9EF\uA9FA-\uA9FE\uAA00-\uAA28\uAA40-\uAA42\uAA44-\uAA4B\uAA60-\uAA76\uAA7A\uAA7E-\uAAAF\uAAB1\uAAB5\uAAB6\uAAB9-\uAABD\uAAC0\uAAC2\uAADB-\uAADD\uAAE0-\uAAEA\uAAF2-\uAAF4\uAB01-\uAB06\uAB09-\uAB0E\uAB11-\uAB16\uAB20-\uAB26\uAB28-\uAB2E\uAB30-\uAB5A\uAB5C-\uAB65\uAB70-\uABE2\uAC00-\uD7A3\uD7B0-\uD7C6\uD7CB-\uD7FB\uF900-\uFA6D\uFA70-\uFAD9\uFB00-\uFB06\uFB13-\uFB17\uFB1D\uFB1F-\uFB28\uFB2A-\uFB36\uFB38-\uFB3C\uFB3E\uFB40\uFB41\uFB43\uFB44\uFB46-\uFBB1\uFBD3-\uFD3D\uFD50-\uFD8F\uFD92-\uFDC7\uFDF0-\uFDFB\uFE70-\uFE74\uFE76-\uFEFC\uFF21-\uFF3A\uFF41-\uFF5A\uFF66-\uFFBE\uFFC2-\uFFC7\uFFCA-\uFFCF\uFFD2-\uFFD7\uFFDA-\uFFDC]/,
-      // ECMAScript 5.1/Unicode v9.0.0 NonAsciiIdentifierPart:
       NonAsciiIdentifierPart: /[\xAA\xB5\xBA\xC0-\xD6\xD8-\xF6\xF8-\u02C1\u02C6-\u02D1\u02E0-\u02E4\u02EC\u02EE\u0300-\u0374\u0376\u0377\u037A-\u037D\u037F\u0386\u0388-\u038A\u038C\u038E-\u03A1\u03A3-\u03F5\u03F7-\u0481\u0483-\u0487\u048A-\u052F\u0531-\u0556\u0559\u0561-\u0587\u0591-\u05BD\u05BF\u05C1\u05C2\u05C4\u05C5\u05C7\u05D0-\u05EA\u05F0-\u05F2\u0610-\u061A\u0620-\u0669\u066E-\u06D3\u06D5-\u06DC\u06DF-\u06E8\u06EA-\u06FC\u06FF\u0710-\u074A\u074D-\u07B1\u07C0-\u07F5\u07FA\u0800-\u082D\u0840-\u085B\u08A0-\u08B4\u08B6-\u08BD\u08D4-\u08E1\u08E3-\u0963\u0966-\u096F\u0971-\u0983\u0985-\u098C\u098F\u0990\u0993-\u09A8\u09AA-\u09B0\u09B2\u09B6-\u09B9\u09BC-\u09C4\u09C7\u09C8\u09CB-\u09CE\u09D7\u09DC\u09DD\u09DF-\u09E3\u09E6-\u09F1\u0A01-\u0A03\u0A05-\u0A0A\u0A0F\u0A10\u0A13-\u0A28\u0A2A-\u0A30\u0A32\u0A33\u0A35\u0A36\u0A38\u0A39\u0A3C\u0A3E-\u0A42\u0A47\u0A48\u0A4B-\u0A4D\u0A51\u0A59-\u0A5C\u0A5E\u0A66-\u0A75\u0A81-\u0A83\u0A85-\u0A8D\u0A8F-\u0A91\u0A93-\u0AA8\u0AAA-\u0AB0\u0AB2\u0AB3\u0AB5-\u0AB9\u0ABC-\u0AC5\u0AC7-\u0AC9\u0ACB-\u0ACD\u0AD0\u0AE0-\u0AE3\u0AE6-\u0AEF\u0AF9\u0B01-\u0B03\u0B05-\u0B0C\u0B0F\u0B10\u0B13-\u0B28\u0B2A-\u0B30\u0B32\u0B33\u0B35-\u0B39\u0B3C-\u0B44\u0B47\u0B48\u0B4B-\u0B4D\u0B56\u0B57\u0B5C\u0B5D\u0B5F-\u0B63\u0B66-\u0B6F\u0B71\u0B82\u0B83\u0B85-\u0B8A\u0B8E-\u0B90\u0B92-\u0B95\u0B99\u0B9A\u0B9C\u0B9E\u0B9F\u0BA3\u0BA4\u0BA8-\u0BAA\u0BAE-\u0BB9\u0BBE-\u0BC2\u0BC6-\u0BC8\u0BCA-\u0BCD\u0BD0\u0BD7\u0BE6-\u0BEF\u0C00-\u0C03\u0C05-\u0C0C\u0C0E-\u0C10\u0C12-\u0C28\u0C2A-\u0C39\u0C3D-\u0C44\u0C46-\u0C48\u0C4A-\u0C4D\u0C55\u0C56\u0C58-\u0C5A\u0C60-\u0C63\u0C66-\u0C6F\u0C80-\u0C83\u0C85-\u0C8C\u0C8E-\u0C90\u0C92-\u0CA8\u0CAA-\u0CB3\u0CB5-\u0CB9\u0CBC-\u0CC4\u0CC6-\u0CC8\u0CCA-\u0CCD\u0CD5\u0CD6\u0CDE\u0CE0-\u0CE3\u0CE6-\u0CEF\u0CF1\u0CF2\u0D01-\u0D03\u0D05-\u0D0C\u0D0E-\u0D10\u0D12-\u0D3A\u0D3D-\u0D44\u0D46-\u0D48\u0D4A-\u0D4E\u0D54-\u0D57\u0D5F-\u0D63\u0D66-\u0D6F\u0D7A-\u0D7F\u0D82\u0D83\u0D85-\u0D96\u0D9A-\u0DB1\u0DB3-\u0DBB\u0DBD\u0DC0-\u0DC6\u0DCA\u0DCF-\u0DD4\u0DD6\u0DD8-\u0DDF\u0DE6-\u0DEF\u0DF2\u0DF3\u0E01-\u0E3A\u0E40-\u0E4E\u0E50-\u0E59\u0E81\u0E82\u0E84\u0E87\u0E88\u0E8A\u0E8D\u0E94-\u0E97\u0E99-\u0E9F\u0EA1-\u0EA3\u0EA5\u0EA7\u0EAA\u0EAB\u0EAD-\u0EB9\u0EBB-\u0EBD\u0EC0-\u0EC4\u0EC6\u0EC8-\u0ECD\u0ED0-\u0ED9\u0EDC-\u0EDF\u0F00\u0F18\u0F19\u0F20-\u0F29\u0F35\u0F37\u0F39\u0F3E-\u0F47\u0F49-\u0F6C\u0F71-\u0F84\u0F86-\u0F97\u0F99-\u0FBC\u0FC6\u1000-\u1049\u1050-\u109D\u10A0-\u10C5\u10C7\u10CD\u10D0-\u10FA\u10FC-\u1248\u124A-\u124D\u1250-\u1256\u1258\u125A-\u125D\u1260-\u1288\u128A-\u128D\u1290-\u12B0\u12B2-\u12B5\u12B8-\u12BE\u12C0\u12C2-\u12C5\u12C8-\u12D6\u12D8-\u1310\u1312-\u1315\u1318-\u135A\u135D-\u135F\u1380-\u138F\u13A0-\u13F5\u13F8-\u13FD\u1401-\u166C\u166F-\u167F\u1681-\u169A\u16A0-\u16EA\u16EE-\u16F8\u1700-\u170C\u170E-\u1714\u1720-\u1734\u1740-\u1753\u1760-\u176C\u176E-\u1770\u1772\u1773\u1780-\u17D3\u17D7\u17DC\u17DD\u17E0-\u17E9\u180B-\u180D\u1810-\u1819\u1820-\u1877\u1880-\u18AA\u18B0-\u18F5\u1900-\u191E\u1920-\u192B\u1930-\u193B\u1946-\u196D\u1970-\u1974\u1980-\u19AB\u19B0-\u19C9\u19D0-\u19D9\u1A00-\u1A1B\u1A20-\u1A5E\u1A60-\u1A7C\u1A7F-\u1A89\u1A90-\u1A99\u1AA7\u1AB0-\u1ABD\u1B00-\u1B4B\u1B50-\u1B59\u1B6B-\u1B73\u1B80-\u1BF3\u1C00-\u1C37\u1C40-\u1C49\u1C4D-\u1C7D\u1C80-\u1C88\u1CD0-\u1CD2\u1CD4-\u1CF6\u1CF8\u1CF9\u1D00-\u1DF5\u1DFB-\u1F15\u1F18-\u1F1D\u1F20-\u1F45\u1F48-\u1F4D\u1F50-\u1F57\u1F59\u1F5B\u1F5D\u1F5F-\u1F7D\u1F80-\u1FB4\u1FB6-\u1FBC\u1FBE\u1FC2-\u1FC4\u1FC6-\u1FCC\u1FD0-\u1FD3\u1FD6-\u1FDB\u1FE0-\u1FEC\u1FF2-\u1FF4\u1FF6-\u1FFC\u200C\u200D\u203F\u2040\u2054\u2071\u207F\u2090-\u209C\u20D0-\u20DC\u20E1\u20E5-\u20F0\u2102\u2107\u210A-\u2113\u2115\u2119-\u211D\u2124\u2126\u2128\u212A-\u212D\u212F-\u2139\u213C-\u213F\u2145-\u2149\u214E\u2160-\u2188\u2C00-\u2C2E\u2C30-\u2C5E\u2C60-\u2CE4\u2CEB-\u2CF3\u2D00-\u2D25\u2D27\u2D2D\u2D30-\u2D67\u2D6F\u2D7F-\u2D96\u2DA0-\u2DA6\u2DA8-\u2DAE\u2DB0-\u2DB6\u2DB8-\u2DBE\u2DC0-\u2DC6\u2DC8-\u2DCE\u2DD0-\u2DD6\u2DD8-\u2DDE\u2DE0-\u2DFF\u2E2F\u3005-\u3007\u3021-\u302F\u3031-\u3035\u3038-\u303C\u3041-\u3096\u3099\u309A\u309D-\u309F\u30A1-\u30FA\u30FC-\u30FF\u3105-\u312D\u3131-\u318E\u31A0-\u31BA\u31F0-\u31FF\u3400-\u4DB5\u4E00-\u9FD5\uA000-\uA48C\uA4D0-\uA4FD\uA500-\uA60C\uA610-\uA62B\uA640-\uA66F\uA674-\uA67D\uA67F-\uA6F1\uA717-\uA71F\uA722-\uA788\uA78B-\uA7AE\uA7B0-\uA7B7\uA7F7-\uA827\uA840-\uA873\uA880-\uA8C5\uA8D0-\uA8D9\uA8E0-\uA8F7\uA8FB\uA8FD\uA900-\uA92D\uA930-\uA953\uA960-\uA97C\uA980-\uA9C0\uA9CF-\uA9D9\uA9E0-\uA9FE\uAA00-\uAA36\uAA40-\uAA4D\uAA50-\uAA59\uAA60-\uAA76\uAA7A-\uAAC2\uAADB-\uAADD\uAAE0-\uAAEF\uAAF2-\uAAF6\uAB01-\uAB06\uAB09-\uAB0E\uAB11-\uAB16\uAB20-\uAB26\uAB28-\uAB2E\uAB30-\uAB5A\uAB5C-\uAB65\uAB70-\uABEA\uABEC\uABED\uABF0-\uABF9\uAC00-\uD7A3\uD7B0-\uD7C6\uD7CB-\uD7FB\uF900-\uFA6D\uFA70-\uFAD9\uFB00-\uFB06\uFB13-\uFB17\uFB1D-\uFB28\uFB2A-\uFB36\uFB38-\uFB3C\uFB3E\uFB40\uFB41\uFB43\uFB44\uFB46-\uFBB1\uFBD3-\uFD3D\uFD50-\uFD8F\uFD92-\uFDC7\uFDF0-\uFDFB\uFE00-\uFE0F\uFE20-\uFE2F\uFE33\uFE34\uFE4D-\uFE4F\uFE70-\uFE74\uFE76-\uFEFC\uFF10-\uFF19\uFF21-\uFF3A\uFF3F\uFF41-\uFF5A\uFF66-\uFFBE\uFFC2-\uFFC7\uFFCA-\uFFCF\uFFD2-\uFFD7\uFFDA-\uFFDC]/
     };
     ES6Regex = {
-      // ECMAScript 6/Unicode v9.0.0 NonAsciiIdentifierStart:
       NonAsciiIdentifierStart: /[\xAA\xB5\xBA\xC0-\xD6\xD8-\xF6\xF8-\u02C1\u02C6-\u02D1\u02E0-\u02E4\u02EC\u02EE\u0370-\u0374\u0376\u0377\u037A-\u037D\u037F\u0386\u0388-\u038A\u038C\u038E-\u03A1\u03A3-\u03F5\u03F7-\u0481\u048A-\u052F\u0531-\u0556\u0559\u0561-\u0587\u05D0-\u05EA\u05F0-\u05F2\u0620-\u064A\u066E\u066F\u0671-\u06D3\u06D5\u06E5\u06E6\u06EE\u06EF\u06FA-\u06FC\u06FF\u0710\u0712-\u072F\u074D-\u07A5\u07B1\u07CA-\u07EA\u07F4\u07F5\u07FA\u0800-\u0815\u081A\u0824\u0828\u0840-\u0858\u08A0-\u08B4\u08B6-\u08BD\u0904-\u0939\u093D\u0950\u0958-\u0961\u0971-\u0980\u0985-\u098C\u098F\u0990\u0993-\u09A8\u09AA-\u09B0\u09B2\u09B6-\u09B9\u09BD\u09CE\u09DC\u09DD\u09DF-\u09E1\u09F0\u09F1\u0A05-\u0A0A\u0A0F\u0A10\u0A13-\u0A28\u0A2A-\u0A30\u0A32\u0A33\u0A35\u0A36\u0A38\u0A39\u0A59-\u0A5C\u0A5E\u0A72-\u0A74\u0A85-\u0A8D\u0A8F-\u0A91\u0A93-\u0AA8\u0AAA-\u0AB0\u0AB2\u0AB3\u0AB5-\u0AB9\u0ABD\u0AD0\u0AE0\u0AE1\u0AF9\u0B05-\u0B0C\u0B0F\u0B10\u0B13-\u0B28\u0B2A-\u0B30\u0B32\u0B33\u0B35-\u0B39\u0B3D\u0B5C\u0B5D\u0B5F-\u0B61\u0B71\u0B83\u0B85-\u0B8A\u0B8E-\u0B90\u0B92-\u0B95\u0B99\u0B9A\u0B9C\u0B9E\u0B9F\u0BA3\u0BA4\u0BA8-\u0BAA\u0BAE-\u0BB9\u0BD0\u0C05-\u0C0C\u0C0E-\u0C10\u0C12-\u0C28\u0C2A-\u0C39\u0C3D\u0C58-\u0C5A\u0C60\u0C61\u0C80\u0C85-\u0C8C\u0C8E-\u0C90\u0C92-\u0CA8\u0CAA-\u0CB3\u0CB5-\u0CB9\u0CBD\u0CDE\u0CE0\u0CE1\u0CF1\u0CF2\u0D05-\u0D0C\u0D0E-\u0D10\u0D12-\u0D3A\u0D3D\u0D4E\u0D54-\u0D56\u0D5F-\u0D61\u0D7A-\u0D7F\u0D85-\u0D96\u0D9A-\u0DB1\u0DB3-\u0DBB\u0DBD\u0DC0-\u0DC6\u0E01-\u0E30\u0E32\u0E33\u0E40-\u0E46\u0E81\u0E82\u0E84\u0E87\u0E88\u0E8A\u0E8D\u0E94-\u0E97\u0E99-\u0E9F\u0EA1-\u0EA3\u0EA5\u0EA7\u0EAA\u0EAB\u0EAD-\u0EB0\u0EB2\u0EB3\u0EBD\u0EC0-\u0EC4\u0EC6\u0EDC-\u0EDF\u0F00\u0F40-\u0F47\u0F49-\u0F6C\u0F88-\u0F8C\u1000-\u102A\u103F\u1050-\u1055\u105A-\u105D\u1061\u1065\u1066\u106E-\u1070\u1075-\u1081\u108E\u10A0-\u10C5\u10C7\u10CD\u10D0-\u10FA\u10FC-\u1248\u124A-\u124D\u1250-\u1256\u1258\u125A-\u125D\u1260-\u1288\u128A-\u128D\u1290-\u12B0\u12B2-\u12B5\u12B8-\u12BE\u12C0\u12C2-\u12C5\u12C8-\u12D6\u12D8-\u1310\u1312-\u1315\u1318-\u135A\u1380-\u138F\u13A0-\u13F5\u13F8-\u13FD\u1401-\u166C\u166F-\u167F\u1681-\u169A\u16A0-\u16EA\u16EE-\u16F8\u1700-\u170C\u170E-\u1711\u1720-\u1731\u1740-\u1751\u1760-\u176C\u176E-\u1770\u1780-\u17B3\u17D7\u17DC\u1820-\u1877\u1880-\u18A8\u18AA\u18B0-\u18F5\u1900-\u191E\u1950-\u196D\u1970-\u1974\u1980-\u19AB\u19B0-\u19C9\u1A00-\u1A16\u1A20-\u1A54\u1AA7\u1B05-\u1B33\u1B45-\u1B4B\u1B83-\u1BA0\u1BAE\u1BAF\u1BBA-\u1BE5\u1C00-\u1C23\u1C4D-\u1C4F\u1C5A-\u1C7D\u1C80-\u1C88\u1CE9-\u1CEC\u1CEE-\u1CF1\u1CF5\u1CF6\u1D00-\u1DBF\u1E00-\u1F15\u1F18-\u1F1D\u1F20-\u1F45\u1F48-\u1F4D\u1F50-\u1F57\u1F59\u1F5B\u1F5D\u1F5F-\u1F7D\u1F80-\u1FB4\u1FB6-\u1FBC\u1FBE\u1FC2-\u1FC4\u1FC6-\u1FCC\u1FD0-\u1FD3\u1FD6-\u1FDB\u1FE0-\u1FEC\u1FF2-\u1FF4\u1FF6-\u1FFC\u2071\u207F\u2090-\u209C\u2102\u2107\u210A-\u2113\u2115\u2118-\u211D\u2124\u2126\u2128\u212A-\u2139\u213C-\u213F\u2145-\u2149\u214E\u2160-\u2188\u2C00-\u2C2E\u2C30-\u2C5E\u2C60-\u2CE4\u2CEB-\u2CEE\u2CF2\u2CF3\u2D00-\u2D25\u2D27\u2D2D\u2D30-\u2D67\u2D6F\u2D80-\u2D96\u2DA0-\u2DA6\u2DA8-\u2DAE\u2DB0-\u2DB6\u2DB8-\u2DBE\u2DC0-\u2DC6\u2DC8-\u2DCE\u2DD0-\u2DD6\u2DD8-\u2DDE\u3005-\u3007\u3021-\u3029\u3031-\u3035\u3038-\u303C\u3041-\u3096\u309B-\u309F\u30A1-\u30FA\u30FC-\u30FF\u3105-\u312D\u3131-\u318E\u31A0-\u31BA\u31F0-\u31FF\u3400-\u4DB5\u4E00-\u9FD5\uA000-\uA48C\uA4D0-\uA4FD\uA500-\uA60C\uA610-\uA61F\uA62A\uA62B\uA640-\uA66E\uA67F-\uA69D\uA6A0-\uA6EF\uA717-\uA71F\uA722-\uA788\uA78B-\uA7AE\uA7B0-\uA7B7\uA7F7-\uA801\uA803-\uA805\uA807-\uA80A\uA80C-\uA822\uA840-\uA873\uA882-\uA8B3\uA8F2-\uA8F7\uA8FB\uA8FD\uA90A-\uA925\uA930-\uA946\uA960-\uA97C\uA984-\uA9B2\uA9CF\uA9E0-\uA9E4\uA9E6-\uA9EF\uA9FA-\uA9FE\uAA00-\uAA28\uAA40-\uAA42\uAA44-\uAA4B\uAA60-\uAA76\uAA7A\uAA7E-\uAAAF\uAAB1\uAAB5\uAAB6\uAAB9-\uAABD\uAAC0\uAAC2\uAADB-\uAADD\uAAE0-\uAAEA\uAAF2-\uAAF4\uAB01-\uAB06\uAB09-\uAB0E\uAB11-\uAB16\uAB20-\uAB26\uAB28-\uAB2E\uAB30-\uAB5A\uAB5C-\uAB65\uAB70-\uABE2\uAC00-\uD7A3\uD7B0-\uD7C6\uD7CB-\uD7FB\uF900-\uFA6D\uFA70-\uFAD9\uFB00-\uFB06\uFB13-\uFB17\uFB1D\uFB1F-\uFB28\uFB2A-\uFB36\uFB38-\uFB3C\uFB3E\uFB40\uFB41\uFB43\uFB44\uFB46-\uFBB1\uFBD3-\uFD3D\uFD50-\uFD8F\uFD92-\uFDC7\uFDF0-\uFDFB\uFE70-\uFE74\uFE76-\uFEFC\uFF21-\uFF3A\uFF41-\uFF5A\uFF66-\uFFBE\uFFC2-\uFFC7\uFFCA-\uFFCF\uFFD2-\uFFD7\uFFDA-\uFFDC]|\uD800[\uDC00-\uDC0B\uDC0D-\uDC26\uDC28-\uDC3A\uDC3C\uDC3D\uDC3F-\uDC4D\uDC50-\uDC5D\uDC80-\uDCFA\uDD40-\uDD74\uDE80-\uDE9C\uDEA0-\uDED0\uDF00-\uDF1F\uDF30-\uDF4A\uDF50-\uDF75\uDF80-\uDF9D\uDFA0-\uDFC3\uDFC8-\uDFCF\uDFD1-\uDFD5]|\uD801[\uDC00-\uDC9D\uDCB0-\uDCD3\uDCD8-\uDCFB\uDD00-\uDD27\uDD30-\uDD63\uDE00-\uDF36\uDF40-\uDF55\uDF60-\uDF67]|\uD802[\uDC00-\uDC05\uDC08\uDC0A-\uDC35\uDC37\uDC38\uDC3C\uDC3F-\uDC55\uDC60-\uDC76\uDC80-\uDC9E\uDCE0-\uDCF2\uDCF4\uDCF5\uDD00-\uDD15\uDD20-\uDD39\uDD80-\uDDB7\uDDBE\uDDBF\uDE00\uDE10-\uDE13\uDE15-\uDE17\uDE19-\uDE33\uDE60-\uDE7C\uDE80-\uDE9C\uDEC0-\uDEC7\uDEC9-\uDEE4\uDF00-\uDF35\uDF40-\uDF55\uDF60-\uDF72\uDF80-\uDF91]|\uD803[\uDC00-\uDC48\uDC80-\uDCB2\uDCC0-\uDCF2]|\uD804[\uDC03-\uDC37\uDC83-\uDCAF\uDCD0-\uDCE8\uDD03-\uDD26\uDD50-\uDD72\uDD76\uDD83-\uDDB2\uDDC1-\uDDC4\uDDDA\uDDDC\uDE00-\uDE11\uDE13-\uDE2B\uDE80-\uDE86\uDE88\uDE8A-\uDE8D\uDE8F-\uDE9D\uDE9F-\uDEA8\uDEB0-\uDEDE\uDF05-\uDF0C\uDF0F\uDF10\uDF13-\uDF28\uDF2A-\uDF30\uDF32\uDF33\uDF35-\uDF39\uDF3D\uDF50\uDF5D-\uDF61]|\uD805[\uDC00-\uDC34\uDC47-\uDC4A\uDC80-\uDCAF\uDCC4\uDCC5\uDCC7\uDD80-\uDDAE\uDDD8-\uDDDB\uDE00-\uDE2F\uDE44\uDE80-\uDEAA\uDF00-\uDF19]|\uD806[\uDCA0-\uDCDF\uDCFF\uDEC0-\uDEF8]|\uD807[\uDC00-\uDC08\uDC0A-\uDC2E\uDC40\uDC72-\uDC8F]|\uD808[\uDC00-\uDF99]|\uD809[\uDC00-\uDC6E\uDC80-\uDD43]|[\uD80C\uD81C-\uD820\uD840-\uD868\uD86A-\uD86C\uD86F-\uD872][\uDC00-\uDFFF]|\uD80D[\uDC00-\uDC2E]|\uD811[\uDC00-\uDE46]|\uD81A[\uDC00-\uDE38\uDE40-\uDE5E\uDED0-\uDEED\uDF00-\uDF2F\uDF40-\uDF43\uDF63-\uDF77\uDF7D-\uDF8F]|\uD81B[\uDF00-\uDF44\uDF50\uDF93-\uDF9F\uDFE0]|\uD821[\uDC00-\uDFEC]|\uD822[\uDC00-\uDEF2]|\uD82C[\uDC00\uDC01]|\uD82F[\uDC00-\uDC6A\uDC70-\uDC7C\uDC80-\uDC88\uDC90-\uDC99]|\uD835[\uDC00-\uDC54\uDC56-\uDC9C\uDC9E\uDC9F\uDCA2\uDCA5\uDCA6\uDCA9-\uDCAC\uDCAE-\uDCB9\uDCBB\uDCBD-\uDCC3\uDCC5-\uDD05\uDD07-\uDD0A\uDD0D-\uDD14\uDD16-\uDD1C\uDD1E-\uDD39\uDD3B-\uDD3E\uDD40-\uDD44\uDD46\uDD4A-\uDD50\uDD52-\uDEA5\uDEA8-\uDEC0\uDEC2-\uDEDA\uDEDC-\uDEFA\uDEFC-\uDF14\uDF16-\uDF34\uDF36-\uDF4E\uDF50-\uDF6E\uDF70-\uDF88\uDF8A-\uDFA8\uDFAA-\uDFC2\uDFC4-\uDFCB]|\uD83A[\uDC00-\uDCC4\uDD00-\uDD43]|\uD83B[\uDE00-\uDE03\uDE05-\uDE1F\uDE21\uDE22\uDE24\uDE27\uDE29-\uDE32\uDE34-\uDE37\uDE39\uDE3B\uDE42\uDE47\uDE49\uDE4B\uDE4D-\uDE4F\uDE51\uDE52\uDE54\uDE57\uDE59\uDE5B\uDE5D\uDE5F\uDE61\uDE62\uDE64\uDE67-\uDE6A\uDE6C-\uDE72\uDE74-\uDE77\uDE79-\uDE7C\uDE7E\uDE80-\uDE89\uDE8B-\uDE9B\uDEA1-\uDEA3\uDEA5-\uDEA9\uDEAB-\uDEBB]|\uD869[\uDC00-\uDED6\uDF00-\uDFFF]|\uD86D[\uDC00-\uDF34\uDF40-\uDFFF]|\uD86E[\uDC00-\uDC1D\uDC20-\uDFFF]|\uD873[\uDC00-\uDEA1]|\uD87E[\uDC00-\uDE1D]/,
-      // ECMAScript 6/Unicode v9.0.0 NonAsciiIdentifierPart:
       NonAsciiIdentifierPart: /[\xAA\xB5\xB7\xBA\xC0-\xD6\xD8-\xF6\xF8-\u02C1\u02C6-\u02D1\u02E0-\u02E4\u02EC\u02EE\u0300-\u0374\u0376\u0377\u037A-\u037D\u037F\u0386-\u038A\u038C\u038E-\u03A1\u03A3-\u03F5\u03F7-\u0481\u0483-\u0487\u048A-\u052F\u0531-\u0556\u0559\u0561-\u0587\u0591-\u05BD\u05BF\u05C1\u05C2\u05C4\u05C5\u05C7\u05D0-\u05EA\u05F0-\u05F2\u0610-\u061A\u0620-\u0669\u066E-\u06D3\u06D5-\u06DC\u06DF-\u06E8\u06EA-\u06FC\u06FF\u0710-\u074A\u074D-\u07B1\u07C0-\u07F5\u07FA\u0800-\u082D\u0840-\u085B\u08A0-\u08B4\u08B6-\u08BD\u08D4-\u08E1\u08E3-\u0963\u0966-\u096F\u0971-\u0983\u0985-\u098C\u098F\u0990\u0993-\u09A8\u09AA-\u09B0\u09B2\u09B6-\u09B9\u09BC-\u09C4\u09C7\u09C8\u09CB-\u09CE\u09D7\u09DC\u09DD\u09DF-\u09E3\u09E6-\u09F1\u0A01-\u0A03\u0A05-\u0A0A\u0A0F\u0A10\u0A13-\u0A28\u0A2A-\u0A30\u0A32\u0A33\u0A35\u0A36\u0A38\u0A39\u0A3C\u0A3E-\u0A42\u0A47\u0A48\u0A4B-\u0A4D\u0A51\u0A59-\u0A5C\u0A5E\u0A66-\u0A75\u0A81-\u0A83\u0A85-\u0A8D\u0A8F-\u0A91\u0A93-\u0AA8\u0AAA-\u0AB0\u0AB2\u0AB3\u0AB5-\u0AB9\u0ABC-\u0AC5\u0AC7-\u0AC9\u0ACB-\u0ACD\u0AD0\u0AE0-\u0AE3\u0AE6-\u0AEF\u0AF9\u0B01-\u0B03\u0B05-\u0B0C\u0B0F\u0B10\u0B13-\u0B28\u0B2A-\u0B30\u0B32\u0B33\u0B35-\u0B39\u0B3C-\u0B44\u0B47\u0B48\u0B4B-\u0B4D\u0B56\u0B57\u0B5C\u0B5D\u0B5F-\u0B63\u0B66-\u0B6F\u0B71\u0B82\u0B83\u0B85-\u0B8A\u0B8E-\u0B90\u0B92-\u0B95\u0B99\u0B9A\u0B9C\u0B9E\u0B9F\u0BA3\u0BA4\u0BA8-\u0BAA\u0BAE-\u0BB9\u0BBE-\u0BC2\u0BC6-\u0BC8\u0BCA-\u0BCD\u0BD0\u0BD7\u0BE6-\u0BEF\u0C00-\u0C03\u0C05-\u0C0C\u0C0E-\u0C10\u0C12-\u0C28\u0C2A-\u0C39\u0C3D-\u0C44\u0C46-\u0C48\u0C4A-\u0C4D\u0C55\u0C56\u0C58-\u0C5A\u0C60-\u0C63\u0C66-\u0C6F\u0C80-\u0C83\u0C85-\u0C8C\u0C8E-\u0C90\u0C92-\u0CA8\u0CAA-\u0CB3\u0CB5-\u0CB9\u0CBC-\u0CC4\u0CC6-\u0CC8\u0CCA-\u0CCD\u0CD5\u0CD6\u0CDE\u0CE0-\u0CE3\u0CE6-\u0CEF\u0CF1\u0CF2\u0D01-\u0D03\u0D05-\u0D0C\u0D0E-\u0D10\u0D12-\u0D3A\u0D3D-\u0D44\u0D46-\u0D48\u0D4A-\u0D4E\u0D54-\u0D57\u0D5F-\u0D63\u0D66-\u0D6F\u0D7A-\u0D7F\u0D82\u0D83\u0D85-\u0D96\u0D9A-\u0DB1\u0DB3-\u0DBB\u0DBD\u0DC0-\u0DC6\u0DCA\u0DCF-\u0DD4\u0DD6\u0DD8-\u0DDF\u0DE6-\u0DEF\u0DF2\u0DF3\u0E01-\u0E3A\u0E40-\u0E4E\u0E50-\u0E59\u0E81\u0E82\u0E84\u0E87\u0E88\u0E8A\u0E8D\u0E94-\u0E97\u0E99-\u0E9F\u0EA1-\u0EA3\u0EA5\u0EA7\u0EAA\u0EAB\u0EAD-\u0EB9\u0EBB-\u0EBD\u0EC0-\u0EC4\u0EC6\u0EC8-\u0ECD\u0ED0-\u0ED9\u0EDC-\u0EDF\u0F00\u0F18\u0F19\u0F20-\u0F29\u0F35\u0F37\u0F39\u0F3E-\u0F47\u0F49-\u0F6C\u0F71-\u0F84\u0F86-\u0F97\u0F99-\u0FBC\u0FC6\u1000-\u1049\u1050-\u109D\u10A0-\u10C5\u10C7\u10CD\u10D0-\u10FA\u10FC-\u1248\u124A-\u124D\u1250-\u1256\u1258\u125A-\u125D\u1260-\u1288\u128A-\u128D\u1290-\u12B0\u12B2-\u12B5\u12B8-\u12BE\u12C0\u12C2-\u12C5\u12C8-\u12D6\u12D8-\u1310\u1312-\u1315\u1318-\u135A\u135D-\u135F\u1369-\u1371\u1380-\u138F\u13A0-\u13F5\u13F8-\u13FD\u1401-\u166C\u166F-\u167F\u1681-\u169A\u16A0-\u16EA\u16EE-\u16F8\u1700-\u170C\u170E-\u1714\u1720-\u1734\u1740-\u1753\u1760-\u176C\u176E-\u1770\u1772\u1773\u1780-\u17D3\u17D7\u17DC\u17DD\u17E0-\u17E9\u180B-\u180D\u1810-\u1819\u1820-\u1877\u1880-\u18AA\u18B0-\u18F5\u1900-\u191E\u1920-\u192B\u1930-\u193B\u1946-\u196D\u1970-\u1974\u1980-\u19AB\u19B0-\u19C9\u19D0-\u19DA\u1A00-\u1A1B\u1A20-\u1A5E\u1A60-\u1A7C\u1A7F-\u1A89\u1A90-\u1A99\u1AA7\u1AB0-\u1ABD\u1B00-\u1B4B\u1B50-\u1B59\u1B6B-\u1B73\u1B80-\u1BF3\u1C00-\u1C37\u1C40-\u1C49\u1C4D-\u1C7D\u1C80-\u1C88\u1CD0-\u1CD2\u1CD4-\u1CF6\u1CF8\u1CF9\u1D00-\u1DF5\u1DFB-\u1F15\u1F18-\u1F1D\u1F20-\u1F45\u1F48-\u1F4D\u1F50-\u1F57\u1F59\u1F5B\u1F5D\u1F5F-\u1F7D\u1F80-\u1FB4\u1FB6-\u1FBC\u1FBE\u1FC2-\u1FC4\u1FC6-\u1FCC\u1FD0-\u1FD3\u1FD6-\u1FDB\u1FE0-\u1FEC\u1FF2-\u1FF4\u1FF6-\u1FFC\u200C\u200D\u203F\u2040\u2054\u2071\u207F\u2090-\u209C\u20D0-\u20DC\u20E1\u20E5-\u20F0\u2102\u2107\u210A-\u2113\u2115\u2118-\u211D\u2124\u2126\u2128\u212A-\u2139\u213C-\u213F\u2145-\u2149\u214E\u2160-\u2188\u2C00-\u2C2E\u2C30-\u2C5E\u2C60-\u2CE4\u2CEB-\u2CF3\u2D00-\u2D25\u2D27\u2D2D\u2D30-\u2D67\u2D6F\u2D7F-\u2D96\u2DA0-\u2DA6\u2DA8-\u2DAE\u2DB0-\u2DB6\u2DB8-\u2DBE\u2DC0-\u2DC6\u2DC8-\u2DCE\u2DD0-\u2DD6\u2DD8-\u2DDE\u2DE0-\u2DFF\u3005-\u3007\u3021-\u302F\u3031-\u3035\u3038-\u303C\u3041-\u3096\u3099-\u309F\u30A1-\u30FA\u30FC-\u30FF\u3105-\u312D\u3131-\u318E\u31A0-\u31BA\u31F0-\u31FF\u3400-\u4DB5\u4E00-\u9FD5\uA000-\uA48C\uA4D0-\uA4FD\uA500-\uA60C\uA610-\uA62B\uA640-\uA66F\uA674-\uA67D\uA67F-\uA6F1\uA717-\uA71F\uA722-\uA788\uA78B-\uA7AE\uA7B0-\uA7B7\uA7F7-\uA827\uA840-\uA873\uA880-\uA8C5\uA8D0-\uA8D9\uA8E0-\uA8F7\uA8FB\uA8FD\uA900-\uA92D\uA930-\uA953\uA960-\uA97C\uA980-\uA9C0\uA9CF-\uA9D9\uA9E0-\uA9FE\uAA00-\uAA36\uAA40-\uAA4D\uAA50-\uAA59\uAA60-\uAA76\uAA7A-\uAAC2\uAADB-\uAADD\uAAE0-\uAAEF\uAAF2-\uAAF6\uAB01-\uAB06\uAB09-\uAB0E\uAB11-\uAB16\uAB20-\uAB26\uAB28-\uAB2E\uAB30-\uAB5A\uAB5C-\uAB65\uAB70-\uABEA\uABEC\uABED\uABF0-\uABF9\uAC00-\uD7A3\uD7B0-\uD7C6\uD7CB-\uD7FB\uF900-\uFA6D\uFA70-\uFAD9\uFB00-\uFB06\uFB13-\uFB17\uFB1D-\uFB28\uFB2A-\uFB36\uFB38-\uFB3C\uFB3E\uFB40\uFB41\uFB43\uFB44\uFB46-\uFBB1\uFBD3-\uFD3D\uFD50-\uFD8F\uFD92-\uFDC7\uFDF0-\uFDFB\uFE00-\uFE0F\uFE20-\uFE2F\uFE33\uFE34\uFE4D-\uFE4F\uFE70-\uFE74\uFE76-\uFEFC\uFF10-\uFF19\uFF21-\uFF3A\uFF3F\uFF41-\uFF5A\uFF66-\uFFBE\uFFC2-\uFFC7\uFFCA-\uFFCF\uFFD2-\uFFD7\uFFDA-\uFFDC]|\uD800[\uDC00-\uDC0B\uDC0D-\uDC26\uDC28-\uDC3A\uDC3C\uDC3D\uDC3F-\uDC4D\uDC50-\uDC5D\uDC80-\uDCFA\uDD40-\uDD74\uDDFD\uDE80-\uDE9C\uDEA0-\uDED0\uDEE0\uDF00-\uDF1F\uDF30-\uDF4A\uDF50-\uDF7A\uDF80-\uDF9D\uDFA0-\uDFC3\uDFC8-\uDFCF\uDFD1-\uDFD5]|\uD801[\uDC00-\uDC9D\uDCA0-\uDCA9\uDCB0-\uDCD3\uDCD8-\uDCFB\uDD00-\uDD27\uDD30-\uDD63\uDE00-\uDF36\uDF40-\uDF55\uDF60-\uDF67]|\uD802[\uDC00-\uDC05\uDC08\uDC0A-\uDC35\uDC37\uDC38\uDC3C\uDC3F-\uDC55\uDC60-\uDC76\uDC80-\uDC9E\uDCE0-\uDCF2\uDCF4\uDCF5\uDD00-\uDD15\uDD20-\uDD39\uDD80-\uDDB7\uDDBE\uDDBF\uDE00-\uDE03\uDE05\uDE06\uDE0C-\uDE13\uDE15-\uDE17\uDE19-\uDE33\uDE38-\uDE3A\uDE3F\uDE60-\uDE7C\uDE80-\uDE9C\uDEC0-\uDEC7\uDEC9-\uDEE6\uDF00-\uDF35\uDF40-\uDF55\uDF60-\uDF72\uDF80-\uDF91]|\uD803[\uDC00-\uDC48\uDC80-\uDCB2\uDCC0-\uDCF2]|\uD804[\uDC00-\uDC46\uDC66-\uDC6F\uDC7F-\uDCBA\uDCD0-\uDCE8\uDCF0-\uDCF9\uDD00-\uDD34\uDD36-\uDD3F\uDD50-\uDD73\uDD76\uDD80-\uDDC4\uDDCA-\uDDCC\uDDD0-\uDDDA\uDDDC\uDE00-\uDE11\uDE13-\uDE37\uDE3E\uDE80-\uDE86\uDE88\uDE8A-\uDE8D\uDE8F-\uDE9D\uDE9F-\uDEA8\uDEB0-\uDEEA\uDEF0-\uDEF9\uDF00-\uDF03\uDF05-\uDF0C\uDF0F\uDF10\uDF13-\uDF28\uDF2A-\uDF30\uDF32\uDF33\uDF35-\uDF39\uDF3C-\uDF44\uDF47\uDF48\uDF4B-\uDF4D\uDF50\uDF57\uDF5D-\uDF63\uDF66-\uDF6C\uDF70-\uDF74]|\uD805[\uDC00-\uDC4A\uDC50-\uDC59\uDC80-\uDCC5\uDCC7\uDCD0-\uDCD9\uDD80-\uDDB5\uDDB8-\uDDC0\uDDD8-\uDDDD\uDE00-\uDE40\uDE44\uDE50-\uDE59\uDE80-\uDEB7\uDEC0-\uDEC9\uDF00-\uDF19\uDF1D-\uDF2B\uDF30-\uDF39]|\uD806[\uDCA0-\uDCE9\uDCFF\uDEC0-\uDEF8]|\uD807[\uDC00-\uDC08\uDC0A-\uDC36\uDC38-\uDC40\uDC50-\uDC59\uDC72-\uDC8F\uDC92-\uDCA7\uDCA9-\uDCB6]|\uD808[\uDC00-\uDF99]|\uD809[\uDC00-\uDC6E\uDC80-\uDD43]|[\uD80C\uD81C-\uD820\uD840-\uD868\uD86A-\uD86C\uD86F-\uD872][\uDC00-\uDFFF]|\uD80D[\uDC00-\uDC2E]|\uD811[\uDC00-\uDE46]|\uD81A[\uDC00-\uDE38\uDE40-\uDE5E\uDE60-\uDE69\uDED0-\uDEED\uDEF0-\uDEF4\uDF00-\uDF36\uDF40-\uDF43\uDF50-\uDF59\uDF63-\uDF77\uDF7D-\uDF8F]|\uD81B[\uDF00-\uDF44\uDF50-\uDF7E\uDF8F-\uDF9F\uDFE0]|\uD821[\uDC00-\uDFEC]|\uD822[\uDC00-\uDEF2]|\uD82C[\uDC00\uDC01]|\uD82F[\uDC00-\uDC6A\uDC70-\uDC7C\uDC80-\uDC88\uDC90-\uDC99\uDC9D\uDC9E]|\uD834[\uDD65-\uDD69\uDD6D-\uDD72\uDD7B-\uDD82\uDD85-\uDD8B\uDDAA-\uDDAD\uDE42-\uDE44]|\uD835[\uDC00-\uDC54\uDC56-\uDC9C\uDC9E\uDC9F\uDCA2\uDCA5\uDCA6\uDCA9-\uDCAC\uDCAE-\uDCB9\uDCBB\uDCBD-\uDCC3\uDCC5-\uDD05\uDD07-\uDD0A\uDD0D-\uDD14\uDD16-\uDD1C\uDD1E-\uDD39\uDD3B-\uDD3E\uDD40-\uDD44\uDD46\uDD4A-\uDD50\uDD52-\uDEA5\uDEA8-\uDEC0\uDEC2-\uDEDA\uDEDC-\uDEFA\uDEFC-\uDF14\uDF16-\uDF34\uDF36-\uDF4E\uDF50-\uDF6E\uDF70-\uDF88\uDF8A-\uDFA8\uDFAA-\uDFC2\uDFC4-\uDFCB\uDFCE-\uDFFF]|\uD836[\uDE00-\uDE36\uDE3B-\uDE6C\uDE75\uDE84\uDE9B-\uDE9F\uDEA1-\uDEAF]|\uD838[\uDC00-\uDC06\uDC08-\uDC18\uDC1B-\uDC21\uDC23\uDC24\uDC26-\uDC2A]|\uD83A[\uDC00-\uDCC4\uDCD0-\uDCD6\uDD00-\uDD4A\uDD50-\uDD59]|\uD83B[\uDE00-\uDE03\uDE05-\uDE1F\uDE21\uDE22\uDE24\uDE27\uDE29-\uDE32\uDE34-\uDE37\uDE39\uDE3B\uDE42\uDE47\uDE49\uDE4B\uDE4D-\uDE4F\uDE51\uDE52\uDE54\uDE57\uDE59\uDE5B\uDE5D\uDE5F\uDE61\uDE62\uDE64\uDE67-\uDE6A\uDE6C-\uDE72\uDE74-\uDE77\uDE79-\uDE7C\uDE7E\uDE80-\uDE89\uDE8B-\uDE9B\uDEA1-\uDEA3\uDEA5-\uDEA9\uDEAB-\uDEBB]|\uD869[\uDC00-\uDED6\uDF00-\uDFFF]|\uD86D[\uDC00-\uDF34\uDF40-\uDFFF]|\uD86E[\uDC00-\uDC1D\uDC20-\uDFFF]|\uD873[\uDC00-\uDEA1]|\uD87E[\uDC00-\uDE1D]|\uDB40[\uDD00-\uDDEF]/
     };
 
     function isDecimalDigit(ch) {
-      return 0x30 <= ch && ch <= 0x39; // 0..9
+      return 0x30 <= ch && ch <= 0x39;
     }
 
     function isHexDigit(ch) {
-      return 0x30 <= ch && ch <= 0x39 || // 0..9
-      0x61 <= ch && ch <= 0x66 || // a..f
-      0x41 <= ch && ch <= 0x46; // A..F
+      return 0x30 <= ch && ch <= 0x39 ||
+      0x61 <= ch && ch <= 0x66 ||
+      0x41 <= ch && ch <= 0x46;
     }
 
     function isOctalDigit(ch) {
-      return ch >= 0x30 && ch <= 0x37; // 0..7
-    } // 7.2 White Space
+      return ch >= 0x30 && ch <= 0x37;
+    }
 
 
     NON_ASCII_WHITESPACES = [0x1680, 0x2000, 0x2001, 0x2002, 0x2003, 0x2004, 0x2005, 0x2006, 0x2007, 0x2008, 0x2009, 0x200A, 0x202F, 0x205F, 0x3000, 0xFEFF];
 
     function isWhiteSpace(ch) {
       return ch === 0x20 || ch === 0x09 || ch === 0x0B || ch === 0x0C || ch === 0xA0 || ch >= 0x1680 && NON_ASCII_WHITESPACES.indexOf(ch) >= 0;
-    } // 7.3 Line Terminators
+    }
 
 
     function isLineTerminator(ch) {
       return ch === 0x0A || ch === 0x0D || ch === 0x2028 || ch === 0x2029;
-    } // 7.6 Identifier Names and Identifiers
+    }
 
 
     function fromCodePoint(cp) {
@@ -38557,18 +34004,18 @@ var code = createCommonjsModule(function (module) {
     IDENTIFIER_START = new Array(0x80);
 
     for (ch = 0; ch < 0x80; ++ch) {
-      IDENTIFIER_START[ch] = ch >= 0x61 && ch <= 0x7A || // a..z
-      ch >= 0x41 && ch <= 0x5A || // A..Z
-      ch === 0x24 || ch === 0x5F; // $ (dollar) and _ (underscore)
+      IDENTIFIER_START[ch] = ch >= 0x61 && ch <= 0x7A ||
+      ch >= 0x41 && ch <= 0x5A ||
+      ch === 0x24 || ch === 0x5F;
     }
 
     IDENTIFIER_PART = new Array(0x80);
 
     for (ch = 0; ch < 0x80; ++ch) {
-      IDENTIFIER_PART[ch] = ch >= 0x61 && ch <= 0x7A || // a..z
-      ch >= 0x41 && ch <= 0x5A || // A..Z
-      ch >= 0x30 && ch <= 0x39 || // 0..9
-      ch === 0x24 || ch === 0x5F; // $ (dollar) and _ (underscore)
+      IDENTIFIER_PART[ch] = ch >= 0x61 && ch <= 0x7A ||
+      ch >= 0x41 && ch <= 0x5A ||
+      ch >= 0x30 && ch <= 0x39 ||
+      ch === 0x24 || ch === 0x5F;
     }
 
     function isIdentifierStartES5(ch) {
@@ -38599,33 +34046,9 @@ var code = createCommonjsModule(function (module) {
       isIdentifierPartES6: isIdentifierPartES6
     };
   })();
-  /* vim: set sw=4 ts=4 et tw=80 : */
 
 });
 
-/*
-  Copyright (C) 2013 Yusuke Suzuki <utatane.tea@gmail.com>
-
-  Redistribution and use in source and binary forms, with or without
-  modification, are permitted provided that the following conditions are met:
-
-    * Redistributions of source code must retain the above copyright
-      notice, this list of conditions and the following disclaimer.
-    * Redistributions in binary form must reproduce the above copyright
-      notice, this list of conditions and the following disclaimer in the
-      documentation and/or other materials provided with the distribution.
-
-  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
-  AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
-  IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
-  ARE DISCLAIMED. IN NO EVENT SHALL <COPYRIGHT HOLDER> BE LIABLE FOR ANY
-  DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-  (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-  LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
-  ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-  (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
-  THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-*/
 var keyword = createCommonjsModule(function (module) {
   (function () {
 
@@ -38649,7 +34072,6 @@ var keyword = createCommonjsModule(function (module) {
     }
 
     function isKeywordES5(id, strict) {
-      // yield should not be treated as keyword under non-strict mode.
       if (!strict && id === 'yield') {
         return false;
       }
@@ -38790,33 +34212,9 @@ var keyword = createCommonjsModule(function (module) {
       isIdentifierES6: isIdentifierES6
     };
   })();
-  /* vim: set sw=4 ts=4 et tw=80 : */
 
 });
 
-/*
-  Copyright (C) 2013 Yusuke Suzuki <utatane.tea@gmail.com>
-
-  Redistribution and use in source and binary forms, with or without
-  modification, are permitted provided that the following conditions are met:
-
-    * Redistributions of source code must retain the above copyright
-      notice, this list of conditions and the following disclaimer.
-    * Redistributions in binary form must reproduce the above copyright
-      notice, this list of conditions and the following disclaimer in the
-      documentation and/or other materials provided with the distribution.
-
-  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
-  AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
-  IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
-  ARE DISCLAIMED. IN NO EVENT SHALL <COPYRIGHT HOLDER> BE LIABLE FOR ANY
-  DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-  (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-  LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
-  ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-  (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
-  THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-*/
 var utils$6 = createCommonjsModule(function (module, exports) {
   (function () {
 
@@ -38824,7 +34222,6 @@ var utils$6 = createCommonjsModule(function (module, exports) {
     exports.code = code;
     exports.keyword = keyword;
   })();
-  /* vim: set sw=4 ts=4 et tw=80 : */
 
 });
 
@@ -38841,59 +34238,19 @@ const {
   locEnd: locEnd$n,
   hasSameLocStart
 } = loc$6;
-/**
- * @typedef {import("./types/estree").Node} Node
- * @typedef {import("./types/estree").TemplateLiteral} TemplateLiteral
- * @typedef {import("./types/estree").Comment} Comment
- * @typedef {import("./types/estree").MemberExpression} MemberExpression
- * @typedef {import("./types/estree").OptionalMemberExpression} OptionalMemberExpression
- * @typedef {import("./types/estree").CallExpression} CallExpression
- * @typedef {import("./types/estree").OptionalCallExpression} OptionalCallExpression
- * @typedef {import("./types/estree").Expression} Expression
- * @typedef {import("./types/estree").Property} Property
- * @typedef {import("./types/estree").ObjectTypeProperty} ObjectTypeProperty
- * @typedef {import("./types/estree").TaggedTemplateExpression} TaggedTemplateExpression
- * @typedef {import("./types/estree").Literal} Literal
- *
- * @typedef {import("../common/ast-path")} AstPath
- */
-// We match any whitespace except line terminators because
-// Flow annotation comments cannot be split across lines. For example:
-//
-// (this /*
-// : any */).foo = 5;
-//
-// is not picked up by Flow (see https://github.com/facebook/flow/issues/7050), so
-// removing the newline would create a type annotation that the user did not intend
-// to create.
 
 const NON_LINE_TERMINATING_WHITE_SPACE = "(?:(?=.)\\s)";
 const FLOW_SHORTHAND_ANNOTATION = new RegExp(`^${NON_LINE_TERMINATING_WHITE_SPACE}*:`);
 const FLOW_ANNOTATION = new RegExp(`^${NON_LINE_TERMINATING_WHITE_SPACE}*::`);
-/**
- * @param {Node} node
- * @returns {boolean}
- */
 
 function hasFlowShorthandAnnotationComment$3(node) {
-  // https://flow.org/en/docs/types/comments/
-  // Syntax example: const r = new (window.Request /*: Class<Request> */)("");
   return node.extra && node.extra.parenthesized && isNonEmptyArray$h(node.trailingComments) && isBlockComment$5(node.trailingComments[0]) && FLOW_SHORTHAND_ANNOTATION.test(node.trailingComments[0].value);
 }
-/**
- * @param {Comment[]} comments
- * @returns {boolean}
- */
 
 
 function hasFlowAnnotationComment$2(comments) {
   return comments && isBlockComment$5(comments[0]) && FLOW_ANNOTATION.test(comments[0].value);
 }
-/**
- * @param {Node} node
- * @param {(Node) => boolean} fn
- * @returns {boolean}
- */
 
 
 function hasNode$2(node, fn) {
@@ -38908,10 +34265,6 @@ function hasNode$2(node, fn) {
   const result = fn(node);
   return typeof result === "boolean" ? result : Object.values(node).some(value => hasNode$2(value, fn));
 }
-/**
- * @param {Node} node
- * @returns {boolean}
- */
 
 
 function hasNakedLeftSide$3(node) {
@@ -38961,40 +34314,24 @@ function getLeftSidePathName$2(path, node) {
 
   throw new Error("Unexpected node has no left side.");
 }
-/**
- * @param {Comment} comment
- * @returns {boolean}
- */
 
 
 function isBlockComment$5(comment) {
-  return comment.type === "Block" || comment.type === "CommentBlock" || // `meriyah`
+  return comment.type === "Block" || comment.type === "CommentBlock" ||
   comment.type === "MultiLine";
 }
-/**
- * @param {Comment} comment
- * @returns {boolean}
- */
 
 
 function isLineComment$3(comment) {
-  return comment.type === "Line" || comment.type === "CommentLine" || // `meriyah` has `SingleLine`, `HashbangComment`, `HTMLOpen`, and `HTMLClose`
+  return comment.type === "Line" || comment.type === "CommentLine" ||
   comment.type === "SingleLine" || comment.type === "HashbangComment" || comment.type === "HTMLOpen" || comment.type === "HTMLClose";
 }
 
 const exportDeclarationTypes = new Set(["ExportDefaultDeclaration", "ExportDefaultSpecifier", "DeclareExportDeclaration", "ExportNamedDeclaration", "ExportAllDeclaration"]);
-/**
- * @param {Node} node
- * @returns {boolean}
- */
 
 function isExportDeclaration(node) {
   return node && exportDeclarationTypes.has(node.type);
 }
-/**
- * @param {AstPath} path
- * @returns {Node | null}
- */
 
 
 function getParentExportDeclaration$2(path) {
@@ -39006,19 +34343,11 @@ function getParentExportDeclaration$2(path) {
 
   return null;
 }
-/**
- * @param {Node} node
- * @returns {boolean}
- */
 
 
 function isLiteral$3(node) {
   return node.type === "BooleanLiteral" || node.type === "DirectiveLiteral" || node.type === "Literal" || node.type === "NullLiteral" || node.type === "NumericLiteral" || node.type === "BigIntLiteral" || node.type === "DecimalLiteral" || node.type === "RegExpLiteral" || node.type === "StringLiteral" || node.type === "TemplateLiteral" || node.type === "TSTypeLiteral" || node.type === "JSXText";
 }
-/**
- * @param {Node} node
- * @returns {boolean}
- */
 
 
 function isNumericLiteral$5(node) {
@@ -39028,67 +34357,36 @@ function isNumericLiteral$5(node) {
 function isSignedNumericLiteral$2(node) {
   return node.type === "UnaryExpression" && (node.operator === "+" || node.operator === "-") && isNumericLiteral$5(node.argument);
 }
-/**
- * @param {Node} node
- * @returns {boolean}
- */
 
 
 function isStringLiteral$5(node) {
   return node.type === "StringLiteral" || node.type === "Literal" && typeof node.value === "string";
 }
-/**
- * @param {Node} node
- * @returns {boolean}
- */
 
 
 function isObjectType$2(node) {
   return node.type === "ObjectTypeAnnotation" || node.type === "TSTypeLiteral";
 }
-/**
- * @param {Node} node
- * @returns {boolean}
- */
 
 
 function isFunctionOrArrowExpression$1(node) {
   return node.type === "FunctionExpression" || node.type === "ArrowFunctionExpression";
 }
-/**
- * @param {Node} node
- * @returns {boolean}
- */
 
 
 function isFunctionOrArrowExpressionWithBody(node) {
   return node.type === "FunctionExpression" || node.type === "ArrowFunctionExpression" && node.body.type === "BlockStatement";
 }
-/**
- * @param {Node} node
- * @returns {boolean}
- */
 
 
 function isTemplateLiteral(node) {
   return node.type === "TemplateLiteral";
 }
-/**
- * Note: `inject` is used in AngularJS 1.x, `async` in Angular 2+
- * example: https://docs.angularjs.org/guide/unit-testing#using-beforeall-
- *
- * @param {CallExpression} node
- * @returns {boolean}
- */
 
 
 function isAngularTestWrapper(node) {
   return isCallExpression$d(node) && node.callee.type === "Identifier" && (node.callee.name === "async" || node.callee.name === "inject" || node.callee.name === "fakeAsync");
 }
-/**
- * @param {Node} node
- * @returns {boolean}
- */
 
 
 function isJsxNode$7(node) {
@@ -39112,27 +34410,18 @@ function isTheOnlyJsxElementInMarkdown$2(options, path) {
 
 function isGetterOrSetter$1(node) {
   return node.kind === "get" || node.kind === "set";
-} // TODO: This is a bad hack and we need a better way to distinguish between
-// arrow functions and otherwise
+}
 
 
 function isFunctionNotation$1(node) {
   return isGetterOrSetter$1(node) || hasSameLocStart(node, node.value);
-} // Hack to differentiate between the following two which have the same ast
-// type T = { method: () => void };
-// type T = { method(): void };
+}
 
-/**
- * @param {Node} node
- * @returns {boolean}
- */
 
 
 function isObjectTypePropertyAFunction$2(node) {
   return (node.type === "ObjectTypeProperty" || node.type === "ObjectTypeInternalSlot") && node.value.type === "FunctionTypeAnnotation" && !node.static && !isFunctionNotation$1(node);
-} // Hack to differentiate between the following two which have the same ast
-// declare function f(a): void;
-// var f: (a) => void;
+}
 
 
 function isTypeAnnotationAFunction$1(node) {
@@ -39140,41 +34429,29 @@ function isTypeAnnotationAFunction$1(node) {
 }
 
 const binaryishNodeTypes = new Set(["BinaryExpression", "LogicalExpression", "NGPipeExpression"]);
-/**
- * @param {Node} node
- * @returns {boolean}
- */
 
 function isBinaryish$5(node) {
   return binaryishNodeTypes.has(node.type);
 }
-/**
- * @param {Node} node
- * @returns {boolean}
- */
 
 
 function isMemberish$2(node) {
   return isMemberExpression$a(node) || node.type === "BindExpression" && Boolean(node.object);
 }
 
-const simpleTypeAnnotations = new Set([// `any`
-"AnyTypeAnnotation", "TSAnyKeyword", // `null`
-"NullLiteralTypeAnnotation", "TSNullKeyword", // `this`
-"ThisTypeAnnotation", "TSThisType", // `number`
-"NumberTypeAnnotation", "TSNumberKeyword", // `void`
-"VoidTypeAnnotation", "TSVoidKeyword", // `boolean`
-"BooleanTypeAnnotation", "TSBooleanKeyword", // `bigint`
-"BigIntTypeAnnotation", "TSBigIntKeyword", // `symbol`
-"SymbolTypeAnnotation", "TSSymbolKeyword", // `string`
-"StringTypeAnnotation", "TSStringKeyword", // literals
-"BooleanLiteralTypeAnnotation", "StringLiteralTypeAnnotation", "BigIntLiteralTypeAnnotation", "NumberLiteralTypeAnnotation", "TSLiteralType", "TSTemplateLiteralType", // flow only, `empty`, `mixed`
-"EmptyTypeAnnotation", "MixedTypeAnnotation", // typescript only, `never`, `object`, `undefined`, `unknown`
+const simpleTypeAnnotations = new Set([
+"AnyTypeAnnotation", "TSAnyKeyword",
+"NullLiteralTypeAnnotation", "TSNullKeyword",
+"ThisTypeAnnotation", "TSThisType",
+"NumberTypeAnnotation", "TSNumberKeyword",
+"VoidTypeAnnotation", "TSVoidKeyword",
+"BooleanTypeAnnotation", "TSBooleanKeyword",
+"BigIntTypeAnnotation", "TSBigIntKeyword",
+"SymbolTypeAnnotation", "TSSymbolKeyword",
+"StringTypeAnnotation", "TSStringKeyword",
+"BooleanLiteralTypeAnnotation", "StringLiteralTypeAnnotation", "BigIntLiteralTypeAnnotation", "NumberLiteralTypeAnnotation", "TSLiteralType", "TSTemplateLiteralType",
+"EmptyTypeAnnotation", "MixedTypeAnnotation",
 "TSNeverKeyword", "TSObjectKeyword", "TSUndefinedKeyword", "TSUnknownKeyword"]);
-/**
- * @param {Node} node
- * @returns {boolean}
- */
 
 function isSimpleType$2(node) {
   if (!node) {
@@ -39193,24 +34470,16 @@ function isSimpleType$2(node) {
 }
 
 const unitTestRe = /^(skip|[fx]?(it|describe|test))$/;
-/**
- * @param {{callee: MemberExpression | OptionalMemberExpression}} node
- * @returns {boolean}
- */
 
 function isSkipOrOnlyBlock(node) {
   return isMemberExpression$a(node.callee) && node.callee.object.type === "Identifier" && node.callee.property.type === "Identifier" && unitTestRe.test(node.callee.object.name) && (node.callee.property.name === "only" || node.callee.property.name === "skip");
 }
-/**
- * @param {CallExpression} node
- * @returns {boolean}
- */
 
 
 function isUnitTestSetUp(node) {
   const unitTestSetUpRe = /^(before|after)(Each|All)$/;
   return node.callee.type === "Identifier" && unitTestSetUpRe.test(node.callee.name) && node.arguments.length === 1;
-} // eg; `describe("some string", (done) => {})`
+}
 
 
 function isTestCall$3(node, parent) {
@@ -39228,7 +34497,6 @@ function isTestCall$3(node, parent) {
     }
   } else if (node.arguments.length === 2 || node.arguments.length === 3) {
     if ((node.callee.type === "Identifier" && unitTestRe.test(node.callee.name) || isSkipOrOnlyBlock(node)) && (isTemplateLiteral(node.arguments[0]) || isStringLiteral$5(node.arguments[0]))) {
-      // it("name", () => { ... }, 2500)
       if (node.arguments[2] && !isNumericLiteral$5(node.arguments[2])) {
         return false;
       }
@@ -39239,29 +34507,16 @@ function isTestCall$3(node, parent) {
 
   return false;
 }
-/**
- * @param {Node} node
- * @returns {boolean}
- */
 
 
 function isCallExpression$d(node) {
   return node && (node.type === "CallExpression" || node.type === "OptionalCallExpression");
 }
-/**
- * @param {Node} node
- * @returns {boolean}
- */
 
 
 function isMemberExpression$a(node) {
   return node && (node.type === "MemberExpression" || node.type === "OptionalMemberExpression");
 }
-/**
- *
- * @param {any} node
- * @returns {boolean}
- */
 
 
 function isSimpleTemplateLiteral$1(node) {
@@ -39278,15 +34533,14 @@ function isSimpleTemplateLiteral$1(node) {
   }
 
   return expressions.every(expr => {
-    // Disallow comments since printDocToString can't print them here
     if (hasComment$j(expr)) {
       return false;
-    } // Allow `x` and `this`
+    }
 
 
     if (expr.type === "Identifier" || expr.type === "ThisExpression") {
       return true;
-    } // Allow `a.b.c`, `a.b[c]`, and `this.x.y`
+    }
 
 
     if (isMemberExpression$a(expr)) {
@@ -39314,11 +34568,6 @@ function isSimpleTemplateLiteral$1(node) {
     return false;
   });
 }
-/**
- * @param {string} tokenNode
- * @param {string} keyword
- * @returns {string}
- */
 
 
 function getTypeScriptMappedTypeModifier$1(tokenNode, keyword) {
@@ -39332,11 +34581,6 @@ function getTypeScriptMappedTypeModifier$1(tokenNode, keyword) {
 
   return keyword;
 }
-/**
- * @param {string} text
- * @param {Node} typeAnnotation
- * @returns {boolean}
- */
 
 
 function isFlowAnnotationComment$2(text, typeAnnotation) {
@@ -39344,11 +34588,6 @@ function isFlowAnnotationComment$2(text, typeAnnotation) {
   const end = skipWhitespace(text, locEnd$n(typeAnnotation));
   return end !== false && text.slice(start, start + 2) === "/*" && text.slice(end, end + 2) === "*/";
 }
-/**
- * @param {string} text
- * @param {Node} node
- * @returns {boolean}
- */
 
 
 function hasLeadingOwnLineComment$4(text, node) {
@@ -39357,79 +34596,29 @@ function hasLeadingOwnLineComment$4(text, node) {
   }
 
   return hasComment$j(node, CommentCheckFlags$f.Leading, comment => hasNewline$7(text, locEnd$n(comment)));
-} // Note: Quoting/unquoting numbers in TypeScript is not safe.
-//
-// let a = { 1: 1, 2: 2 }
-// let b = { '1': 1, '2': 2 }
-//
-// declare let aa: keyof typeof a;
-// declare let bb: keyof typeof b;
-//
-// aa = bb;
-// ^^
-// Type '"1" | "2"' is not assignable to type '1 | 2'.
-//   Type '"1"' is not assignable to type '1 | 2'.(2322)
-//
-// And in Flow, you get:
-//
-// const x = {
-//   0: 1
-//   ^ Non-string literal property keys not supported. [unsupported-syntax]
-// }
-//
-// Angular does not support unquoted numbers in expressions.
-//
-// So we play it safe and only unquote numbers for the JavaScript parsers.
-// (Vue supports unquoted numbers in expressions, but let’s keep it simple.)
-//
-// Identifiers can be unquoted in more circumstances, though.
+}
 
 
 function isStringPropSafeToUnquote$1(node, options) {
-  return options.parser !== "json" && isStringLiteral$5(node.key) && rawText$5(node.key).slice(1, -1) === node.key.value && (isIdentifierName(node.key.value) && // With `--strictPropertyInitialization`, TS treats properties with quoted names differently than unquoted ones.
-  // See https://github.com/microsoft/TypeScript/pull/20075
+  return options.parser !== "json" && isStringLiteral$5(node.key) && rawText$5(node.key).slice(1, -1) === node.key.value && (isIdentifierName(node.key.value) &&
   !((options.parser === "typescript" || options.parser === "babel-ts") && node.type === "ClassProperty") || isSimpleNumber$1(node.key.value) && String(Number(node.key.value)) === node.key.value && (options.parser === "babel" || options.parser === "espree" || options.parser === "meriyah" || options.parser === "__babel_estree"));
-} // Matches “simple” numbers like `123` and `2.5` but not `1_000`, `1e+100` or `0b10`.
+}
 
 
 function isSimpleNumber$1(numberString) {
   return /^(\d+|\d+\.\d+)$/.test(numberString);
 }
-/**
- * @param {Node} node
- * @param {Node} parentNode
- * @returns {boolean}
- */
 
 
 function isJestEachTemplateLiteral$1(node, parentNode) {
-  /**
-   * describe.each`table`(name, fn)
-   * describe.only.each`table`(name, fn)
-   * describe.skip.each`table`(name, fn)
-   * test.each`table`(name, fn)
-   * test.only.each`table`(name, fn)
-   * test.skip.each`table`(name, fn)
-   *
-   * Ref: https://github.com/facebook/jest/pull/6102
-   */
   const jestEachTriggerRegex = /^[fx]?(describe|it|test)$/;
   return parentNode.type === "TaggedTemplateExpression" && parentNode.quasi === node && parentNode.tag.type === "MemberExpression" && parentNode.tag.property.type === "Identifier" && parentNode.tag.property.name === "each" && (parentNode.tag.object.type === "Identifier" && jestEachTriggerRegex.test(parentNode.tag.object.name) || parentNode.tag.object.type === "MemberExpression" && parentNode.tag.object.property.type === "Identifier" && (parentNode.tag.object.property.name === "only" || parentNode.tag.object.property.name === "skip") && parentNode.tag.object.object.type === "Identifier" && jestEachTriggerRegex.test(parentNode.tag.object.object.name));
 }
-/**
- * @param {TemplateLiteral} template
- * @returns {boolean}
- */
 
 
 function templateLiteralHasNewLines(template) {
   return template.quasis.some(quasi => quasi.value.raw.includes("\n"));
 }
-/**
- * @param {TemplateLiteral | TaggedTemplateExpression} node
- * @param {string} text
- * @returns {boolean}
- */
 
 
 function isTemplateOnItsOwnLine$2(node, text) {
@@ -39437,10 +34626,6 @@ function isTemplateOnItsOwnLine$2(node, text) {
     backwards: true
   });
 }
-/**
- * @param {Node} node
- * @returns {boolean}
- */
 
 
 function needsHardlineAfterDanglingComment$2(node) {
@@ -39450,9 +34635,7 @@ function needsHardlineAfterDanglingComment$2(node) {
 
   const lastDanglingComment = getLast$d(getComments$4(node, CommentCheckFlags$f.Dangling));
   return lastDanglingComment && !isBlockComment$5(lastDanglingComment);
-} // Logic to check for args with multiple anonymous functions. For instance,
-// the following call should be split on multiple lines for readability:
-// source.pipe(map((x) => x + x), filter((x) => x % 2 === 0))
+}
 
 
 function isFunctionCompositionArgs$1(args) {
@@ -39479,17 +34662,8 @@ function isFunctionCompositionArgs$1(args) {
   }
 
   return false;
-} // Logic to determine if a call is a “long curried function call”.
-// See https://github.com/prettier/prettier/issues/1420.
-//
-// `connect(a, b, c)(d)`
-// In the above call expression, the second call is the parent node and the
-// first call is the current node.
+}
 
-/**
- * @param {AstPath} path
- * @returns {boolean}
- */
 
 
 function isLongCurriedCallExpression$2(path) {
@@ -39497,11 +34671,6 @@ function isLongCurriedCallExpression$2(path) {
   const parent = path.getParentNode();
   return isCallExpression$d(node) && isCallExpression$d(parent) && parent.callee === node && node.arguments.length > parent.arguments.length && parent.arguments.length > 0;
 }
-/**
- * @param {any} node
- * @param {number} depth
- * @returns {boolean}
- */
 
 
 function isSimpleCallArgument$1(node, depth) {
@@ -39563,25 +34732,11 @@ function identity$1(x) {
 function isTSXFile$1(options) {
   return options.filepath && /\.tsx$/i.test(options.filepath);
 }
-/**
- * @param {any} options
- * @param {("es5" | "all")} [level]
- * @returns {boolean}
- */
 
 
 function shouldPrintComma$b(options, level = "es5") {
   return options.trailingComma === "es5" && level === "es5" || options.trailingComma === "all" && (level === "all" || level === "es5");
 }
-/**
- * Tests if an expression starts with `{`, or (if forbidFunctionClassAndDoExpr
- * holds) `function`, `class`, or `do {}`. Will be overzealous if there's
- * already necessary grouping parentheses.
- *
- * @param {Node} node
- * @param {boolean} forbidFunctionClassAndDoExpr
- * @returns {boolean}
- */
 
 
 function startsWithNoLookaheadToken$2(node, forbidFunctionClassAndDoExpr) {
@@ -39602,7 +34757,6 @@ function startsWithNoLookaheadToken$2(node, forbidFunctionClassAndDoExpr) {
 
     case "TaggedTemplateExpression":
       if (node.tag.type === "FunctionExpression") {
-        // IIFEs are always already parenthesized
         return false;
       }
 
@@ -39611,7 +34765,6 @@ function startsWithNoLookaheadToken$2(node, forbidFunctionClassAndDoExpr) {
     case "CallExpression":
     case "OptionalCallExpression":
       if (node.callee.type === "FunctionExpression") {
-        // IIFEs are always already parenthesized
         return false;
       }
 
@@ -39658,29 +34811,27 @@ const bitshiftOperators = {
 function shouldFlatten$2(parentOp, nodeOp) {
   if (getPrecedence$1(nodeOp) !== getPrecedence$1(parentOp)) {
     return false;
-  } // ** is right-associative
-  // x ** y ** z --> x ** (y ** z)
+  }
 
 
   if (parentOp === "**") {
     return false;
-  } // x == y == z --> (x == y) == z
+  }
 
 
   if (equalityOperators[parentOp] && equalityOperators[nodeOp]) {
     return false;
-  } // x * y % z --> (x * y) % z
+  }
 
 
   if (nodeOp === "%" && multiplicativeOperators[parentOp] || parentOp === "%" && multiplicativeOperators[nodeOp]) {
     return false;
-  } // x * y / z --> (x * y) / z
-  // x / y * z --> (x / y) * z
+  }
 
 
   if (nodeOp !== parentOp && multiplicativeOperators[nodeOp] && multiplicativeOperators[parentOp]) {
     return false;
-  } // x << y << z --> (x << y) << z
+  }
 
 
   if (bitshiftOperators[parentOp] && bitshiftOperators[nodeOp]) {
@@ -39734,7 +34885,7 @@ function getFunctionParameters$6(node) {
 
   if (node.this) {
     parameters.push(node.this);
-  } // `params` vs `parameters` - see https://github.com/babel/babel/issues/9231
+  }
 
 
   if (Array.isArray(node.parameters)) {
@@ -39821,28 +34972,20 @@ function hasIgnoreComment$2(path) {
 }
 
 const CommentCheckFlags$f = {
-  /** Check comment is a leading comment */
   Leading: 1 << 1,
 
-  /** Check comment is a trailing comment */
   Trailing: 1 << 2,
 
-  /** Check comment is a dangling comment */
   Dangling: 1 << 3,
 
-  /** Check comment is a block comment */
   Block: 1 << 4,
 
-  /** Check comment is a line comment */
   Line: 1 << 5,
 
-  /** Check comment is a `prettier-ignore` comment */
   PrettierIgnore: 1 << 6,
 
-  /** Check comment is the first attached comment */
   First: 1 << 7,
 
-  /** Check comment is the last attached comment */
   Last: 1 << 8
 };
 
@@ -39856,12 +34999,6 @@ const getCommentTestFunction = (flags, fn) => {
     return (comment, index, comments) => !(flags & CommentCheckFlags$f.Leading && !comment.leading || flags & CommentCheckFlags$f.Trailing && !comment.trailing || flags & CommentCheckFlags$f.Dangling && (comment.leading || comment.trailing) || flags & CommentCheckFlags$f.Block && !isBlockComment$5(comment) || flags & CommentCheckFlags$f.Line && !isLineComment$3(comment) || flags & CommentCheckFlags$f.First && index !== 0 || flags & CommentCheckFlags$f.Last && index !== comments.length - 1 || flags & CommentCheckFlags$f.PrettierIgnore && !isPrettierIgnoreComment$1(comment) || fn && !fn(comment));
   }
 };
-/**
- * @param {Node} node
- * @param {number | function} [flags]
- * @param {function} [fn]
- * @returns {boolean}
- */
 
 
 function hasComment$j(node, flags, fn) {
@@ -39872,12 +35009,6 @@ function hasComment$j(node, flags, fn) {
   const test = getCommentTestFunction(flags, fn);
   return test ? node.comments.some(test) : true;
 }
-/**
- * @param {Node} node
- * @param {number | function} [flags]
- * @param {function} [fn]
- * @returns {Comment[]}
- */
 
 
 function getComments$4(node, flags, fn) {
@@ -39888,10 +35019,6 @@ function getComments$4(node, flags, fn) {
   const test = getCommentTestFunction(flags, fn);
   return test ? node.comments.filter(test) : node.comments;
 }
-/**
- * @param {Node} node
- * @returns {boolean}
- */
 
 
 const isNextLineEmpty$c = (node, {
@@ -40035,17 +35162,6 @@ function printTemplateLiteral$2(path, print, options) {
     parts.push(print());
 
     if (i < expressions.length) {
-      // For a template literal of the following form:
-      //   `someQuery {
-      //     ${call({
-      //       a,
-      //       b,
-      //     })}
-      //   }`
-      // the expression is on its own line (there is a \n in the previous
-      // quasi literal), therefore we want to indent the JavaScript
-      // expression inside at the beginning of ${ instead of the beginning
-      // of the `.
       const {
         tabWidth
       } = options;
@@ -40054,8 +35170,7 @@ function printTemplateLiteral$2(path, print, options) {
       let printed = expressions[i];
 
       if (!isSimple) {
-        const expression = node[expressionsKey][i]; // Breaks at the template element boundaries (${ and }) are preferred to breaking
-        // in the middle of a MemberExpression
+        const expression = node[expressionsKey][i];
 
         if (hasComment$i(expression) || isMemberExpression$9(expression) || expression.type === "ConditionalExpression" || expression.type === "SequenceExpression" || expression.type === "TSAsExpression" || isBinaryish$4(expression)) {
           printed = [indent$x([softline$r, printed]), softline$r];
@@ -40071,12 +35186,6 @@ function printTemplateLiteral$2(path, print, options) {
 }
 
 function printJestEachTemplateLiteral(path, options, print) {
-  /**
-   * a    | b    | expected
-   * ${1} | ${1} | ${2}
-   * ${1} | ${2} | ${3}
-   * ${2} | ${1} | ${3}
-   */
   const node = path.getNode();
   const headerNames = node.quasis[0].value.raw.trim().split(/\s*\|\s*/);
 
@@ -40226,7 +35335,7 @@ const {
 } = templateLiteral;
 
 function format$2(path, print, textToDoc) {
-  const node = path.getValue(); // Get full template literal with expressions replaced by placeholders
+  const node = path.getValue();
 
   const rawQuasis = node.quasis.map(q => q.value.raw);
   let placeholderID = 0;
@@ -40248,17 +35357,13 @@ function transformCssDoc(quasisDoc, parentNode, expressionDocs) {
   }
 
   const newDoc = replacePlaceholders(quasisDoc, expressionDocs);
-  /* istanbul ignore if */
 
   if (!newDoc) {
     throw new Error("Couldn't insert all the expressions");
   }
 
   return ["`", indent$v([hardline$w, newDoc]), softline$p, "`"];
-} // Search all the placeholders in the quasisDoc tree
-// and replace them with the expression docs one by one
-// returns a new doc with all the placeholders replaced,
-// or null if it couldn't replace any expression
+}
 
 
 function replacePlaceholders(quasisDoc, expressionDocs) {
@@ -40270,15 +35375,13 @@ function replacePlaceholders(quasisDoc, expressionDocs) {
   const newDoc = mapDoc$2(cleanDoc$3(quasisDoc), doc => {
     if (typeof doc !== "string" || !doc.includes("@prettier-placeholder")) {
       return doc;
-    } // When we have multiple placeholders in one line, like:
-    // ${Child}${Child2}:not(:first-child)
+    }
 
 
     return doc.split(/@prettier-placeholder-(\d+)-id/).map((component, idx) => {
-      // The placeholder is always at odd indices
       if (idx % 2 === 0) {
         return replaceNewlinesWithLiterallines$3(component);
-      } // The component will always be a number at odd index
+      }
 
 
       replaceCounter++;
@@ -40323,7 +35426,7 @@ function format$1(path, print, textToDoc) {
     const expressionDoc = expressionDocs[i];
     const startsWithBlankLine = numLines > 2 && lines[0].trim() === "" && lines[1].trim() === "";
     const endsWithBlankLine = numLines > 2 && lines[numLines - 1].trim() === "" && lines[numLines - 2].trim() === "";
-    const commentsAndWhitespaceOnly = lines.every(line => /^\s*(?:#[^\n\r]*)?$/.test(line)); // Bail out if an interpolation occurs within a comment.
+    const commentsAndWhitespaceOnly = lines.every(line => /^\s*(?:#[^\n\r]*)?$/.test(line));
 
     if (!isLast && /#[^\n\r]*$/.test(lines[numLines - 1])) {
       return null;
@@ -40371,22 +35474,18 @@ function printGraphqlComments(lines) {
   const array = lines.map(textLine => textLine.trim());
 
   for (const [i, textLine] of array.entries()) {
-    // Lines are either whitespace only, or a comment (with potential whitespace
-    // around it). Drop whitespace-only lines.
     if (textLine === "") {
       continue;
     }
 
     if (array[i - 1] === "" && seenComment) {
-      // If a non-first comment is preceded by a blank (whitespace only) line,
-      // add in a blank line.
       parts.push([hardline$v, textLine]);
     } else {
       parts.push(textLine);
     }
 
     seenComment = true;
-  } // If `lines` was whitespace only, return `null`.
+  }
 
 
   return parts.length === 0 ? null : join$s(hardline$v, parts);
@@ -40408,7 +35507,7 @@ const {
 const {
   printTemplateExpressions,
   uncookTemplateElementValue
-} = templateLiteral; // The counter is needed to distinguish nested embeds.
+} = templateLiteral;
 
 let htmlTemplateLiteralCounter = 0;
 
@@ -40515,8 +35614,7 @@ function getLanguage(path) {
 function embed$5(path, print, textToDoc, options) {
   const node = path.getValue();
 
-  if (node.type !== "TemplateLiteral" || // Bail out if any of the quasis have an invalid escape sequence
-  // (which would make the `cooked` value be `null`)
+  if (node.type !== "TemplateLiteral" ||
   hasInvalidCookedValue(node)) {
     return;
   }
@@ -40545,10 +35643,6 @@ function embed$5(path, print, textToDoc, options) {
     });
   }
 }
-/**
- * md`...`
- * markdown`...`
- */
 
 
 function isMarkdown(path) {
@@ -40556,13 +35650,6 @@ function isMarkdown(path) {
   const parent = path.getParentNode();
   return parent && parent.type === "TaggedTemplateExpression" && node.quasis.length === 1 && parent.tag.type === "Identifier" && (parent.tag.name === "md" || parent.tag.name === "markdown");
 }
-/**
- * Template literal in these contexts:
- * <style jsx>{`div{color:red}`}</style>
- * css``
- * css.global``
- * css.resolve``
- */
 
 
 function isStyledJsx(path) {
@@ -40571,20 +35658,6 @@ function isStyledJsx(path) {
   const parentParent = path.getParentNode(1);
   return parentParent && node.quasis && parent.type === "JSXExpressionContainer" && parentParent.type === "JSXElement" && parentParent.openingElement.name.name === "style" && parentParent.openingElement.attributes.some(attribute => attribute.name.name === "jsx") || parent && parent.type === "TaggedTemplateExpression" && parent.tag.type === "Identifier" && parent.tag.name === "css" || parent && parent.type === "TaggedTemplateExpression" && parent.tag.type === "MemberExpression" && parent.tag.object.name === "css" && (parent.tag.property.name === "global" || parent.tag.property.name === "resolve");
 }
-/**
- * Angular Components can have:
- * - Inline HTML template
- * - Inline CSS styles
- *
- * ...which are both within template literals somewhere
- * inside of the Component decorator factory.
- *
- * E.g.
- * @Component({
- *  template: `<div>...</div>`,
- *  styles: [`h1 { color: blue; }`]
- * })
- */
 
 
 function isAngularComponentStyles(path) {
@@ -40596,9 +35669,6 @@ function isAngularComponentTemplate(path) {
 }
 
 const angularComponentObjectExpressionPredicates = [(node, name) => node.type === "ObjectExpression" && name === "properties", (node, name) => node.type === "CallExpression" && node.callee.type === "Identifier" && node.callee.name === "Component" && name === "arguments", (node, name) => node.type === "Decorator" && name === "expression"];
-/**
- * styled-components template literals
- */
 
 function isStyledComponents(path) {
   const parent = path.getParentNode();
@@ -40613,30 +35683,26 @@ function isStyledComponents(path) {
 
   switch (tag.type) {
     case "MemberExpression":
-      return (// styled.foo``
-        isStyledIdentifier(tag.object) || // Component.extend``
+      return (
+        isStyledIdentifier(tag.object) ||
         isStyledExtend(tag)
       );
 
     case "CallExpression":
-      return (// styled(Component)``
-        isStyledIdentifier(tag.callee) || tag.callee.type === "MemberExpression" && (tag.callee.object.type === "MemberExpression" && ( // styled.foo.attrs({})``
-        isStyledIdentifier(tag.callee.object.object) || // Component.extend.attrs({})``
-        isStyledExtend(tag.callee.object)) || // styled(Component).attrs({})``
+      return (
+        isStyledIdentifier(tag.callee) || tag.callee.type === "MemberExpression" && (tag.callee.object.type === "MemberExpression" && (
+        isStyledIdentifier(tag.callee.object.object) ||
+        isStyledExtend(tag.callee.object)) ||
         tag.callee.object.type === "CallExpression" && isStyledIdentifier(tag.callee.object.callee))
       );
 
     case "Identifier":
-      // css``
       return tag.name === "css";
 
     default:
       return false;
   }
 }
-/**
- * JSX element with CSS prop
- */
 
 
 function isCssProp(path) {
@@ -40652,16 +35718,6 @@ function isStyledIdentifier(node) {
 function isStyledExtend(node) {
   return /^[A-Z]/.test(node.object.name) && node.property.name === "extend";
 }
-/*
- * react-relay and graphql-tag
- * graphql`...`
- * graphql.experimental`...`
- * gql`...`
- * GraphQL comment block
- *
- * This intentionally excludes Relay Classic tags, as Prettier does not
- * support Relay Classic formatting.
- */
 
 
 function isGraphQL(path) {
@@ -40671,19 +35727,10 @@ function isGraphQL(path) {
 }
 
 function hasLanguageComment(node, languageName) {
-  // This checks for a leading comment that is exactly `/* GraphQL */`
-  // In order to be in line with other implementations of this comment tag
-  // we will not trim the comment value and we will expect exactly one space on
-  // either side of the GraphQL string
-  // Also see ./clean.js
   return hasComment$h(node, CommentCheckFlags$e.Block | CommentCheckFlags$e.Leading, ({
     value
   }) => value === ` ${languageName} `);
 }
-/**
- *     - html`...`
- *     - HTML comment block
- */
 
 
 function isHtml(path) {
@@ -40736,12 +35783,12 @@ function clean$7(ast, newObj, parent) {
 
   if (ast.type === "Literal" && newObj.decimal) {
     newObj.decimal = Number(newObj.decimal);
-  } // We remove extra `;` and add them when needed
+  }
 
 
   if (ast.type === "EmptyStatement") {
     return null;
-  } // We move text around, including whitespaces and add {" "}
+  }
 
 
   if (ast.type === "JSXText") {
@@ -40750,15 +35797,12 @@ function clean$7(ast, newObj, parent) {
 
   if (ast.type === "JSXExpressionContainer" && (ast.expression.type === "Literal" || ast.expression.type === "StringLiteral") && ast.expression.value === " ") {
     return null;
-  } // We change {'key': value} into {key: value}.
-  // And {key: value} into {'key': value}.
-  // Also for (some) number keys.
+  }
 
 
   if ((ast.type === "Property" || ast.type === "ObjectProperty" || ast.type === "MethodDefinition" || ast.type === "ClassProperty" || ast.type === "ClassMethod" || ast.type === "PropertyDefinition" || ast.type === "TSDeclareMethod" || ast.type === "TSPropertySignature" || ast.type === "ObjectTypeProperty") && typeof ast.key === "object" && ast.key && (ast.key.type === "Literal" || ast.key.type === "NumericLiteral" || ast.key.type === "StringLiteral" || ast.key.type === "Identifier")) {
     delete newObj.key;
-  } // Remove raw and cooked values from TemplateElement when it's CSS
-  // styled-jsx
+  }
 
 
   if (ast.type === "JSXElement" && ast.openingElement.name.name === "style" && ast.openingElement.attributes.some(attr => attr.name.name === "jsx")) {
@@ -40770,17 +35814,17 @@ function clean$7(ast, newObj, parent) {
         removeTemplateElementsValue(expression);
       }
     }
-  } // CSS template literals in css prop
+  }
 
 
   if (ast.type === "JSXAttribute" && ast.name.name === "css" && ast.value.type === "JSXExpressionContainer" && ast.value.expression.type === "TemplateLiteral") {
     removeTemplateElementsValue(newObj.value.expression);
-  } // We change quotes
+  }
 
 
   if (ast.type === "JSXAttribute" && ast.value && ast.value.type === "Literal" && /["']|&quot;|&apos;/.test(ast.value.value)) {
     newObj.value.value = newObj.value.value.replace(/["']|&quot;|&apos;/g, '"');
-  } // Angular Components: Inline HTML template and Inline CSS styles
+  }
 
 
   const expression = ast.expression || ast.callee;
@@ -40805,7 +35849,7 @@ function clean$7(ast, newObj, parent) {
           break;
       }
     }
-  } // styled-components, graphql, markdown
+  }
 
 
   if (ast.type === "TaggedTemplateExpression" && (ast.tag.type === "MemberExpression" || ast.tag.type === "Identifier" && (ast.tag.name === "gql" || ast.tag.name === "graphql" || ast.tag.name === "css" || ast.tag.name === "md" || ast.tag.name === "markdown" || ast.tag.name === "html") || ast.tag.type === "CallExpression")) {
@@ -40813,15 +35857,9 @@ function clean$7(ast, newObj, parent) {
   }
 
   if (ast.type === "TemplateLiteral") {
-    // This checks for a leading comment that is exactly `/* GraphQL */`
-    // In order to be in line with other implementations of this comment tag
-    // we will not trim the comment value and we will expect exactly one space on
-    // either side of the GraphQL string
-    // Also see ./embed.js
     const hasLanguageComment = ast.leadingComments && ast.leadingComments.some(comment => isBlockComment$4(comment) && ["GraphQL", "HTML"].some(languageName => comment.value === ` ${languageName} `));
 
-    if (hasLanguageComment || parent.type === "CallExpression" && parent.callee.name === "graphql" || // TODO: check parser
-    // `flow` and `typescript` don't have `leadingComments`
+    if (hasLanguageComment || parent.type === "CallExpression" && parent.callee.name === "graphql" ||
     !ast.leadingComments) {
       removeTemplateElementsValue(newObj);
     }
@@ -40829,7 +35867,7 @@ function clean$7(ast, newObj, parent) {
 
   if (ast.type === "InterpreterDirective") {
     newObj.value = newObj.value.trimEnd();
-  } // Prettier removes degenerate union and intersection types with only one member.
+  }
 
 
   if ((ast.type === "TSIntersectionType" || ast.type === "TSUnionType") && ast.types.length === 1) {
@@ -40892,12 +35930,6 @@ function _interopRequireDefault(obj) {
     default: obj
   };
 }
-/**
- * Copyright (c) Facebook, Inc. and its affiliates. All Rights Reserved.
- *
- * This source code is licensed under the MIT license found in the
- * LICENSE file in the root directory of this source tree.
- */
 
 
 const commentEndRe = /\*\/$/;
@@ -40927,7 +35959,7 @@ function parse$1(docblock) {
 function parseWithComments$1(docblock) {
   const line = (0, _detectNewline().default)(docblock) || _os().EOL;
 
-  docblock = docblock.replace(commentStartRe, '').replace(commentEndRe, '').replace(stringStartRe, '$1'); // Normalize multi-line directives
+  docblock = docblock.replace(commentStartRe, '').replace(commentEndRe, '').replace(stringStartRe, '$1');
 
   let prev = '';
 
@@ -40942,7 +35974,6 @@ function parseWithComments$1(docblock) {
   let match;
 
   while (match = propertyRe.exec(docblock)) {
-    // strip linecomments from pragmas
     const nextPragma = match[2].replace(lineCommentRe, '');
 
     if (typeof result[match[1]] === 'string' || Array.isArray(result[match[1]])) {
@@ -41051,7 +36082,7 @@ function insertPragma$a(originalText) {
     }, pragmas),
     comments: comments.trimStart()
   });
-  return (shebang ? `${shebang}\n` : "") + // normalise newlines (mitigate use of os.EOL by jest-docblock)
+  return (shebang ? `${shebang}\n` : "") +
   normalizeEndOfLine(docBlock) + (strippedText.startsWith("\n") ? "\n" : "\n\n") + strippedText;
 }
 
@@ -41090,56 +36121,24 @@ const {
   locStart: locStart$n,
   locEnd: locEnd$m
 } = loc$6;
-/**
- * @typedef {import("./types/estree").Node} Node
- * @typedef {import("./types/estree").Comment} Comment
- * @typedef {import("../common/ast-path")} AstPath
- *
- * @typedef {Object} CommentContext
- * @property {Comment} comment
- * @property {Node} precedingNode
- * @property {Node} enclosingNode
- * @property {Node} followingNode
- * @property {string} text
- * @property {any} options
- * @property {Node} ast
- * @property {boolean} isLastComment
- */
 
-/**
- * @param {CommentContext} context
- * @returns {boolean}
- */
 
 function handleOwnLineComment(context) {
   return [handleIgnoreComments, handleLastFunctionArgComments, handleMemberExpressionComments, handleIfStatementComments, handleWhileComments, handleTryStatementComments, handleClassComments, handleImportSpecifierComments, handleForComments, handleUnionTypeComments, handleOnlyComments, handleImportDeclarationComments, handleAssignmentPatternComments, handleMethodNameComments, handleLabeledStatementComments].some(fn => fn(context));
 }
-/**
- * @param {CommentContext} context
- * @returns {boolean}
- */
 
 
 function handleEndOfLineComment(context) {
   return [handleClosureTypeCastComments, handleLastFunctionArgComments, handleConditionalExpressionComments, handleImportSpecifierComments, handleIfStatementComments, handleWhileComments, handleTryStatementComments, handleClassComments, handleLabeledStatementComments, handleCallExpressionComments, handlePropertyComments, handleOnlyComments, handleTypeAliasComments, handleVariableDeclaratorComments].some(fn => fn(context));
 }
-/**
- * @param {CommentContext} context
- * @returns {boolean}
- */
 
 
 function handleRemainingComment(context) {
   return [handleIgnoreComments, handleIfStatementComments, handleWhileComments, handleObjectPropertyAssignment, handleCommentInEmptyParens, handleMethodNameComments, handleOnlyComments, handleCommentAfterArrowParams, handleFunctionNameComments, handleTSMappedTypeComments, handleBreakAndContinueStatementComments, handleTSFunctionTrailingComments].some(fn => fn(context));
 }
-/**
- * @param {Node} node
- * @returns {void}
- */
 
 
 function addBlockStatementFirstComment(node, comment) {
-  // @ts-ignore
   const firstNonEmptyNode = (node.body || node.properties).find(({
     type
   }) => type !== "EmptyStatement");
@@ -41150,10 +36149,6 @@ function addBlockStatementFirstComment(node, comment) {
     addDanglingComment(node, comment);
   }
 }
-/**
- * @param {Node} node
- * @returns {void}
- */
 
 
 function addBlockOrNotComment(node, comment) {
@@ -41174,22 +36169,7 @@ function handleClosureTypeCastComments({
   }
 
   return false;
-} // There are often comments before the else clause of if statements like
-//
-//   if (1) { ... }
-//   // comment
-//   else { ... }
-//
-// They are being attached as leading comments of the BlockExpression which
-// is not well printed. What we want is to instead move the comment inside
-// of the block and make it leadingComment of the first element of the block
-// or dangling comment of the block if there is nothing inside
-//
-//   if (1) { ... }
-//   else {
-//     // comment
-//     ...
-//   }
+}
 
 
 function handleIfStatementComments({
@@ -41201,11 +36181,7 @@ function handleIfStatementComments({
 }) {
   if (!enclosingNode || enclosingNode.type !== "IfStatement" || !followingNode) {
     return false;
-  } // We unfortunately have no way using the AST or location of nodes to know
-  // if the comment is positioned before the condition parenthesis:
-  //   if (a /* comment */) {}
-  // The only workaround I found is to look at the next character to see if
-  // it is a ).
+  }
 
 
   const nextCharacter = getNextNonSpaceNonCommentCharacter$1(text, comment, locEnd$m);
@@ -41213,9 +36189,7 @@ function handleIfStatementComments({
   if (nextCharacter === ")") {
     addTrailingComment(precedingNode, comment);
     return true;
-  } // Comments before `else`:
-  // - treat as trailing comments of the consequent, if it's a BlockStatement
-  // - treat as a dangling comment otherwise
+  }
 
 
   if (precedingNode === enclosingNode.consequent && followingNode === enclosingNode.alternate) {
@@ -41236,11 +36210,7 @@ function handleIfStatementComments({
   if (followingNode.type === "IfStatement") {
     addBlockOrNotComment(followingNode.consequent, comment);
     return true;
-  } // For comments positioned after the condition parenthesis in an if statement
-  // before the consequent without brackets on, such as
-  // if (a) /* comment */ true,
-  // we look at the next character to see if the following node
-  // is the consequent for the if statement
+  }
 
 
   if (enclosingNode.consequent === followingNode) {
@@ -41260,11 +36230,7 @@ function handleWhileComments({
 }) {
   if (!enclosingNode || enclosingNode.type !== "WhileStatement" || !followingNode) {
     return false;
-  } // We unfortunately have no way using the AST or location of nodes to know
-  // if the comment is positioned before the condition parenthesis:
-  //   while (a /* comment */) {}
-  // The only workaround I found is to look at the next character to see if
-  // it is a ).
+  }
 
 
   const nextCharacter = getNextNonSpaceNonCommentCharacter$1(text, comment, locEnd$m);
@@ -41285,7 +36251,7 @@ function handleWhileComments({
   }
 
   return false;
-} // Same as IfStatement but for TryStatement
+}
 
 
 function handleTryStatementComments({
@@ -41379,8 +36345,7 @@ function handleClassComments({
     if (enclosingNode.body && followingNode === enclosingNode.body) {
       addBlockStatementFirstComment(enclosingNode.body, comment);
       return true;
-    } // Don't add leading comments to `implements`, `extends`, `mixins` to
-    // avoid printing the comment after the keyword.
+    }
 
 
     if (followingNode) {
@@ -41407,17 +36372,12 @@ function handleMethodNameComments({
   enclosingNode,
   text
 }) {
-  // This is only needed for estree parsers (flow, typescript) to attach
-  // after a method name:
-  // obj = { fn /*comment*/() {} };
-  if (enclosingNode && precedingNode && ( // "MethodDefinition" is handled in getCommentChildNodes
-  enclosingNode.type === "Property" || enclosingNode.type === "TSDeclareMethod" || enclosingNode.type === "TSAbstractMethodDefinition") && precedingNode.type === "Identifier" && enclosingNode.key === precedingNode && // special Property case: { key: /*comment*/(value) };
-  // comment should be attached to value instead of key
+  if (enclosingNode && precedingNode && (
+  enclosingNode.type === "Property" || enclosingNode.type === "TSDeclareMethod" || enclosingNode.type === "TSAbstractMethodDefinition") && precedingNode.type === "Identifier" && enclosingNode.key === precedingNode &&
   getNextNonSpaceNonCommentCharacter$1(text, precedingNode, locEnd$m) !== ":") {
     addTrailingComment(precedingNode, comment);
     return true;
-  } // Print comments between decorators and class methods as a trailing comment
-  // on the decorator node instead of the method node
+  }
 
 
   if (precedingNode && enclosingNode && precedingNode.type === "Decorator" && (enclosingNode.type === "ClassMethod" || enclosingNode.type === "ClassProperty" || enclosingNode.type === "PropertyDefinition" || enclosingNode.type === "TSAbstractClassProperty" || enclosingNode.type === "TSAbstractMethodDefinition" || enclosingNode.type === "TSDeclareMethod" || enclosingNode.type === "MethodDefinition")) {
@@ -41472,8 +36432,7 @@ function handleCommentInEmptyParens({
 }) {
   if (getNextNonSpaceNonCommentCharacter$1(text, comment, locEnd$m) !== ")") {
     return false;
-  } // Only add dangling comments to fix the case when no params are present,
-  // i.e. a function without any argument.
+  }
 
 
   if (enclosingNode && (isRealFunctionLikeNode(enclosingNode) && getFunctionParameters$5(enclosingNode).length === 0 || isCallLikeExpression$1(enclosingNode) && getCallArguments$4(enclosingNode).length === 0)) {
@@ -41496,11 +36455,10 @@ function handleLastFunctionArgComments({
   followingNode,
   text
 }) {
-  // Flow function type definitions
   if (precedingNode && precedingNode.type === "FunctionTypeParam" && enclosingNode && enclosingNode.type === "FunctionTypeAnnotation" && followingNode && followingNode.type !== "FunctionTypeParam") {
     addTrailingComment(precedingNode, comment);
     return true;
-  } // Real functions and TypeScript function type definitions
+  }
 
 
   if (precedingNode && (precedingNode.type === "Identifier" || precedingNode.type === "AssignmentPattern") && enclosingNode && isRealFunctionLikeNode(enclosingNode) && getNextNonSpaceNonCommentCharacter$1(text, comment, locEnd$m) === ")") {
@@ -41625,7 +36583,6 @@ function handleOnlyComments({
   ast,
   isLastComment
 }) {
-  // With Flow the enclosingNode is undefined so use the AST instead.
   if (ast && ast.body && ast.body.length === 0) {
     if (isLastComment) {
       addDanglingComment(ast, comment);
@@ -41765,53 +36722,27 @@ function handleTSMappedTypeComments({
 
   return false;
 }
-/**
- * @param {Node} node
- * @returns {boolean}
- */
 
 
 function isRealFunctionLikeNode(node) {
   return node.type === "ArrowFunctionExpression" || node.type === "FunctionExpression" || node.type === "FunctionDeclaration" || node.type === "ObjectMethod" || node.type === "ClassMethod" || node.type === "TSDeclareFunction" || node.type === "TSCallSignatureDeclaration" || node.type === "TSConstructSignatureDeclaration" || node.type === "TSMethodSignature" || node.type === "TSConstructorType" || node.type === "TSFunctionType" || node.type === "TSDeclareMethod";
 }
-/**
- * @param {any} node
- * @returns {Node[] | void}
- */
 
 
 function getCommentChildNodes(node, options) {
-  // Prevent attaching comments to FunctionExpression in this case:
-  //     class Foo {
-  //       bar() // comment
-  //       {
-  //         baz();
-  //       }
-  //     }
   if ((options.parser === "typescript" || options.parser === "flow" || options.parser === "espree" || options.parser === "meriyah" || options.parser === "__babel_estree") && node.type === "MethodDefinition" && node.value && node.value.type === "FunctionExpression" && getFunctionParameters$5(node.value).length === 0 && !node.value.returnType && !isNonEmptyArray$f(node.value.typeParameters) && node.value.body) {
     return [...(node.decorators || []), node.key, node.value.body];
   }
 }
-/**
- * @param {Comment} comment
- * @returns {boolean}
- */
 
 
 function isTypeCastComment(comment) {
-  return isBlockComment$3(comment) && comment.value[0] === "*" && // TypeScript expects the type to be enclosed in curly brackets, however
-  // Closure Compiler accepts types in parens and even without any delimiters at all.
-  // That's why we just search for "@type".
+  return isBlockComment$3(comment) && comment.value[0] === "*" &&
   /@type\b/.test(comment.value);
 }
-/**
- * @param {AstPath} path
- * @returns {boolean}
- */
 
 
 function willPrintOwnComments$1(path
-/*, options */
 ) {
   const node = path.getValue();
   const parent = path.getParentNode();
@@ -41850,34 +36781,27 @@ function needsParens(path, options) {
   }
 
   const name = path.getName();
-  const node = path.getNode(); // to avoid unexpected `}}` in HTML interpolations
+  const node = path.getNode();
 
   if (options.__isInHtmlInterpolation && !options.bracketSpacing && endsWithRightBracket(node) && isFollowedByRightBracket(path)) {
     return true;
-  } // Only statements don't need parentheses.
+  }
 
 
   if (isStatement(node)) {
     return false;
   }
 
-  if ( // Preserve parens if we have a Flow annotation comment, unless we're using the Flow
-  // parser. The Flow parser turns Flow comments into type annotation nodes in its
-  // AST, which we handle separately.
+  if (
   options.parser !== "flow" && hasFlowShorthandAnnotationComment$1(path.getValue())) {
     return true;
-  } // Identifiers never need parentheses.
+  }
 
 
   if (node.type === "Identifier") {
-    // ...unless those identifiers are embed placeholders. They might be substituted by complex
-    // expressions, so the parens around them should not be dropped. Example (JS-in-HTML-in-JS):
-    //     let tpl = html`<script> f((${expr}) / 2); </script>`;
-    // If the inner JS formatter removes the parens, the expression might change its meaning:
-    //     f((a + b) / 2)  vs  f(a + b / 2)
     if (node.extra && node.extra.parenthesized && /^PRETTIER_HTML_PLACEHOLDER_\d+_\d+_IN_JS$/.test(node.name)) {
       return true;
-    } // `for (async of []);` is invalid
+    }
 
 
     if (name === "left" && node.name === "async" && parent.type === "ForOfStatement" && !parent.await) {
@@ -41894,8 +36818,6 @@ function needsParens(path, options) {
     case "ClassDeclaration":
     case "ClassExpression":
       {
-        // Add parens around the extends clause of a class. It is needed for almost
-        // all expressions.
         if (name === "superClass" && (node.type === "ArrowFunctionExpression" || node.type === "AssignmentExpression" || node.type === "AwaitExpression" || node.type === "BinaryExpression" || node.type === "ConditionalExpression" || node.type === "LogicalExpression" || node.type === "NewExpression" || node.type === "ObjectExpression" || node.type === "ParenthesizedExpression" || node.type === "SequenceExpression" || node.type === "TaggedTemplateExpression" || node.type === "UnaryExpression" || node.type === "UpdateExpression" || node.type === "YieldExpression" || node.type === "TSNonNullExpression")) {
           return true;
         }
@@ -41905,10 +36827,8 @@ function needsParens(path, options) {
 
     case "ExportDefaultDeclaration":
       {
-        return (// `export default function` or `export default class` can't be followed by
-          // anything after. So an expression like `export default (function(){}).toString()`
-          // needs to be followed by a parentheses
-          shouldWrapFunctionForExportDefault(path, options) || // `export default (foo, bar)` also needs parentheses
+        return (
+          shouldWrapFunctionForExportDefault(path, options) ||
           node.type === "SequenceExpression"
         );
       }
@@ -41929,9 +36849,7 @@ function needsParens(path, options) {
 
               case "CallExpression":
                 if (
-                /** @(x().y) */
                 hasMemberExpression ||
-                /** @(x().y()) */
                 hasCallExpression) {
                   return true;
                 }
@@ -41957,7 +36875,6 @@ function needsParens(path, options) {
     case "ExpressionStatement":
       {
         if (startsWithNoLookaheadToken$1(node,
-        /* forbidFunctionClassAndDoExpr */
         true)) {
           return true;
         }
@@ -41967,9 +36884,8 @@ function needsParens(path, options) {
 
     case "ArrowFunctionExpression":
       {
-        if (name === "body" && node.type !== "SequenceExpression" && // these have parens added anyway
+        if (name === "body" && node.type !== "SequenceExpression" &&
         startsWithNoLookaheadToken$1(node,
-        /* forbidFunctionClassAndDoExpr */
         false)) {
           return true;
         }
@@ -41984,7 +36900,6 @@ function needsParens(path, options) {
         return node.prefix && (node.operator === "++" && parent.operator === "+" || node.operator === "--" && parent.operator === "-");
       }
 
-    // else fallthrough
 
     case "UnaryExpression":
       switch (parent.type) {
@@ -42020,8 +36935,7 @@ function needsParens(path, options) {
       {
         if (parent.type === "UpdateExpression" || parent.type === "PipelineTopicExpression" && node.operator === "|>") {
           return true;
-        } // We add parentheses to any `a in b` inside `ForStatement` initializer
-        // https://github.com/prettier/prettier/issues/907#issuecomment-284304321
+        }
 
 
         if (node.operator === "in" && isPathInForStatementInitializer(path)) {
@@ -42036,14 +36950,12 @@ function needsParens(path, options) {
           }
         }
       }
-    // fallthrough
 
     case "TSTypeAssertion":
     case "TSAsExpression":
     case "LogicalExpression":
       switch (parent.type) {
         case "TSAsExpression":
-          // example: foo as unknown as Bar
           return node.type !== "TSAsExpression";
 
         case "ConditionalExpression":
@@ -42083,7 +36995,6 @@ function needsParens(path, options) {
             return parent.operator !== node.operator;
           }
 
-        // else fallthrough
 
         case "BinaryExpression":
           {
@@ -42114,8 +37025,7 @@ function needsParens(path, options) {
 
             if (parentPrecedence < precedence && operator === "%") {
               return parentOperator === "+" || parentOperator === "-";
-            } // Add parenthesis when working with bitwise operators
-            // It's not strictly needed but helps with code understanding
+            }
 
 
             if (isBitwiseOperator(parentOperator)) {
@@ -42135,23 +37045,15 @@ function needsParens(path, options) {
           return false;
 
         case "ForStatement":
-          // Although parentheses wouldn't hurt around sequence
-          // expressions in the head of for loops, traditional style
-          // dictates that e.g. i++, j++ should not be wrapped with
-          // parentheses.
           return false;
 
         case "ExpressionStatement":
           return name !== "expression";
 
         case "ArrowFunctionExpression":
-          // We do need parentheses, but SequenceExpressions are handled
-          // specially when printing bodies of arrow functions.
           return name !== "body";
 
         default:
-          // Otherwise err on the side of overparenthesization, adding
-          // explicit exceptions above if this proves overzealous.
           return true;
       }
 
@@ -42164,7 +37066,6 @@ function needsParens(path, options) {
         return true;
       }
 
-    // else fallthrough
 
     case "AwaitExpression":
       switch (parent.type) {
@@ -42208,7 +37109,6 @@ function needsParens(path, options) {
         return true;
       }
 
-    // fallthrough
 
     case "TSFunctionType":
     case "TSConstructorType":
@@ -42216,7 +37116,6 @@ function needsParens(path, options) {
         return true;
       }
 
-    // fallthrough
 
     case "TSUnionType":
     case "TSIntersectionType":
@@ -42224,14 +37123,12 @@ function needsParens(path, options) {
         return true;
       }
 
-    // fallthrough
 
     case "TSInferType":
       if (node.type === "TSInferType" && parent.type === "TSRestType") {
         return false;
       }
 
-    // fallthrough
 
     case "TSTypeOperator":
       return parent.type === "TSArrayType" || parent.type === "TSOptionalType" || parent.type === "TSRestType" || name === "objectType" && parent.type === "TSIndexedAccessType" || parent.type === "TSTypeOperator" || parent.type === "TSTypeAnnotation" && /^TSJSDoc/.test(path.getParentNode(1).type);
@@ -42249,10 +37146,8 @@ function needsParens(path, options) {
     case "FunctionTypeAnnotation":
       {
         const ancestor = parent.type === "NullableTypeAnnotation" ? path.getParentNode(1) : parent;
-        return ancestor.type === "UnionTypeAnnotation" || ancestor.type === "IntersectionTypeAnnotation" || ancestor.type === "ArrayTypeAnnotation" || name === "objectType" && (ancestor.type === "IndexedAccessType" || ancestor.type === "OptionalIndexedAccessType") || // We should check ancestor's parent to know whether the parentheses
-        // are really needed, but since ??T doesn't make sense this check
-        // will almost never be true.
-        ancestor.type === "NullableTypeAnnotation" || // See #5283
+        return ancestor.type === "UnionTypeAnnotation" || ancestor.type === "IntersectionTypeAnnotation" || ancestor.type === "ArrayTypeAnnotation" || name === "objectType" && (ancestor.type === "IndexedAccessType" || ancestor.type === "OptionalIndexedAccessType") ||
+        ancestor.type === "NullableTypeAnnotation" ||
         parent.type === "FunctionTypeParam" && parent.name === null && getFunctionParameters$4(node).some(param => param.typeAnnotation && param.typeAnnotation.type === "NullableTypeAnnotation");
       }
 
@@ -42266,7 +37161,6 @@ function needsParens(path, options) {
     case "NumericLiteral":
     case "Literal":
       if (typeof node.value === "string" && parent.type === "ExpressionStatement" && !parent.directive) {
-        // To avoid becoming a directive
         const grandParent = path.getParentNode(1);
         return grandParent.type === "Program" || grandParent.type === "BlockStatement";
       }
@@ -42355,13 +37249,10 @@ function needsParens(path, options) {
         case "NewExpression":
         case "CallExpression":
         case "OptionalCallExpression":
-          // Not always necessary, but it's clearer to the reader if IIFEs are wrapped in parentheses.
-          // Is necessary if it is `expression` of `ExpressionStatement`.
           return name === "callee";
 
         case "TaggedTemplateExpression":
           return true;
-        // This is basically a kind of IIFE.
 
         default:
           return false;
@@ -42419,7 +37310,6 @@ function needsParens(path, options) {
           return true;
         }
       }
-    // fallthrough
 
     case "CallExpression":
     case "MemberExpression":
@@ -42439,8 +37329,6 @@ function needsParens(path, options) {
             case "BindExpression":
               object = object.object;
               break;
-            // tagged templates are basically member expressions from a grammar perspective
-            // see https://tc39.github.io/ecma262/#prod-MemberExpression
 
             case "TaggedTemplateExpression":
               object = object.tag;
@@ -42462,7 +37350,7 @@ function needsParens(path, options) {
       return name === "callee" && (parent.type === "BindExpression" || parent.type === "NewExpression") || name === "object" && isMemberExpression$7(parent);
 
     case "NGPipeExpression":
-      if (parent.type === "NGRoot" || parent.type === "NGMicrosyntaxExpression" || parent.type === "ObjectProperty" && // Preserve parens for compatibility with AngularJS expressions
+      if (parent.type === "NGRoot" || parent.type === "NGMicrosyntaxExpression" || parent.type === "ObjectProperty" &&
       !(node.extra && node.extra.parenthesized) || parent.type === "ArrayExpression" || isCallExpression$b(parent) && parent.arguments[name] === node || name === "right" && parent.type === "NGPipeExpression" || name === "property" && parent.type === "MemberExpression" || parent.type === "AssignmentExpression") {
         return false;
       }
@@ -42567,9 +37455,7 @@ function shouldWrapFunctionForExportDefault(path, options) {
   const parent = path.getParentNode();
 
   if (node.type === "FunctionExpression" || node.type === "ClassExpression") {
-    return parent.type === "ExportDefaultDeclaration" || // in some cases the function is already wrapped
-    // (e.g. `export default (function() {})();`)
-    // in this case we don't need to add extra parens
+    return parent.type === "ExportDefaultDeclaration" ||
     !needsParens(path, options);
   }
 
@@ -42642,7 +37528,7 @@ function printHtmlBinding$1(path, options, print) {
   if (options.__isVueBindings) {
     return path.call(functionDeclarationPath => join$r([",", line$t], functionDeclarationPath.map(print, "params")), "program", "body", 0);
   }
-} // based on https://github.com/prettier/prettier/blob/main/src/language-html/syntax-vue.js isVueEventBindingExpression()
+}
 
 
 function isVueEventBindingExpression$3(node) {
@@ -42704,7 +37590,6 @@ const {
   isMemberExpression: isMemberExpression$6,
   isObjectProperty: isObjectProperty$2
 } = utils$5;
-/** @typedef {import("../../document").Doc} Doc */
 
 let uid = 0;
 
@@ -42714,34 +37599,16 @@ function printBinaryishExpression$2(path, options, print) {
   const parentParent = path.getParentNode(1);
   const isInsideParenthesis = node !== parent.body && (parent.type === "IfStatement" || parent.type === "WhileStatement" || parent.type === "SwitchStatement" || parent.type === "DoWhileStatement");
   const parts = printBinaryishExpressions(path, print, options,
-  /* isNested */
-  false, isInsideParenthesis); //   if (
-  //     this.hasPlugin("dynamicImports") && this.lookahead().type === tt.parenLeft
-  //   ) {
-  //
-  // looks super weird, we want to break the children if the parent breaks
-  //
-  //   if (
-  //     this.hasPlugin("dynamicImports") &&
-  //     this.lookahead().type === tt.parenLeft
-  //   ) {
+  false, isInsideParenthesis);
 
   if (isInsideParenthesis) {
     return parts;
-  } // Break between the parens in
-  // unaries or in a member or specific call expression, i.e.
-  //
-  //   (
-  //     a &&
-  //     b &&
-  //     c
-  //   ).call()
+  }
 
 
   if (isCallExpression$a(parent) && parent.callee === node || parent.type === "UnaryExpression" || isMemberExpression$6(parent) && !parent.computed) {
     return group$x([indent$r([softline$n, ...parts]), softline$n]);
-  } // Avoid indenting sub-expressions in some cases where the first sub-expression is already
-  // indented accordingly. We should indent sub-expressions where the first case isn't indented.
+  }
 
 
   const shouldNotIndent = parent.type === "ReturnStatement" || parent.type === "ThrowStatement" || parent.type === "JSXExpressionContainer" && parentParent.type === "JSXAttribute" || node.operator !== "|" && parent.type === "JsExpressionRoot" || node.type !== "NGPipeExpression" && (parent.type === "NGRoot" && options.parser === "__ng_binding" || parent.type === "NGMicrosyntaxExpression" && parentParent.type === "NGMicrosyntax" && parentParent.body.length === 1) || node === parent.body && parent.type === "ArrowFunctionExpression" || node !== parent.body && parent.type === "ForStatement" || parent.type === "ConditionalExpression" && parentParent.type !== "ReturnStatement" && parentParent.type !== "ThrowStatement" && !isCallExpression$a(parentParent) || parent.type === "TemplateLiteral";
@@ -42754,25 +37621,16 @@ function printBinaryishExpression$2(path, options, print) {
 
   if (parts.length === 0) {
     return "";
-  } // If the right part is a JSX node, we include it in a separate group to
-  // prevent it breaking the whole chain, so we can print the expression like:
-  //
-  //   foo && bar && (
-  //     <Foo>
-  //       <Bar />
-  //     </Foo>
-  //   )
+  }
 
 
   const hasJsx = isJsxNode$5(node.right);
-  const firstGroupIndex = parts.findIndex(part => typeof part !== "string" && !Array.isArray(part) && part.type === "group"); // Separate the leftmost expression, possibly with its leading comments.
+  const firstGroupIndex = parts.findIndex(part => typeof part !== "string" && !Array.isArray(part) && part.type === "group");
 
   const headParts = parts.slice(0, firstGroupIndex === -1 ? 1 : firstGroupIndex + 1);
   const rest = parts.slice(headParts.length, hasJsx ? -1 : undefined);
   const groupId = Symbol("logicalChain-" + ++uid);
-  const chain = group$x([// Don't include the initial expression in the indentation
-  // level. The first item is guaranteed to be the first
-  // left-most expression.
+  const chain = group$x([
   ...headParts, indent$r(rest)], {
     id: groupId
   });
@@ -42785,35 +37643,16 @@ function printBinaryishExpression$2(path, options, print) {
   return group$x([chain, indentIfBreak$3(jsxPart, {
     groupId
   })]);
-} // For binary expressions to be consistent, we need to group
-// subsequent operators with the same precedence level under a single
-// group. Otherwise they will be nested such that some of them break
-// onto new lines but not all. Operators with the same precedence
-// level should either all break or not. Because we group them by
-// precedence level and the AST is structured based on precedence
-// level, things are naturally broken up correctly, i.e. `&&` is
-// broken before `+`.
+}
 
 
 function printBinaryishExpressions(path, print, options, isNested, isInsideParenthesis) {
-  /** @type{Doc[]} */
   let parts = [];
-  const node = path.getValue(); // We treat BinaryExpression and LogicalExpression nodes the same.
+  const node = path.getValue();
 
   if (isBinaryish$3(node)) {
-    // Put all operators with the same precedence level in the same
-    // group. The reason we only need to do this with the `left`
-    // expression is because given an expression like `1 + 2 - 3`, it
-    // is always parsed like `((1 + 2) - 3)`, meaning the `left` side
-    // is where the rest of the expression will exist. Binary
-    // expressions on the right side mean they have a difference
-    // precedence level and should be treated as a separate group, so
-    // print them normally. (This doesn't hold for the `**` operator,
-    // which is unique in that it is right-associative.)
     if (shouldFlatten(node.operator, node.left.operator)) {
-      // Flatten them out by recursively calling this function.
       parts = [...parts, ...path.call(left => printBinaryishExpressions(left, print, options,
-      /* isNested */
       true, isInsideParenthesis), "left")];
     } else {
       parts.push(group$x(print("left")));
@@ -42823,21 +37662,17 @@ function printBinaryishExpressions(path, print, options, isNested, isInsideParen
     const lineBeforeOperator = (node.operator === "|>" || node.type === "NGPipeExpression" || node.operator === "|" && options.parser === "__vue_expression") && !hasLeadingOwnLineComment$3(options.originalText, node.right);
     const operator = node.type === "NGPipeExpression" ? "|" : node.operator;
     const rightSuffix = node.type === "NGPipeExpression" && node.arguments.length > 0 ? group$x(indent$r([softline$n, ": ", join$q([softline$n, ":", ifBreak$l(" ")], path.map(print, "arguments").map(arg => align$4(2, group$x(arg))))])) : "";
-    const right = shouldInline ? [operator, " ", print("right"), rightSuffix] : [lineBeforeOperator ? line$s : "", operator, lineBeforeOperator ? " " : line$s, print("right"), rightSuffix]; // If there's only a single binary expression, we want to create a group
-    // in order to avoid having a small right part like -1 be on its own line.
+    const right = shouldInline ? [operator, " ", print("right"), rightSuffix] : [lineBeforeOperator ? line$s : "", operator, lineBeforeOperator ? " " : line$s, print("right"), rightSuffix];
 
     const parent = path.getParentNode();
     const shouldBreak = hasComment$g(node.left, CommentCheckFlags$d.Trailing | CommentCheckFlags$d.Line);
     const shouldGroup = shouldBreak || !(isInsideParenthesis && node.type === "LogicalExpression") && parent.type !== node.type && node.left.type !== node.type && node.right.type !== node.type;
     parts.push(lineBeforeOperator ? "" : " ", shouldGroup ? group$x(right, {
       shouldBreak
-    }) : right); // The root comments are already printed, but we need to manually print
-    // the other ones since we don't call the normal print on BinaryExpression,
-    // only for the left and right parts
+    }) : right);
 
     if (isNested && hasComment$g(node)) {
       const printed = cleanDoc$2(printComments$5(path, parts, options));
-      /* istanbul ignore else */
 
       if (isConcat$1(printed) || printed.type === "fill") {
         parts = getDocParts$5(printed);
@@ -42846,7 +37681,6 @@ function printBinaryishExpressions(path, print, options, isNested, isInsideParen
       }
     }
   } else {
-    // Our stopping case. Simply print the node normally.
     parts.push(group$x(print()));
   }
 
@@ -42893,10 +37727,9 @@ const {
 const {
   printBinaryishExpression: printBinaryishExpression$1
 } = binaryish;
-/** @typedef {import("../../common/ast-path")} AstPath */
 
 function printAngular$1(path, options, print) {
-  const node = path.getValue(); // Angular nodes always starts with `NG`
+  const node = path.getValue();
 
   if (!node.type.startsWith("NG")) {
     return;
@@ -42942,7 +37775,6 @@ function printAngular$1(path, options, print) {
       return [print("key"), " as ", print("alias")];
 
     default:
-      /* istanbul ignore next */
       throw new Error(`Unknown Angular node type: ${JSON.stringify(node.type)}.`);
   }
 }
@@ -42950,12 +37782,7 @@ function printAngular$1(path, options, print) {
 function isNgForOf(node, index, parentNode) {
   return node.type === "NGMicrosyntaxKeyedExpression" && node.key.name === "of" && index === 1 && parentNode.body[0].type === "NGMicrosyntaxLet" && parentNode.body[0].value === null;
 }
-/** identify if an angular expression seems to have side effects */
 
-/**
- * @param {AstPath} path
- * @returns {boolean}
- */
 
 
 function hasNgSideEffect(path) {
@@ -43017,26 +37844,6 @@ const {
 } = comments;
 
 const isEmptyStringOrAnyLine = doc => doc === "" || doc === line$q || doc === hardline$t || doc === softline$m;
-/**
- * @typedef {import("../../common/ast-path")} AstPath
- * @typedef {import("../types/estree").Node} Node
- * @typedef {import("../types/estree").JSXElement} JSXElement
- */
-// JSX expands children from the inside-out, instead of the outside-in.
-// This is both to break children before attributes,
-// and to ensure that when children break, their parents do as well.
-//
-// Any element that is written without any newlines and fits on a single line
-// is left that way.
-// Not only that, any user-written-line containing multiple JSX siblings
-// should also be kept on one line if possible,
-// so each user-written-line is wrapped in its own group.
-//
-// Elements that contain newlines or don't fit on a single line (recursively)
-// are fully-split, using hardline and shouldBreak: true.
-//
-// To support that case properly, all leading and trailing spaces
-// are stripped from the list of children, and replaced with a single hardline.
 
 
 function printJsxElementInternal(path, options, print) {
@@ -43051,9 +37858,7 @@ function printJsxElementInternal(path, options, print) {
 
   if (node.children.length === 1 && node.children[0].type === "JSXExpressionContainer" && (node.children[0].expression.type === "TemplateLiteral" || node.children[0].expression.type === "TaggedTemplateExpression")) {
     return [openingLines, ...path.map(print, "children"), closingLines];
-  } // Convert `{" "}` to text nodes containing a space.
-  // This makes it easy to turn them into `jsxWhitespace` which
-  // can then print as either a space or `{" "}` when breaking.
+  }
 
 
   node.children = node.children.map(child => {
@@ -43069,7 +37874,7 @@ function printJsxElementInternal(path, options, print) {
   });
   const containsTag = node.children.filter(isJsxNode$4).length > 0;
   const containsMultipleExpressions = node.children.filter(child => child.type === "JSXExpressionContainer").length > 1;
-  const containsMultipleAttributes = node.type === "JSXElement" && node.openingElement.attributes.length > 1; // Record any breaks. Should never go from true to false, only false to true.
+  const containsMultipleAttributes = node.type === "JSXElement" && node.openingElement.attributes.length > 1;
 
   let forcedBreak = willBreak$5(openingLines) || containsTag || containsMultipleAttributes || containsMultipleExpressions;
   const isMdxBlock = path.getParentNode().rootMarker === "mdx";
@@ -43077,10 +37882,7 @@ function printJsxElementInternal(path, options, print) {
   const jsxWhitespace = isMdxBlock ? " " : ifBreak$k([rawJsxWhitespace, softline$m], " ");
   const isFacebookTranslationTag = node.openingElement && node.openingElement.name && node.openingElement.name.name === "fbt";
   const children = printJsxChildren(path, options, print, jsxWhitespace, isFacebookTranslationTag);
-  const containsText = node.children.some(child => isMeaningfulJsxText(child)); // We can end up we multiple whitespace elements with empty string
-  // content between them.
-  // We need to remove empty whitespace and softlines before JSX whitespace
-  // to get the correct output.
+  const containsText = node.children.some(child => isMeaningfulJsxText(child));
 
   for (let i = children.length - 2; i >= 0; i--) {
     const isPairOfEmptyStrings = children[i] === "" && children[i + 1] === "";
@@ -43095,43 +37897,37 @@ function printJsxElementInternal(path, options, print) {
     } else if (isJsxWhitespaceFollowedByLine) {
       children.splice(i + 1, 2);
     }
-  } // Trim trailing lines (or empty strings)
+  }
 
 
   while (children.length > 0 && isEmptyStringOrAnyLine(getLast$a(children))) {
     children.pop();
-  } // Trim leading lines (or empty strings)
+  }
 
 
   while (children.length > 1 && isEmptyStringOrAnyLine(children[0]) && isEmptyStringOrAnyLine(children[1])) {
     children.shift();
     children.shift();
-  } // Tweak how we format children if outputting this element over multiple lines.
-  // Also detect whether we will force this element to output over multiple lines.
+  }
 
 
   const multilineChildren = [];
 
   for (const [i, child] of children.entries()) {
-    // There are a number of situations where we need to ensure we display
-    // whitespace as `{" "}` when outputting this element over multiple lines.
     if (child === jsxWhitespace) {
       if (i === 1 && children[i - 1] === "") {
         if (children.length === 2) {
-          // Solitary whitespace
           multilineChildren.push(rawJsxWhitespace);
           continue;
-        } // Leading whitespace
+        }
 
 
         multilineChildren.push([rawJsxWhitespace, hardline$t]);
         continue;
       } else if (i === children.length - 1) {
-        // Trailing whitespace
         multilineChildren.push(rawJsxWhitespace);
         continue;
       } else if (children[i - 1] === "" && children[i - 2] === hardline$t) {
-        // Whitespace after line break
         multilineChildren.push(rawJsxWhitespace);
         continue;
       }
@@ -43142,9 +37938,7 @@ function printJsxElementInternal(path, options, print) {
     if (willBreak$5(child)) {
       forcedBreak = true;
     }
-  } // If there is text we use `fill` to fit as much onto each line as possible.
-  // When there is no text (just tags and expressions) we use `group`
-  // to output each on a separate line.
+  }
 
 
   const content = containsText ? fill$7(multilineChildren) : group$v(multilineChildren, {
@@ -43162,18 +37956,7 @@ function printJsxElementInternal(path, options, print) {
   }
 
   return conditionalGroup$4([group$v([openingLines, ...children, closingLines]), multiLineElem]);
-} // JSX Children are strange, mostly for two reasons:
-// 1. JSX reads newlines into string values, instead of skipping them like JS
-// 2. up to one whitespace between elements within a line is significant,
-//    but not between lines.
-//
-// Leading, trailing, and lone whitespace all need to
-// turn themselves into the rather ugly `{' '}` when breaking.
-//
-// We print JSX using the `fill` doc primitive.
-// This requires that we give it an array of alternating
-// content and whitespace elements.
-// To ensure this we add dummy `""` content elements as needed.
+}
 
 
 function printJsxChildren(path, options, print, jsxWhitespace, isFacebookTranslationTag) {
@@ -43182,10 +37965,10 @@ function printJsxChildren(path, options, print, jsxWhitespace, isFacebookTransla
     const child = childPath.getValue();
 
     if (isLiteral$2(child)) {
-      const text = rawText$4(child); // Contains a non-whitespace character
+      const text = rawText$4(child);
 
       if (isMeaningfulJsxText(child)) {
-        const words = text.split(matchJsxWhitespaceRegex); // Starts with whitespace
+        const words = text.split(matchJsxWhitespaceRegex);
 
         if (words[0] === "") {
           parts.push("");
@@ -43201,12 +37984,12 @@ function printJsxChildren(path, options, print, jsxWhitespace, isFacebookTransla
           words.shift();
         }
 
-        let endWhitespace; // Ends with whitespace
+        let endWhitespace;
 
         if (getLast$a(words) === "") {
           words.pop();
           endWhitespace = words.pop();
-        } // This was whitespace only without a new line.
+        }
 
 
         if (words.length === 0) {
@@ -43233,8 +38016,6 @@ function printJsxChildren(path, options, print, jsxWhitespace, isFacebookTransla
           parts.push(separatorNoWhitespace(isFacebookTranslationTag, getLast$a(parts), child, next));
         }
       } else if (/\n/.test(text)) {
-        // Keep (up to one) blank line between tags/expressions/text.
-        // Note: We don't keep blank lines between text elements.
         if (text.match(/\n/g).length > 1) {
           parts.push("", hardline$t);
         }
@@ -43284,7 +38065,6 @@ function separatorWithWhitespace(isFacebookTranslationTag, child, childNode, nex
 
 function maybeWrapJsxElementInParens(path, elem, options) {
   const parent = path.getParentNode();
-  /* istanbul ignore next */
 
   if (!parent) {
     return elem;
@@ -43323,7 +38103,7 @@ function printJsxAttribute(path, options, print) {
     let res;
 
     if (isStringLiteral$4(node.value)) {
-      const raw = rawText$4(node.value); // Unescape all quotes so we get an accurate preferred quote
+      const raw = rawText$4(node.value);
 
       let final = raw.replace(/&apos;/g, "'").replace(/&quot;/g, '"');
       const quote = getPreferredQuote(final, options.jsxSingleQuote ? "'" : '"');
@@ -43354,38 +38134,22 @@ function printJsxExpressionContainer(path, options, print) {
 
 function printJsxOpeningElement(path, options, print) {
   const node = path.getValue();
-  const nameHasComments = node.name && hasComment$e(node.name) || node.typeParameters && hasComment$e(node.typeParameters); // Don't break self-closing elements with no attributes and no comments
+  const nameHasComments = node.name && hasComment$e(node.name) || node.typeParameters && hasComment$e(node.typeParameters);
 
   if (node.selfClosing && node.attributes.length === 0 && !nameHasComments) {
     return ["<", print("name"), print("typeParameters"), " />"];
-  } // don't break up opening elements with a single long text attribute
+  }
 
 
-  if (node.attributes && node.attributes.length === 1 && node.attributes[0].value && isStringLiteral$4(node.attributes[0].value) && !node.attributes[0].value.value.includes("\n") && // We should break for the following cases:
-  // <div
-  //   // comment
-  //   attr="value"
-  // >
-  // <div
-  //   attr="value"
-  //   // comment
-  // >
+  if (node.attributes && node.attributes.length === 1 && node.attributes[0].value && isStringLiteral$4(node.attributes[0].value) && !node.attributes[0].value.value.includes("\n") &&
   !nameHasComments && !hasComment$e(node.attributes[0])) {
     return group$v(["<", print("name"), print("typeParameters"), " ", ...path.map(print, "attributes"), node.selfClosing ? " />" : ">"]);
   }
 
   const lastAttrHasTrailingComments = node.attributes.length > 0 && hasComment$e(getLast$a(node.attributes), CommentCheckFlags$c.Trailing);
-  const bracketSameLine = // Simple tags (no attributes and no comment in tag name) should be
-  // kept unbroken regardless of `jsxBracketSameLine`
-  node.attributes.length === 0 && !nameHasComments || options.jsxBracketSameLine && ( // We should print the bracket in a new line for the following cases:
-  // <div
-  //   // comment
-  // >
-  // <div
-  //   attr // comment
-  // >
-  !nameHasComments || node.attributes.length > 0) && !lastAttrHasTrailingComments; // We should print the opening element expanded if any prop value is a
-  // string literal with newlines
+  const bracketSameLine =
+  node.attributes.length === 0 && !nameHasComments || options.jsxBracketSameLine && (
+  !nameHasComments || node.attributes.length > 0) && !lastAttrHasTrailingComments;
 
   const shouldBreak = node.attributes && node.attributes.some(attr => attr.value && isStringLiteral$4(attr.value) && attr.value.value.includes("\n"));
   return group$v(["<", print("name"), print("typeParameters"), indent$q(path.map(() => [line$q, print()], "attributes")), node.selfClosing ? line$q : bracketSameLine ? ">" : softline$m, node.selfClosing ? "/>" : bracketSameLine ? "" : ">"], {
@@ -43412,7 +38176,6 @@ function printJsxClosingElement(path, options, print) {
 }
 
 function printJsxOpeningClosingFragment(path, options
-/*, print*/
 ) {
   const node = path.getValue();
   const nodeHasComment = hasComment$e(node);
@@ -43427,14 +38190,12 @@ function printJsxElement(path, options, print) {
 }
 
 function printJsxEmptyExpression(path, options
-/*, print*/
 ) {
   const node = path.getValue();
   const requiresHardline = hasComment$e(node, CommentCheckFlags$c.Line);
   return [printDanglingComments$d(path, options,
-  /* sameIndent */
   !requiresHardline), requiresHardline ? hardline$t : ""];
-} // `JSXSpreadAttribute` and `JSXSpreadChild`
+}
 
 
 function printJsxSpreadAttribute(path, options, print) {
@@ -43452,7 +38213,7 @@ function printJsxSpreadAttribute(path, options, print) {
 }
 
 function printJsx$1(path, options, print) {
-  const node = path.getValue(); // JSX nodes always starts with `JSX`
+  const node = path.getValue();
 
   if (!node.type.startsWith("JSX")) {
     return;
@@ -43476,7 +38237,6 @@ function printJsx$1(path, options, print) {
 
     case "JSXSpreadChild":
       {
-        // Same as `printJsxSpreadAttribute`
         const printJsxSpreadChild = printJsxSpreadAttribute;
         return printJsxSpreadChild(path, options, print);
       }
@@ -43497,24 +38257,19 @@ function printJsx$1(path, options, print) {
     case "JSXOpeningFragment":
     case "JSXClosingFragment":
       return printJsxOpeningClosingFragment(path, options
-      /*, print*/
       );
 
     case "JSXEmptyExpression":
       return printJsxEmptyExpression(path, options
-      /*, print*/
       );
 
     case "JSXText":
-      /* istanbul ignore next */
       throw new Error("JSXTest should be handled by JSXElement");
 
     default:
-      /* istanbul ignore next */
       throw new Error(`Unknown JSX node type: ${JSON.stringify(node.type)}.`);
   }
-} // Only space, newline, carriage return, and tab are treated as whitespace
-// inside JSX.
+}
 
 
 const jsxWhitespaceChars = " \n\r\t";
@@ -43522,10 +38277,6 @@ const matchJsxWhitespaceRegex = new RegExp("([" + jsxWhitespaceChars + "]+)");
 const containsNonJsxWhitespaceRegex = new RegExp("[^" + jsxWhitespaceChars + "]");
 
 const trimJsxWhitespace = text => text.replace(new RegExp("(?:^" + matchJsxWhitespaceRegex.source + "|" + matchJsxWhitespaceRegex.source + "$)"), "");
-/**
- * @param {JSXElement} node
- * @returns {boolean}
- */
 
 
 function isEmptyJsxElement(node) {
@@ -43535,33 +38286,23 @@ function isEmptyJsxElement(node) {
 
   if (node.children.length > 1) {
     return false;
-  } // if there is one text child and does not contain any meaningful text
-  // we can treat the element as empty.
+  }
 
 
   const child = node.children[0];
   return isLiteral$2(child) && !isMeaningfulJsxText(child);
-} // Meaningful if it contains non-whitespace characters,
-// or it contains whitespace without a new line.
+}
 
-/**
- * @param {Node} node
- * @returns {boolean}
- */
 
 
 function isMeaningfulJsxText(node) {
   return isLiteral$2(node) && (containsNonJsxWhitespaceRegex.test(rawText$4(node)) || !/\n/.test(rawText$4(node)));
-} // Detect an expression node representing `{" "}`
+}
 
 
 function isJsxWhitespaceExpression(node) {
   return node.type === "JSXExpressionContainer" && isLiteral$2(node.expression) && node.expression.value === " " && !hasComment$e(node.expression);
 }
-/**
- * @param {AstPath} path
- * @returns {boolean}
- */
 
 
 function hasJsxIgnoreComment$1(path) {
@@ -43570,7 +38311,7 @@ function hasJsxIgnoreComment$1(path) {
 
   if (!parent || !node || !isJsxNode$4(node) || !isJsxNode$4(parent)) {
     return false;
-  } // Lookup the previous sibling, ignoring any empty JSXText elements
+  }
 
 
   const index = parent.children.indexOf(node);
@@ -43595,10 +38336,8 @@ var jsx = {
   printJsx: printJsx$1
 };
 
-// `Array.prototype.flat` method
-// https://tc39.es/ecma262/#sec-array.prototype.flat
 _export({ target: 'Array', proto: true }, {
-  flat: function flat(/* depthArg = 1 */) {
+  flat: function flat() {
     var depthArg = arguments.length ? arguments[0] : undefined;
     var O = toObject(this);
     var sourceLen = toLength(O.length);
@@ -43625,8 +38364,7 @@ const {
 function printOptionalToken$9(path) {
   const node = path.getValue();
 
-  if (!node.optional || // It's an optional computed method parsed by typescript-estree.
-  // "?" is printed in `printMethod`.
+  if (!node.optional ||
   node.type === "Identifier" && node === path.getParentNode().key) {
     return "";
   }
@@ -43743,11 +38481,9 @@ const {
   printOptionalToken: printOptionalToken$8,
   printTypeAnnotation: printTypeAnnotation$4
 } = misc$1;
-/** @typedef {import("../../document").Doc} Doc */
 
 function printArray$1(path, options, print) {
   const node = path.getValue();
-  /** @type{Doc[]} */
 
   const parts = [];
   const openBracket = node.type === "TupleExpression" ? "#[" : "[";
@@ -43761,16 +38497,7 @@ function printArray$1(path, options, print) {
     }
   } else {
     const lastElem = getLast$9(node.elements);
-    const canHaveTrailingComma = !(lastElem && lastElem.type === "RestElement"); // JavaScript allows you to have empty elements in an array which
-    // changes its length based on the number of commas. The algorithm
-    // is that if the last argument is null, we need to force insert
-    // a comma to ensure JavaScript recognizes it.
-    //   [,].length === 1
-    //   [1,].length === 1
-    //   [1,,].length === 2
-    //
-    // Note that getLast returns null if the array is empty, but
-    // we already check for an empty array just above so we are safe
+    const canHaveTrailingComma = !(lastElem && lastElem.type === "RestElement");
 
     const needsForcedTrailingComma = lastElem === null;
     const groupId = Symbol("array");
@@ -43795,7 +38522,6 @@ function printArray$1(path, options, print) {
       groupId
     }) : ifBreak$j(",");
     parts.push(group$u([openBracket, indent$o([softline$l, shouldUseConciseFormatting ? printArrayItemsConcisely(path, options, print, trailingComma) : [printArrayItems$3(path, options, "elements", print), trailingComma], printDanglingComments$c(path, options,
-    /* sameIndent */
     true)]), softline$l, closeBracket], {
       shouldBreak,
       id: groupId
@@ -43896,9 +38622,8 @@ function printCallArguments(path, options, print) {
 
   if (args.length === 0) {
     return ["(", printDanglingComments$b(path, options,
-    /* sameIndent */
     true), ")"];
-  } // useEffect(() => { ... }, [foo, bar, baz])
+  }
 
 
   if (isReactHookCallWithDepsArray(args)) {
@@ -43926,7 +38651,7 @@ function printCallArguments(path, options, print) {
 
     printedArguments.push(parts);
   });
-  const maybeTrailingComma = // Dynamic imports cannot have trailing commas
+  const maybeTrailingComma =
   !(isDynamicImport || node.callee && node.callee.type === "Import") && shouldPrintComma$9(options, "all") ? "," : "";
 
   function allArgsBrokenOut() {
@@ -43945,7 +38670,7 @@ function printCallArguments(path, options, print) {
   if (shouldGroupFirst || shouldGroupLast) {
     if (shouldGroupFirst ? printedArguments.slice(1).some(willBreak$4) : printedArguments.slice(0, -1).some(willBreak$4)) {
       return allArgsBrokenOut();
-    } // We want to print the last argument with a special flag
+    }
 
 
     let printedExpanded = [];
@@ -43970,7 +38695,6 @@ function printCallArguments(path, options, print) {
       if (caught instanceof ArgExpansionBailout$2) {
         return allArgsBrokenOut();
       }
-      /* istanbul ignore next */
 
 
       throw caught;
@@ -43986,8 +38710,6 @@ function printCallArguments(path, options, print) {
   const contents = ["(", indent$n([softline$k, ...printedArguments]), ifBreak$i(maybeTrailingComma), softline$k, ")"];
 
   if (isLongCurriedCallExpression$1(path)) {
-    // By not wrapping the arguments in a group, the printer prioritizes
-    // breaking up these arguments rather than the args of the parent call.
     return contents;
   }
 
@@ -43997,27 +38719,16 @@ function printCallArguments(path, options, print) {
 }
 
 function couldGroupArg(arg, arrowChainRecursion = false) {
-  return arg.type === "ObjectExpression" && (arg.properties.length > 0 || hasComment$c(arg)) || arg.type === "ArrayExpression" && (arg.elements.length > 0 || hasComment$c(arg)) || arg.type === "TSTypeAssertion" && couldGroupArg(arg.expression) || arg.type === "TSAsExpression" && couldGroupArg(arg.expression) || arg.type === "FunctionExpression" || arg.type === "ArrowFunctionExpression" && ( // we want to avoid breaking inside composite return types but not simple keywords
-  // https://github.com/prettier/prettier/issues/4070
-  // export class Thing implements OtherThing {
-  //   do: (type: Type) => Provider<Prop> = memoize(
-  //     (type: ObjectType): Provider<Opts> => {}
-  //   );
-  // }
-  // https://github.com/prettier/prettier/issues/6099
-  // app.get("/", (req, res): void => {
-  //   res.send("Hello World!");
-  // });
-  !arg.returnType || !arg.returnType.typeAnnotation || arg.returnType.typeAnnotation.type !== "TSTypeReference" || // https://github.com/prettier/prettier/issues/7542
+  return arg.type === "ObjectExpression" && (arg.properties.length > 0 || hasComment$c(arg)) || arg.type === "ArrayExpression" && (arg.elements.length > 0 || hasComment$c(arg)) || arg.type === "TSTypeAssertion" && couldGroupArg(arg.expression) || arg.type === "TSAsExpression" && couldGroupArg(arg.expression) || arg.type === "FunctionExpression" || arg.type === "ArrowFunctionExpression" && (
+  !arg.returnType || !arg.returnType.typeAnnotation || arg.returnType.typeAnnotation.type !== "TSTypeReference" ||
   isNonEmptyBlockStatement(arg.body)) && (arg.body.type === "BlockStatement" || arg.body.type === "ArrowFunctionExpression" && couldGroupArg(arg.body, true) || arg.body.type === "ObjectExpression" || arg.body.type === "ArrayExpression" || !arrowChainRecursion && (isCallExpression$8(arg.body) || arg.body.type === "ConditionalExpression") || isJsxNode$3(arg.body)) || arg.type === "DoExpression" || arg.type === "ModuleExpression";
 }
 
 function shouldGroupLastArg(args, options) {
   const lastArg = getLast$8(args);
   const penultimateArg = getPenultimate(args);
-  return !hasComment$c(lastArg, CommentCheckFlags$a.Leading) && !hasComment$c(lastArg, CommentCheckFlags$a.Trailing) && couldGroupArg(lastArg) && ( // If the last two arguments are of the same type,
-  // disable last element expansion.
-  !penultimateArg || penultimateArg.type !== lastArg.type) && ( // useMemo(() => func(), [foo, bar, baz])
+  return !hasComment$c(lastArg, CommentCheckFlags$a.Leading) && !hasComment$c(lastArg, CommentCheckFlags$a.Trailing) && couldGroupArg(lastArg) && (
+  !penultimateArg || penultimateArg.type !== lastArg.type) && (
   args.length !== 2 || penultimateArg.type !== "ArrowFunctionExpression" || lastArg.type !== "ArrayExpression") && !(args.length > 1 && lastArg.type === "ArrayExpression" && isConciselyPrintedArray(lastArg, options));
 }
 
@@ -44041,7 +38752,7 @@ function isReactHookCallWithDepsArray(args) {
 
 function isNonEmptyBlockStatement(node) {
   return node.type === "BlockStatement" && (node.body.some(node => node.type !== "EmptyStatement") || hasComment$c(node, CommentCheckFlags$a.Dangling));
-} // { type: "module" }
+}
 
 
 function isTypeModuleObjectExpression(node) {
@@ -44149,38 +38860,20 @@ const {
   printOptionalToken: printOptionalToken$6,
   printFunctionTypeParameters: printFunctionTypeParameters$3,
   printBindExpressionCallee: printBindExpressionCallee$1
-} = misc$1; // We detect calls on member expressions specially to format a
-// common pattern better. The pattern we are looking for is this:
-//
-// arr
-//   .map(x => x + 1)
-//   .filter(x => x > 10)
-//   .some(x => x % 2)
-//
-// The way it is structured in the AST is via a nested sequence of
-// MemberExpression and CallExpression. We need to traverse the AST
-// and make groups out of it to print it in the desired way.
+} = misc$1;
 
 function printMemberChain(path, options, print) {
   const parent = path.getParentNode();
-  const isExpressionStatement = !parent || parent.type === "ExpressionStatement"; // The first phase is to linearize the AST by traversing it down.
-  //
-  //   a().b()
-  // has the following AST structure:
-  //   CallExpression(MemberExpression(CallExpression(Identifier)))
-  // and we transform it into
-  //   [Identifier, CallExpression, MemberExpression, CallExpression]
+  const isExpressionStatement = !parent || parent.type === "ExpressionStatement";
 
-  const printedNodes = []; // Here we try to retain one typed empty line after each call expression or
-  // the first group whether it is in parentheses or not
+  const printedNodes = [];
 
   function shouldInsertEmptyLineAfter(node) {
     const {
       originalText
     } = options;
     const nextCharIndex = getNextNonSpaceNonCommentCharacterIndex$1(originalText, node, locEnd$l);
-    const nextChar = originalText.charAt(nextCharIndex); // if it is cut off by a parenthesis, we only account for one typed empty
-    // line after that parenthesis
+    const nextChar = originalText.charAt(nextCharIndex);
 
     if (nextChar === ")") {
       return nextCharIndex !== false && isNextLineEmptyAfterIndex(originalText, nextCharIndex + 1);
@@ -44217,9 +38910,7 @@ function printMemberChain(path, options, print) {
         printed: print()
       });
     }
-  } // Note: the comments of the root node have already been printed, so we
-  // need to extract this first call without printing them as they would
-  // if handled inside of the recursive call.
+  }
 
 
   const node = path.getValue();
@@ -44230,29 +38921,7 @@ function printMemberChain(path, options, print) {
 
   if (node.callee) {
     path.call(callee => rec(callee), "callee");
-  } // Once we have a linear list of printed nodes, we want to create groups out
-  // of it.
-  //
-  //   a().b.c().d().e
-  // will be grouped as
-  //   [
-  //     [Identifier, CallExpression],
-  //     [MemberExpression, MemberExpression, CallExpression],
-  //     [MemberExpression, CallExpression],
-  //     [MemberExpression],
-  //   ]
-  // so that we can print it as
-  //   a()
-  //     .b.c()
-  //     .d()
-  //     .e
-  // The first group is the first node followed by
-  //   - as many CallExpression as possible
-  //       < fn()()() >.something()
-  //   - as many array accessors as possible
-  //       < fn()[0][1][2] >.something()
-  //   - then, as many MemberExpression as possible but the last one
-  //       < this.items >.something()
+  }
 
 
   const groups = [];
@@ -44278,17 +38947,12 @@ function printMemberChain(path, options, print) {
   }
 
   groups.push(currentGroup);
-  currentGroup = []; // Then, each following group is a sequence of MemberExpression followed by
-  // a sequence of CallExpression. To compute it, we keep adding things to the
-  // group until we has seen a CallExpression in the past and reach a
-  // MemberExpression
+  currentGroup = [];
 
   let hasSeenCallExpression = false;
 
   for (; i < printedNodes.length; ++i) {
     if (hasSeenCallExpression && isMemberish$1(printedNodes[i].node)) {
-      // [0] should be appended at the end of the group instead of the
-      // beginning of the next one
       if (printedNodes[i].node.computed && isNumericLiteral$2(printedNodes[i].node.property)) {
         currentGroup.push(printedNodes[i]);
         continue;
@@ -44314,29 +38978,12 @@ function printMemberChain(path, options, print) {
 
   if (currentGroup.length > 0) {
     groups.push(currentGroup);
-  } // There are cases like Object.keys(), Observable.of(), _.values() where
-  // they are the subject of all the chained calls and therefore should
-  // be kept on the same line:
-  //
-  //   Object.keys(items)
-  //     .filter(x => x)
-  //     .map(x => x)
-  //
-  // In order to detect those cases, we use an heuristic: if the first
-  // node is an identifier with the name starting with a capital
-  // letter or just a sequence of _$. The rationale is that they are
-  // likely to be factories.
+  }
 
 
   function isFactory(name) {
     return /^[A-Z]|^[$_]+$/.test(name);
-  } // In case the Identifier is shorter than tab width, we can keep the
-  // first call in a single line, if it's an ExpressionStatement.
-  //
-  //   d3.scaleLinear()
-  //     .domain([0, 100])
-  //     .range([0, width]);
-  //
+  }
 
 
   function isShort(name) {
@@ -44358,8 +39005,7 @@ function printMemberChain(path, options, print) {
   const shouldMerge = groups.length >= 2 && !hasComment$b(groups[1][0].node) && shouldNotWrap(groups);
 
   function printGroup(printedGroup) {
-    const printed = printedGroup.map(tuple => tuple.printed); // Checks if the last node (i.e. the parent node) needs parens and print
-    // accordingly
+    const printed = printedGroup.map(tuple => tuple.printed);
 
     if (printedGroup.length > 0 && getLast$7(printedGroup).needsParens) {
       return ["(", ...printed, ")"];
@@ -44369,7 +39015,6 @@ function printMemberChain(path, options, print) {
   }
 
   function printIndentedGroup(groups) {
-    /* istanbul ignore next */
     if (groups.length === 0) {
       return "";
     }
@@ -44381,8 +39026,7 @@ function printMemberChain(path, options, print) {
   const oneLine = printedGroups;
   const cutoff = shouldMerge ? 3 : 2;
   const flatGroups = groups.flat();
-  const nodeHasComment = flatGroups.slice(1, -1).some(node => hasComment$b(node.node, CommentCheckFlags$9.Leading)) || flatGroups.slice(0, -1).some(node => hasComment$b(node.node, CommentCheckFlags$9.Trailing)) || groups[cutoff] && hasComment$b(groups[cutoff][0].node, CommentCheckFlags$9.Leading); // If we only have a single `.`, we shouldn't do anything fancy and just
-  // render everything concatenated together.
+  const nodeHasComment = flatGroups.slice(1, -1).some(node => hasComment$b(node.node, CommentCheckFlags$9.Leading)) || flatGroups.slice(0, -1).some(node => hasComment$b(node.node, CommentCheckFlags$9.Trailing)) || groups[cutoff] && hasComment$b(groups[cutoff][0].node, CommentCheckFlags$9.Leading);
 
   if (groups.length <= cutoff && !nodeHasComment) {
     if (isLongCurriedCallExpression(path)) {
@@ -44390,8 +39034,7 @@ function printMemberChain(path, options, print) {
     }
 
     return group$r(oneLine);
-  } // Find out the last node in the first group and check if it has an
-  // empty line after
+  }
 
 
   const lastNodeBeforeIndent = getLast$7(groups[shouldMerge ? 1 : 0]).node;
@@ -44407,19 +39050,12 @@ function printMemberChain(path, options, print) {
     return isCallExpression$6(lastGroupNode) && willBreak$3(lastGroupDoc) && callExpressions.slice(0, -1).some(node => node.arguments.some(isFunctionOrArrowExpression));
   }
 
-  let result; // We don't want to print in one line if at least one of these conditions occurs:
-  //  * the chain has comments,
-  //  * the chain is an expression statement and all the arguments are literal-like ("fluent configuration" pattern),
-  //  * the chain is longer than 2 calls and has non-trivial arguments or more than 2 arguments in any call but the first one,
-  //  * any group but the last one has a hard line,
-  //  * the last call's arguments have a hard line and other calls have non-trivial arguments.
+  let result;
 
   if (nodeHasComment || callExpressions.length > 2 && callExpressions.some(expr => !expr.arguments.every(arg => isSimpleCallArgument(arg, 0))) || printedGroups.slice(0, -1).some(willBreak$3) || lastGroupWillBreakAndOtherCallsHaveFunctionArguments()) {
     result = group$r(expanded);
   } else {
-    result = [// We only need to check `oneLine` because if `expanded` is chosen
-    // that means that the parent group has already been broken
-    // naturally
+    result = [
     willBreak$3(oneLine) || shouldHaveEmptyLineBeforeIndent ? breakParent$6 : "", conditionalGroup$2([oneLine, expanded])];
   }
 
@@ -44457,41 +39093,31 @@ function printCallExpression$2(path, options, print) {
   const optional = printOptionalToken$5(path);
   const args = getCallArguments$2(node);
 
-  if ( // Dangling comments are not handled, all these special cases should have arguments #9668
-  args.length > 0 && ( // We want to keep CommonJS- and AMD-style require calls, and AMD-style
-  // define calls, as a unit.
-  // e.g. `define(["some/lib"], (lib) => {`
-  !isDynamicImport && !isNew && isCommonsJsOrAmdCall(node, parentNode) || // Template literals as single arguments
-  args.length === 1 && isTemplateOnItsOwnLine$1(args[0], options.originalText) || // Keep test declarations on a single line
-  // e.g. `it('long name', () => {`
+  if (
+  args.length > 0 && (
+  !isDynamicImport && !isNew && isCommonsJsOrAmdCall(node, parentNode) ||
+  args.length === 1 && isTemplateOnItsOwnLine$1(args[0], options.originalText) ||
   !isNew && isTestCall$2(node, parentNode))) {
     const printed = [];
     iterateCallArgumentsPath(path, () => {
       printed.push(print());
     });
     return [isNew ? "new " : "", print("callee"), optional, printFunctionTypeParameters$2(path, options, print), "(", join$l(", ", printed), ")"];
-  } // Inline Flow annotation comments following Identifiers in Call nodes need to
-  // stay with the Identifier. For example:
-  //
-  // foo /*:: <SomeGeneric> */(bar);
-  //
-  // Here, we ensure that such comments stay between the Identifier and the Callee.
+  }
 
 
   const isIdentifierWithFlowAnnotation = (options.parser === "babel" || options.parser === "babel-flow") && node.callee && node.callee.type === "Identifier" && hasFlowAnnotationComment(node.callee.trailingComments);
 
   if (isIdentifierWithFlowAnnotation) {
     node.callee.trailingComments[0].printed = true;
-  } // We detect calls on member lookups and possibly print them in a
-  // special chain format. See `printMemberChain` for more info.
+  }
 
 
   if (!isDynamicImport && !isNew && isMemberish(node.callee) && !path.call(path => needsParens_1(path, options), "callee")) {
     return memberChain(path, options, print);
   }
 
-  const contents = [isNew ? "new " : "", isDynamicImport ? "import" : print("callee"), optional, isIdentifierWithFlowAnnotation ? `/*:: ${node.callee.trailingComments[0].value.slice(2).trim()} */` : "", printFunctionTypeParameters$2(path, options, print), callArguments(path, options, print)]; // We group here when the callee is itself a call expression.
-  // See `isLongCurriedCallExpression` for more info.
+  const contents = [isNew ? "new " : "", isDynamicImport ? "import" : print("callee"), optional, isIdentifierWithFlowAnnotation ? `/*:: ${node.callee.trailingComments[0].value.slice(2).trim()} */` : "", printFunctionTypeParameters$2(path, options, print), callArguments(path, options, print)];
 
   if (isDynamicImport || isCallExpression$5(node.callee)) {
     return group$q(contents);
@@ -44565,14 +39191,11 @@ function printAssignment$3(path, options, print, leftDoc, operator, rightPropert
   });
 
   switch (layout) {
-    // First break after operator, then the sides are broken independently on their own lines
     case "break-after-operator":
       return group$p([group$p(leftDoc), operator, group$p(indent$k([line$m, rightDoc]))]);
-    // First break right-hand side, then left-hand side
 
     case "never-break-after-operator":
       return group$p([group$p(leftDoc), operator, " ", rightDoc]);
-    // First break right-hand side, then after operator
 
     case "fluid":
       {
@@ -44586,8 +39209,6 @@ function printAssignment$3(path, options, print, leftDoc, operator, rightPropert
 
     case "break-lhs":
       return group$p([leftDoc, operator, " ", group$p(rightDoc)]);
-    // Parts of assignment chains aren't wrapped in groups.
-    // Once one of them breaks, the chain breaks too.
 
     case "chain":
       return [group$p(leftDoc), operator, line$m, rightDoc];
@@ -44618,9 +39239,7 @@ function chooseLayout(path, options, print, leftDoc, rightPropertyName) {
 
   if (!rightNode) {
     return "only-left";
-  } // Short assignment chains (only 2 segments) are NOT formatted as chains.
-  //   1) a = b = c; (expression statements)
-  //   2) var/let/const a = b = c;
+  }
 
 
   const isTail = !isAssignment(rightNode);
@@ -44636,14 +39255,14 @@ function chooseLayout(path, options, print, leftDoc, rightPropertyName) {
     return "break-after-operator";
   }
 
-  if (rightNode.type === "CallExpression" && rightNode.callee.name === "require" || // do not put values on a separate line from the key in json
+  if (rightNode.type === "CallExpression" && rightNode.callee.name === "require" ||
   options.parser === "json5" || options.parser === "json") {
     return "never-break-after-operator";
   }
 
   if (isComplexDestructuring(node) || isComplexTypeAliasParams(node) || hasComplexTypeAnnotation(node)) {
     return "break-lhs";
-  } // wrapping object properties with very short keys usually doesn't add much value
+  }
 
 
   const hasShortKey = isObjectPropertyWithShortKey(node, leftDoc, options);
@@ -44707,8 +39326,7 @@ function shouldBreakAfterOperator(path, options, print, hasShortKey) {
   }
 
   return false;
-} // prefer to break destructuring assignment
-// if it includes default values or non-shorthand properties
+}
 
 
 function isComplexDestructuring(node) {
@@ -44782,10 +39400,6 @@ function getTypeParametersFromTypeReference(node) {
 function isTypeReference(node) {
   return node.type === "TSTypeReference" || node.type === "GenericTypeAnnotation";
 }
-/**
- * A chain with no calls at all or whose calls are all without arguments or with lone short arguments,
- * excluding chains printed by `printMemberChain`
- */
 
 
 function isPoorlyBreakableMemberOrCallChain(path, options, print, deep = false) {
@@ -44798,7 +39412,6 @@ function isPoorlyBreakableMemberOrCallChain(path, options, print, deep = false) 
   }
 
   if (isCallExpression$4(node)) {
-    /** @type {any} TODO */
     const doc = printCallExpression$1(path, options, print);
 
     if (doc.label === "member-chain") {
@@ -44861,17 +39474,11 @@ function isLoneShortArgument(node, {
 function isObjectPropertyWithShortKey(node, keyDoc, options) {
   if (!isObjectProperty(node)) {
     return false;
-  } // TODO: for performance, it might make sense to use a more lightweight
-  // version of cleanDoc, such that it would stop once it detects that
-  // the doc can't be reduced to a string.
+  }
 
 
   keyDoc = cleanDoc$1(keyDoc);
-  const MIN_OVERLAP_FOR_BREAK = 3; //   ↓↓ - insufficient overlap for a line break
-  // key1: longValue1,
-  //   ↓↓↓↓↓↓ - overlap is long enough to break
-  // key2abcd:
-  //   longValue2
+  const MIN_OVERLAP_FOR_BREAK = 3;
 
   return typeof keyDoc === "string" && getStringWidth$1(keyDoc) < options.tabWidth + MIN_OVERLAP_FOR_BREAK;
 }
@@ -44962,7 +39569,6 @@ function printFunctionParameters$3(path, print, options, expandArg, printTypePar
 
   if (parameters.length === 0) {
     return [typeParams, "(", printDanglingComments$a(path, options,
-    /* sameIndent */
     true, comment => getNextNonSpaceNonCommentCharacter(options.originalText, comment, locEnd$k) === ")"), ")"];
   }
 
@@ -44992,45 +39598,29 @@ function printFunctionParameters$3(path, print, options, expandArg, printTypePar
     } else {
       printed.push(line$l);
     }
-  }); // If the parent is a call with the first/last argument expansion and this is the
-  // params of the first/last argument, we don't want the arguments to break and instead
-  // want the whole expression to be on a new line.
-  //
-  // Good:                 Bad:
-  //   verylongcall(         verylongcall((
-  //     (a, b) => {           a,
-  //     }                     b,
-  //   )                     ) => {
-  //                         })
+  });
 
   if (expandArg) {
     if (willBreak$1(typeParams) || willBreak$1(printed)) {
-      // Removing lines in this case leads to broken or ugly output
       throw new ArgExpansionBailout$1();
     }
 
     return group$o([removeLines$2(typeParams), "(", removeLines$2(printed), ")"]);
-  } // Single object destructuring should hug
-  //
-  // function({
-  //   a,
-  //   b,
-  //   c
-  // }) {}
+  }
 
 
   const hasNotParameterDecorator = parameters.every(node => !node.decorators);
 
   if (shouldHugParameters && hasNotParameterDecorator) {
     return [typeParams, "(", ...printed, ")"];
-  } // don't break in specs, eg; `it("should maintain parens around done even when long", (done) => {})`
+  }
 
 
   if (isParametersInTestCall) {
     return [typeParams, "(", ...printed, ")"];
   }
 
-  const isFlowShorthandWithOneArg = (isObjectTypePropertyAFunction$1(parent) || isTypeAnnotationAFunction(parent) || parent.type === "TypeAlias" || parent.type === "UnionTypeAnnotation" || parent.type === "TSUnionType" || parent.type === "IntersectionTypeAnnotation" || parent.type === "FunctionTypeAnnotation" && parent.returnType === functionNode) && parameters.length === 1 && parameters[0].name === null && // `type q = (this: string) => void;`
+  const isFlowShorthandWithOneArg = (isObjectTypePropertyAFunction$1(parent) || isTypeAnnotationAFunction(parent) || parent.type === "TypeAlias" || parent.type === "UnionTypeAnnotation" || parent.type === "TSUnionType" || parent.type === "IntersectionTypeAnnotation" || parent.type === "FunctionTypeAnnotation" && parent.returnType === functionNode) && parameters.length === 1 && parameters[0].name === null &&
   functionNode.this !== parameters[0] && parameters[0].typeAnnotation && functionNode.typeParameters === null && isSimpleType$1(parameters[0].typeAnnotation) && !functionNode.rest;
 
   if (isFlowShorthandWithOneArg) {
@@ -45073,7 +39663,7 @@ function getReturnTypeNode(functionNode) {
   }
 
   return returnTypeNode;
-} // When parameters are grouped, the return type annotation breaks first.
+}
 
 
 function shouldGroupFunctionParameters$3(functionNode, returnTypeDoc) {
@@ -45154,7 +39744,7 @@ function shouldHugType$2(node) {
 
   if (node.type === "UnionTypeAnnotation" || node.type === "TSUnionType") {
     const voidCount = node.types.filter(node => node.type === "VoidTypeAnnotation" || node.type === "TSVoidKeyword" || node.type === "NullLiteralTypeAnnotation" || node.type === "TSNullKeyword").length;
-    const hasObject = node.types.some(node => node.type === "ObjectTypeAnnotation" || node.type === "TSTypeLiteral" || // This is a bit aggressive but captures Array<{x}>
+    const hasObject = node.types.some(node => node.type === "ObjectTypeAnnotation" || node.type === "TSTypeLiteral" ||
     node.type === "GenericTypeAnnotation" || node.type === "TSTypeReference");
 
     if (node.types.length - 1 === voidCount && hasObject) {
@@ -45195,7 +39785,7 @@ function printTypeAlias$2(path, options, print) {
   parts.push("type ", print("id"), print("typeParameters"));
   const rightPropertyName = node.type === "TSTypeAliasDeclaration" ? "typeAnnotation" : "right";
   return [printAssignment$2(path, options, print, parts, " =", rightPropertyName), semi];
-} // `TSIntersectionType` and `IntersectionTypeAnnotation`
+}
 
 
 function printIntersectionType$2(path, options, print) {
@@ -45208,13 +39798,10 @@ function printIntersectionType$2(path, options, print) {
     if (i === 0) {
       result.push(types[i]);
     } else if (isObjectType(node.types[i - 1]) && isObjectType(node.types[i])) {
-      // If both are objects, don't indent
       result.push([" & ", wasIndented ? indent$i(types[i]) : types[i]]);
     } else if (!isObjectType(node.types[i - 1]) && !isObjectType(node.types[i])) {
-      // If no object is involved, go to the next line if it breaks
       result.push(indent$i([" &", line$k, types[i]]));
     } else {
-      // If you go from object to non-object or vis-versa, then inline it
       if (i > 1) {
         wasIndented = true;
       }
@@ -45224,28 +39811,17 @@ function printIntersectionType$2(path, options, print) {
   }
 
   return group$n(result);
-} // `TSUnionType` and `UnionTypeAnnotation`
+}
 
 
 function printUnionType$2(path, options, print) {
-  const node = path.getValue(); // single-line variation
-  // A | B | C
-  // multi-line variation
-  // | A
-  // | B
-  // | C
+  const node = path.getValue();
 
-  const parent = path.getParentNode(); // If there's a leading comment, the parent is doing the indentation
+  const parent = path.getParentNode();
 
-  const shouldIndent = parent.type !== "TypeParameterInstantiation" && parent.type !== "TSTypeParameterInstantiation" && parent.type !== "GenericTypeAnnotation" && parent.type !== "TSTypeReference" && parent.type !== "TSTypeAssertion" && parent.type !== "TupleTypeAnnotation" && parent.type !== "TSTupleType" && !(parent.type === "FunctionTypeParam" && !parent.name && path.getParentNode(1).this !== parent) && !((parent.type === "TypeAlias" || parent.type === "VariableDeclarator" || parent.type === "TSTypeAliasDeclaration") && hasLeadingOwnLineComment$1(options.originalText, node)); // {
-  //   a: string
-  // } | null | void
-  // should be inlined and not be printed in the multi-line variant
+  const shouldIndent = parent.type !== "TypeParameterInstantiation" && parent.type !== "TSTypeParameterInstantiation" && parent.type !== "GenericTypeAnnotation" && parent.type !== "TSTypeReference" && parent.type !== "TSTypeAssertion" && parent.type !== "TupleTypeAnnotation" && parent.type !== "TSTupleType" && !(parent.type === "FunctionTypeParam" && !parent.name && path.getParentNode(1).this !== parent) && !((parent.type === "TypeAlias" || parent.type === "VariableDeclarator" || parent.type === "TSTypeAliasDeclaration") && hasLeadingOwnLineComment$1(options.originalText, node));
 
-  const shouldHug = shouldHugType$2(node); // We want to align the children but without its comment, so it looks like
-  // | child1
-  // // comment
-  // | child2
+  const shouldHug = shouldHugType$2(node);
 
   const printed = path.map(typePath => {
     let printedType = print();
@@ -45273,22 +39849,18 @@ function printUnionType$2(path, options, print) {
   }
 
   return group$n(shouldIndent ? indent$i(code) : code);
-} // `TSFunctionType` and `FunctionTypeAnnotation`
+}
 
 
 function printFunctionType$2(path, options, print) {
   const node = path.getValue();
-  const parts = []; // FunctionTypeAnnotation is ambiguous:
-  // declare function foo(a: B): void; OR
-  // var A: (a: B) => void;
+  const parts = [];
 
   const parent = path.getParentNode(0);
   const parentParent = path.getParentNode(1);
   const parentParentParent = path.getParentNode(2);
   let isArrowFunctionTypeAnnotation = node.type === "TSFunctionType" || !((parent.type === "ObjectTypeProperty" || parent.type === "ObjectTypeInternalSlot") && !parent.variance && !parent.optional && locStart$l(parent) === locStart$l(node) || parent.type === "ObjectTypeCallProperty" || parentParentParent && parentParentParent.type === "DeclareFunction");
-  let needsColon = isArrowFunctionTypeAnnotation && (parent.type === "TypeAnnotation" || parent.type === "TSTypeAnnotation"); // Sadly we can't put it inside of AstPath::needsColon because we are
-  // printing ":" as part of the expression and it would put parenthesis
-  // around :(
+  let needsColon = isArrowFunctionTypeAnnotation && (parent.type === "TypeAnnotation" || parent.type === "TSTypeAnnotation");
 
   const needsParens = needsColon && isArrowFunctionTypeAnnotation && (parent.type === "TypeAnnotation" || parent.type === "TSTypeAnnotation") && parentParent.type === "ArrowFunctionExpression";
 
@@ -45302,11 +39874,8 @@ function printFunctionType$2(path, options, print) {
   }
 
   const parametersDoc = printFunctionParameters$2(path, print, options,
-  /* expandArg */
   false,
-  /* printTypeParams */
-  true); // The returnType is not wrapped in a TypeAnnotation, so the colon
-  // needs to be added separately.
+  true);
 
   const returnTypeDoc = node.returnType || node.predicate || node.typeAnnotation ? [isArrowFunctionTypeAnnotation ? " => " : ": ", print("returnType"), print("predicate"), print("typeAnnotation")] : "";
   const shouldGroupParameters = shouldGroupFunctionParameters$2(node, returnTypeDoc);
@@ -45321,7 +39890,7 @@ function printFunctionType$2(path, options, print) {
   }
 
   return group$n(parts);
-} // `TSTupleType` and `TupleTypeAnnotation`
+}
 
 
 function printTupleType$2(path, options, print) {
@@ -45329,9 +39898,8 @@ function printTupleType$2(path, options, print) {
   const typesField = node.type === "TSTupleType" ? "elementTypes" : "types";
   const hasRest = node[typesField].length > 0 && getLast$6(node[typesField]).type === "TSRestType";
   return group$n(["[", indent$i([softline$h, printArrayItems$2(path, options, typesField, print)]), ifBreak$g(shouldPrintComma$7(options, "all") && !hasRest ? "," : ""), printDanglingComments$9(path, options,
-  /* sameIndent */
   true), softline$h, "]"]);
-} // `TSIndexedAccessType`, `IndexedAccessType`, and `OptionalIndexedAccessType`
+}
 
 
 function printIndexedAccessType$2(path, options, print) {
@@ -45386,7 +39954,7 @@ function printTypeParameters$2(path, options, print, paramsKey) {
 
   if (!node[paramsKey]) {
     return "";
-  } // for TypeParameterDeclaration typeParameters is a single node
+  }
 
 
   if (!Array.isArray(node[paramsKey])) {
@@ -45399,12 +39967,10 @@ function printTypeParameters$2(path, options, print, paramsKey) {
 
   if (shouldInline) {
     return ["<", join$j(", ", path.map(print, paramsKey)), printDanglingCommentsForInline(path, options), ">"];
-  } // Keep comma if the file extension is .tsx and
-  // has one type parameter that isn't extend with any types.
-  // Because, otherwise formatted result will be invalid as tsx.
+  }
 
 
-  const trailingComma = node.type === "TSTypeParameterInstantiation" // https://github.com/microsoft/TypeScript/issues/21984
+  const trailingComma = node.type === "TSTypeParameterInstantiation"
   ? "" : getFunctionParameters$1(node).length === 1 && isTSXFile(options) && !node[paramsKey][0].constraint && path.getParentNode().type === "ArrowFunctionExpression" ? "," : shouldPrintComma$6(options, "all") ? ifBreak$f(",") : "";
   return group$m(["<", indent$h([softline$g, join$j([",", line$j], path.map(print, paramsKey))]), trailingComma, softline$g, ">"], {
     id: getTypeParametersGroupId$2(node)
@@ -45420,7 +39986,6 @@ function printDanglingCommentsForInline(path, options) {
 
   const hasOnlyBlockComments = !hasComment$8(node, CommentCheckFlags$8.Line);
   const printed = printDanglingComments$8(path, options,
-  /* sameIndent */
   hasOnlyBlockComments);
 
   if (hasOnlyBlockComments) {
@@ -45506,7 +40071,7 @@ function printPropertyKey$4(path, options, print) {
   const parent = path.getParentNode();
   const {
     key
-  } = node; // flow has `Identifier` key, other parsers use `PrivateIdentifier` (ESTree) or `PrivateName`
+  } = node;
 
   if (node.type === "ClassPrivateProperty" && key.type === "Identifier") {
     return ["#", print("key")];
@@ -45517,21 +40082,14 @@ function printPropertyKey$4(path, options, print) {
     needsQuoteProps.set(parent, objectHasStringProp);
   }
 
-  if ((key.type === "Identifier" || isNumericLiteral(key) && isSimpleNumber(printNumber$3(rawText$2(key))) && // Avoid converting 999999999999999999999 to 1e+21, 0.99999999999999999 to 1 and 1.0 to 1.
-  String(key.value) === printNumber$3(rawText$2(key)) && // Quoting number keys is safe in JS and Flow, but not in TypeScript (as
-  // mentioned in `isStringPropSafeToUnquote`).
+  if ((key.type === "Identifier" || isNumericLiteral(key) && isSimpleNumber(printNumber$3(rawText$2(key))) &&
+  String(key.value) === printNumber$3(rawText$2(key)) &&
   !(options.parser === "typescript" || options.parser === "babel-ts")) && (options.parser === "json" || options.quoteProps === "consistent" && needsQuoteProps.get(parent))) {
-    // a -> "a"
-    // 1 -> "1"
-    // 1.5 -> "1.5"
     const prop = printString$3(JSON.stringify(key.type === "Identifier" ? key.name : key.value.toString()), options);
     return path.call(keyPath => printComments$1(keyPath, prop, options), "key");
   }
 
   if (isStringPropSafeToUnquote(node, options) && (options.quoteProps === "as-needed" || options.quoteProps === "consistent" && !needsQuoteProps.get(parent))) {
-    // 'a' -> a
-    // '1' -> 1
-    // '1.5' -> 1.5
     return path.call(keyPath => printComments$1(keyPath, /^\d/.test(key.value) ? printNumber$3(key.value) : key.value, options), "key");
   }
 
@@ -45553,7 +40111,6 @@ var property = {
   printPropertyKey: printPropertyKey$4
 };
 
-/** @typedef {import("../../document/doc-builders").Doc} Doc */
 
 
 const {
@@ -45627,8 +40184,7 @@ function printFunction$2(path, print, options, args) {
     }
   }
 
-  const parts = []; // For TypeScript the TSDeclareFunction node shares the AST
-  // structure with FunctionDeclaration
+  const parts = [];
 
   if (node.type === "TSDeclareFunction" && node.declare) {
     parts.push("declare ");
@@ -45675,7 +40231,7 @@ function printMethod$2(path, options, print) {
   } else {
     assert__default['default'].ok(kind === "get" || kind === "set");
     parts.push(kind, " ");
-  } // A `getter`/`setter` can't be a generator, but it's recoverable
+  }
 
 
   if (value.generator) {
@@ -45734,12 +40290,10 @@ function printArrowFunctionSignature(path, options, print, args) {
     }
 
     parts.push(group$l([printFunctionParameters$1(path, print, options, expandArg,
-    /* printTypeParams */
     true), returnTypeDoc]));
   }
 
   const dangling = printDanglingComments$7(path, options,
-  /* sameIndent */
   true, comment => {
     const nextCharacter = getNextNonSpaceNonCommentCharacterIndex(options.originalText, comment, locEnd$j);
     return nextCharacter !== false && options.originalText.slice(nextCharacter, nextCharacter + 2) === "=>";
@@ -45774,7 +40328,6 @@ function printArrowChain(path, args, signatures, shouldBreak, bodyDoc, tailNode)
 
 function printArrowFunction$1(path, options, print, args) {
   let node = path.getValue();
-  /** @type {Doc[]} */
 
   const signatures = [];
   const body = [];
@@ -45794,7 +40347,7 @@ function printArrowFunction$1(path, options, print, args) {
       body.unshift(trailing);
     }
 
-    chainShouldBreak = chainShouldBreak || // Always break the chain if:
+    chainShouldBreak = chainShouldBreak ||
     node.returnType && getFunctionParameters(node).length > 0 || node.typeParameters || getFunctionParameters(node).some(param => param.type !== "Identifier");
 
     if (node.body.type !== "ArrowFunctionExpression" || args && args.expandLastArg) {
@@ -45810,30 +40363,22 @@ function printArrowFunction$1(path, options, print, args) {
   }
 
   const parts = signatures;
-  parts.push(" =>"); // We want to always keep these types of nodes on the same line
-  // as the arrow.
+  parts.push(" =>");
 
   if (!hasLeadingOwnLineComment(options.originalText, node.body) && (node.body.type === "ArrayExpression" || node.body.type === "ObjectExpression" || node.body.type === "BlockStatement" || isJsxNode$2(node.body) || isTemplateOnItsOwnLine(node.body, options.originalText) || node.body.type === "ArrowFunctionExpression" || node.body.type === "DoExpression")) {
     return group$l([...parts, " ", body]);
-  } // We handle sequence expressions as the body of arrows specially,
-  // so that the required parentheses end up on their own lines.
+  }
 
 
   if (node.body.type === "SequenceExpression") {
     return group$l([...parts, group$l([" (", indent$g([softline$f, body]), softline$f, ")"])]);
-  } // if the arrow function is expanded as last argument, we are adding a
-  // level of indentation and need to add a softline to align the closing )
-  // with the opening (, or if it's inside a JSXExpression (e.g. an attribute)
-  // we should align the expression's closing } with the line with the opening {.
+  }
 
 
   const shouldAddSoftLine = (args && args.expandLastArg || path.getParentNode().type === "JSXExpressionContainer") && !hasComment$7(node);
-  const printTrailingComma = args && args.expandLastArg && shouldPrintComma$5(options, "all"); // In order to avoid confusion between
-  // a => a ? a : a
-  // a <= a ? a : a
+  const printTrailingComma = args && args.expandLastArg && shouldPrintComma$5(options, "all");
 
   const shouldAddParens = node.body.type === "ConditionalExpression" && !startsWithNoLookaheadToken(node.body,
-  /* forbidFunctionAndClass */
   false);
   return group$l([...parts, group$l([indent$g([line$i, shouldAddParens ? ifBreak$e("", "(") : "", body, shouldAddParens ? ifBreak$e("", ")") : ""]), shouldAddSoftLine ? [ifBreak$e(printTrailingComma ? "," : ""), softline$f] : ""])]);
 }
@@ -45851,14 +40396,12 @@ function shouldPrintParamsWithoutParens$1(path, options) {
   if (options.arrowParens === "avoid") {
     const node = path.getValue();
     return canPrintParamsWithoutParens(node);
-  } // Fallback default; should be unreachable
+  }
 
-  /* istanbul ignore next */
 
 
   return false;
 }
-/** @returns {Doc} */
 
 
 function printReturnType(path, print, options) {
@@ -45869,20 +40412,18 @@ function printReturnType(path, print, options) {
     return [" /*: ", returnType, " */"];
   }
 
-  const parts = [returnType]; // prepend colon to TypeScript type annotation
+  const parts = [returnType];
 
   if (node.returnType && node.returnType.typeAnnotation) {
     parts.unshift(": ");
   }
 
   if (node.predicate) {
-    // The return type will already add the colon, but otherwise we
-    // need to do it ourselves
     parts.push(node.returnType ? " " : ": ", print("predicate"));
   }
 
   return parts;
-} // `ReturnStatement` and `ThrowStatement`
+}
 
 
 function printReturnOrThrowArgument(path, options, print) {
@@ -45910,7 +40451,6 @@ function printReturnOrThrowArgument(path, options, print) {
 
   if (hasComment$7(node, CommentCheckFlags$7.Dangling)) {
     parts.push(" ", printDanglingComments$7(path, options,
-    /* sameIndent */
     true));
   }
 
@@ -45927,9 +40467,7 @@ function printReturnStatement$1(path, options, print) {
 
 function printThrowStatement$1(path, options, print) {
   return ["throw", printReturnOrThrowArgument(path, options, print)];
-} // This recurses the return argument, looking for the first token
-// (the leftmost leaf node) and, if it (or its parents) has any
-// leadingComments, returns true (so it can be wrapped in parens).
+}
 
 
 function returnArgumentHasLeadingComment(options, argument) {
@@ -45990,8 +40528,6 @@ function printClassMemberDecorators$1(path, options, print) {
 }
 
 function printDecoratorsBeforeExport$1(path, options, print) {
-  // Export declarations are responsible for printing any decorators
-  // that logically apply to node.declaration.
   return [join$h(hardline$m, path.map(print, "declaration", "decorators")), hardline$m];
 }
 
@@ -46001,9 +40537,7 @@ function printDecorators$1(path, options, print) {
     decorators
   } = node;
 
-  if (!isNonEmptyArray$c(decorators) || // If the parent node is an export declaration and the decorator
-  // was written before the export, the export will be responsible
-  // for printing the decorators.
+  if (!isNonEmptyArray$c(decorators) ||
   hasDecoratorsBeforeExport$1(path.getParentNode())) {
     return;
   }
@@ -46089,10 +40623,9 @@ function printClass$2(path, options, print) {
     parts.push("abstract ");
   }
 
-  parts.push("class"); // Keep old behaviour of extends in same line
-  // If there is only on extends and there are not comments
+  parts.push("class");
 
-  const groupMode = node.id && hasComment$6(node.id, CommentCheckFlags$6.Trailing) || node.superClass && hasComment$6(node.superClass) || isNonEmptyArray$b(node.extends) || // DeclareClass
+  const groupMode = node.id && hasComment$6(node.id, CommentCheckFlags$6.Trailing) || node.superClass && hasComment$6(node.superClass) || isNonEmptyArray$b(node.extends) ||
   isNonEmptyArray$b(node.mixins) || isNonEmptyArray$b(node.implements);
   const partsGroup = [];
   const extendsParts = [];
@@ -46162,7 +40695,6 @@ function printList(path, options, print, listName) {
   }
 
   const printedLeadingComments = printDanglingComments$6(path, options,
-  /* sameIndent */
   true, ({
     marker
   }) => marker === listName);
@@ -46192,8 +40724,7 @@ function printClassMethod$2(path, options, print) {
 
   if (node.accessibility) {
     parts.push(node.accessibility + " ");
-  } // "readonly" and "declare" are supported by only "babel-ts"
-  // https://github.com/prettier/prettier/issues/9760
+  }
 
 
   if (node.readonly) {
@@ -46369,14 +40900,10 @@ const {
   hasDecoratorsBeforeExport,
   printDecoratorsBeforeExport
 } = decorators;
-/**
- * @typedef {import("../../document").Doc} Doc
- */
 
 function printImportDeclaration$1(path, options, print) {
   const node = path.getValue();
   const semi = options.semi ? ";" : "";
-  /** @type{Doc[]} */
 
   const parts = [];
   const {
@@ -46394,10 +40921,8 @@ function printImportDeclaration$1(path, options, print) {
 
 function printExportDeclaration$2(path, options, print) {
   const node = path.getValue();
-  /** @type{Doc[]} */
 
-  const parts = []; // Only print decorators here if they were written before the export,
-  // otherwise they are printed by the node.declaration
+  const parts = [];
 
   if (hasDecoratorsBeforeExport(node)) {
     parts.push(printDecoratorsBeforeExport(path, options, print));
@@ -46417,7 +40942,6 @@ function printExportDeclaration$2(path, options, print) {
 
   if (hasComment$4(node, CommentCheckFlags$4.Dangling)) {
     parts.push(" ", printDanglingComments$5(path, options,
-    /* sameIndent */
     true));
 
     if (needsHardlineAfterDanglingComment$1(node)) {
@@ -46441,7 +40965,6 @@ function printExportDeclaration$2(path, options, print) {
 function printExportAllDeclaration$2(path, options, print) {
   const node = path.getValue();
   const semi = options.semi ? ";" : "";
-  /** @type{Doc[]} */
 
   const parts = [];
   const {
@@ -46496,7 +41019,6 @@ function printModuleSource(path, options, print) {
   if (!node.source) {
     return "";
   }
-  /** @type{Doc[]} */
 
 
   const parts = [];
@@ -46515,7 +41037,6 @@ function printModuleSpecifiers(path, options, print) {
   if (shouldNotPrintSpecifiers(node, options)) {
     return "";
   }
-  /** @type{Doc[]} */
 
 
   const parts = [" "];
@@ -46531,7 +41052,6 @@ function printModuleSpecifiers(path, options, print) {
       } else if (specifierType === "ExportSpecifier" || specifierType === "ImportSpecifier") {
         groupedSpecifiers.push(print());
       } else {
-        /* istanbul ignore next */
         throw new Error(`Unknown specifier type ${JSON.stringify(specifierType)}`);
       }
     }, "specifiers");
@@ -46567,7 +41087,7 @@ function shouldNotPrintSpecifiers(node, options) {
 
   if (type !== "ImportDeclaration" || isNonEmptyArray$9(specifiers) || importKind === "type") {
     return false;
-  } // TODO: check tokens
+  }
 
 
   return !/{\s*}/.test(options.originalText.slice(locStart$j(node), locStart$j(source)));
@@ -46589,7 +41109,6 @@ function printModuleSpecifier$1(path, options, print) {
     type,
     importKind
   } = node;
-  /** @type{Doc[]} */
 
   const parts = [];
 
@@ -46609,7 +41128,7 @@ function printModuleSpecifier$1(path, options, print) {
     left = print(leftSideProperty);
   }
 
-  if (node[rightSideProperty] && (!node[leftSideProperty] || // import {a as a} from '.'
+  if (node[rightSideProperty] && (!node[leftSideProperty] ||
   !hasSameLoc(node[leftSideProperty], node[rightSideProperty]))) {
     right = print(rightSideProperty);
   }
@@ -46668,7 +41187,6 @@ const {
 const {
   printHardlineAfterHeritage: printHardlineAfterHeritage$1
 } = _class;
-/** @typedef {import("../../document").Doc} Doc */
 
 function printObject$3(path, options, print) {
   const semi = options.semi ? ";" : "";
@@ -46696,9 +41214,7 @@ function printObject$3(path, options, print) {
   const shouldBreak = node.type === "TSInterfaceBody" || isFlowInterfaceLikeBody || node.type === "ObjectPattern" && parent.type !== "FunctionDeclaration" && parent.type !== "FunctionExpression" && parent.type !== "ArrowFunctionExpression" && parent.type !== "ObjectMethod" && parent.type !== "ClassMethod" && parent.type !== "ClassPrivateMethod" && parent.type !== "AssignmentPattern" && parent.type !== "CatchClause" && node.properties.some(property => property.value && (property.value.type === "ObjectPattern" || property.value.type === "ArrayPattern")) || node.type !== "ObjectPattern" && firstProperty && hasNewlineInRange$2(options.originalText, locStart$i(node), locStart$i(firstProperty));
   const separator = isFlowInterfaceLikeBody ? ";" : node.type === "TSInterfaceBody" || node.type === "TSTypeLiteral" ? ifBreak$a(semi, ";") : ",";
   const leftBrace = node.type === "RecordExpression" ? "#{" : node.exact ? "{|" : "{";
-  const rightBrace = node.exact ? "|}" : "}"; // Unfortunately, things are grouped together in the ast can be
-  // interleaved in the source code. So we need to reorder them before
-  // printing them.
+  const rightBrace = node.exact ? "|}" : "}";
 
   const propsAndLoc = [];
 
@@ -46716,7 +41232,6 @@ function printObject$3(path, options, print) {
   if (fields.length > 1) {
     propsAndLoc.sort((a, b) => a.loc - b.loc);
   }
-  /** @type {Doc[]} */
 
 
   let separatorParts = [];
@@ -46741,7 +41256,6 @@ function printObject$3(path, options, print) {
     if (hasComment$3(node, CommentCheckFlags$3.Dangling)) {
       const hasLineComments = hasComment$3(node, CommentCheckFlags$3.Line);
       const printedDanglingComments = printDanglingComments$4(path, options,
-      /* sameIndent */
       true);
       printed = [printedDanglingComments, hasLineComments || hasNewline$3(options.originalText, locEnd$h(getLast$5(getComments$1(node)))) ? hardline$j : line$d, "..."];
     } else {
@@ -46763,13 +41277,10 @@ function printObject$3(path, options, print) {
     content = group$g([leftBrace, printDanglingComments$4(path, options), softline$c, rightBrace, printOptionalToken$3(path), printTypeAnnotation$2(path, options, print)]);
   } else {
     content = [isFlowInterfaceLikeBody && isNonEmptyArray$8(node.properties) ? printHardlineAfterHeritage$1(parent) : "", leftBrace, indent$c([options.bracketSpacing ? line$d : softline$c, ...props]), ifBreak$a(canHaveTrailingSeparator && (separator !== "," || shouldPrintComma$3(options)) ? separator : ""), options.bracketSpacing ? line$d : softline$c, rightBrace, printOptionalToken$3(path), printTypeAnnotation$2(path, options, print)];
-  } // If we inline the object as first argument of the parent, we don't want
-  // to create another group so that the object breaks before the return
-  // type
+  }
 
 
-  if (path.match(node => node.type === "ObjectPattern" && !node.decorators, (node, name, number) => shouldHugFunctionParameters(node) && (name === "params" || name === "parameters" || name === "this" || name === "rest") && number === 0) || path.match(shouldHugType, (node, name) => name === "typeAnnotation", (node, name) => name === "typeAnnotation", (node, name, number) => shouldHugFunctionParameters(node) && (name === "params" || name === "parameters" || name === "this" || name === "rest") && number === 0) || // Assignment printing logic (printAssignment) is responsible
-  // for adding a group if needed
+  if (path.match(node => node.type === "ObjectPattern" && !node.decorators, (node, name, number) => shouldHugFunctionParameters(node) && (name === "params" || name === "parameters" || name === "this" || name === "rest") && number === 0) || path.match(shouldHugType, (node, name) => name === "typeAnnotation", (node, name) => name === "typeAnnotation", (node, name, number) => shouldHugFunctionParameters(node) && (name === "params" || name === "parameters" || name === "this" || name === "rest") && number === 0) ||
   !shouldBreak && path.match(node => node.type === "ObjectPattern", node => node.type === "AssignmentExpression" || node.type === "VariableDeclarator")) {
     return content;
   }
@@ -46783,7 +41294,6 @@ var object$1 = {
   printObject: printObject$3
 };
 
-/** @typedef {import("../../document").Doc} Doc */
 
 
 const {
@@ -46853,7 +41363,6 @@ const {
 function printFlow$1(path, options, print) {
   const node = path.getValue();
   const semi = options.semi ? ";" : "";
-  /** @type{Doc[]} */
 
   const parts = [];
 
@@ -46912,8 +41421,6 @@ function printFlow$1(path, options, print) {
     case "IndexedAccessType":
     case "OptionalIndexedAccessType":
       return printIndexedAccessType$1(path, options, print);
-    // Type Annotations for Facebook Flow, typically stripped out or
-    // transformed away before printing.
 
     case "TypeAnnotation":
       return print("typeAnnotation");
@@ -46976,7 +41483,6 @@ function printFlow$1(path, options, print) {
         } else {
           const members = node.members.length > 0 ? [hardline$i, printArrayItems$1(path, options, "members", print), node.hasUnknownMembers || shouldPrintComma$2(options) ? "," : ""] : [];
           parts.push(group$f(["{", indent$b([...members, ...(node.hasUnknownMembers ? [hardline$i, "..."] : [])]), printDanglingComments$3(path, options,
-          /* sameIndent */
           true), hardline$i, "}"]));
         }
 
@@ -47048,7 +41554,6 @@ function printFlow$1(path, options, print) {
 
     case "ObjectTypeInternalSlot":
       return [node.static ? "static " : "", "[[", print("id"), "]]", printOptionalToken$2(path), node.method ? "" : ": ", print("value")];
-    // Same as `RestElement`
 
     case "ObjectTypeSpreadProperty":
       return printRestSpread$1(path, options, print);
@@ -47061,7 +41566,6 @@ function printFlow$1(path, options, print) {
 
     case "NumberLiteralTypeAnnotation":
       assert__default['default'].strictEqual(typeof node.value, "number");
-    // fall through
 
     case "BigIntLiteralTypeAnnotation":
       if (node.extra) {
@@ -47100,9 +41604,6 @@ function printFlow$1(path, options, print) {
 
     case "InferredPredicate":
       return "%checks";
-    // Unhandled types below. If encountered, nodes of these types should
-    // be either left alone or desugared into AST types that are fully
-    // supported by the pretty-printer.
 
     case "DeclaredPredicate":
       return ["%checks(", print("value"), ")"];
@@ -47133,8 +41634,6 @@ function printFlow$1(path, options, print) {
 
     case "ThisTypeAnnotation":
       return "this";
-    // These types are unprintable because they serve as abstract
-    // supertypes for other (printable) types.
 
     case "Node":
     case "Printable":
@@ -47148,10 +41647,9 @@ function printFlow$1(path, options, print) {
     case "Specifier":
     case "NamedSpecifier":
     case "Comment":
-    case "MemberTypeAnnotation": // Flow
+    case "MemberTypeAnnotation":
 
     case "Type":
-      /* istanbul ignore next */
       throw new Error("unprintable type: " + JSON.stringify(node.type));
   }
 }
@@ -47162,9 +41660,7 @@ function printFlowDeclaration(path, printed) {
   if (parentExportDecl) {
     assert__default['default'].strictEqual(parentExportDecl.type, "DeclareExportDeclaration");
     return printed;
-  } // If the parent node has type DeclareExportDeclaration, then it
-  // will be responsible for printing the "declare" token. Otherwise
-  // it needs to be printed with this non-exported declaration node.
+  }
 
 
   return ["declare ", printed];
@@ -47200,70 +41696,8 @@ const {
     breakParent: breakParent$4
   }
 } = doc;
-/**
- * @typedef {import("../../document").Doc} Doc
- * @typedef {import("../../common/ast-path")} AstPath
- *
- * @typedef {any} Options - Prettier options (TBD ...)
- */
-// If we have nested conditional expressions, we want to print them in JSX mode
-// if there's at least one JSXElement somewhere in the tree.
-//
-// A conditional expression chain like this should be printed in normal mode,
-// because there aren't JSXElements anywhere in it:
-//
-// isA ? "A" : isB ? "B" : isC ? "C" : "Unknown";
-//
-// But a conditional expression chain like this should be printed in JSX mode,
-// because there is a JSXElement in the last ConditionalExpression:
-//
-// isA ? "A" : isB ? "B" : isC ? "C" : <span className="warning">Unknown</span>;
-//
-// This type of ConditionalExpression chain is structured like this in the AST:
-//
-// ConditionalExpression {
-//   test: ...,
-//   consequent: ...,
-//   alternate: ConditionalExpression {
-//     test: ...,
-//     consequent: ...,
-//     alternate: ConditionalExpression {
-//       test: ...,
-//       consequent: ...,
-//       alternate: ...,
-//     }
-//   }
-// }
 
 function conditionalExpressionChainContainsJsx(node) {
-  // Given this code:
-  //
-  // // Using a ConditionalExpression as the consequent is uncommon, but should
-  // // be handled.
-  // A ? B : C ? D : E ? F ? G : H : I
-  //
-  // which has this AST:
-  //
-  // ConditionalExpression {
-  //   test: Identifier(A),
-  //   consequent: Identifier(B),
-  //   alternate: ConditionalExpression {
-  //     test: Identifier(C),
-  //     consequent: Identifier(D),
-  //     alternate: ConditionalExpression {
-  //       test: Identifier(E),
-  //       consequent: ConditionalExpression {
-  //         test: Identifier(F),
-  //         consequent: Identifier(G),
-  //         alternate: Identifier(H),
-  //       },
-  //       alternate: Identifier(I),
-  //     }
-  //   }
-  // }
-  //
-  // We don't care about whether each node was the test, consequent, or alternate
-  // We are only checking if there's any JSXElements inside.
   const conditionalExpressions = [node];
 
   for (let index = 0; index < conditionalExpressions.length; index++) {
@@ -47291,16 +41725,6 @@ function printTernaryTest(path, options, print) {
   const alternateNodePropertyName = isConditionalExpression ? "alternate" : "falseType";
   const parent = path.getParentNode();
   const printed = isConditionalExpression ? print("test") : [print("checkType"), " ", "extends", " ", print("extendsType")];
-  /**
-   *     a
-   *       ? b
-   *       : multiline
-   *         test
-   *         node
-   *       ^^ align(2)
-   *       ? d
-   *       : e
-   */
 
   if (parent.type === node.type && parent[alternateNodePropertyName] === node) {
     return align$2(2, printed);
@@ -47327,7 +41751,7 @@ function shouldExtraIndentForConditionalExpression(path) {
     if (isCallExpression$2(node) && node.callee === child || isMemberExpression$2(node) && node.object === child || node.type === "TSNonNullExpression" && node.expression === child) {
       child = node;
       continue;
-    } // Reached chain root
+    }
 
 
     if (node.type === "NewExpression" && node.callee === child || node.type === "TSAsExpression" && node.expression === child) {
@@ -47336,7 +41760,7 @@ function shouldExtraIndentForConditionalExpression(path) {
     } else {
       parent = node;
     }
-  } // Do not add indent to direct `ConditionalExpression`
+  }
 
 
   if (child === node) {
@@ -47345,15 +41769,6 @@ function shouldExtraIndentForConditionalExpression(path) {
 
   return parent[ancestorNameMap.get(parent.type)] === child;
 }
-/**
- * The following is the shared logic for
- * ternary operators, namely ConditionalExpression
- * and TSConditionalType
- * @param {AstPath} path - The path to the ConditionalExpression/TSConditionalType node.
- * @param {Options} options - Prettier options
- * @param {Function} print - Print function to call recursively
- * @returns {Doc}
- */
 
 
 function printTernary$2(path, options, print) {
@@ -47364,15 +41779,12 @@ function printTernary$2(path, options, print) {
   const testNodePropertyNames = isConditionalExpression ? ["test"] : ["checkType", "extendsType"];
   const consequentNode = node[consequentNodePropertyName];
   const alternateNode = node[alternateNodePropertyName];
-  const parts = []; // We print a ConditionalExpression in either "JSX mode" or "normal mode".
-  // See tests/jsx/conditional-expression.js for more info.
+  const parts = [];
 
   let jsxMode = false;
   const parent = path.getParentNode();
   const isParentTest = parent.type === node.type && testNodePropertyNames.some(prop => parent[prop] === node);
-  let forceNoIndent = parent.type === node.type && !isParentTest; // Find the outermost non-ConditionalExpression parent, and the outermost
-  // ConditionalExpression parent. We'll use these to determine if we should
-  // print in JSX mode.
+  let forceNoIndent = parent.type === node.type && !isParentTest;
 
   let currentParent;
   let previousParent;
@@ -47389,26 +41801,18 @@ function printTernary$2(path, options, print) {
 
   if (isConditionalExpression && (isJsxNode$1(node[testNodePropertyNames[0]]) || isJsxNode$1(consequentNode) || isJsxNode$1(alternateNode) || conditionalExpressionChainContainsJsx(lastConditionalParent))) {
     jsxMode = true;
-    forceNoIndent = true; // Even though they don't need parens, we wrap (almost) everything in
-    // parens when using ?: within JSX, because the parens are analogous to
-    // curly braces in an if statement.
+    forceNoIndent = true;
 
-    const wrap = doc => [ifBreak$9("("), indent$a([softline$a, doc]), softline$a, ifBreak$9(")")]; // The only things we don't wrap are:
-    // * Nested conditional expressions in alternates
-    // * null
-    // * undefined
+    const wrap = doc => [ifBreak$9("("), indent$a([softline$a, doc]), softline$a, ifBreak$9(")")];
 
 
     const isNil = node => node.type === "NullLiteral" || node.type === "Literal" && node.value === null || node.type === "Identifier" && node.name === "undefined";
 
     parts.push(" ? ", isNil(consequentNode) ? print(consequentNodePropertyName) : wrap(print(consequentNodePropertyName)), " : ", alternateNode.type === node.type || isNil(alternateNode) ? print(alternateNodePropertyName) : wrap(print(alternateNodePropertyName)));
   } else {
-    // normal mode
     const part = [line$c, "? ", consequentNode.type === node.type ? ifBreak$9("", "(") : "", align$2(2, print(consequentNodePropertyName)), consequentNode.type === node.type ? ifBreak$9("", ")") : "", line$c, ": ", alternateNode.type === node.type ? print(alternateNodePropertyName) : align$2(2, print(alternateNodePropertyName))];
     parts.push(parent.type !== node.type || parent[alternateNodePropertyName] === node || isParentTest ? part : options.useTabs ? dedent$3(indent$a(part)) : align$2(Math.max(0, options.tabWidth - 2), part));
-  } // We want a whole chain of ConditionalExpressions to all
-  // break if any of them break. That means we should only group around the
-  // outer-most ConditionalExpression.
+  }
 
 
   const comments = [...testNodePropertyNames.map(propertyName => getComments(node[propertyName])), getComments(consequentNode), getComments(alternateNode)].flat();
@@ -47416,11 +41820,7 @@ function printTernary$2(path, options, print) {
 
   const maybeGroup = doc => parent === firstNonConditionalParent ? group$e(doc, {
     shouldBreak
-  }) : shouldBreak ? [doc, breakParent$4] : doc; // Break the closing paren to keep the chain right after it:
-  // (a
-  //   ? b
-  //   : c
-  // ).call()
+  }) : shouldBreak ? [doc, breakParent$4] : doc;
 
 
   const breakClosingParen = !jsxMode && (isMemberExpression$2(parent) || parent.type === "NGPipeExpression" && parent.left === node) && !parent.computed;
@@ -47450,10 +41850,6 @@ const {
 const {
   shouldPrintParamsWithoutParens
 } = _function;
-/**
- * @typedef {import("../../document").Doc} Doc
- * @typedef {import("../../common/ast-path")} AstPath
- */
 
 function printStatementSequence(path, options, print, property) {
   const node = path.getValue();
@@ -47461,15 +41857,13 @@ function printStatementSequence(path, options, print, property) {
   const isClassBody = node.type === "ClassBody";
   const lastStatement = getLastStatement(node[property]);
   path.each((path, index, statements) => {
-    const node = path.getValue(); // Skip printing EmptyStatement nodes to avoid leaving stray
-    // semicolons lying around.
+    const node = path.getValue();
 
     if (node.type === "EmptyStatement") {
       return;
     }
 
-    const printed = print(); // in no-semi mode, prepend statement with semicolon if it might break ASI
-    // don't prepend the only JSX element in a program with semicolon
+    const printed = print();
 
     if (!options.semi && !isClassBody && !isTheOnlyJsxElementInMarkdown$1(options, path) && statementNeedsASIProtection(path, options)) {
       if (hasComment$2(node, CommentCheckFlags$2.Leading)) {
@@ -47483,8 +41877,7 @@ function printStatementSequence(path, options, print, property) {
       parts.push(printed);
     }
 
-    if (!options.semi && isClassBody && isClassProperty(node) && // `ClassBody` don't allow `EmptyStatement`,
-    // so we can use `statements` to get next node
+    if (!options.semi && isClassBody && isClassProperty(node) &&
     shouldPrintSemicolonAfterClassProperty(node, statements[index + 1])) {
       parts.push(";");
     }
@@ -47604,14 +41997,10 @@ function printSwitchCaseConsequent$1(path, options, print) {
 const isClassProperty = ({
   type
 }) => type === "ClassProperty" || type === "PropertyDefinition" || type === "ClassPrivateProperty";
-/**
- * @returns {boolean}
- */
 
 
 function shouldPrintSemicolonAfterClassProperty(node, nextNode) {
-  const name = node.key && node.key.name; // this isn't actually possible yet with most parsers available today
-  // so isn't properly tested yet.
+  const name = node.key && node.key.name;
 
   if ((name === "static" || name === "get" || name === "set") && !node.value && !node.typeAnnotation) {
     return true;
@@ -47621,7 +42010,7 @@ function shouldPrintSemicolonAfterClassProperty(node, nextNode) {
     return false;
   }
 
-  if (nextNode.static || nextNode.accessibility // TypeScript
+  if (nextNode.static || nextNode.accessibility
   ) {
       return false;
     }
@@ -47640,14 +42029,13 @@ function shouldPrintSemicolonAfterClassProperty(node, nextNode) {
     case "TSAbstractClassProperty":
       return nextNode.computed;
 
-    case "MethodDefinition": // Flow
+    case "MethodDefinition":
 
-    case "TSAbstractMethodDefinition": // TypeScript
+    case "TSAbstractMethodDefinition":
 
     case "ClassMethod":
     case "ClassPrivateMethod":
       {
-        // Babel
         const isAsync = nextNode.value ? nextNode.value.async : nextNode.async;
 
         if (isAsync || nextNode.kind === "get" || nextNode.kind === "set") {
@@ -47666,7 +42054,6 @@ function shouldPrintSemicolonAfterClassProperty(node, nextNode) {
     case "TSIndexSignature":
       return true;
   }
-  /* istanbul ignore next */
 
 
   return false;
@@ -47700,7 +42087,6 @@ const {
 const {
   printBody
 } = statement;
-/** @typedef {import("../../document").Doc} Doc */
 
 function printBlock$3(path, options, print) {
   const node = path.getValue();
@@ -47743,7 +42129,7 @@ function printBlockBody$1(path, options, print) {
     return "";
   }
 
-  const parts = []; // Babel 6
+  const parts = [];
 
   if (nodeHasDirectives) {
     path.each((childPath, index, directives) => {
@@ -47765,7 +42151,6 @@ function printBlockBody$1(path, options, print) {
 
   if (nodeHasComment) {
     parts.push(printDanglingComments$2(path, options,
-    /* sameIndent */
     true));
   }
 
@@ -47865,7 +42250,7 @@ const {
 } = typeAnnotation;
 
 function printTypescript$1(path, options, print) {
-  const node = path.getValue(); // TypeScript nodes always starts with `TS`
+  const node = path.getValue();
 
   if (!node.type.startsWith("TS")) {
     return;
@@ -47925,7 +42310,6 @@ function printTypescript$1(path, options, print) {
 
     case "TSInterfaceHeritage":
     case "TSExpressionWithTypeArguments":
-      // Babel AST
       parts.push(print("expression"));
 
       if (node.typeParameters) {
@@ -47984,7 +42368,7 @@ function printTypescript$1(path, options, print) {
 
         if (node.typeAnnotation) {
           parts.push(": ", print("typeAnnotation"));
-        } // This isn't valid semantically, but it's in the AST so we can print it.
+        }
 
 
         if (node.initializer) {
@@ -48023,10 +42407,7 @@ function printTypescript$1(path, options, print) {
 
     case "TSIndexSignature":
       {
-        const parent = path.getParentNode(); // The typescript parser accepts multiple parameters here. If you're
-        // using them, it makes sense to have a trailing comma. But if you
-        // aren't, this is more like a computed property name than an array.
-        // So we leave off the trailing comma when there's just one parameter.
+        const parent = path.getParentNode();
 
         const trailingComma = node.parameters.length > 1 ? ifBreak$8(shouldPrintComma$1(options) ? "," : "") : "";
         const parametersGroup = group$d([indent$8([softline$9, join$d([", ", softline$9], path.map(print, "parameters"))]), trailingComma, softline$9]);
@@ -48061,9 +42442,7 @@ function printTypescript$1(path, options, print) {
         }
 
         parts.push(group$d(printFunctionParameters(path, print, options,
-        /* expandArg */
         false,
-        /* printTypeParams */
         true)));
 
         if (node.returnType || node.typeAnnotation) {
@@ -48081,7 +42460,6 @@ function printTypescript$1(path, options, print) {
       {
         const shouldBreak = hasNewlineInRange(options.originalText, locStart$f(node), locEnd$e(node));
         return group$d(["{", indent$8([options.bracketSpacing ? line$b : softline$9, node.readonly ? [getTypeScriptMappedTypeModifier(node.readonly, "readonly"), " "] : "", printTypeScriptModifiers(path, options, print), print("typeParameter"), node.optional ? getTypeScriptMappedTypeModifier(node.optional, "?") : "", node.typeAnnotation ? ": " : "", print("typeAnnotation"), ifBreak$8(semi)]), printDanglingComments$1(path, options,
-        /* sameIndent */
         true), options.bracketSpacing ? line$b : softline$9, "}"], {
           shouldBreak
         });
@@ -48090,13 +42468,10 @@ function printTypescript$1(path, options, print) {
     case "TSMethodSignature":
       {
         const kind = node.kind && node.kind !== "method" ? `${node.kind} ` : "";
-        parts.push(node.accessibility ? [node.accessibility, " "] : "", kind, node.export ? "export " : "", node.static ? "static " : "", node.readonly ? "readonly " : "", // "abstract" and "declare" are supported by only "babel-ts"
-        // https://github.com/prettier/prettier/issues/9760
+        parts.push(node.accessibility ? [node.accessibility, " "] : "", kind, node.export ? "export " : "", node.static ? "static " : "", node.readonly ? "readonly " : "",
         node.abstract ? "abstract " : "", node.declare ? "declare " : "", node.computed ? "[" : "", print("key"), node.computed ? "]" : "", printOptionalToken$1(path));
         const parametersDoc = printFunctionParameters(path, print, options,
-        /* expandArg */
         false,
-        /* printTypeParams */
         true);
         const returnTypePropertyName = node.returnType ? "returnType" : "typeAnnotation";
         const returnTypeNode = node[returnTypePropertyName];
@@ -48139,7 +42514,6 @@ function printTypescript$1(path, options, print) {
         parts.push(group$d(["{", printDanglingComments$1(path, options), softline$9, "}"]));
       } else {
         parts.push(group$d(["{", indent$8([hardline$f, printArrayItems(path, options, "members", print), shouldPrintComma$1(options, "es5") ? "," : ""]), printDanglingComments$1(path, options,
-        /* sameIndent */
         true), hardline$f, "}"]));
       }
 
@@ -48191,8 +42565,7 @@ function printTypescript$1(path, options, print) {
           }
 
           parts.push(printTypeScriptModifiers(path, options, print));
-          const textBetweenNodeAndItsId = options.originalText.slice(locStart$f(node), locStart$f(node.id)); // Global declaration looks like this:
-          // (declare)? global { ... }
+          const textBetweenNodeAndItsId = options.originalText.slice(locStart$f(node), locStart$f(node.id));
 
           const isGlobalDeclaration = node.id.type === "Identifier" && node.id.name === "global" && !/namespace|module/.test(textBetweenNodeAndItsId);
 
@@ -48213,7 +42586,6 @@ function printTypescript$1(path, options, print) {
 
         return parts;
       }
-    // TODO: Temporary auto-generated node type. To remove when typescript-estree has proper support for private fields.
 
     case "TSPrivateIdentifier":
       return node.escapedText;
@@ -48244,7 +42616,6 @@ function printTypescript$1(path, options, print) {
 
     case "TSEmptyBodyFunctionExpression":
       return printMethodInternal(path, options, print);
-    // These are not valid TypeScript. Printing them just for the sake of error recovery.
 
     case "TSJSDocAllType":
       return "*";
@@ -48259,7 +42630,6 @@ function printTypescript$1(path, options, print) {
       return ["!", print("typeAnnotation")];
 
     default:
-      /* istanbul ignore next */
       throw new Error(`Unknown TypeScript node type: ${JSON.stringify(node.type)}.`);
   }
 }
@@ -48293,15 +42663,12 @@ function printComment$2(commentPath, options) {
   const comment = commentPath.getValue();
 
   if (isLineComment$1(comment)) {
-    // Supports `//`, `#!`, `<!--`, and `-->`
     return options.originalText.slice(locStart$e(comment), locEnd$d(comment)).trimEnd();
   }
 
   if (isBlockComment$1(comment)) {
     if (isIndentableBlockComment(comment)) {
-      const printed = printIndentableBlockComment(comment); // We need to prevent an edge case of a previous trailing comment
-      // printed as a `lineSuffix` which causes the comments to be
-      // interleaved. See https://github.com/prettier/prettier/issues/4412
+      const printed = printIndentableBlockComment(comment);
 
       if (comment.trailing && !hasNewline$2(options.originalText, locStart$e(comment), {
         backwards: true
@@ -48316,17 +42683,12 @@ function printComment$2(commentPath, options) {
     const isInsideFlowComment = options.originalText.slice(commentEnd - 3, commentEnd) === "*-/";
     return ["/*", replaceNewlinesWithLiterallines$2(comment.value), isInsideFlowComment ? "*-/" : "*/"];
   }
-  /* istanbul ignore next */
 
 
   throw new Error("Not a comment: " + JSON.stringify(comment));
 }
 
 function isIndentableBlockComment(comment) {
-  // If the comment has multiple lines and every line starts with a star
-  // we can fix the indentation of each line. The stars in the `/*` and
-  // `*/` delimiters are not included in the comment value, so add them
-  // back first.
   const lines = `*${comment.value}*`.split("\n");
   return lines.length > 1 && lines.every(line => line.trim()[0] === "*");
 }
@@ -48346,33 +42708,26 @@ const {
 } = util$5;
 
 function printLiteral$1(path, options
-/*, print*/
 ) {
   const node = path.getNode();
 
   switch (node.type) {
     case "RegExpLiteral":
-      // Babel 6 Literal split
       return printRegex(node);
 
     case "BigIntLiteral":
-      // babel: node.extra.raw, flow: node.bigint
       return printBigInt(node.bigint || node.extra.raw);
 
     case "NumericLiteral":
-      // Babel 6 Literal split
       return printNumber$1(node.extra.raw);
 
     case "StringLiteral":
-      // Babel 6 Literal split
       return printString$1(node.extra.raw, options);
 
     case "NullLiteral":
-      // Babel 6 Literal split
       return "null";
 
     case "BooleanLiteral":
-      // Babel 6 Literal split
       return String(node.value);
 
     case "DecimalLiteral":
@@ -48425,8 +42780,6 @@ var literal = {
   printLiteral: printLiteral$1
 };
 
-/** @typedef {import("../document").Doc} Doc */
-// TODO(azz): anything that imports from main shouldn't be in a `language-*` dir.
 
 
 const {
@@ -48566,13 +42919,13 @@ function genericPrint$6(path, options, print, args) {
   const node = path.getValue();
   const {
     type
-  } = node; // Their decorators are handled themselves, and they can't have parentheses
+  } = node;
 
   if (type === "ClassMethod" || type === "ClassPrivateMethod" || type === "ClassProperty" || type === "PropertyDefinition" || type === "TSAbstractClassProperty" || type === "ClassPrivateProperty" || type === "MethodDefinition" || type === "TSAbstractMethodDefinition" || type === "TSDeclareMethod") {
     return printed;
   }
 
-  const printedDecorators = printDecorators(path, options, print); // Nodes with decorators can't have parentheses and don't need leading semicolons
+  const printedDecorators = printDecorators(path, options, print);
 
   if (printedDecorators) {
     return group$c([...printedDecorators, printed]);
@@ -48615,7 +42968,6 @@ function printPathNoParens(path, options, print, args) {
       return printed;
     }
   }
-  /** @type{Doc[]} */
 
 
   let parts = [];
@@ -48628,8 +42980,6 @@ function printPathNoParens(path, options, print, args) {
       return [print("node"), hardline$d];
 
     case "File":
-      // Print @babel/parser's InterpreterDirective here so that
-      // leading comments on the `Program` node get printed after the hashbang.
       if (node.program && node.program.interpreter) {
         parts.push(print(["program", "interpreter"]));
       }
@@ -48639,13 +42989,11 @@ function printPathNoParens(path, options, print, args) {
 
     case "Program":
       return printBlockBody(path, options, print);
-    // Babel extension.
 
     case "EmptyStatement":
       return "";
 
     case "ExpressionStatement":
-      // Detect Flow and TypeScript directives
       if (node.directive) {
         return [printDirective(node.expression, options), semi];
       }
@@ -48656,11 +43004,10 @@ function printPathNoParens(path, options, print, args) {
         if (parent.type === "Program" && parent.body.length === 1 && parent.body[0] === node) {
           return [print("expression"), isVueEventBindingExpression$2(node.expression) ? ";" : ""];
         }
-      } // Do not append semicolon after the only JSX element in a program
+      }
 
 
       return [print("expression"), isTheOnlyJsxElementInMarkdown(options, path) ? "" : semi];
-    // Babel non-standard node. Used for Closure-style type casts. See postprocess.js.
 
     case "ParenthesizedExpression":
       {
@@ -48804,9 +43151,8 @@ function printPathNoParens(path, options, print, args) {
     case "ObjectPattern":
     case "RecordExpression":
       return printObject(path, options, print);
-    // Babel 6
 
-    case "ObjectProperty": // Non-standard AST node type.
+    case "ObjectProperty":
 
     case "Property":
       if (node.method || node.kind === "get" || node.kind === "set") {
@@ -48831,9 +43177,6 @@ function printPathNoParens(path, options, print, args) {
         const parent = path.getParentNode(0);
 
         if (parent.type === "ExpressionStatement" || parent.type === "ForStatement") {
-          // For ExpressionStatements and for-loop heads, which are among
-          // the few places a SequenceExpression appears unparenthesized, we want
-          // to indent expressions after the first.
           const parts = [];
           path.each((expressionPath, index) => {
             if (index === 0) {
@@ -48856,7 +43199,6 @@ function printPathNoParens(path, options, print, args) {
 
     case "Directive":
       return [print("value"), semi];
-    // Babel 6
 
     case "DirectiveLiteral":
       return printDirective(node, options);
@@ -48890,8 +43232,7 @@ function printPathNoParens(path, options, print, args) {
 
     case "VariableDeclaration":
       {
-        const printed = path.map(print, "declarations"); // We generally want to terminate all variable declarations with a
-        // semicolon, except when they in the () part of for loops.
+        const printed = path.map(print, "declarations");
 
         const parentNode = path.getParentNode();
         const isParentForLoop = parentNode.type === "ForStatement" || parentNode.type === "ForInStatement" || parentNode.type === "ForOfStatement";
@@ -48901,7 +43242,6 @@ function printPathNoParens(path, options, print, args) {
         if (printed.length === 1 && !hasComment(node.declarations[0])) {
           firstVariable = printed[0];
         } else if (printed.length > 0) {
-          // Indent first var to comply with eslint one-var rule
           firstVariable = indent$7(printed[0]);
         }
 
@@ -48940,12 +43280,9 @@ function printPathNoParens(path, options, print, args) {
 
     case "ForStatement":
       {
-        const body = adjustClause(node.body, print("body")); // We want to keep dangling comments above the loop to stay consistent.
-        // Any comment positioned between the for statement and the parentheses
-        // is going to be printed before the statement.
+        const body = adjustClause(node.body, print("body"));
 
         const dangling = printDanglingComments(path, options,
-        /* sameLine */
         true);
         const printedComments = dangling ? [dangling, softline$8] : "";
 
@@ -49024,7 +43361,6 @@ function printPathNoParens(path, options, print, args) {
       }
 
       return ["catch ", print("body")];
-    // Note: ignoring n.lexical because it has no printing consequences.
 
     case "SwitchStatement":
       return [group$c(["switch (", indent$7([softline$8, print("discriminant")]), softline$8, ")"]), " {", node.cases.length > 0 ? (options.dedentSwitchLabels ? identity : indent$7)([hardline$d, join$b(hardline$d, path.map((casePath, index, cases) => {
@@ -49049,7 +43385,6 @@ function printPathNoParens(path, options, print, args) {
 
         return parts;
       }
-    // JSX extensions below.
 
     case "DebuggerStatement":
       return ["debugger", semi];
@@ -49118,30 +43453,25 @@ function printPathNoParens(path, options, print, args) {
       }
 
     default:
-      /* istanbul ignore next */
       throw new Error("unknown type: " + JSON.stringify(node.type));
   }
 }
 
 function printDirective(node, options) {
   const raw = rawText(node);
-  const rawContent = raw.slice(1, -1); // Check for the alternate quote, to determine if we're allowed to swap
-  // the quotes on a DirectiveLiteral.
+  const rawContent = raw.slice(1, -1);
 
   if (rawContent.includes('"') || rawContent.includes("'")) {
     return raw;
   }
 
-  const enclosingQuote = options.singleQuote ? "'" : '"'; // Directives are exact code unit sequences, which means that you can't
-  // change the escape sequences they use.
-  // See https://github.com/prettier/prettier/issues/1555
-  // and https://tc39.github.io/ecma262/#directive-prologue
+  const enclosingQuote = options.singleQuote ? "'" : '"';
 
   return enclosingQuote + rawContent + enclosingQuote;
 }
 
 function canAttachComment$1(node) {
-  return node.type && !isBlockComment(node) && !isLineComment(node) && node.type !== "EmptyStatement" && node.type !== "TemplateElement" && node.type !== "Import" && // `babel-ts` don't have similar node for `class Foo { bar() /* bat */; }`
+  return node.type && !isBlockComment(node) && !isLineComment(node) && node.type !== "EmptyStatement" && node.type !== "TemplateElement" && node.type !== "Import" &&
   node.type !== "TSEmptyBodyFunctionExpression";
 }
 
@@ -49161,7 +43491,6 @@ var printerEstree = {
   printComment: printComment$1,
   isBlockComment,
   handleComments: {
-    // TODO: Make this as default behavior
     avoidAstMutation: true,
     ownLine: comments.handleOwnLineComment,
     endOfLine: comments.handleEndOfLineComment,
@@ -49226,14 +43555,12 @@ function genericPrint$5(path, options, print) {
       }
 
     case "TemplateLiteral":
-      // There is only one `TemplateElement`
       return print(["quasis", 0]);
 
     case "TemplateElement":
       return JSON.stringify(node.value.cooked);
 
     default:
-      /* istanbul ignore next */
       throw new Error("unknown type: " + JSON.stringify(node.type));
   }
 }
@@ -49241,11 +43568,10 @@ function genericPrint$5(path, options, print) {
 const ignoredProperties$3 = new Set(["start", "end", "extra", "loc", "comments", "leadingComments", "trailingComments", "innerComments", "errors", "range", "tokens"]);
 
 function clean$6(node, newNode
-/*, parent*/
 ) {
   const {
     type
-  } = node; // We print quoted key
+  } = node;
 
   if (type === "ObjectProperty" && node.key.type === "Identifier") {
     newNode.key = {
@@ -49257,7 +43583,7 @@ function clean$6(node, newNode
 
   if (type === "UnaryExpression" && node.operator === "+") {
     return newNode.argument;
-  } // We print holes in array as `null`
+  }
 
 
   if (type === "ArrayExpression") {
@@ -49270,7 +43596,7 @@ function clean$6(node, newNode
     }
 
     return;
-  } // We print `TemplateLiteral` as string
+  }
 
 
   if (type === "TemplateLiteral") {
@@ -49288,7 +43614,7 @@ var printerEstreeJson = {
   massageAstNode: clean$6
 };
 
-const CATEGORY_COMMON = "Common"; // format based on https://github.com/prettier/prettier/blob/main/src/main/core-options.js
+const CATEGORY_COMMON = "Common";
 
 var commonOptions = {
   bracketSpacing: {
@@ -49334,7 +43660,7 @@ var commonOptions = {
   }
 };
 
-const CATEGORY_JAVASCRIPT = "JavaScript"; // format based on https://github.com/prettier/prettier/blob/main/src/main/core-options.js
+const CATEGORY_JAVASCRIPT = "JavaScript";
 
 var options$5 = {
   arrowParens: {
@@ -49696,8 +44022,7 @@ const languages$7 = [createLanguage(require$$0$6, data => ({
   since: "0.0.0",
   parsers: ["babel", "espree", "meriyah", "babel-flow", "babel-ts", "flow", "typescript"],
   vscodeLanguageIds: ["javascript", "mongo"],
-  extensions: [...data.extensions.filter(extension => extension !== ".jsx"), // WeiXin Script (Weixin Mini Programs)
-  // https://developers.weixin.qq.com/miniprogram/en/dev/framework/view/wxs/
+  extensions: [...data.extensions.filter(extension => extension !== ".jsx"),
   ".wxs"]
 })), createLanguage(require$$0$6, () => ({
   name: "Flow",
@@ -49736,7 +44061,6 @@ const languages$7 = [createLanguage(require$$0$6, data => ({
   parsers: ["json-stringify"],
   vscodeLanguageIds: ["json"],
   extensions: [],
-  // .json file defaults to json instead of json-stringify
   filenames: ["package.json", "package-lock.json", "composer.json"]
 })), createLanguage(require$$3$1, data => ({
   since: "1.5.0",
@@ -49758,7 +44082,6 @@ const printers$5 = {
   "estree-json": printerEstreeJson
 };
 const parsers$6 = {
-  // JS - Babel
   get babel() {
     return require("./parser-babel").parsers.babel;
   },
@@ -49795,47 +44118,38 @@ const parsers$6 = {
     return require("./parser-babel").parsers.__vue_event_binding;
   },
 
-  // JS - Flow
   get flow() {
     return require("./parser-flow").parsers.flow;
   },
 
-  // JS - TypeScript
   get typescript() {
     return require("./parser-typescript").parsers.typescript;
   },
 
-  // JS - Angular Action
   get __ng_action() {
     return require("./parser-angular").parsers.__ng_action;
   },
 
-  // JS - Angular Binding
   get __ng_binding() {
     return require("./parser-angular").parsers.__ng_binding;
   },
 
-  // JS - Angular Interpolation
   get __ng_interpolation() {
     return require("./parser-angular").parsers.__ng_interpolation;
   },
 
-  // JS - Angular Directive
   get __ng_directive() {
     return require("./parser-angular").parsers.__ng_directive;
   },
 
-  // JS - espree
   get espree() {
     return require("./parser-espree").parsers.espree;
   },
 
-  // JS - meriyah
   get meriyah() {
     return require("./parser-meriyah").parsers.meriyah;
   },
 
-  // JS - Babel Estree
   get __babel_estree() {
     return require("./parser-babel").parsers.__babel_estree;
   }
@@ -49851,7 +44165,7 @@ var languageJs = {
 const {
   isFrontMatterNode: isFrontMatterNode$4
 } = util$5;
-const ignoredProperties$2 = new Set(["raw", // front-matter
+const ignoredProperties$2 = new Set(["raw",
 "raws", "sourceIndex", "source", "before", "after", "trailingComma"]);
 
 function clean$5(ast, newObj, parent) {
@@ -49860,20 +44174,13 @@ function clean$5(ast, newObj, parent) {
   }
 
   if (ast.type === "css-comment" && parent.type === "css-root" && parent.nodes.length > 0) {
-    // --insert-pragma
-    // first non-front-matter comment
     if (parent.nodes[0] === ast || isFrontMatterNode$4(parent.nodes[0]) && parent.nodes[1] === ast) {
-      /**
-       * something
-       *
-       * @format
-       */
-      delete newObj.text; // standalone pragma
+      delete newObj.text;
 
       if (/^\*\s*@(format|prettier)\s*$/.test(ast.text)) {
         return null;
       }
-    } // Last comment is not parsed, when omitting semicolon, #8675
+    }
 
 
     if (parent.type === "css-root" && getLast_1(parent.nodes) === ast) {
@@ -49953,12 +44260,12 @@ function clean$5(ast, newObj, parent) {
     if (["from", "to"].includes(lowercasedValue)) {
       newObj.value = lowercasedValue;
     }
-  } // Workaround when `postcss-values-parser` parse `not`, `and` or `or` keywords as `value-func`
+  }
 
 
   if (ast.type === "css-atrule" && ast.name.toLowerCase() === "supports") {
     delete newObj.value;
-  } // Workaround for SCSS nested properties
+  }
 
 
   if (ast.type === "selector-unknown") {
@@ -50002,7 +44309,6 @@ const {
 } = doc;
 
 function embed$4(path, print, textToDoc
-/*, options */
 ) {
   const node = path.getValue();
 
@@ -50014,10 +44320,8 @@ function embed$4(path, print, textToDoc
 
 var embed_1$2 = embed$4;
 
-const frontMatterRegex = new RegExp("^(?<startDelimiter>-{3}|\\+{3})" + // trailing spaces after delimiters are allowed
-"(?<language>[^\\n]*)" + "\\n(?:|(?<value>.*?)\\n)" + // In some markdown processors such as pandoc,
-// "..." can be used as the end delimiter for YAML front-matter.
-// Adding `\.{3}` make the regex matches `+++\n...`, but we'll exclude it later
+const frontMatterRegex = new RegExp("^(?<startDelimiter>-{3}|\\+{3})" +
+"(?<language>[^\\n]*)" + "\\n(?:|(?<value>.*?)\\n)" +
 "(?<endDelimiter>\\k<startDelimiter>|\\.{3})" + "[^\\S\\n]*(?:\\n|$)", "s");
 
 function parse(text) {
@@ -50039,7 +44343,7 @@ function parse(text) {
 
   if (startDelimiter === "+++") {
     lang = "toml";
-  } // Only allow yaml to parse with a different end delimiter
+  }
 
 
   if (lang !== "yaml" && startDelimiter !== endDelimiter) {
@@ -50114,7 +44418,6 @@ function getPropOfDeclNode$1(path) {
 function hasSCSSInterpolation(groupList) {
   if (isNonEmptyArray$6(groupList)) {
     for (let i = groupList.length - 1; i > 0; i--) {
-      // If we find `#{`, return true.
       if (groupList[i].type === "word" && groupList[i].value === "{" && groupList[i - 1].type === "word" && groupList[i - 1].value.endsWith("#")) {
         return true;
       }
@@ -50187,7 +44490,6 @@ function isURLFunctionNode$1(node) {
 
 function isLastNode$1(path, node) {
   const parentNode = path.getParentNode();
-  /* istanbul ignore next */
 
   if (!parentNode) {
     return false;
@@ -50200,11 +44502,7 @@ function isLastNode$1(path, node) {
 }
 
 function isDetachedRulesetDeclarationNode$1(node) {
-  // If a Less file ends up being parsed with the SCSS parser, Less
-  // variable declarations will be parsed as atrules with names ending
-  // with a colon, so keep the original case then.
 
-  /* istanbul ignore next */
   if (!node.selector) {
     return false;
   }
@@ -50261,7 +44559,6 @@ function isSCSSControlDirectiveNode$1(node) {
 }
 
 function isSCSSNestedPropertyNode(node) {
-  /* istanbul ignore next */
   if (!node.selector) {
     return false;
   }
@@ -50306,28 +44603,28 @@ function isKeyValuePairInParenGroupNode(node) {
 }
 
 function isSCSSMapItemNode$1(path) {
-  const node = path.getValue(); // Ignore empty item (i.e. `$key: ()`)
+  const node = path.getValue();
 
   if (node.groups.length === 0) {
     return false;
   }
 
-  const parentParentNode = path.getParentNode(1); // Check open parens contain key/value pair (i.e. `(key: value)` and `(key: (value, other-value)`)
+  const parentParentNode = path.getParentNode(1);
 
   if (!isKeyValuePairInParenGroupNode(node) && !(parentParentNode && isKeyValuePairInParenGroupNode(parentParentNode))) {
     return false;
   }
 
-  const declNode = getAncestorNode$2(path, "css-decl"); // SCSS map declaration (i.e. `$map: (key: value, other-key: other-value)`)
+  const declNode = getAncestorNode$2(path, "css-decl");
 
   if (declNode && declNode.prop && declNode.prop.startsWith("$")) {
     return true;
-  } // List as value of key inside SCSS map (i.e. `$map: (key: (value other-value other-other-value))`)
+  }
 
 
   if (isKeyValuePairInParenGroupNode(parentParentNode)) {
     return true;
-  } // SCSS Map is argument of function (i.e. `func((key: value, other-key: other-value))`)
+  }
 
 
   if (parentParentNode.type === "value-func") {
@@ -50388,7 +44685,7 @@ function isColorAdjusterFuncNode$1(node) {
   }
 
   return colorAdjusterFunctions.has(node.value.toLowerCase());
-} // TODO: only check `less` when we don't use `less` to parse `css`
+}
 
 
 function isLessParser$1(options) {
@@ -50493,7 +44790,6 @@ const {
 } = util$5;
 
 function calculateLocStart(node, text) {
-  // value-* nodes have this
   if (typeof node.sourceIndex === "number") {
     return node.sourceIndex;
   }
@@ -50574,23 +44870,11 @@ function getValueRootOffset(node) {
 
   return result;
 }
-/**
- * Workaround for a bug: quotes and asterisks in inline comments corrupt loc data of subsequent nodes.
- * This function replaces the quotes and asterisks with spaces. Later, when the comments are printed,
- * their content is extracted from the original text.
- * - https://github.com/prettier/prettier/issues/7780
- * - https://github.com/shellscape/postcss-less/issues/145
- * - https://github.com/prettier/prettier/issues/8130
- * @param text {string}
- */
 
 
 function replaceQuotesInInlineComments(text) {
-  /** @typedef { 'initial' | 'single-quotes' | 'double-quotes' | 'url' | 'comment-block' | 'comment-inline' } State */
 
-  /** @type {State} */
   let state = "initial";
-  /** @type {State} */
 
   let stateToReturnFromQuotes = "initial";
   let inlineCommentStartIndex;
@@ -50638,7 +44922,7 @@ function replaceQuotesInInlineComments(text) {
         }
 
         if (c === "\n" || c === "\r") {
-          return text; // invalid input
+          return text;
         }
 
         continue;
@@ -50650,7 +44934,7 @@ function replaceQuotesInInlineComments(text) {
         }
 
         if (c === "\n" || c === "\r") {
-          return text; // invalid input
+          return text;
         }
 
         continue;
@@ -50661,7 +44945,7 @@ function replaceQuotesInInlineComments(text) {
         }
 
         if (c === "\n" || c === "\r") {
-          return text; // invalid input
+          return text;
         }
 
         if (c === "'") {
@@ -50812,7 +45096,6 @@ function shouldPrintComma(options) {
 
 function genericPrint$4(path, options, print) {
   const node = path.getValue();
-  /* istanbul ignore if */
 
   if (!node) {
     return "";
@@ -50881,12 +45164,9 @@ function genericPrint$4(path, options, print) {
           }
         }
 
-        return ["@", // If a Less file ends up being parsed with the SCSS parser, Less
-        // variable declarations will be parsed as at-rules with names ending
-        // with a colon, so keep the original case then.
+        return ["@",
         isDetachedRulesetCallNode(node) || node.name.endsWith(":") ? node.name : maybeToLowerCase(node.name), node.params ? [isDetachedRulesetCallNode(node) ? "" : isTemplatePlaceholderNode(node) ? node.raws.afterName === "" ? "" : node.name.endsWith(":") ? " " : /^\s*\n\s*\n/.test(node.raws.afterName) ? [hardline$9, hardline$9] : /^\s*\n/.test(node.raws.afterName) ? hardline$9 : " " : " ", print("params")] : "", node.selector ? indent$5([" ", print("selector")]) : "", node.value ? group$9([" ", print("value"), isSCSSControlDirectiveNode(node) ? hasParensAroundNode(node) ? " " : line$9 : ""]) : node.name === "else" ? " " : "", node.nodes ? [isSCSSControlDirectiveNode(node) ? "" : node.selector && !node.selector.nodes && typeof node.selector.value === "string" && lastLineHasInlineComment(node.selector.value) || !node.selector && typeof node.params === "string" && lastLineHasInlineComment(node.params) ? line$9 : " ", "{", indent$5([node.nodes.length > 0 ? softline$7 : "", printNodeSequence(path, options, print)]), softline$7, "}"] : isTemplatePlaceholderNodeWithoutSemiColon ? "" : ";"];
       }
-    // postcss-media-query-parser
 
     case "media-query-list":
       {
@@ -50951,7 +45231,6 @@ function genericPrint$4(path, options, print) {
       {
         return node.value;
       }
-    // postcss-selector-parser
 
     case "selector-root":
       {
@@ -51026,11 +45305,11 @@ function genericPrint$4(path, options, print) {
 
     case "selector-unknown":
       {
-        const ruleAncestorNode = getAncestorNode$1(path, "css-rule"); // Nested SCSS property
+        const ruleAncestorNode = getAncestorNode$1(path, "css-rule");
 
         if (ruleAncestorNode && ruleAncestorNode.isSCSSNesterProperty) {
           return adjustNumbers(adjustStrings(maybeToLowerCase(node.value), options));
-        } // originalText has to be used for Less, see replaceQuotesInInlineComments in loc.js
+        }
 
 
         const parentNode = path.getParentNode();
@@ -51039,7 +45318,7 @@ function genericPrint$4(path, options, print) {
           const start = locStart$b(parentNode);
           const end = start + parentNode.raws.selector.length;
           return options.originalText.slice(start, end).trim();
-        } // Same reason above
+        }
 
 
         const grandParent = path.getParentNode(1);
@@ -51053,7 +45332,6 @@ function genericPrint$4(path, options, print) {
 
         return node.value;
       }
-    // postcss-values-parser
 
     case "value-value":
     case "value-root":
@@ -51094,17 +45372,17 @@ function genericPrint$4(path, options, print) {
             }
 
             continue;
-          } // Ignore after latest node (i.e. before semicolon)
+          }
 
 
           if (!iNextNode) {
             continue;
-          } // styled.div` background: var(--${one}); `
+          }
 
 
           if (iNode.type === "value-word" && iNode.value.endsWith("-") && isAtWordPlaceholderNode(iNextNode)) {
             continue;
-          } // Ignore spaces before/after string interpolation (i.e. `"#{my-fn("_")}"`)
+          }
 
 
           const isStartSCSSInterpolationInString = iNode.type === "value-string" && iNode.value.startsWith("#{");
@@ -51117,86 +45395,79 @@ function genericPrint$4(path, options, print) {
 
           if (insideSCSSInterpolationInString) {
             continue;
-          } // Ignore colon (i.e. `:`)
+          }
 
 
           if (isColonNode(iNode) || isColonNode(iNextNode)) {
             continue;
-          } // Ignore `@` in Less (i.e. `@@var;`)
+          }
 
 
           if (iNode.type === "value-atword" && iNode.value === "") {
             continue;
-          } // Ignore `~` in Less (i.e. `content: ~"^//* some horrible but needed css hack";`)
+          }
 
 
           if (iNode.value === "~") {
             continue;
-          } // Ignore escape `\`
+          }
 
 
           if (iNode.value && iNode.value.includes("\\") && iNextNode && iNextNode.type !== "value-comment") {
             continue;
-          } // Ignore escaped `/`
+          }
 
 
           if (iPrevNode && iPrevNode.value && iPrevNode.value.indexOf("\\") === iPrevNode.value.length - 1 && iNode.type === "value-operator" && iNode.value === "/") {
             continue;
-          } // Ignore `\` (i.e. `$variable: \@small;`)
+          }
 
 
           if (iNode.value === "\\") {
             continue;
-          } // Ignore `$$` (i.e. `background-color: $$(style)Color;`)
+          }
 
 
           if (isPostcssSimpleVarNode(iNode, iNextNode)) {
             continue;
-          } // Ignore spaces after `#` and after `{` and before `}` in SCSS interpolation (i.e. `#{variable}`)
+          }
 
 
           if (isHashNode(iNode) || isLeftCurlyBraceNode(iNode) || isRightCurlyBraceNode(iNextNode) || isLeftCurlyBraceNode(iNextNode) && hasEmptyRawBefore(iNextNode) || isRightCurlyBraceNode(iNode) && hasEmptyRawBefore(iNextNode)) {
             continue;
-          } // Ignore css variables and interpolation in SCSS (i.e. `--#{$var}`)
+          }
 
 
           if (iNode.value === "--" && isHashNode(iNextNode)) {
             continue;
-          } // Formatting math operations
+          }
 
 
           const isMathOperator = isMathOperatorNode(iNode);
-          const isNextMathOperator = isMathOperatorNode(iNextNode); // Print spaces before and after math operators beside SCSS interpolation as is
-          // (i.e. `#{$var}+5`, `#{$var} +5`, `#{$var}+ 5`, `#{$var} + 5`)
-          // (i.e. `5+#{$var}`, `5 +#{$var}`, `5+ #{$var}`, `5 + #{$var}`)
+          const isNextMathOperator = isMathOperatorNode(iNextNode);
 
           if ((isMathOperator && isHashNode(iNextNode) || isNextMathOperator && isRightCurlyBraceNode(iNode)) && hasEmptyRawBefore(iNextNode)) {
             continue;
-          } // absolute paths are only parsed as one token if they are part of url(/abs/path) call
-          // but if you have custom -fb-url(/abs/path/) then it is parsed as "division /" and rest
-          // of the path. We don't want to put a space after that first division in this case.
+          }
 
 
           if (!iPrevNode && isDivisionNode(iNode)) {
             continue;
-          } // Print spaces before and after addition and subtraction math operators as is in `calc` function
-          // due to the fact that it is not valid syntax
-          // (i.e. `calc(1px+1px)`, `calc(1px+ 1px)`, `calc(1px +1px)`, `calc(1px + 1px)`)
+          }
 
 
           if (insideValueFunctionNode(path, "calc") && (isAdditionNode(iNode) || isAdditionNode(iNextNode) || isSubtractionNode(iNode) || isSubtractionNode(iNextNode)) && hasEmptyRawBefore(iNextNode)) {
             continue;
-          } // Print spaces after `+` and `-` in color adjuster functions as is (e.g. `color(red l(+ 20%))`)
-          // Adjusters with signed numbers (e.g. `color(red l(+20%))`) output as-is.
+          }
 
 
           const isColorAdjusterNode = (isAdditionNode(iNode) || isSubtractionNode(iNode)) && i === 0 && (iNextNode.type === "value-number" || iNextNode.isHex) && parentParentNode && isColorAdjusterFuncNode(parentParentNode) && !hasEmptyRawBefore(iNextNode);
           const requireSpaceBeforeOperator = iNextNextNode && iNextNextNode.type === "value-func" || iNextNextNode && isWordNode(iNextNextNode) || iNode.type === "value-func" || isWordNode(iNode);
-          const requireSpaceAfterOperator = iNextNode.type === "value-func" || isWordNode(iNextNode) || iPrevNode && iPrevNode.type === "value-func" || iPrevNode && isWordNode(iPrevNode); // Formatting `/`, `+`, `-` sign
+          const requireSpaceAfterOperator = iNextNode.type === "value-func" || isWordNode(iNextNode) || iPrevNode && iPrevNode.type === "value-func" || iPrevNode && isWordNode(iPrevNode);
 
           if (!(isMultiplicationNode(iNextNode) || isMultiplicationNode(iNode)) && !insideValueFunctionNode(path, "calc") && !isColorAdjusterNode && (isDivisionNode(iNextNode) && !requireSpaceBeforeOperator || isDivisionNode(iNode) && !requireSpaceAfterOperator || isAdditionNode(iNextNode) && !requireSpaceBeforeOperator || isAdditionNode(iNode) && !requireSpaceAfterOperator || isSubtractionNode(iNextNode) || isSubtractionNode(iNode)) && (hasEmptyRawBefore(iNextNode) || isMathOperator && (!iPrevNode || iPrevNode && isMathOperatorNode(iPrevNode)))) {
             continue;
-          } // Add `hardline` after inline comment (i.e. `// comment\n foo: bar;`)
+          }
 
 
           if (isInlineValueCommentNode(iNode)) {
@@ -51207,19 +45478,19 @@ function genericPrint$4(path, options, print) {
 
             parts.push(hardline$9);
             continue;
-          } // Handle keywords in SCSS control directive
+          }
 
 
           if (isControlDirective && (isEqualityOperatorNode(iNextNode) || isRelationalOperatorNode(iNextNode) || isIfElseKeywordNode(iNextNode) || isEachKeywordNode(iNode) || isForKeywordNode(iNode))) {
             parts.push(" ");
             continue;
-          } // At-rule `namespace` should be in one line
+          }
 
 
           if (atRuleAncestorNode && atRuleAncestorNode.name.toLowerCase() === "namespace") {
             parts.push(" ");
             continue;
-          } // Formatting `grid` property
+          }
 
 
           if (isGridValue) {
@@ -51231,15 +45502,13 @@ function genericPrint$4(path, options, print) {
             }
 
             continue;
-          } // Add `space` before next math operation
-          // Note: `grip` property have `/` delimiter and it is not math operation, so
-          // `grid` property handles above
+          }
 
 
           if (isNextMathOperator) {
             parts.push(" ");
             continue;
-          } // allow function(returns-list($list)...)
+          }
 
 
           if (iNextNode && iNextNode.value === "...") {
@@ -51248,7 +45517,7 @@ function genericPrint$4(path, options, print) {
 
           if (isAtWordPlaceholderNode(iNode) && isAtWordPlaceholderNode(iNextNode) && locEnd$a(iNode) === locStart$b(iNextNode)) {
             continue;
-          } // Be default all values go through `line`
+          }
 
 
           parts.push(line$9);
@@ -51264,10 +45533,7 @@ function genericPrint$4(path, options, print) {
 
         if (isControlDirective) {
           return group$9(indent$5(parts));
-        } // Indent is not needed for import url when url is very long
-        // and node has two groups
-        // when type is value-comma_group
-        // example @import url("verylongurl") projection,tv
+        }
 
 
         if (insideURLFunctionInImportAtRuleNode(path)) {
@@ -51306,7 +45572,7 @@ function genericPrint$4(path, options, print) {
         const isKey = isKeyInValuePairNode(node, parentNode);
         const printed = group$9([node.open ? print("open") : "", indent$5([softline$7, join$9([",", line$9], path.map(childPath => {
           const node = childPath.getValue();
-          const printed = print(); // Key/Value pair in open paren already indented
+          const printed = print();
 
           if (isKeyValuePairNode(node) && node.type === "value-comma_group" && node.groups && node.groups[0].type !== "value-paren_group" && node.groups[2] && node.groups[2].type === "value-paren_group") {
             const parts = getDocParts$4(printed.contents.contents);
@@ -51355,13 +45621,11 @@ function genericPrint$4(path, options, print) {
         const parentNode = path.getParentNode();
         const index = parentNode && parentNode.groups.indexOf(node);
         const prevNode = index && parentNode.groups[index - 1];
-        return [node.value, // Don't add spaces on escaped colon `:`, e.g: grid-template-rows: [row-1-00\:00] auto;
-        prevNode && typeof prevNode.value === "string" && getLast_1(prevNode.value) === "\\" || // Don't add spaces on `:` in `url` function (i.e. `url(fbglyph: cross-outline, fig-white)`)
+        return [node.value,
+        prevNode && typeof prevNode.value === "string" && getLast_1(prevNode.value) === "\\" ||
         insideValueFunctionNode(path, "url") ? "" : line$9];
       }
-    // TODO: confirm this code is dead
 
-    /* istanbul ignore next */
 
     case "value-comma":
       {
@@ -51389,7 +45653,6 @@ function genericPrint$4(path, options, print) {
       }
 
     default:
-      /* istanbul ignore next */
       throw new Error(`Unknown postcss type ${JSON.stringify(node.type)}`);
   }
 }
@@ -51443,7 +45706,7 @@ function adjustNumbers(value) {
 }
 
 function printCssNumber(rawNumber) {
-  return printNumber(rawNumber) // Remove trailing `.0`.
+  return printNumber(rawNumber)
   .replace(/\.0(?=$|e)/, "");
 }
 
@@ -51551,8 +45814,7 @@ const languages$6 = [createLanguage(require$$0$5, data => ({
   since: "1.4.0",
   parsers: ["css"],
   vscodeLanguageIds: ["css"],
-  extensions: [...data.extensions, // `WeiXin Style Sheets`(Weixin Mini Programs)
-  // https://developers.weixin.qq.com/miniprogram/en/dev/framework/view/wxs/
+  extensions: [...data.extensions,
   ".wxss"]
 })), createLanguage(require$$1$2, () => ({
   since: "1.4.0",
@@ -51571,7 +45833,6 @@ const printers$4 = {
   postcss: printerPostcss
 };
 const parsers$5 = {
-  // TODO: switch these to just `postcss` and use `language` instead.
   get css() {
     return require("./parser-postcss").parsers.css;
   },
@@ -51606,9 +45867,7 @@ var loc$4 = {
 };
 
 function clean$4(ast, newNode
-/*, parent*/
 ) {
-  // (Glimmer/HTML) ignore TextNode
   if (ast.type === "TextNode") {
     const trimmed = ast.chars.trim();
 
@@ -51617,7 +45876,7 @@ function clean$4(ast, newNode
     }
 
     newNode.chars = trimmed.replace(/[\t\n\f\r ]+/g, " ");
-  } // `class` is reformatted
+  }
 
 
   if (ast.type === "AttrNode" && ast.name.toLowerCase() === "class") {
@@ -51782,12 +46041,10 @@ const {
   isVoid,
   isWhitespaceNode
 } = utils$3;
-const NEWLINES_TO_PRESERVE_MAX = 2; // Formatter based on @glimmerjs/syntax's built-in test formatter:
-// https://github.com/glimmerjs/glimmer-vm/blob/master/packages/%40glimmer/syntax/lib/generation/print.ts
+const NEWLINES_TO_PRESERVE_MAX = 2;
 
 function print(path, options, print) {
   const node = path.getValue();
-  /* istanbul ignore if*/
 
   if (!node) {
     return "";
@@ -51857,14 +46114,11 @@ function print(path, options, print) {
     case "AttrNode":
       {
         const isText = node.value.type === "TextNode";
-        const isEmptyText = isText && node.value.chars === ""; // If the text is empty and the value's loc start and end offsets are the
-        // same, there is no value for this AttrNode and it should be printed
-        // without the `=""`. Example: `<img data-test>` -> `<img data-test>`
+        const isEmptyText = isText && node.value.chars === "";
 
         if (isEmptyText && locStart$9(node.value) === locEnd$8(node.value)) {
           return node.name;
-        } // Let's assume quotes inside the content of text nodes are already
-        // properly escaped with entities, otherwise the parse wouldn't have parsed them.
+        }
 
 
         const quote = isText ? chooseEnclosingQuote(options, node.value.chars).quote : node.value.type === "ConcatStatement" ? chooseEnclosingQuote(options, node.value.parts.filter(part => part.type === "TextNode").map(part => part.chars).join("")).quote : "";
@@ -51889,14 +46143,10 @@ function print(path, options, print) {
 
     case "TextNode":
       {
-        /* if `{{my-component}}` (or any text containing "{{")
-         * makes it to the TextNode, it means it was escaped,
-         * so let's print it escaped, ie.; `\{{my-component}}` */
         let text = node.chars.replace(/{{/g, "\\{{");
         const attrName = getCurrentAttributeName(path);
 
         if (attrName) {
-          // TODO: format style and srcset attributes
           if (attrName === "class") {
             const formattedClasses = text.trim().split(/\s+/).join(" ");
             let leadingSpace = false;
@@ -51924,10 +46174,8 @@ function print(path, options, print) {
         const isLastElement = !getNextNode(path);
 
         if (options.htmlWhitespaceSensitivity !== "ignore") {
-          // https://infra.spec.whatwg.org/#ascii-whitespace
           const leadingWhitespacesRE = /^[\t\n\f\r ]*/;
-          const trailingWhitespacesRE = /[\t\n\f\r ]*$/; // let's remove the file's final newline
-          // https://github.com/ember-cli/ember-new-output/blob/1a04c67ddd02ccb35e0ff41bb5cbce34b31173ef/.editorconfig#L16
+          const trailingWhitespacesRE = /[\t\n\f\r ]*$/;
 
           const shouldTrimTrailingNewlines = isLastElement && isParentOfSomeType(path, ["Template"]);
           const shouldTrimLeadingNewlines = isFirstElement && isParentOfSomeType(path, ["Template"]);
@@ -52037,9 +46285,9 @@ function print(path, options, print) {
     case "MustacheCommentStatement":
       {
         const start = locStart$9(node);
-        const end = locEnd$8(node); // Starts with `{{~`
+        const end = locEnd$8(node);
 
-        const isLeftWhiteSpaceSensitive = options.originalText.charAt(start + 2) === "~"; // Ends with `{{~`
+        const isLeftWhiteSpaceSensitive = options.originalText.charAt(start + 2) === "~";
 
         const isRightWhitespaceSensitive = options.originalText.charAt(end - 3) === "~";
         const dashes = node.value.includes("}}") ? "--" : "";
@@ -52081,13 +46329,11 @@ function print(path, options, print) {
         return "null";
       }
 
-    /* istanbul ignore next */
 
     default:
       throw new Error("unknown glimmer type: " + JSON.stringify(node.type));
   }
 }
-/* ElementNode print helpers */
 
 
 function sortByLoc(a, b) {
@@ -52139,7 +46385,6 @@ function printStartingTagEndMarker(node) {
 
   return ifBreak$6([softline$6, ">"], ">");
 }
-/* MustacheStatement print helpers */
 
 
 function printOpeningMustache(node) {
@@ -52153,7 +46398,6 @@ function printClosingMustache(node) {
   const strip = node.strip && node.strip.close ? "~" : "";
   return [strip, mustache];
 }
-/* BlockStatement print helpers */
 
 
 function printOpeningBlockOpeningMustache(node) {
@@ -52274,7 +46518,6 @@ function printInverse(path, print, options) {
 
   return "";
 }
-/* TextNode print helpers */
 
 
 function getTextValueParts$1(value) {
@@ -52296,20 +46539,17 @@ function getCurrentAttributeName(path) {
 }
 
 function countNewLines(string) {
-  /* istanbul ignore next */
   string = typeof string === "string" ? string : "";
   return string.split("\n").length - 1;
 }
 
 function countLeadingNewLines(string) {
-  /* istanbul ignore next */
   string = typeof string === "string" ? string : "";
   const newLines = (string.match(/^([^\S\n\r]*[\n\r])+/g) || [])[0] || "";
   return countNewLines(newLines);
 }
 
 function countTrailingNewLines(string) {
-  /* istanbul ignore next */
   string = typeof string === "string" ? string : "";
   const newLines = (string.match(/([\n\r][^\S\n\r]*)+$/g) || [])[0] || "";
   return countNewLines(newLines);
@@ -52318,17 +46558,7 @@ function countTrailingNewLines(string) {
 function generateHardlines(number = 0) {
   return new Array(Math.min(number, NEWLINES_TO_PRESERVE_MAX)).fill(hardline$8);
 }
-/* StringLiteral print helpers */
 
-/**
- * Prints a string literal with the correct surrounding quotes based on
- * `options.singleQuote` and the number of escaped quotes contained in
- * the string literal. This function is the glimmer equivalent of `printString`
- * in `common/util`, but has differences because of the way escaped characters
- * are treated in hbs string literals.
- * @param {string} stringLiteral - the string literal value
- * @param {object} options - the prettier options object
- */
 
 
 function printStringLiteral(stringLiteral, options) {
@@ -52350,9 +46580,7 @@ function chooseEnclosingQuote(options, stringLiteral) {
   };
   const preferred = options.singleQuote ? single : double;
   const alternate = preferred === single ? double : single;
-  let shouldUseAlternateQuote = false; // If `stringLiteral` contains at least one of the quote preferred for
-  // enclosing the string, we might want to enclose with the alternate quote
-  // instead, to minimize the number of escaped quotes.
+  let shouldUseAlternateQuote = false;
 
   if (stringLiteral.includes(preferred.quote) || stringLiteral.includes(alternate.quote)) {
     const numPreferredQuotes = (stringLiteral.match(preferred.regex) || []).length;
@@ -52362,7 +46590,6 @@ function chooseEnclosingQuote(options, stringLiteral) {
 
   return shouldUseAlternateQuote ? alternate : preferred;
 }
-/* SubExpression print helpers */
 
 
 function printSubExpressionPathAndParams(path, print) {
@@ -52375,7 +46602,6 @@ function printSubExpressionPathAndParams(path, print) {
 
   return indent$4([p, line$8, group$7(params)]);
 }
-/* misc. print helpers */
 
 
 function printPathAndParams(path, print) {
@@ -52730,7 +46956,6 @@ function genericPrint$3(path, options, print) {
       }
 
     default:
-      /* istanbul ignore next */
       throw new Error("unknown graphql type: " + JSON.stringify(node.kind));
   }
 }
@@ -52772,7 +46997,6 @@ function printComment(commentPath) {
   if (comment.kind === "Comment") {
     return "#" + comment.value.trimEnd();
   }
-  /* istanbul ignore next */
 
 
   throw new Error("Not a comment: " + JSON.stringify(comment));
@@ -52803,7 +47027,6 @@ function printInterfaces(path, options, print) {
 }
 
 function clean$3()
-/*node, newNode , parent*/
 {}
 
 clean$3.ignoredProperties = new Set(["loc", "comments"]);
@@ -52903,30 +47126,24 @@ const INLINE_NODE_TYPES$1 = ["liquidNode", "inlineCode", "emphasis", "strong", "
 const INLINE_NODE_WRAPPER_TYPES$1 = [...INLINE_NODE_TYPES$1, "tableCell", "paragraph", "heading"];
 const kRegex = new RegExp(kPattern);
 const punctuationRegex = new RegExp(punctuationPattern$1);
-/**
- * split text into whitespaces and words
- * @param {string} text
- */
 
 function splitText$2(text, options) {
   const KIND_NON_CJK = "non-cjk";
   const KIND_CJ_LETTER = "cj-letter";
   const KIND_K_LETTER = "k-letter";
   const KIND_CJK_PUNCTUATION = "cjk-punctuation";
-  /** @type {Array<{ type: "whitespace", value: " " | "\n" | "" } | { type: "word", value: string }>} */
 
   const nodes = [];
   const tokens = (options.proseWrap === "preserve" ? text : text.replace(new RegExp(`(${cjkPattern})\n(${cjkPattern})`, "g"), "$1$2")).split(/([\t\n ]+)/);
 
   for (const [index, token] of tokens.entries()) {
-    // whitespace
     if (index % 2 === 1) {
       nodes.push({
         type: "whitespace",
         value: /\n/.test(token) ? "\n" : " "
       });
       continue;
-    } // word separated by whitespace
+    }
 
 
     if ((index === 0 || index === tokens.length - 1) && token === "") {
@@ -52938,7 +47155,7 @@ function splitText$2(text, options) {
     for (const [innerIndex, innerToken] of innerTokens.entries()) {
       if ((innerIndex === 0 || innerIndex === innerTokens.length - 1) && innerToken === "") {
         continue;
-      } // non-CJK word
+      }
 
 
       if (innerIndex % 2 === 0) {
@@ -52953,7 +47170,7 @@ function splitText$2(text, options) {
         }
 
         continue;
-      } // CJK character
+      }
 
 
       appendNode(punctuationRegex.test(innerToken) ? {
@@ -52983,7 +47200,7 @@ function splitText$2(text, options) {
           type: "whitespace",
           value: " "
         });
-      } else if (!isBetween(KIND_NON_CJK, KIND_CJK_PUNCTUATION) && // disallow leading/trailing full-width whitespace
+      } else if (!isBetween(KIND_NON_CJK, KIND_CJK_PUNCTUATION) &&
       ![lastNode.value, node.value].some(value => /\u3000/.test(value))) {
         nodes.push({
           type: "whitespace",
@@ -53027,8 +47244,7 @@ function hasGitDiffFriendlyOrderedList$1(node, options) {
   }
 
   return secondNumber === 1;
-} // The final new line should not include in value
-// https://github.com/remarkjs/remark/issues/512
+}
 
 
 function getFencedCodeBlockValue$2(node, originalText) {
@@ -53036,7 +47252,7 @@ function getFencedCodeBlockValue$2(node, originalText) {
     value
   } = node;
 
-  if (node.position.end.offset === originalText.length && value.endsWith("\n") && // Code block has no end mark
+  if (node.position.end.offset === originalText.length && value.endsWith("\n") &&
   originalText.endsWith("\n")) {
     return value.slice(0, -1);
   }
@@ -53115,7 +47331,6 @@ function embed$3(path, print, textToDoc, options) {
   switch (node.type) {
     case "front-matter":
       return print_1(node, textToDoc);
-    // MDX
 
     case "importExport":
       return [textToDoc(node.value, {
@@ -53161,7 +47376,7 @@ const {
   getOrderedListItemInfo,
   mapAst,
   splitText: splitText$1
-} = utils$2; // 0x0 ~ 0x10ffff
+} = utils$2;
 
 const isSingleCharRegex = /^.$/su;
 
@@ -53202,7 +47417,7 @@ function transformInlineCode(ast) {
 }
 
 function restoreUnescapedCharacter(ast, options) {
-  return mapAst(ast, node => node.type !== "text" || node.value === "*" || node.value === "_" || // handle these cases in printer
+  return mapAst(ast, node => node.type !== "text" || node.value === "*" || node.value === "_" ||
   !isSingleCharRegex.test(node.value) || node.position.end.offset - node.position.start.offset === node.value.length ? node : Object.assign(Object.assign({}, node), {}, {
     value: options.originalText.slice(node.position.start.offset, node.position.end.offset)
   }));
@@ -53284,13 +47499,12 @@ function splitTextIntoSentences(ast, options) {
 function transformIndentedCodeblockAndMarkItsParentList(ast, options) {
   return mapAst(ast, (node, index, parentStack) => {
     if (node.type === "code") {
-      // the first char may point to `\n`, e.g. `\n\t\tbar`, just ignore it
       const isIndented = /^\n?( {4,}|\t)/.test(options.originalText.slice(node.position.start.offset, node.position.end.offset));
       node.isIndented = isIndented;
 
       if (isIndented) {
         for (let i = 0; i < parentStack.length; i++) {
-          const parent = parentStack[i]; // no need to check checked items
+          const parent = parentStack[i];
 
           if (parent.hasIndentedCodeblock) {
             break;
@@ -53310,7 +47524,6 @@ function transformIndentedCodeblockAndMarkItsParentList(ast, options) {
 function markAlignedList(ast, options) {
   return mapAst(ast, (node, index, parentStack) => {
     if (node.type === "list" && node.children.length > 0) {
-      // if one of its parents is not aligned, it's not possible to be aligned in sub-lists
       for (let i = 0; i < parentStack.length; i++) {
         const parent = parentStack[i];
 
@@ -53332,10 +47545,6 @@ function markAlignedList(ast, options) {
 
   function isAligned(list) {
     if (!list.ordered) {
-      /**
-       * - 123
-       * - 123
-       */
       return true;
     }
 
@@ -53343,71 +47552,28 @@ function markAlignedList(ast, options) {
     const firstInfo = getOrderedListItemInfo(firstItem, options.originalText);
 
     if (firstInfo.leadingSpaces.length > 1) {
-      /**
-       * 1.   123
-       *
-       * 1.   123
-       * 1. 123
-       */
       return true;
     }
 
     const firstStart = getListItemStart(firstItem);
 
     if (firstStart === -1) {
-      /**
-       * 1.
-       *
-       * 1.
-       * 1.
-       */
       return false;
     }
 
     if (list.children.length === 1) {
-      /**
-       * aligned:
-       *
-       * 11. 123
-       *
-       * not aligned:
-       *
-       * 1. 123
-       */
       return firstStart % options.tabWidth === 0;
     }
 
     const secondStart = getListItemStart(secondItem);
 
     if (firstStart !== secondStart) {
-      /**
-       * 11. 123
-       * 1. 123
-       *
-       * 1. 123
-       * 11. 123
-       */
       return false;
     }
 
     if (firstStart % options.tabWidth === 0) {
-      /**
-       * 11. 123
-       * 12. 123
-       */
       return true;
     }
-    /**
-     * aligned:
-     *
-     * 11. 123
-     * 1.  123
-     *
-     * not aligned:
-     *
-     * 1. 123
-     * 2. 123
-     */
 
 
     const secondInfo = getOrderedListItemInfo(secondItem, options.originalText);
@@ -53423,11 +47589,10 @@ const {
 const {
   startWithPragma
 } = pragma$2;
-const ignoredProperties$1 = new Set(["position", "raw" // front-matter
+const ignoredProperties$1 = new Set(["position", "raw"
 ]);
 
 function clean$2(ast, newObj, parent) {
-  // for codeblock
   if (ast.type === "front-matter" || ast.type === "code" || ast.type === "yaml" || ast.type === "import" || ast.type === "export" || ast.type === "jsx") {
     delete newObj.value;
   }
@@ -53439,7 +47604,7 @@ function clean$2(ast, newObj, parent) {
   if (ast.type === "list" || ast.type === "listItem") {
     delete newObj.spread;
     delete newObj.loose;
-  } // texts can be splitted or merged
+  }
 
 
   if (ast.type === "text") {
@@ -53460,7 +47625,7 @@ function clean$2(ast, newObj, parent) {
 
   if ((ast.type === "definition" || ast.type === "link" || ast.type === "image") && ast.title) {
     newObj.title = ast.title.replace(/\\(["')])/g, "$1");
-  } // for insert pragma
+  }
 
 
   if (parent && parent.type === "root" && parent.children.length > 0 && (parent.children[0] === ast || isFrontMatterNode$2(parent.children[0]) && parent.children[1] === ast) && ast.type === "html" && startWithPragma(ast.value)) {
@@ -53518,9 +47683,6 @@ const {
   INLINE_NODE_WRAPPER_TYPES,
   isAutolink
 } = utils$2;
-/**
- * @typedef {import("../document").Doc} Doc
- */
 
 const TRAILING_HARDLINE_NODES = new Set(["importExport"]);
 const SINGLE_LINE_NODE_TYPES = ["heading", "tableCell", "link", "wikiLink"];
@@ -53554,15 +47716,14 @@ function genericPrint$2(path, options, print) {
 
     case "word":
       {
-        let escapedValue = node.value.replace(/\*/g, "\\$&") // escape all `*`
-        .replace(new RegExp([`(^|${punctuationPattern})(_+)`, `(_+)(${punctuationPattern}|$)`].join("|"), "g"), (_, text1, underscore1, underscore2, text2) => (underscore1 ? `${text1}${underscore1}` : `${underscore2}${text2}`).replace(/_/g, "\\_")); // escape all `_` except concating with non-punctuation, e.g. `1_2_3` is not considered emphasis
+        let escapedValue = node.value.replace(/\*/g, "\\$&")
+        .replace(new RegExp([`(^|${punctuationPattern})(_+)`, `(_+)(${punctuationPattern}|$)`].join("|"), "g"), (_, text1, underscore1, underscore2, text2) => (underscore1 ? `${text1}${underscore1}` : `${underscore2}${text2}`).replace(/_/g, "\\_"));
 
         const isFirstSentence = (node, name, index) => node.type === "sentence" && index === 0;
 
         const isLastChildAutolink = (node, name, index) => isAutolink(node.children[index - 1]);
 
         if (escapedValue !== node.value && (path.match(undefined, isFirstSentence, isLastChildAutolink) || path.match(undefined, isFirstSentence, (node, name, index) => node.type === "emphasis" && index === 0, isLastChildAutolink))) {
-          // backslash is parsed as part of autolinks, so we need to remove it
           escapedValue = escapedValue.replace(/^(\\?[*_])+/, prefix => prefix.replace(/\\/g, ""));
         }
 
@@ -53574,7 +47735,7 @@ function genericPrint$2(path, options, print) {
         const parentNode = path.getParentNode();
         const index = parentNode.children.indexOf(node);
         const nextNode = parentNode.children[index + 1];
-        const proseWrap = // leading char that may cause different syntax
+        const proseWrap =
         nextNode && /^>|^([*+-]|#{1,6}|\d+[).])$/.test(nextNode.value) ? "never" : options.proseWrap;
         return printLine(path, node.value, {
           proseWrap
@@ -53592,7 +47753,7 @@ function genericPrint$2(path, options, print) {
           const index = parentNode.children.indexOf(node);
           const prevNode = parentNode.children[index - 1];
           const nextNode = parentNode.children[index + 1];
-          const hasPrevOrNextWord = // `1*2*3` is considered emphasis but `1_2_3` is not
+          const hasPrevOrNextWord =
           prevNode && prevNode.type === "sentence" && prevNode.children.length > 0 && getLast$2(prevNode.children).type === "word" && !getLast$2(prevNode.children).hasTrailingPunctuation || nextNode && nextNode.type === "sentence" && nextNode.children.length > 0 && nextNode.children[0].type === "word" && !nextNode.children[0].hasLeadingPunctuation;
           style = hasPrevOrNextWord || getAncestorNode(path, "emphasis") ? "*" : "_";
         }
@@ -53632,7 +47793,7 @@ function genericPrint$2(path, options, print) {
         case "<":
           {
             const mailto = "mailto:";
-            const url = // <hello@example.com> is parsed as { url: "mailto:hello@example.com" }
+            const url =
             node.url.startsWith(mailto) && options.originalText.slice(node.position.start.offset + 1, node.position.start.offset + 1 + mailto.length) !== mailto ? node.url.slice(mailto.length) : node.url;
             return ["<", url, ">"];
           }
@@ -53656,10 +47817,9 @@ function genericPrint$2(path, options, print) {
     case "code":
       {
         if (node.isIndented) {
-          // indented code block
           const alignment = " ".repeat(4);
           return align$1(alignment, [alignment, ...replaceEndOfLineWith$2(node.value, hardline$5)]);
-        } // fenced code block
+        }
 
 
         const styleUnit = options.__inJsTemplate ? "~" : "`";
@@ -53693,7 +47853,6 @@ function genericPrint$2(path, options, print) {
             function getPrefix() {
               const rawPrefix = node.ordered ? (index === 0 ? node.start : isGitDiffFriendlyOrderedList ? 1 : node.start + index) + (nthSiblingIndex % 2 === 0 ? ". " : ") ") : nthSiblingIndex % 2 === 0 ? "- " : "* ";
               return node.isAligned ||
-              /* workaround for https://github.com/remarkjs/remark/issues/315 */
               node.hasIndentedCodeblock ? alignListPrefix(rawPrefix, options) : rawPrefix;
             }
           }
@@ -53729,10 +47888,7 @@ function genericPrint$2(path, options, print) {
         const lineOrSpace = options.proseWrap === "always" ? line$6 : " ";
         return group$5(["[", node.identifier, "]:", indent$2([lineOrSpace, printUrl(node.url), node.title === null ? "" : [lineOrSpace, printTitle(node.title, options, false)]])]);
       }
-    // `footnote` requires `.use(footnotes, {inlineNotes: true})`, we are not using this option
-    // https://github.com/remarkjs/remark-footnotes#optionsinlinenotes
 
-    /* istanbul ignore next */
 
     case "footnote":
       return ["[^", printChildren$2(path, options, print), "]"];
@@ -53760,9 +47916,6 @@ function genericPrint$2(path, options, print) {
 
     case "liquidNode":
       return replaceEndOfLineWith$2(node.value, hardline$5);
-    // MDX
-    // fallback to the original text if multiparser failed
-    // or `embeddedLanguageFormatting: "off"`
 
     case "importExport":
       return [node.value, hardline$5];
@@ -53775,17 +47928,14 @@ function genericPrint$2(path, options, print) {
 
     case "inlineMath":
       {
-        // remark-math trims content but we don't want to remove whitespaces
-        // since it's very possible that it's recognized as math accidentally
         return options.originalText.slice(locStart$4(node), locEnd$3(node));
       }
 
-    case "tableRow": // handled in "table"
+    case "tableRow":
 
-    case "listItem": // handled in "list"
+    case "listItem":
 
     default:
-      /* istanbul ignore next */
       throw new Error(`Unknown markdown type ${JSON.stringify(node.type)}`);
   }
 }
@@ -53799,7 +47949,7 @@ function printListItem(path, options, print, listPrefix) {
         return align$1(" ".repeat(prefix.length), print());
       }
 
-      const alignment = " ".repeat(clamp(options.tabWidth - listPrefix.length, 0, 3) // 4+ will cause indented code block
+      const alignment = " ".repeat(clamp(options.tabWidth - listPrefix.length, 0, 3)
       );
       return [alignment, align$1(alignment, print())];
     }
@@ -53808,7 +47958,7 @@ function printListItem(path, options, print, listPrefix) {
 
 function alignListPrefix(prefix, options) {
   const additionalSpaces = getAdditionalSpaces();
-  return prefix + " ".repeat(additionalSpaces >= 4 ? 0 : additionalSpaces // 4+ will cause indented code block
+  return prefix + " ".repeat(additionalSpaces >= 4 ? 0 : additionalSpaces
   );
 
   function getAdditionalSpaces() {
@@ -53867,12 +48017,12 @@ function printLine(path, value, options) {
 
 function printTable(path, options, print) {
   const node = path.getValue();
-  const columnMaxWidths = []; // { [rowIndex: number]: { [columnIndex: number]: {text: string, width: number} } }
+  const columnMaxWidths = [];
 
   const contents = path.map(rowPath => rowPath.map((cellPath, columnIndex) => {
     const text = printDocToString(print(), options).formatted;
     const width = getStringWidth(text);
-    columnMaxWidths[columnIndex] = Math.max(columnMaxWidths[columnIndex] || 3, // minimum width = 3 (---, :--, :-:, --:)
+    columnMaxWidths[columnIndex] = Math.max(columnMaxWidths[columnIndex] || 3,
     width);
     return {
       text,
@@ -53880,21 +48030,18 @@ function printTable(path, options, print) {
     };
   }, "children"), "children");
   const alignedTable = printTableContents(
-  /* isCompact */
   false);
 
   if (options.proseWrap !== "never") {
     return [breakParent$2, alignedTable];
-  } // Only if the --prose-wrap never is set and it exceeds the print width.
+  }
 
 
   const compactTable = printTableContents(
-  /* isCompact */
   true);
   return [breakParent$2, group$5(ifBreak$4(compactTable, alignedTable))];
 
   function printTableContents(isCompact) {
-    /** @type{Doc[]} */
     const parts = [printRow(contents[0], isCompact), printAlign(isCompact)];
 
     if (contents.length > 1) {
@@ -53942,11 +48089,8 @@ function printTable(path, options, print) {
 }
 
 function printRoot(path, options, print) {
-  /** @typedef {{ index: number, offset: number }} IgnorePosition */
 
-  /** @type {Array<{start: IgnorePosition, end: IgnorePosition}>} */
   const ignoreRanges = [];
-  /** @type {IgnorePosition | null} */
 
   let ignoreStart = null;
   const {
@@ -54028,9 +48172,8 @@ function printChildren$2(path, options, print, events = {}) {
       };
 
       if (shouldPrePrintHardline(childNode, data)) {
-        parts.push(hardline$5); // Can't find a case to pass `shouldPrePrintTripleHardline`
+        parts.push(hardline$5);
 
-        /* istanbul ignore next */
 
         if (lastChildNode && TRAILING_HARDLINE_NODES.has(lastChildNode.type)) {
           if (shouldPrePrintTripleHardline(childNode, data)) {
@@ -54063,7 +48206,6 @@ function getLastDescendantNode$2(node) {
 
   return current;
 }
-/** @return {false | 'next' | 'start' | 'end'} */
 
 
 function isPrettierIgnore$2(node) {
@@ -54103,11 +48245,6 @@ function shouldRemainTheSameContent(path) {
   const ancestorNode = getAncestorNode(path, ["linkReference", "imageReference"]);
   return ancestorNode && (ancestorNode.type !== "linkReference" || ancestorNode.referenceType !== "full");
 }
-/**
- * @param {string} url
- * @param {string[] | string} [dangerousCharOrChars]
- * @returns {string}
- */
 
 
 function printUrl(url, dangerousCharOrChars = []) {
@@ -54122,14 +48259,14 @@ function printTitle(title, options, printSpace = true) {
 
   if (printSpace) {
     return " " + printTitle(title, options, false);
-  } // title is escaped after `remark-parse` v7
+  }
 
 
   title = title.replace(/\\(["')])/g, "$1");
 
   if (title.includes('"') && title.includes("'") && !title.includes(")")) {
-    return `(${title})`; // avoid escaped quotes
-  } // faster than using RegExps: https://jsperf.com/performance-of-match-vs-split
+    return `(${title})`;
+  }
 
 
   const singleCount = title.split("'").length - 1;
@@ -54230,7 +48367,6 @@ const printers$1 = {
   mdast: printerMarkdown
 };
 const parsers$2 = {
-  /* istanbul ignore next */
   get remark() {
     return require("./parser-markdown").parsers.remark;
   },
@@ -54259,7 +48395,7 @@ const ignoredProperties = new Set(["sourceSpan", "startSourceSpan", "endSourceSp
 function clean$1(ast, newNode) {
   if (ast.type === "text" || ast.type === "comment") {
     return null;
-  } // may be formatted by multiparser
+  }
 
 
   if (isFrontMatterNode$1(ast) || ast.type === "yaml" || ast.type === "toml") {
@@ -55208,9 +49344,6 @@ var require$$1$1 = {
   "CSS_WHITE_SPACE_DEFAULT": "normal"
 };
 
-/**
- * @typedef {import("../common/ast-path")} AstPath
- */
 
 
 const {
@@ -55224,7 +49357,7 @@ const {
   CSS_WHITE_SPACE_DEFAULT
 } = require$$1$1;
 const HTML_TAGS = arrayToMap(htmlTagNames);
-const HTML_ELEMENT_ATTRIBUTES = mapObject(htmlElementAttributes, arrayToMap); // https://infra.spec.whatwg.org/#ascii-whitespace
+const HTML_ELEMENT_ATTRIBUTES = mapObject(htmlElementAttributes, arrayToMap);
 
 const HTML_WHITESPACE = new Set(["\t", "\n", "\f", "\r", " "]);
 
@@ -55274,17 +49407,14 @@ function mapObject(object, fn) {
 }
 
 function shouldPreserveContent$1(node, options) {
-  // unterminated node in ie conditional comment
-  // e.g. <!--[if lt IE 9]><html><![endif]-->
   if (node.type === "ieConditionalComment" && node.lastChild && !node.lastChild.isSelfClosing && !node.lastChild.endSourceSpan) {
     return true;
-  } // incomplete html in ie conditional comment
-  // e.g. <!--[if lt IE 9]></div><![endif]-->
+  }
 
 
   if (node.type === "ieConditionalComment" && !node.complete) {
     return true;
-  } // TODO: handle non-text children in <pre>
+  }
 
 
   if (isPreLikeNode$1(node) && node.children.some(child => child.type !== "text" && child.type !== "interpolation")) {
@@ -55299,11 +49429,9 @@ function shouldPreserveContent$1(node, options) {
 }
 
 function hasPrettierIgnore$3(node) {
-  /* istanbul ignore next */
   if (node.type === "attribute") {
     return false;
   }
-  /* istanbul ignore next */
 
 
   if (!node.parent) {
@@ -55335,7 +49463,6 @@ function getPrettierIgnoreAttributeCommentData$1(value) {
 
   return match[1].split(/\s+/);
 }
-/** there's no opening/closing tag or it's considered not breakable */
 
 
 function isTextLikeNode$1(node) {
@@ -55431,13 +49558,11 @@ function isDanglingSpaceSensitiveNode$1(node) {
 function forceNextEmptyLine$1(node) {
   return isFrontMatterNode(node) || node.next && node.sourceSpan.end && node.sourceSpan.end.line + 1 < node.next.sourceSpan.start.line;
 }
-/** firstChild leadingSpaces and lastChild trailingSpaces */
 
 
 function forceBreakContent$1(node) {
   return forceBreakChildren$1(node) || node.type === "element" && node.children.length > 0 && (["body", "script", "style"].includes(node.name) || node.children.some(child => hasNonTextChild(child))) || node.firstChild && node.firstChild === node.lastChild && node.firstChild.type !== "text" && hasLeadingLineBreak(node.firstChild) && (!node.lastChild.isTrailingSpaceSensitive || hasTrailingLineBreak(node.lastChild));
 }
-/** spaces between children */
 
 
 function forceBreakChildren$1(node) {
@@ -55580,10 +49705,6 @@ function isDanglingSpaceSensitiveCssDisplay(cssDisplay) {
 function isPreLikeNode$1(node) {
   return getNodeCssStyleWhiteSpace(node).startsWith("pre");
 }
-/**
- * @param {AstPath} path
- * @param {(any) => boolean} predicate
- */
 
 
 function countParents$1(path, predicate) {
@@ -55616,7 +49737,6 @@ function hasParent(node, fn) {
 
 function getNodeCssStyleDisplay$1(node, options) {
   if (node.prev && node.prev.type === "comment") {
-    // <!-- display: block -->
     const match = node.prev.value.match(/^\s*display:\s*([a-z]+)\s*$/);
 
     if (match) {
@@ -55643,7 +49763,6 @@ function getNodeCssStyleDisplay$1(node, options) {
 
     default:
       {
-        // See https://github.com/prettier/prettier/issues/8151
         if (options.parser === "vue" && node.parent && node.parent.type === "root") {
           return "block";
         }
@@ -55709,8 +49828,7 @@ function countChars$1(text, char) {
 
 function unescapeQuoteEntities$1(text) {
   return text.replace(/&apos;/g, "'").replace(/&quot;/g, '"');
-} // top-level elements (excluding <template>, <style> and <script>) in Vue SFC are considered custom block
-// See https://vue-loader.vuejs.org/spec.html for detail
+}
 
 
 const vueRootElementsSet = new Set(["template", "style", "script"]);
@@ -55741,8 +49859,8 @@ function isVueSfcBindingsAttribute$1(attribute, options) {
 
   const tagName = element.fullName;
   const attributeName = attribute.fullName;
-  return (// https://github.com/vuejs/rfcs/blob/sfc-improvements/active-rfcs/0000-sfc-script-setup.md
-    tagName === "script" && attributeName === "setup" || // https://github.com/vuejs/rfcs/blob/sfc-improvements/active-rfcs/0000-sfc-style-variables.md
+  return (
+    tagName === "script" && attributeName === "setup" ||
     tagName === "style" && attributeName === "vars"
   );
 }
@@ -55907,11 +50025,6 @@ var chars = createCommonjsModule(function (module, exports) {
  * found in the LICENSE file at https://angular.io/license
  */
 
-/**
- * A token representing the a reference to a static type.
- *
- * This token is unique for a filePath and name and can be used as a hash table key.
- */
 
 class StaticSymbol {
   constructor(filePath, name, members) {
@@ -55929,10 +50042,6 @@ class StaticSymbol {
 }
 
 var StaticSymbol_1 = StaticSymbol;
-/**
- * A cache of static symbol used by the StaticReflector to return the same symbol for the
- * same symbol values.
- */
 
 class StaticSymbolCache {
   constructor() {
@@ -56094,7 +50203,7 @@ function getParseErrors(error) {
   return error[ERROR_PARSE_ERRORS] || [];
 }
 
-var getParseErrors_1 = getParseErrors; // Escape characters that have a special meaning in Regular Expressions
+var getParseErrors_1 = getParseErrors;
 
 function escapeRegExp(s) {
   return s.replace(/([.*+?^=!:${}()|[\]\/\\])/g, '\\$1');
@@ -56111,8 +50220,7 @@ function utf8Encode(str) {
   let encoded = '';
 
   for (let index = 0; index < str.length; index++) {
-    let codePoint = str.charCodeAt(index); // decode surrogate
-    // see https://mathiasbynens.be/notes/javascript-encoding#surrogate-formulae
+    let codePoint = str.charCodeAt(index);
 
     if (codePoint >= 0xd800 && codePoint <= 0xdbff && str.length > index + 1) {
       const low = str.charCodeAt(index + 1);
@@ -56162,8 +50270,7 @@ function stringify(token) {
 
   if (!token.toString) {
     return 'object';
-  } // WARNING: do not try to `JSON.stringify(token)` here
-  // see https://github.com/angular/angular/issues/23440
+  }
 
 
   const res = token.toString();
@@ -56177,9 +50284,6 @@ function stringify(token) {
 }
 
 var stringify_1 = stringify;
-/**
- * Lazily retrieves the reference value from a forwardRef.
- */
 
 function resolveForwardRef(type) {
   if (typeof type === 'function' && type.hasOwnProperty('__forward_ref__')) {
@@ -56190,13 +50294,8 @@ function resolveForwardRef(type) {
 }
 
 var resolveForwardRef_1 = resolveForwardRef;
-/**
- * Determine if the argument is shaped like a Promise
- */
 
 function isPromise(obj) {
-  // allow any Promise/A+ compliant thenable.
-  // It's up to the caller to ensure that obj.then conforms to the spec
   return !!obj && typeof obj.then === 'function';
 }
 
@@ -56219,8 +50318,7 @@ const __window = typeof window !== 'undefined' && window;
 
 const __self = typeof self !== 'undefined' && typeof WorkerGlobalScope !== 'undefined' && self instanceof WorkerGlobalScope && self;
 
-const __global = typeof global$1 !== 'undefined' && global$1; // Check __global first, because in Node tests both __global and __window may be defined and _global
-// should be __global in that case.
+const __global = typeof global$1 !== 'undefined' && global$1;
 
 
 const _global = __global || __window || __self;
@@ -56261,10 +50359,7 @@ var compile_metadata = createCommonjsModule(function (module, exports) {
 
   Object.defineProperty(exports, "__esModule", {
     value: true
-  }); // group 0: "[prop] or (event) or @trigger"
-  // group 1: "prop" from "[prop]"
-  // group 2: "event" from "(event)"
-  // group 3: "@trigger" from "@trigger"
+  });
 
   const HOST_REG_EXP = /^(?:(?:\[([^\]]+)\])|(?:\(([^\)]+)\)))|(\@[-\w]+)$/;
 
@@ -56293,7 +50388,6 @@ var compile_metadata = createCommonjsModule(function (module, exports) {
     let identifier = util.stringify(ref);
 
     if (identifier.indexOf('(') >= 0) {
-      // case: anonymous functions!
       identifier = `anonymous_${_anonymousTypeIndex++}`;
       ref['__anonymousType'] = identifier;
     } else {
@@ -56310,7 +50404,7 @@ var compile_metadata = createCommonjsModule(function (module, exports) {
 
     if (ref instanceof static_symbol.StaticSymbol) {
       return ref.filePath;
-    } // Runtime type
+    }
 
 
     return `./${util.stringify(ref)}`;
@@ -56373,9 +50467,6 @@ var compile_metadata = createCommonjsModule(function (module, exports) {
   }
 
   exports.tokenReference = tokenReference;
-  /**
-   * Metadata about a stylesheet
-   */
 
   class CompileStylesheetMetadata {
     constructor({
@@ -56391,9 +50482,6 @@ var compile_metadata = createCommonjsModule(function (module, exports) {
   }
 
   exports.CompileStylesheetMetadata = CompileStylesheetMetadata;
-  /**
-   * Metadata regarding compilation of a template.
-   */
 
   class CompileTemplateMetadata {
     constructor({
@@ -56441,9 +50529,6 @@ var compile_metadata = createCommonjsModule(function (module, exports) {
   }
 
   exports.CompileTemplateMetadata = CompileTemplateMetadata;
-  /**
-   * Metadata regarding compilation of a directive.
-   */
 
   class CompileDirectiveMetadata {
     static create({
@@ -56490,8 +50575,6 @@ var compile_metadata = createCommonjsModule(function (module, exports) {
 
       if (inputs != null) {
         inputs.forEach(bindConfig => {
-          // canonical syntax: `dirProp: elProp`
-          // if there is no `:`, use dirProp = elProp
           const parts = util.splitAtColon(bindConfig, [bindConfig, bindConfig]);
           inputsMap[parts[0]] = parts[1];
         });
@@ -56501,8 +50584,6 @@ var compile_metadata = createCommonjsModule(function (module, exports) {
 
       if (outputs != null) {
         outputs.forEach(bindConfig => {
-          // canonical syntax: `dirProp: elProp`
-          // if there is no `:`, use dirProp = elProp
           const parts = util.splitAtColon(bindConfig, [bindConfig, bindConfig]);
           outputsMap[parts[0]] = parts[1];
         });
@@ -56636,9 +50717,6 @@ var compile_metadata = createCommonjsModule(function (module, exports) {
   class CompileShallowModuleMetadata {}
 
   exports.CompileShallowModuleMetadata = CompileShallowModuleMetadata;
-  /**
-   * Metadata regarding compilation of a module.
-   */
 
   class CompileNgModuleMetadata {
     constructor({
@@ -56794,8 +50872,6 @@ var compile_metadata = createCommonjsModule(function (module, exports) {
   exports.flatten = flatten;
 
   function jitSourceUrl(url) {
-    // Note: We need 3 "/" so that ng shows up as a separate domain
-    // in the chrome dev tools.
     return url.replace(/(\w+:\/\/[\w:-]+)?(\/+)?/, 'ng:///');
   }
 
@@ -56804,8 +50880,6 @@ var compile_metadata = createCommonjsModule(function (module, exports) {
 
     if (templateMeta.isInline) {
       if (compMeta.type.reference instanceof static_symbol.StaticSymbol) {
-        // Note: a .ts file might contain multiple components with inline templates,
-        // so we need to give them unique urls, as these will be used for sourcemaps.
         url = `${compMeta.type.reference.filePath}.${compMeta.type.reference.name}.html`;
       } else {
         url = `${identifierName(ngModuleType)}/${identifierName(compMeta.type)}.html`;
@@ -56900,8 +50974,7 @@ var parse_util = createCommonjsModule(function (module, exports) {
       }
 
       return new ParseLocation(this.file, offset, line, col);
-    } // Return the source around the location
-    // Up to `maxChars` or `maxLines` on each side of the location
+    }
 
 
     getContext(maxChars, maxLines) {
@@ -57017,14 +51090,6 @@ var parse_util = createCommonjsModule(function (module, exports) {
   }
 
   exports.typeSourceSpan = typeSourceSpan;
-  /**
-   * Generates Source Span object for a given R3 Type for JIT mode.
-   *
-   * @param kind Component or Directive.
-   * @param typeName name of the Component or Directive.
-   * @param sourceUrl reference to Component or Directive source.
-   * @returns instance of ParseSourceSpan that represent a given Component or Directive.
-   */
 
   function r3JitTypeSourceSpan(kind, typeName, sourceUrl) {
     const sourceFileName = `in ${kind} ${typeName} in ${sourceUrl}`;
@@ -57061,7 +51126,6 @@ function preprocess$1(ast, options) {
 }
 
 function removeIgnorableFirstLf(ast
-/*, options */
 ) {
   return ast.map(node => {
     if (node.type === "element" && node.tagDefinition.ignoreFirstLf && node.children.length > 0 && node.children[0].type === "text" && node.children[0].value[0] === "\n") {
@@ -57078,11 +51142,7 @@ function removeIgnorableFirstLf(ast
 }
 
 function mergeIeConditonalStartEndCommentIntoElementOpeningTag(ast
-/*, options */
 ) {
-  /**
-   *     <!--[if ...]><!--><target><!--<![endif]-->
-   */
   const isTarget = node => node.type === "element" && node.prev && node.prev.type === "ieConditionalStartComment" && node.prev.sourceSpan.end.offset === node.startSourceSpan.start.offset && node.firstChild && node.firstChild.type === "ieConditionalEndComment" && node.firstChild.sourceSpan.start.offset === node.startSourceSpan.end.offset;
 
   return ast.map(node => {
@@ -57096,7 +51156,6 @@ function mergeIeConditonalStartEndCommentIntoElementOpeningTag(ast
           const child = node.children[i];
 
           if (isTargetResults[i + 1]) {
-            // ieConditionalStartComment
             continue;
           }
 
@@ -57171,13 +51230,11 @@ function mergeNodeIntoText(ast, shouldMerge, getValue) {
 }
 
 function mergeCdataIntoText(ast
-/*, options */
 ) {
   return mergeNodeIntoText(ast, node => node.type === "cdata", node => `<![CDATA[${node.value}]]>`);
 }
 
 function mergeSimpleElementIntoText(ast
-/*, options */
 ) {
   const isSimpleElement = node => node.type === "element" && node.attrs.length === 0 && node.children.length === 1 && node.firstChild.type === "text" && !hasHtmlWhitespace(node.children[0].value) && !node.firstChild.hasLeadingSpaces && !node.firstChild.hasTrailingSpaces && node.isLeadingSpaceSensitive && !node.hasLeadingSpaces && node.isTrailingSpaceSensitive && !node.hasTrailingSpaces && node.prev && node.prev.type === "text" && node.next && node.next.type === "text";
 
@@ -57259,7 +51316,7 @@ function extractInterpolation(ast, options) {
           continue;
         }
 
-        endSourceSpan = startSourceSpan.moveBy(value.length + 4); // `{{` + `}}`
+        endSourceSpan = startSourceSpan.moveBy(value.length + 4);
 
         newChildren.push({
           type: "interpolation",
@@ -57278,13 +51335,6 @@ function extractInterpolation(ast, options) {
     });
   });
 }
-/**
- * - add `hasLeadingSpaces` field
- * - add `hasTrailingSpaces` field
- * - add `hasDanglingSpaces` field for parent nodes
- * - add `isWhitespaceSensitive`, `isIndentationSensitive` field for text nodes
- * - remove insensitive whitespaces
- */
 
 
 const WHITESPACE_NODE = {
@@ -57292,7 +51342,6 @@ const WHITESPACE_NODE = {
 };
 
 function extractWhitespaces(ast
-/*, options*/
 ) {
   return ast.map(node => {
     if (!node.children) {
@@ -57311,7 +51360,7 @@ function extractWhitespaces(ast
     return node.clone({
       isWhitespaceSensitive,
       isIndentationSensitive,
-      children: node.children // extract whitespace nodes
+      children: node.children
       .flatMap(child => {
         if (child.type !== "text" || isWhitespaceSensitive) {
           return child;
@@ -57341,7 +51390,7 @@ function extractWhitespaces(ast
         }
 
         return localChildren;
-      }) // set hasLeadingSpaces/hasTrailingSpaces
+      })
       .map((child, index, children) => {
         if (child === WHITESPACE_NODE) {
           return;
@@ -57351,17 +51400,16 @@ function extractWhitespaces(ast
           hasLeadingSpaces: children[index - 1] === WHITESPACE_NODE,
           hasTrailingSpaces: children[index + 1] === WHITESPACE_NODE
         });
-      }) // filter whitespace nodes
+      })
       .filter(Boolean)
     });
   });
 }
 
 function addIsSelfClosing(ast
-/*, options */
 ) {
   return ast.map(node => Object.assign(node, {
-    isSelfClosing: !node.children || node.type === "element" && (node.tagDefinition.isVoid || // self-closing
+    isSelfClosing: !node.children || node.type === "element" && (node.tagDefinition.isVoid ||
     node.startSourceSpan === node.endSourceSpan)
   }));
 }
@@ -57377,11 +51425,6 @@ function addCssDisplay(ast, options) {
     cssDisplay: getNodeCssStyleDisplay(node, options)
   }));
 }
-/**
- * - add `isLeadingSpaceSensitive` field
- * - add `isTrailingSpaceSensitive` field
- * - add `isDanglingSpaceSensitive` field for parent nodes
- */
 
 
 function addIsSpaceSensitive(ast, options) {
@@ -57441,12 +51484,6 @@ const {
     group: group$4
   }
 } = doc;
-/**
- *     v-for="... in ..."
- *     v-for="... of ..."
- *     v-for="(..., ...) in ..."
- *     v-for="(..., ...) of ..."
- */
 
 function printVueFor$1(value, textToDoc) {
   const {
@@ -57462,7 +51499,7 @@ function printVueFor$1(value, textToDoc) {
   }, {
     stripTrailingHardline: true
   })];
-} // modified from https://github.com/vuejs/vue/blob/v2.5.17/src/compiler/parser/index.js#L370-L387
+}
 
 
 function parseVueFor(value) {
@@ -57506,11 +51543,9 @@ function printVueBindings$1(value, textToDoc) {
 }
 
 function isVueEventBindingExpression$1(eventBindingValue) {
-  // https://github.com/vuejs/vue/blob/v2.5.17/src/compiler/codegen/events.js#L3-L4
-  // arrow function or anonymous function
-  const fnExpRE = /^([\w$]+|\([^)]*?\))\s*=>|^function\s*\(/; // simple member expression chain (a, a.b, a['b'], a["b"], a[0], a[b])
+  const fnExpRE = /^([\w$]+|\([^)]*?\))\s*=>|^function\s*\(/;
 
-  const simplePathRE = /^[$A-Z_a-z][\w$]*(?:\.[$A-Z_a-z][\w$]*|\['[^']*?']|\["[^"]*?"]|\[\d+]|\[[$A-Z_a-z][\w$]*])*$/; // https://github.com/vuejs/vue/blob/v2.5.17/src/compiler/helpers.js#L104
+  const simplePathRE = /^[$A-Z_a-z][\w$]*(?:\.[$A-Z_a-z][\w$]*|\['[^']*?']|\["[^"]*?"]|\[\d+]|\[[$A-Z_a-z][\w$]*])*$/;
 
   const value = eventBindingValue.trim();
   return fnExpRE.test(value) || simplePathRE.test(value);
@@ -57522,46 +51557,23 @@ var syntaxVue = {
   printVueBindings: printVueBindings$1
 };
 
-/**
- * Srcset Parser
- *
- * By Alex Bell |  MIT License
- *
- * JS Parser for the string value that appears in markup <img srcset="here">
- *
- * @returns Array [{url: _, d: _, w: _, h:_}, ...]
- *
- * Based super duper closely on the reference algorithm at:
- * https://html.spec.whatwg.org/multipage/embedded-content.html#parse-a-srcset-attribute
- *
- * Most comments are copied in directly from the spec
- * (except for comments in parens).
- */
 var parseSrcset = createCommonjsModule(function (module) {
   (function (root, factory) {
     if (module.exports) {
-      // Node. Does not work with strict CommonJS, but
-      // only CommonJS-like environments that support module.exports,
-      // like Node.
       module.exports = factory();
     } else {
-      // Browser globals (root is window)
       root.parseSrcset = factory();
     }
   })(this, function () {
-    // 1. Let input be the value passed to this algorithm.
     return function (input, options) {
-      var logger = options && options.logger || console; // UTILITY FUNCTIONS
-      // Manual is faster than RegEx
-      // http://bjorn.tipling.com/state-and-regular-expressions-in-javascript
-      // http://jsperf.com/whitespace-character/5
+      var logger = options && options.logger || console;
 
       function isSpace(c) {
-        return c === "\u0020" || // space
-        c === "\u0009" || // horizontal tab
-        c === "\u000A" || // new line
-        c === "\u000C" || // form feed
-        c === "\u000D"; // carriage return
+        return c === "\u0020" ||
+        c === "\u0009" ||
+        c === "\u000A" ||
+        c === "\u000C" ||
+        c === "\u000D";
       }
 
       function collectCharacters(regEx) {
@@ -57576,93 +51588,61 @@ var parseSrcset = createCommonjsModule(function (module) {
       }
 
       var inputLength = input.length,
-          // (Don't use \s, to avoid matching non-breaking space)
       regexLeadingSpaces = /^[ \t\n\r\u000c]+/,
           regexLeadingCommasOrSpaces = /^[, \t\n\r\u000c]+/,
           regexLeadingNotSpaces = /^[^ \t\n\r\u000c]+/,
           regexTrailingCommas = /[,]+$/,
           regexNonNegativeInteger = /^\d+$/,
-          // ( Positive or negative or unsigned integers or decimals, without or without exponents.
-      // Must include at least one digit.
-      // According to spec tests any decimal point must be followed by a digit.
-      // No leading plus sign is allowed.)
-      // https://html.spec.whatwg.org/multipage/infrastructure.html#valid-floating-point-number
       regexFloatingPoint = /^-?(?:[0-9]+|[0-9]*\.[0-9]+)(?:[eE][+-]?[0-9]+)?$/,
           url,
           descriptors,
           currentDescriptor,
           state,
           c,
-          // 2. Let position be a pointer into input, initially pointing at the start
-      //    of the string.
       pos = 0,
-          // 3. Let candidates be an initially empty source set.
-      candidates = []; // 4. Splitting loop: Collect a sequence of characters that are space
-      //    characters or U+002C COMMA characters. If any U+002C COMMA characters
-      //    were collected, that is a parse error.
+      candidates = [];
 
       while (true) {
-        collectCharacters(regexLeadingCommasOrSpaces); // 5. If position is past the end of input, return candidates and abort these steps.
+        collectCharacters(regexLeadingCommasOrSpaces);
 
         if (pos >= inputLength) {
-          return candidates; // (we're done, this is the sole return path)
-        } // 6. Collect a sequence of characters that are not space characters,
-        //    and let that be url.
+          return candidates;
+        }
 
 
-        url = collectCharacters(regexLeadingNotSpaces); // 7. Let descriptors be a new empty list.
+        url = collectCharacters(regexLeadingNotSpaces);
 
-        descriptors = []; // 8. If url ends with a U+002C COMMA character (,), follow these substeps:
-        //		(1). Remove all trailing U+002C COMMA characters from url. If this removed
-        //         more than one character, that is a parse error.
+        descriptors = [];
 
         if (url.slice(-1) === ",") {
-          url = url.replace(regexTrailingCommas, ""); // (Jump ahead to step 9 to skip tokenization and just push the candidate).
+          url = url.replace(regexTrailingCommas, "");
 
-          parseDescriptors(); //	Otherwise, follow these substeps:
+          parseDescriptors();
         } else {
           tokenize();
-        } // (close else of step 8)
-        // 16. Return to the step labeled splitting loop.
+        }
 
-      } // (Close of big while loop.)
+      }
 
-      /**
-       * Tokenizes descriptor properties prior to parsing
-       * Returns undefined.
-       */
 
 
       function tokenize() {
-        // 8.1. Descriptor tokeniser: Skip whitespace
-        collectCharacters(regexLeadingSpaces); // 8.2. Let current descriptor be the empty string.
+        collectCharacters(regexLeadingSpaces);
 
-        currentDescriptor = ""; // 8.3. Let state be in descriptor.
+        currentDescriptor = "";
 
         state = "in descriptor";
 
         while (true) {
-          // 8.4. Let c be the character at position.
-          c = input.charAt(pos); //  Do the following depending on the value of state.
-          //  For the purpose of this step, "EOF" is a special character representing
-          //  that position is past the end of input.
-          // In descriptor
+          c = input.charAt(pos);
 
           if (state === "in descriptor") {
-            // Do the following, depending on the value of c:
-            // Space character
-            // If current descriptor is not empty, append current descriptor to
-            // descriptors and let current descriptor be the empty string.
-            // Set state to after descriptor.
             if (isSpace(c)) {
               if (currentDescriptor) {
                 descriptors.push(currentDescriptor);
                 currentDescriptor = "";
                 state = "after descriptor";
-              } // U+002C COMMA (,)
-              // Advance position to the next character in input. If current descriptor
-              // is not empty, append current descriptor to descriptors. Jump to the step
-              // labeled descriptor parser.
+              }
 
             } else if (c === ",") {
               pos += 1;
@@ -57672,74 +51652,52 @@ var parseSrcset = createCommonjsModule(function (module) {
               }
 
               parseDescriptors();
-              return; // U+0028 LEFT PARENTHESIS (()
-              // Append c to current descriptor. Set state to in parens.
+              return;
             } else if (c === "\u0028") {
               currentDescriptor = currentDescriptor + c;
-              state = "in parens"; // EOF
-              // If current descriptor is not empty, append current descriptor to
-              // descriptors. Jump to the step labeled descriptor parser.
+              state = "in parens";
             } else if (c === "") {
               if (currentDescriptor) {
                 descriptors.push(currentDescriptor);
               }
 
               parseDescriptors();
-              return; // Anything else
-              // Append c to current descriptor.
+              return;
             } else {
               currentDescriptor = currentDescriptor + c;
-            } // (end "in descriptor"
-            // In parens
+            }
 
           } else if (state === "in parens") {
-            // U+0029 RIGHT PARENTHESIS ())
-            // Append c to current descriptor. Set state to in descriptor.
             if (c === ")") {
               currentDescriptor = currentDescriptor + c;
-              state = "in descriptor"; // EOF
-              // Append current descriptor to descriptors. Jump to the step labeled
-              // descriptor parser.
+              state = "in descriptor";
             } else if (c === "") {
               descriptors.push(currentDescriptor);
               parseDescriptors();
-              return; // Anything else
-              // Append c to current descriptor.
+              return;
             } else {
               currentDescriptor = currentDescriptor + c;
-            } // After descriptor
+            }
 
           } else if (state === "after descriptor") {
-            // Do the following, depending on the value of c:
-            // Space character: Stay in this state.
             if (isSpace(c)) ; else if (c === "") {
               parseDescriptors();
-              return; // Anything else
-              // Set state to in descriptor. Set position to the previous character in input.
+              return;
             } else {
               state = "in descriptor";
               pos -= 1;
             }
-          } // Advance position to the next character in input.
+          }
 
 
-          pos += 1; // Repeat this step.
-        } // (close while true loop)
+          pos += 1;
+        }
 
       }
-      /**
-       * Adds descriptor properties to a candidate, pushes to the candidates array
-       * @return undefined
-       */
-      // Declared outside of the while loop so that it's only created once.
 
 
       function parseDescriptors() {
-        // 9. Descriptor parser: Let error be no.
         var pError = false,
-            // 10. Let width be absent.
-        // 11. Let density be absent.
-        // 12. Let future-compat-h be absent. (We're implementing it now as h)
         w,
             d,
             h,
@@ -57749,72 +51707,55 @@ var parseSrcset = createCommonjsModule(function (module) {
             lastChar,
             value,
             intVal,
-            floatVal; // 13. For each descriptor in descriptors, run the appropriate set of steps
-        // from the following list:
+            floatVal;
 
         for (i = 0; i < descriptors.length; i++) {
           desc = descriptors[i];
           lastChar = desc[desc.length - 1];
           value = desc.substring(0, desc.length - 1);
           intVal = parseInt(value, 10);
-          floatVal = parseFloat(value); // If the descriptor consists of a valid non-negative integer followed by
-          // a U+0077 LATIN SMALL LETTER W character
+          floatVal = parseFloat(value);
 
           if (regexNonNegativeInteger.test(value) && lastChar === "w") {
-            // If width and density are not both absent, then let error be yes.
             if (w || d) {
               pError = true;
-            } // Apply the rules for parsing non-negative integers to the descriptor.
-            // If the result is zero, let error be yes.
-            // Otherwise, let width be the result.
+            }
 
 
             if (intVal === 0) {
               pError = true;
             } else {
               w = intVal;
-            } // If the descriptor consists of a valid floating-point number followed by
-            // a U+0078 LATIN SMALL LETTER X character
+            }
 
           } else if (regexFloatingPoint.test(value) && lastChar === "x") {
-            // If width, density and future-compat-h are not all absent, then let error
-            // be yes.
             if (w || d || h) {
               pError = true;
-            } // Apply the rules for parsing floating-point number values to the descriptor.
-            // If the result is less than zero, let error be yes. Otherwise, let density
-            // be the result.
+            }
 
 
             if (floatVal < 0) {
               pError = true;
             } else {
               d = floatVal;
-            } // If the descriptor consists of a valid non-negative integer followed by
-            // a U+0068 LATIN SMALL LETTER H character
+            }
 
           } else if (regexNonNegativeInteger.test(value) && lastChar === "h") {
-            // If height and density are not both absent, then let error be yes.
             if (h || d) {
               pError = true;
-            } // Apply the rules for parsing non-negative integers to the descriptor.
-            // If the result is zero, let error be yes. Otherwise, let future-compat-h
-            // be the result.
+            }
 
 
             if (intVal === 0) {
               pError = true;
             } else {
               h = intVal;
-            } // Anything else, Let error be yes.
+            }
 
           } else {
             pError = true;
           }
-        } // (close step 13 for loop)
-        // 15. If error is still no, then append a new image source to candidates whose
-        // URL is url, associated with a width width if not absent and a pixel
-        // density density if not absent. Otherwise, there is a parse error.
+        }
 
 
         if (!pError) {
@@ -57836,7 +51777,7 @@ var parseSrcset = createCommonjsModule(function (module) {
         } else if (logger && logger.error) {
           logger.error("Invalid srcset descriptor found in '" + input + "' at '" + desc + "'.");
         }
-      } // (close parseDescriptors fn)
+      }
 
     };
   });
@@ -57923,7 +51864,7 @@ function getClassPrefix(className) {
 }
 
 function printClassNames$1(value) {
-  const classNames = value.trim().split(/\s+/); // Try keeping consecutive classes with the same prefix on one line.
+  const classNames = value.trim().split(/\s+/);
 
   const groupedByPrefix = [];
   let previousPrefix;
@@ -57931,7 +51872,7 @@ function printClassNames$1(value) {
   for (let i = 0; i < classNames.length; i++) {
     const prefix = getClassPrefix(classNames[i]);
 
-    if (prefix !== previousPrefix && // "home-link" and "home-link_blue_yes" should be considered same-prefix
+    if (prefix !== previousPrefix &&
     prefix !== classNames[i - 1]) {
       groupedByPrefix.push([]);
     }
@@ -57948,9 +51889,6 @@ var syntaxAttribute = {
   printClassNames: printClassNames$1
 };
 
-/**
- * @typedef {import("../document").Doc} Doc
- */
 
 
 const {
@@ -58028,7 +51966,6 @@ function embed$1(path, print, textToDoc, options) {
     case "element":
       {
         if (isScriptLikeTag(node) || node.type === "interpolation") {
-          // Fall through to "text"
           return;
         }
 
@@ -58091,7 +52028,6 @@ function embed$1(path, print, textToDoc, options) {
         } else if (node.parent.type === "interpolation") {
           const textToDocOptions = {
             __isInHtmlInterpolation: true,
-            // to avoid unexpected `}}`
             __embeddedInHtml: true
           };
 
@@ -58116,12 +52052,12 @@ function embed$1(path, print, textToDoc, options) {
       {
         if (!node.value) {
           break;
-        } // lit-html: html`<my-element obj=${obj}></my-element>`
+        }
 
 
         if (/^PRETTIER_HTML_PLACEHOLDER_\d+_\d+_IN_JS$/.test(options.originalText.slice(node.valueSpan.start.offset, node.valueSpan.end.offset))) {
           return [node.rawName, "=", node.value];
-        } // lwc: html`<my-element data-for={value}></my-element>`
+        }
 
 
         if (options.parser === "lwc") {
@@ -58132,7 +52068,7 @@ function embed$1(path, print, textToDoc, options) {
           }
         }
 
-        const embeddedAttributeValueDoc = printEmbeddedAttributeValue(node, (code, opts) => // strictly prefer single quote to avoid unnecessary html entity escape
+        const embeddedAttributeValueDoc = printEmbeddedAttributeValue(node, (code, opts) =>
         textToDoc(code, Object.assign({
           __isInHtmlAttribute: true,
           __embeddedInHtml: true
@@ -58162,7 +52098,7 @@ function genericPrint$1(path, options, print) {
     case "root":
       if (options.__onHtmlRoot) {
         options.__onHtmlRoot(node);
-      } // use original concat to not break stripTrailingHardline
+      }
 
 
       return [group$2(printChildren$1(path, options, print)), hardline$4];
@@ -58173,26 +52109,6 @@ function genericPrint$1(path, options, print) {
         if (shouldPreserveContent(node, options)) {
           return [printOpeningTagPrefix(node, options), group$2(printOpeningTag(path, options, print)), ...replaceEndOfLineWith$1(getNodeContent(node, options), literalline$2), ...printClosingTag(node, options), printClosingTagSuffix(node, options)];
         }
-        /**
-         * do not break:
-         *
-         *     <div>{{
-         *         ~
-         *       interpolation
-         *     }}</div>
-         *            ~
-         *
-         * exception: break if the opening tag breaks
-         *
-         *     <div
-         *       long
-         *           ~
-         *       >{{
-         *         interpolation
-         *       }}</div
-         *              ~
-         *     >
-         */
 
 
         const shouldHugContent = node.children.length === 1 && node.firstChild.type === "interpolation" && node.firstChild.isLeadingSpaceSensitive && !node.firstChild.hasLeadingSpaces && node.lastChild.isTrailingSpaceSensitive && !node.lastChild.hasTrailingSpaces;
@@ -58206,14 +52122,6 @@ function genericPrint$1(path, options, print) {
         }) : node.firstChild.hasLeadingSpaces && node.firstChild.isLeadingSpaceSensitive ? line$4 : node.firstChild.type === "text" && node.isWhitespaceSensitive && node.isIndentationSensitive ? dedentToRoot$1(softline$2) : softline$2, printChildren$1(path, options, print)]), (node.next ? needsToBorrowPrevClosingTagEndMarker(node.next) : needsToBorrowLastChildClosingTagEndMarker(node.parent)) ? node.lastChild.hasTrailingSpaces && node.lastChild.isTrailingSpaceSensitive ? " " : "" : shouldHugContent ? ifBreak$2(softline$2, "", {
           groupId: attrGroupId
         }) : node.lastChild.hasTrailingSpaces && node.lastChild.isTrailingSpaceSensitive ? line$4 : (node.lastChild.type === "comment" || node.lastChild.type === "text" && node.isWhitespaceSensitive && node.isIndentationSensitive) && new RegExp(`\\n[\\t ]{${options.tabWidth * countParents(path, node => node.parent && node.parent.type !== "root")}}$`).test(node.lastChild.value) ?
-        /**
-         *     <div>
-         *       <pre>
-         *         something
-         *       </pre>
-         *            ~
-         *     </div>
-         */
         "" : softline$2]]), printClosingTag(node, options)];
       }
 
@@ -58227,7 +52135,6 @@ function genericPrint$1(path, options, print) {
     case "text":
       {
         if (node.parent.type === "interpolation") {
-          // replace the trailing literalline with hardline for better readability
           const trailingNewlineRegex = /\n[^\S\n]*?$/;
           const hasTrailingNewline = trailingNewlineRegex.test(node.value);
           const value = hasTrailingNewline ? node.value.replace(trailingNewlineRegex, "") : node.value;
@@ -58239,7 +52146,6 @@ function genericPrint$1(path, options, print) {
         if (isConcat(printed) || printed.type === "fill") {
           return fill$2(getDocParts$2(printed));
         }
-        /* istanbul ignore next */
 
 
         return printed;
@@ -58267,7 +52173,6 @@ function genericPrint$1(path, options, print) {
       }
 
     default:
-      /* istanbul ignore next */
       throw new Error(`Unexpected node type ${node.type}`);
   }
 }
@@ -58357,37 +52262,10 @@ function printChildren$1(path, options, print) {
 
   function printBetweenLine(prevNode, nextNode) {
     return isTextLikeNode(prevNode) && isTextLikeNode(nextNode) ? prevNode.isTrailingSpaceSensitive ? prevNode.hasTrailingSpaces ? preferHardlineAsLeadingSpaces(nextNode) ? hardline$4 : line$4 : "" : preferHardlineAsLeadingSpaces(nextNode) ? hardline$4 : softline$2 : needsToBorrowNextOpeningTagStartMarker(prevNode) && (hasPrettierIgnore$2(nextNode) ||
-    /**
-     *     123<a
-     *          ~
-     *       ><b>
-     */
     nextNode.firstChild ||
-    /**
-     *     123<!--
-     *            ~
-     *     -->
-     */
     nextNode.isSelfClosing ||
-    /**
-     *     123<span
-     *             ~
-     *       attr
-     */
     nextNode.type === "element" && nextNode.attrs.length > 0) ||
-    /**
-     *     <img
-     *       src="long"
-     *                 ~
-     *     />123
-     */
     prevNode.type === "element" && prevNode.isSelfClosing && needsToBorrowPrevClosingTagEndMarker(nextNode) ? "" : !nextNode.isLeadingSpaceSensitive || preferHardlineAsLeadingSpaces(nextNode) ||
-    /**
-     *       Want to write us a letter? Use our<a
-     *         ><b><a>mailing address</a></b></a
-     *                                          ~
-     *       >.
-     */
     needsToBorrowPrevClosingTagEndMarker(nextNode) && prevNode.lastChild && needsToBorrowParentClosingTagStartMarker(prevNode.lastChild) && prevNode.lastChild.lastChild && needsToBorrowParentClosingTagStartMarker(prevNode.lastChild.lastChild) ? hardline$4 : nextNode.hasLeadingSpaces ? line$4 : softline$2;
   }
 }
@@ -58415,10 +52293,6 @@ function printAttributes(path, options, print) {
 
   if (!isNonEmptyArray$1(node.attrs)) {
     return node.isSelfClosing ?
-    /**
-     *     <br />
-     *        ^
-     */
     " " : "";
   }
 
@@ -58429,24 +52303,11 @@ function printAttributes(path, options, print) {
     return hasPrettierIgnoreAttribute(attribute) ? replaceEndOfLineWith$1(options.originalText.slice(locStart$2(attribute), locEnd$1(attribute)), literalline$2) : print();
   }, "attrs");
   const forceNotToBreakAttrContent = node.type === "element" && node.fullName === "script" && node.attrs.length === 1 && node.attrs[0].fullName === "src" && node.children.length === 0;
-  /** @type {Doc[]} */
 
   const parts = [indent([forceNotToBreakAttrContent ? " " : line$4, join$4(line$4, printedAttributes)])];
 
   if (
-  /**
-   *     123<a
-   *       attr
-   *           ~
-   *       >456
-   */
   node.firstChild && needsToBorrowParentOpeningTagEndMarker(node.firstChild) ||
-  /**
-   *     <span
-   *       >123<meta
-   *                ~
-   *     /></span>
-   */
   node.isSelfClosing && needsToBorrowLastChildClosingTagEndMarker(node.parent) || forceNotToBreakAttrContent) {
     parts.push(node.isSelfClosing ? " " : "");
   } else {
@@ -58482,63 +52343,22 @@ function printClosingTagEnd(node, options) {
 }
 
 function needsToBorrowNextOpeningTagStartMarker(node) {
-  /**
-   *     123<p
-   *        ^^
-   *     >
-   */
   return node.next && !isTextLikeNode(node.next) && isTextLikeNode(node) && node.isTrailingSpaceSensitive && !node.hasTrailingSpaces;
 }
 
 function needsToBorrowParentOpeningTagEndMarker(node) {
-  /**
-   *     <p
-   *       >123
-   *       ^
-   *
-   *     <p
-   *       ><a
-   *       ^
-   */
   return !node.prev && node.isLeadingSpaceSensitive && !node.hasLeadingSpaces;
 }
 
 function needsToBorrowPrevClosingTagEndMarker(node) {
-  /**
-   *     <p></p
-   *     >123
-   *     ^
-   *
-   *     <p></p
-   *     ><a
-   *     ^
-   */
   return node.prev && node.prev.type !== "docType" && !isTextLikeNode(node.prev) && node.isLeadingSpaceSensitive && !node.hasLeadingSpaces;
 }
 
 function needsToBorrowLastChildClosingTagEndMarker(node) {
-  /**
-   *     <p
-   *       ><a></a
-   *       ></p
-   *       ^
-   *     >
-   */
   return node.lastChild && node.lastChild.isTrailingSpaceSensitive && !node.lastChild.hasTrailingSpaces && !isTextLikeNode(getLastDescendant(node.lastChild)) && !isPreLikeNode(node);
 }
 
 function needsToBorrowParentClosingTagStartMarker(node) {
-  /**
-   *     <p>
-   *       123</p
-   *          ^^^
-   *     >
-   *
-   *         123</b
-   *       ></a
-   *        ^^^
-   *     >
-   */
   return !node.next && !node.hasTrailingSpaces && node.isTrailingSpaceSensitive && isTextLikeNode(getLastDescendant(node));
 }
 
@@ -58574,7 +52394,6 @@ function printOpeningTagStartMarker(node) {
         return `<!--[if ${node.condition}]><!--><${node.rawName}`;
       }
 
-    // fall through
 
     default:
       return `<${node.rawName}`;
@@ -58593,7 +52412,6 @@ function printOpeningTagEndMarker(node) {
         return "><!--<![endif]-->";
       }
 
-    // fall through
 
     default:
       return ">";
@@ -58602,7 +52420,6 @@ function printOpeningTagEndMarker(node) {
 
 function printClosingTagStartMarker(node, options) {
   assert__default['default'](!node.isSelfClosing);
-  /* istanbul ignore next */
 
   if (shouldNotPrintClosingTag(node, options)) {
     return "";
@@ -58617,7 +52434,6 @@ function printClosingTagStartMarker(node, options) {
         return "<//";
       }
 
-    // fall through
 
     default:
       return `</${node.rawName}`;
@@ -58645,7 +52461,6 @@ function printClosingTagEndMarker(node, options) {
         return "/>";
       }
 
-    // fall through
 
     default:
       return ">";
@@ -58715,24 +52530,11 @@ function printEmbeddedAttributeValue(node, originalTextToDoc, options) {
     if (isVueSlotAttribute(node) || isVueSfcBindingsAttribute(node, options)) {
       return printVueBindings(getValue(), attributeTextToDoc);
     }
-    /**
-     *     @click="jsStatement"
-     *     @click="jsExpression"
-     *     v-on:click="jsStatement"
-     *     v-on:click="jsExpression"
-     */
 
 
     const vueEventBindingPatterns = ["^@", "^v-on:"];
-    /**
-     *     :class="vueExpression"
-     *     v-bind:id="vueExpression"
-     */
 
     const vueExpressionBindingPatterns = ["^:", "^v-bind:"];
-    /**
-     *     v-if="jsExpression"
-     */
 
     const jsExpressionBindingPatterns = ["^v-"];
 
@@ -58757,35 +52559,18 @@ function printEmbeddedAttributeValue(node, originalTextToDoc, options) {
   }
 
   if (options.parser === "angular") {
-    const ngTextToDoc = (code, opts) => // angular does not allow trailing comma
+    const ngTextToDoc = (code, opts) =>
     attributeTextToDoc(code, Object.assign(Object.assign({}, opts), {}, {
       trailingComma: "none"
     }));
-    /**
-     *     *directive="angularDirective"
-     */
 
 
     const ngDirectiveBindingPatterns = ["^\\*"];
-    /**
-     *     (click)="angularStatement"
-     *     on-click="angularStatement"
-     */
 
     const ngStatementBindingPatterns = ["^\\(.+\\)$", "^on-"];
-    /**
-     *     [target]="angularExpression"
-     *     bind-target="angularExpression"
-     *     [(target)]="angularExpression"
-     *     bindon-target="angularExpression"
-     */
 
-    const ngExpressionBindingPatterns = ["^\\[.+\\]$", "^bind(on)?-", // Unofficial rudimentary support for some of the most used directives of AngularJS 1.x
+    const ngExpressionBindingPatterns = ["^\\[.+\\]$", "^bind(on)?-",
     "^ng-(if|show|hide|class|style)$"];
-    /**
-     *     i18n="longDescription"
-     *     i18n-attr="longDescription"
-     */
 
     const ngI18nPatterns = ["^i18n(-.+)?$"];
 
@@ -58825,7 +52610,7 @@ function printEmbeddedAttributeValue(node, originalTextToDoc, options) {
           try {
             parts.push(group$2(["{{", indent([line$4, ngTextToDoc(part, {
               parser: "__ng_interpolation",
-              __isInHtmlInterpolation: true // to avoid unexpected `}}`
+              __isInHtmlInterpolation: true
 
             })]), line$4, "}}"]));
           } catch {
@@ -58849,7 +52634,7 @@ var printerHtml = {
   embed: embed$1
 };
 
-const CATEGORY_HTML = "HTML"; // format based on https://github.com/prettier/prettier/blob/main/src/main/core-options.js
+const CATEGORY_HTML = "HTML";
 
 var options$1 = {
   htmlWhitespaceSensitivity: {
@@ -58947,7 +52732,7 @@ const languages$2 = [createLanguage(require$$0$1, () => ({
   since: "1.15.0",
   parsers: ["html"],
   vscodeLanguageIds: ["html"],
-  extensions: [...data.extensions, ".mjml" // MJML is considered XML in Linguist but it should be formatted as HTML
+  extensions: [...data.extensions, ".mjml"
   ]
 })), createLanguage(require$$0$1, () => ({
   name: "Lightning Web Components",
@@ -58965,22 +52750,18 @@ const printers = {
   html: printerHtml
 };
 const parsers$1 = {
-  // HTML
   get html() {
     return require("./parser-html").parsers.html;
   },
 
-  // Vue
   get vue() {
     return require("./parser-html").parsers.vue;
   },
 
-  // Angular
   get angular() {
     return require("./parser-html").parsers.angular;
   },
 
-  // Lightning Web Components
   get lwc() {
     return require("./parser-html").parsers.lwc;
   }
@@ -59025,7 +52806,7 @@ var loc = {
 };
 
 function embed(path, print, textToDoc, options) {
-  const node = path.getValue(); // Try to format `.prettierrc` as `json` first
+  const node = path.getValue();
 
   if (node.type === "root" && options.filepath && /(?:[/\\]|^)\.prettierrc$/.test(options.filepath)) {
     return textToDoc(options.originalText, Object.assign(Object.assign({}, options), {}, {
@@ -59055,10 +52836,6 @@ function getAncestorCount$1(path, filter) {
 
   return counter;
 }
-/**
- * @param {any} value
- * @param {string[]=} types
- */
 
 
 function isNode$4(value, types) {
@@ -59171,9 +52948,6 @@ function hasTrailingComment$2(node) {
 function hasEndComments$4(node) {
   return node && isNonEmptyArray(node.endComments);
 }
-/**
- * " a   b c   d e   f " -> [" a   b", "c   d", "e   f "]
- */
 
 
 function splitWithSingleSpace(text) {
@@ -59181,7 +52955,6 @@ function splitWithSingleSpace(text) {
   let lastPart;
 
   for (const part of text.split(/( +)/)) {
-    /* istanbul ignore else */
     if (part !== " ") {
       if (lastPart === " ") {
         parts.push(part);
@@ -59194,7 +52967,6 @@ function splitWithSingleSpace(text) {
 
     lastPart = part;
   }
-  /* istanbul ignore next */
 
 
   if (lastPart === " ") {
@@ -59216,7 +52988,7 @@ function getFlowScalarLineContents$1(nodeType, content, options) {
     return rawLineContents.map(lineContent => lineContent.length === 0 ? [] : [lineContent]);
   }
 
-  return rawLineContents.map(lineContent => lineContent.length === 0 ? [] : splitWithSingleSpace(lineContent)).reduce((reduced, lineContentWords, index) => index !== 0 && rawLineContents[index - 1].length > 0 && lineContentWords.length > 0 && !( // trailing backslash in quoteDouble should be preserved
+  return rawLineContents.map(lineContent => lineContent.length === 0 ? [] : splitWithSingleSpace(lineContent)).reduce((reduced, lineContentWords, index) => index !== 0 && rawLineContents[index - 1].length > 0 && lineContentWords.length > 0 && !(
   nodeType === "quoteDouble" && getLast$1(getLast$1(reduced)).endsWith("\\")) ? [...reduced.slice(0, -1), [...getLast$1(reduced), ...lineContentWords]] : [...reduced, lineContentWords], []).map(lineContentWords => options.proseWrap === "never" ? [lineContentWords.join(" ")] : lineContentWords);
 }
 
@@ -59225,7 +52997,7 @@ function getBlockValueLineContents$1(node, {
   isLastDescendant,
   options
 }) {
-  const content = node.position.start.line === node.position.end.line ? "" : options.originalText.slice(node.position.start.offset, node.position.end.offset) // exclude open line `>` or `|`
+  const content = node.position.start.line === node.position.end.line ? "" : options.originalText.slice(node.position.start.offset, node.position.end.offset)
   .match(/^[^\n]*?\n(.*)$/s)[1];
   const leadingSpaceCount = node.indent === null ? (match => match ? match[1].length : Number.POSITIVE_INFINITY)(content.match(/^( *)\S/m)) : node.indent - 1 + parentIndent;
   const rawLineContents = content.split("\n").map(lineContent => lineContent.slice(leadingSpaceCount));
@@ -59234,7 +53006,7 @@ function getBlockValueLineContents$1(node, {
     return removeUnnecessaryTrailingNewlines(rawLineContents.map(lineContent => lineContent.length === 0 ? [] : [lineContent]));
   }
 
-  return removeUnnecessaryTrailingNewlines(rawLineContents.map(lineContent => lineContent.length === 0 ? [] : splitWithSingleSpace(lineContent)).reduce((reduced, lineContentWords, index) => index !== 0 && rawLineContents[index - 1].length > 0 && lineContentWords.length > 0 && !/^\s/.test(lineContentWords[0]) && !/^\s|\s$/.test(getLast$1(reduced)) ? [...reduced.slice(0, -1), [...getLast$1(reduced), ...lineContentWords]] : [...reduced, lineContentWords], []).map(lineContentWords => lineContentWords.reduce((reduced, word) => // disallow trailing spaces
+  return removeUnnecessaryTrailingNewlines(rawLineContents.map(lineContent => lineContent.length === 0 ? [] : splitWithSingleSpace(lineContent)).reduce((reduced, lineContentWords, index) => index !== 0 && rawLineContents[index - 1].length > 0 && lineContentWords.length > 0 && !/^\s/.test(lineContentWords[0]) && !/^\s|\s$/.test(getLast$1(reduced)) ? [...reduced.slice(0, -1), [...getLast$1(reduced), ...lineContentWords]] : [...reduced, lineContentWords], []).map(lineContentWords => lineContentWords.reduce((reduced, word) =>
   reduced.length > 0 && /\s$/.test(getLast$1(reduced)) ? [...reduced.slice(0, -1), getLast$1(reduced) + " " + word] : [...reduced, word], [])).map(lineContentWords => options.proseWrap === "never" ? [lineContentWords.join(" ")] : lineContentWords));
 
   function removeUnnecessaryTrailingNewlines(lineContents) {
@@ -59252,13 +53024,12 @@ function getBlockValueLineContents$1(node, {
       }
     }
 
-    return trailingNewlineCount === 0 ? lineContents : trailingNewlineCount >= 2 && !isLastDescendant ? // next empty line
+    return trailingNewlineCount === 0 ? lineContents : trailingNewlineCount >= 2 && !isLastDescendant ?
     lineContents.slice(0, -(trailingNewlineCount - 1)) : lineContents.slice(0, -trailingNewlineCount);
   }
 }
 
 function isInlineNode$2(node) {
-  /* istanbul ignore next */
   if (!node) {
     return true;
   }
@@ -59408,7 +53179,6 @@ function printFlowMapping$1(path, print, options) {
   const isMapping = node.type === "flowMapping";
   const openMarker = isMapping ? "{" : "[";
   const closeMarker = isMapping ? "}" : "]";
-  /** @type {softline | line} */
 
   let bracketSpacing = softline;
 
@@ -59429,11 +53199,9 @@ function printChildren(path, print, options) {
 
 var flowMappingSequence = {
   printFlowMapping: printFlowMapping$1,
-  // Alias
   printFlowSequence: printFlowMapping$1
 };
 
-/** @typedef {import("../../document").Doc} Doc */
 
 
 const {
@@ -59490,12 +53258,12 @@ function printMappingItem(node, parentNode, path, print, options) {
 
   if (isEmptyMappingKey) {
     return [": ", alignWithSpaces$2(2, printedValue)];
-  } // force explicit Key
+  }
 
 
   if (hasLeadingComments$1(value) || !isInlineNode$1(key.content)) {
     return ["? ", alignWithSpaces$2(2, printedKey), hardline$2, join$2("", path.map(print, "value", "leadingComments").map(comment => [comment, hardline$2])), ": ", alignWithSpaces$2(2, printedValue)];
-  } // force singleline
+  }
 
 
   if (isSingleLineNode(key.content) && !hasLeadingComments$1(key.content) && !hasMiddleComments$1(key.content) && !hasTrailingComment$1(key.content) && !hasEndComments$1(key) && !hasLeadingComments$1(value.content) && !hasMiddleComments$1(value.content) && !hasEndComments$1(value) && isAbsolutelyPrintedAsSingleLineNode(value.content, options)) {
@@ -59505,12 +53273,9 @@ function printMappingItem(node, parentNode, path, print, options) {
   const groupId = Symbol("mappingKey");
   const groupedKey = group$1([ifBreak("? "), group$1(alignWithSpaces$2(2, printedKey), {
     id: groupId
-  })]); // Construct both explicit and implicit mapping values.
+  })]);
 
   const explicitMappingValue = [hardline$2, ": ", alignWithSpaces$2(2, printedValue)];
-  /** @type {Doc[]} */
-  // In the implicit case, it's convenient to treat everything from the key's colon
-  // as part of the mapping value
 
   const implicitMappingValueParts = [spaceBeforeColon, ":"];
 
@@ -59521,13 +53286,11 @@ function printMappingItem(node, parentNode, path, print, options) {
   }
 
   implicitMappingValueParts.push(printedValue);
-  const implicitMappingValue = alignWithSpaces$2(options.tabWidth, implicitMappingValueParts); // If a key is definitely single-line, forcibly use implicit style to avoid edge cases (very long
-  // keys) that would otherwise trigger explicit style as if it was multiline.
-  // In those cases, explicit style makes the line even longer and causes confusion.
+  const implicitMappingValue = alignWithSpaces$2(options.tabWidth, implicitMappingValueParts);
 
   if (isAbsolutelyPrintedAsSingleLineNode(key.content, options) && !hasLeadingComments$1(key.content) && !hasMiddleComments$1(key.content) && !hasEndComments$1(key)) {
     return conditionalGroup([[printedKey, implicitMappingValue]]);
-  } // Use explicit mapping syntax if the key breaks, implicit otherwise
+  }
 
 
   return conditionalGroup([[groupedKey, ifBreak(explicitMappingValue, implicitMappingValue, {
@@ -59557,7 +53320,7 @@ function isAbsolutelyPrintedAsSingleLineNode(node, options) {
     return node.position.start.line === node.position.end.line;
   }
 
-  if ( // backslash-newline
+  if (
   /\\$/m.test(options.originalText.slice(node.position.start.offset, node.position.end.offset))) {
     return false;
   }
@@ -59568,7 +53331,6 @@ function isAbsolutelyPrintedAsSingleLineNode(node, options) {
 
     case "always":
       return !/[\n ]/.test(node.value);
-    // istanbul ignore next
 
     default:
       return false;
@@ -59580,7 +53342,6 @@ function needsSpaceInFrontOfMappingValue(node) {
 }
 
 function isSingleLineNode(node) {
-  /* istanbul ignore next */
   if (!node) {
     return true;
   }
@@ -59601,7 +53362,6 @@ function isSingleLineNode(node) {
 
 var mappingItem = printMappingItem;
 
-/** @typedef {import("../../document").Doc} Doc */
 
 
 const {
@@ -59634,7 +53394,6 @@ function printBlock(path, print, options) {
   const node = path.getValue();
   const parentIndent = getAncestorCount(path, ancestorNode => isNode$1(ancestorNode, ["sequence", "mapping"]));
   const isLastDescendant = isLastDescendantNode$1(path);
-  /** @type {Doc[]} */
 
   const parts = [node.type === "blockFolded" ? ">" : "|"];
 
@@ -59655,7 +53414,6 @@ function printBlock(path, print, options) {
     isLastDescendant,
     options
   });
-  /** @type {Doc[]} */
 
   const contentsParts = [];
 
@@ -59684,7 +53442,6 @@ function printBlock(path, print, options) {
 
 var block = printBlock;
 
-/** @typedef {import("../document").Doc} Doc */
 
 
 const {
@@ -59737,7 +53494,6 @@ const {
 
 function genericPrint(path, options, print) {
   const node = path.getValue();
-  /** @type {Doc[]} */
 
   const parts = [];
 
@@ -59761,7 +53517,6 @@ function genericPrint(path, options, print) {
   if (anchor) {
     parts.push(print("anchor"));
   }
-  /** @type {Doc} */
 
 
   let nextEmptyLine = "";
@@ -59872,15 +53627,13 @@ function printNode(node, parentNode, path, options, print) {
           children,
           endComments
         } = node;
-        /** @type {Doc} */
 
         let separator = "";
 
         if (children.length > 0 && endComments.length > 0) {
-          const lastDescendantNode = getLastDescendantNode(node); // there's already a newline printed at the end of blockValue (chomping=keep, lastDescendant=true)
+          const lastDescendantNode = getLastDescendantNode(node);
 
           if (isNode(lastDescendantNode, ["blockFolded", "blockLiteral"])) {
-            // an extra newline for better readability
             if (lastDescendantNode.chomping !== "keep") {
               separator = [hardline, hardline];
             }
@@ -59918,19 +53671,17 @@ function printNode(node, parentNode, path, options, print) {
         const raw = options.originalText.slice(node.position.start.offset + 1, node.position.end.offset - 1);
 
         if (node.type === "quoteSingle" && raw.includes("\\") || node.type === "quoteDouble" && /\\[^"]/.test(raw)) {
-          // only quoteDouble can use escape chars
-          // and quoteSingle do not need to escape backslashes
           const originalQuote = node.type === "quoteDouble" ? doubleQuote : singleQuote;
           return [originalQuote, printFlowScalarContent(node.type, raw, options), originalQuote];
         }
 
         if (raw.includes(doubleQuote)) {
-          return [singleQuote, printFlowScalarContent(node.type, node.type === "quoteDouble" ? raw // double quote needs to be escaped by backslash in quoteDouble
+          return [singleQuote, printFlowScalarContent(node.type, node.type === "quoteDouble" ? raw
           .replace(/\\"/g, doubleQuote).replace(/'/g, singleQuote.repeat(2)) : raw, options), singleQuote];
         }
 
         if (raw.includes(singleQuote)) {
-          return [doubleQuote, printFlowScalarContent(node.type, node.type === "quoteSingle" ? // single quote needs to be escaped by 2 single quotes in quoteSingle
+          return [doubleQuote, printFlowScalarContent(node.type, node.type === "quoteSingle" ?
           raw.replace(/''/g, singleQuote) : raw, options), doubleQuote];
         }
 
@@ -59969,7 +53720,6 @@ function printNode(node, parentNode, path, options, print) {
 
     case "flowSequenceItem":
       return print("content");
-    // istanbul ignore next
 
     default:
       throw new Error(`Unexpected node type ${node.type}`);
@@ -59982,45 +53732,17 @@ function shouldPrintDocumentBody(document) {
 
 function shouldPrintDocumentEndMarker(document, nextDocument) {
   return (
-    /**
-     *... # trailingComment
-     */
     hasTrailingComment(document) || nextDocument && (
-    /**
-     * ...
-     * %DIRECTIVE
-     * ---
-     */
     nextDocument.head.children.length > 0 ||
-    /**
-     * ...
-     * # endComment
-     * ---
-     */
     hasEndComments(nextDocument.head))
   );
 }
 
 function shouldPrintDocumentHeadEndMarker(document, nextDocument, root, options) {
   if (
-  /**
-   * ---
-   * preserve the first document head end marker
-   */
   root.children[0] === document && /---(\s|$)/.test(options.originalText.slice(locStart(document), locStart(document) + 4)) ||
-  /**
-   * %DIRECTIVE
-   * ---
-   */
   document.head.children.length > 0 ||
-  /**
-   * # end comment
-   * ---
-   */
   hasEndComments(document.head) ||
-  /**
-   * --- # trailing comment
-   */
   hasTrailingComment(document.head)) {
     return "head";
   }
@@ -60038,14 +53760,12 @@ function printFlowScalarContent(nodeType, content, options) {
 }
 
 function clean(node, newNode
-/*, parent */
 ) {
   if (isNode(newNode)) {
     delete newNode.position;
 
     switch (newNode.type) {
       case "comment":
-        // insert pragma
         if (isPragma(newNode.value)) {
           return null;
         }
@@ -60122,7 +53842,6 @@ const languages$1 = [createLanguage(require$$0, data => ({
   since: "1.14.0",
   parsers: ["yaml"],
   vscodeLanguageIds: ["yaml", "ansible", "home-assistant"],
-  // yarn.lock is not YAML: https://github.com/yarnpkg/yarn/issues/5629
   filenames: [...data.filenames.filter(filename => filename !== "yarn.lock"), ".prettierrc"]
 }))];
 const parsers = {
@@ -60140,13 +53859,13 @@ var languageYaml = {
   parsers
 };
 
-var languages = [// JS
-languageJs, // CSS
-languageCss, // Handlebars
-languageHandlebars, // GraphQL
-languageGraphql, // Markdown
-languageMarkdown, // HTML
-languageHtml, // YAML
+var languages = [
+languageJs,
+languageCss,
+languageHandlebars,
+languageGraphql,
+languageMarkdown,
+languageHtml,
 languageYaml];
 
 const memoizedLoad = dist$1(load, {
@@ -60166,7 +53885,7 @@ function load(plugins, pluginSearchDirs) {
 
   if (!pluginSearchDirs) {
     pluginSearchDirs = [];
-  } // unless pluginSearchDirs are provided, auto-load plugins from node_modules that are parent to Prettier
+  }
 
 
   if (pluginSearchDirs.length === 0) {
@@ -60182,10 +53901,8 @@ function load(plugins, pluginSearchDirs) {
     let requirePath;
 
     try {
-      // try local files
       requirePath = resolve_1(path__default['default'].resolve(process.cwd(), pluginName));
     } catch {
-      // try node modules
       requirePath = resolve_1(pluginName, {
         paths: [process.cwd()]
       });
@@ -60198,9 +53915,7 @@ function load(plugins, pluginSearchDirs) {
   });
   const externalAutoLoadPluginInfos = pluginSearchDirs.flatMap(pluginSearchDir => {
     const resolvedPluginSearchDir = path__default['default'].resolve(process.cwd(), pluginSearchDir);
-    const nodeModulesDir = path__default['default'].resolve(resolvedPluginSearchDir, "node_modules"); // In some fringe cases (ex: files "mounted" as virtual directories), the
-    // isDirectory(resolvedPluginSearchDir) check might be false even though
-    // the node_modules actually exists.
+    const nodeModulesDir = path__default['default'].resolve(resolvedPluginSearchDir, "node_modules");
 
     if (!isDirectory(nodeModulesDir) && !isDirectory(resolvedPluginSearchDir)) {
       throw new Error(`${pluginSearchDir} does not exist or is not a directory`);
@@ -60247,7 +53962,7 @@ const {
   getSupportInfo
 } = support;
 
-function _withPlugins(fn, optsArgIdx = 1 // Usually `opts` is the 2nd argument
+function _withPlugins(fn, optsArgIdx = 1
 ) {
   return (...args) => {
     const opts = args[optsArgIdx] || {};
@@ -60262,7 +53977,6 @@ function withPlugins(fn, optsArgIdx) {
   const resultingFn = _withPlugins(fn, optsArgIdx);
 
   if (fn.sync) {
-    // @ts-ignore
     resultingFn.sync = _withPlugins(fn.sync, optsArgIdx);
   }
 
@@ -60293,14 +54007,11 @@ var src = {
     loadPlugins.clearCache();
   },
 
-  /** @type {typeof getFileInfo} */
   getFileInfo: withPlugins(getFileInfo_1),
 
-  /** @type {typeof getSupportInfo} */
   getSupportInfo: withPlugins(getSupportInfo, 0),
   version,
   util: utilShared,
-  // Internal shared
   __internal: {
     errors: errors,
     coreOptions: coreOptions$1,
@@ -60312,7 +54023,6 @@ var src = {
     }
   },
 
-  /* istanbul ignore next */
   __debug: {
     parse: withPlugins(core$1.parse),
     formatAST: withPlugins(core$1.formatAST),

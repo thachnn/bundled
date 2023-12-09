@@ -72,7 +72,7 @@ var importFresh = moduleId => {
   const parentPath = __filename;
   const cwd = parentPath ? path__default['default'].dirname(parentPath) : __dirname;
   const filePath = resolveFrom_1(cwd, moduleId);
-  const oldModule = require.cache[filePath]; // Delete itself from module parent
+  const oldModule = require.cache[filePath];
 
   if (oldModule && oldModule.parent) {
     let i = oldModule.parent.children.length;
@@ -84,11 +84,11 @@ var importFresh = moduleId => {
     }
   }
 
-  delete require.cache[filePath]; // Delete module from cache
+  delete require.cache[filePath];
 
-  const parent = require.cache[parentPath]; // If `filePath` and `parentPath` are the same, cache will already be deleted so we won't get a memory leak in next step
+  const parent = require.cache[parentPath];
 
-  return parent === undefined ? require(filePath) : parent.require(filePath); // In case cache doesn't have parent, fall back to normal require
+  return parent === undefined ? require(filePath) : parent.require(filePath);
 };
 
 var isArrayish = function isArrayish(obj) {
@@ -154,8 +154,7 @@ var errorEx = function errorEx(name, properties) {
     };
 
     stackDescriptor.get = function () {
-      var stack = (overwrittenStack || (stackGetter ? stackGetter.call(this) : stackValue)).split(/\r?\n+/g); // starting in Node 7, the stack builder caches the message.
-      // just replace it.
+      var stack = (overwrittenStack || (stackGetter ? stackGetter.call(this) : stackValue)).split(/\r?\n+/g);
 
       if (!overwrittenStack) {
         stack[0] = this.name + ': ' + this.message;
@@ -287,10 +286,7 @@ class JSONParseError extends SyntaxError {
 }
 
 const kIndent = Symbol.for('indent');
-const kNewline = Symbol.for('newline'); // only respect indentation if we got a line break, otherwise squash it
-// things other than objects and arrays aren't indented, so ignore those
-// Important: in both of these regexps, the $1 capture group is the newline
-// or undefined, and the $2 capture group is the indent, or undefined.
+const kNewline = Symbol.for('newline');
 
 const formatRE = /^\s*[{\[]((?:\r?\n)+)([\s\t]*)/;
 const emptyRE = /^(?:\{\}|\[\])((?:\r?\n)+)?$/;
@@ -300,12 +296,6 @@ const parseJson$1 = (txt, reviver, context) => {
   context = context || 20;
 
   try {
-    // get the indentation so that we can save it back nicely
-    // if the file starts with {" then we have an indent of '', ie, none
-    // otherwise, pick the indentation of the next line after the first \n
-    // If the pattern doesn't match, then it means no indentation.
-    // JSON.stringify ignores symbols, so this is reasonably safe.
-    // if the string is '{}' or '[]', then use the default 2-space indent.
     const [, newline = '\n', indent = '  '] = parseText.match(emptyRE) || parseText.match(formatRE) || [, '', ''];
     const result = JSON.parse(parseText, reviver);
 
@@ -326,9 +316,7 @@ const parseJson$1 = (txt, reviver, context) => {
 
     throw new JSONParseError(e, parseText, context, parseJson$1);
   }
-}; // Remove byte order marker. This catches EF BB BF (the UTF-8 BOM)
-// because the buffer-to-string conversion in `fs.readFileSync()`
-// translates it to FEFF, the UTF-16 BOM.
+};
 
 
 const stripBOM = txt => String(txt).replace(/^\uFEFF/, '');
@@ -798,9 +786,6 @@ var colorName = {
 
 /* MIT license */
 var conversions = createCommonjsModule(function (module) {
-  // NOTE: conversions should only return primitive values (i.e. arrays, or
-  //       values that give correct `typeof` results).
-  //       do not use box values types (i.e. Number(), String(), etc.)
   var reverseKeywords = {};
 
   for (var key in colorName) {
@@ -870,7 +855,7 @@ var conversions = createCommonjsModule(function (module) {
       channels: 1,
       labels: ['gray']
     }
-  }; // hide .channels and .labels properties
+  };
 
   for (var model in convert) {
     if (convert.hasOwnProperty(model)) {
@@ -1005,9 +990,6 @@ var conversions = createCommonjsModule(function (module) {
     y = (1 - b - k) / (1 - k) || 0;
     return [c * 100, m * 100, y * 100, k * 100];
   };
-  /**
-   * See https://en.m.wikipedia.org/wiki/Euclidean_distance#Squared_Euclidean_distance
-   * */
 
 
   function comparativeDistance(x, y) {
@@ -1026,9 +1008,9 @@ var conversions = createCommonjsModule(function (module) {
 
     for (var keyword in colorName) {
       if (colorName.hasOwnProperty(keyword)) {
-        var value = colorName[keyword]; // Compute comparative distance
+        var value = colorName[keyword];
 
-        var distance = comparativeDistance(rgb, value); // Check if its less, if so set as closest
+        var distance = comparativeDistance(rgb, value);
 
         if (distance < currentClosestDistance) {
           currentClosestDistance = distance;
@@ -1047,7 +1029,7 @@ var conversions = createCommonjsModule(function (module) {
   convert.rgb.xyz = function (rgb) {
     var r = rgb[0] / 255;
     var g = rgb[1] / 255;
-    var b = rgb[2] / 255; // assume sRGB
+    var b = rgb[2] / 255;
 
     r = r > 0.04045 ? Math.pow((r + 0.055) / 1.055, 2.4) : r / 12.92;
     g = g > 0.04045 ? Math.pow((g + 0.055) / 1.055, 2.4) : g / 12.92;
@@ -1192,7 +1174,7 @@ var conversions = createCommonjsModule(function (module) {
     sl = sl || 0;
     l /= 2;
     return [h, sl * 100, l * 100];
-  }; // http://dev.w3.org/csswg/css-color/#hwb-to-rgb
+  };
 
 
   convert.hwb.rgb = function (hwb) {
@@ -1203,7 +1185,7 @@ var conversions = createCommonjsModule(function (module) {
     var i;
     var v;
     var f;
-    var n; // wh + bl cant be > 1
+    var n;
 
     if (ratio > 1) {
       wh /= ratio;
@@ -1218,7 +1200,7 @@ var conversions = createCommonjsModule(function (module) {
       f = 1 - f;
     }
 
-    n = wh + f * (v - wh); // linear interpolation
+    n = wh + f * (v - wh);
 
     var r;
     var g;
@@ -1290,7 +1272,7 @@ var conversions = createCommonjsModule(function (module) {
     var b;
     r = x * 3.2406 + y * -1.5372 + z * -0.4986;
     g = x * -0.9689 + y * 1.8758 + z * 0.0415;
-    b = x * 0.0557 + y * -0.2040 + z * 1.0570; // assume sRGB
+    b = x * 0.0557 + y * -0.2040 + z * 1.0570;
 
     r = r > 0.0031308 ? 1.055 * Math.pow(r, 1.0 / 2.4) - 0.055 : r * 12.92;
     g = g > 0.0031308 ? 1.055 * Math.pow(g, 1.0 / 2.4) - 0.055 : g * 12.92;
@@ -1377,7 +1359,7 @@ var conversions = createCommonjsModule(function (module) {
     var r = args[0];
     var g = args[1];
     var b = args[2];
-    var value = 1 in arguments ? arguments[1] : convert.rgb.hsv(args)[2]; // hsv -> ansi16 optimization
+    var value = 1 in arguments ? arguments[1] : convert.rgb.hsv(args)[2];
 
     value = Math.round(value / 50);
 
@@ -1395,16 +1377,13 @@ var conversions = createCommonjsModule(function (module) {
   };
 
   convert.hsv.ansi16 = function (args) {
-    // optimization here; we already know the value and don't need to get
-    // it converted for us.
     return convert.rgb.ansi16(convert.hsv.rgb(args), args[2]);
   };
 
   convert.rgb.ansi256 = function (args) {
     var r = args[0];
     var g = args[1];
-    var b = args[2]; // we use the extended greyscale palette here, with the exception of
-    // black and white. normal palette only has 4 greyscale shades.
+    var b = args[2];
 
     if (r === g && g === b) {
       if (r < 8) {
@@ -1423,7 +1402,7 @@ var conversions = createCommonjsModule(function (module) {
   };
 
   convert.ansi16.rgb = function (args) {
-    var color = args % 10; // handle greyscale
+    var color = args % 10;
 
     if (color === 0 || color === 7) {
       if (args > 50) {
@@ -1442,7 +1421,6 @@ var conversions = createCommonjsModule(function (module) {
   };
 
   convert.ansi256.rgb = function (args) {
-    // handle greyscale
     if (args >= 232) {
       var c = (args - 232) * 10 + 8;
       return [c, c, c];
@@ -1693,38 +1671,26 @@ var conversions = createCommonjsModule(function (module) {
   };
 });
 
-/*
-	this function routes a model to all other models.
-
-	all functions that are routed have a property `.conversion` attached
-	to the returned synthetic function. This property is an array
-	of strings, each with the steps in between the 'from' and 'to'
-	color models (inclusive).
-
-	conversions that are not possible simply are not included.
-*/
 
 function buildGraph() {
-  var graph = {}; // https://jsperf.com/object-keys-vs-for-in-with-closure/3
+  var graph = {};
 
   var models = Object.keys(conversions);
 
   for (var len = models.length, i = 0; i < len; i++) {
     graph[models[i]] = {
-      // http://jsperf.com/1-vs-infinity
-      // micro-opt, but this is simple.
       distance: -1,
       parent: null
     };
   }
 
   return graph;
-} // https://en.wikipedia.org/wiki/Breadth-first_search
+}
 
 
 function deriveBFS(fromModel) {
   var graph = buildGraph();
-  var queue = [fromModel]; // unshift -> queue -> pop
+  var queue = [fromModel];
 
   graph[fromModel].distance = 0;
 
@@ -1778,7 +1744,6 @@ var route = function (fromModel) {
     var node = graph[toModel];
 
     if (node.parent === null) {
-      // no possible conversion, or this node is the source model.
       continue;
     }
 
@@ -1802,7 +1767,7 @@ function wrapRaw(fn) {
     }
 
     return fn(args);
-  }; // preserve .conversion property if there is one
+  };
 
 
   if ('conversion' in fn) {
@@ -1822,9 +1787,7 @@ function wrapRounded(fn) {
       args = Array.prototype.slice.call(arguments);
     }
 
-    var result = fn(args); // we're assuming the result is an array here.
-    // see notice in conversions.js; don't use box types
-    // in conversion functions.
+    var result = fn(args);
 
     if (typeof result === 'object') {
       for (var len = result.length, i = 0; i < len; i++) {
@@ -1833,7 +1796,7 @@ function wrapRounded(fn) {
     }
 
     return result;
-  }; // preserve .conversion property if there is one
+  };
 
 
   if ('conversion' in fn) {
@@ -1883,7 +1846,6 @@ var ansiStyles = createCommonjsModule(function (module) {
     const styles = {
       modifier: {
         reset: [0, 0],
-        // 21 isn't widely supported and 22 does the same thing
         bold: [1, 22],
         dim: [2, 22],
         italic: [3, 23],
@@ -1902,7 +1864,6 @@ var ansiStyles = createCommonjsModule(function (module) {
         cyan: [36, 39],
         white: [37, 39],
         gray: [90, 39],
-        // Bright color
         redBright: [91, 39],
         greenBright: [92, 39],
         yellowBright: [93, 39],
@@ -1920,7 +1881,6 @@ var ansiStyles = createCommonjsModule(function (module) {
         bgMagenta: [45, 49],
         bgCyan: [46, 49],
         bgWhite: [47, 49],
-        // Bright color
         bgBlackBright: [100, 49],
         bgRedBright: [101, 49],
         bgGreenBright: [102, 49],
@@ -1930,7 +1890,7 @@ var ansiStyles = createCommonjsModule(function (module) {
         bgCyanBright: [106, 49],
         bgWhiteBright: [107, 49]
       }
-    }; // Fix humans
+    };
 
     styles.color.grey = styles.color.gray;
 
@@ -2010,7 +1970,7 @@ var ansiStyles = createCommonjsModule(function (module) {
     }
 
     return styles;
-  } // Make the export immutable
+  }
 
 
   Object.defineProperty(module, 'exports', {
@@ -2073,12 +2033,6 @@ function supportsColor(stream) {
   const min = forceColor ? 1 : 0;
 
   if (process.platform === 'win32') {
-    // Node.js 7.5.0 is the first version of Node.js to include a patch to
-    // libuv that enables 256 color output on Windows. Anything earlier and it
-    // won't work. However, here we target Node.js 8 at minimum as it is an LTS
-    // release, and Node.js 7 is not. Windows 10 build 10586 is the first Windows
-    // release that supports 256 colors. Windows 10 build 14931 is the first release
-    // that supports 16m/TrueColor.
     const osRelease = os__default['default'].release().split('.');
 
     if (Number(process.versions.node.split('.')[0]) >= 8 && Number(osRelease[0]) >= 10 && Number(osRelease[2]) >= 10586) {
@@ -2113,7 +2067,6 @@ function supportsColor(stream) {
 
       case 'Apple_Terminal':
         return 2;
-      // No default
     }
   }
 
@@ -2229,7 +2182,7 @@ function buildStyle(chalk, styles) {
 var templates = (chalk, tmp) => {
   const styles = [];
   const chunks = [];
-  let chunk = []; // eslint-disable-next-line max-params
+  let chunk = [];
 
   tmp.replace(TEMPLATE_REGEX, (m, escapeChar, inverse, style, close, chr) => {
     if (escapeChar) {
@@ -2267,15 +2220,15 @@ var templates = (chalk, tmp) => {
 var chalk = createCommonjsModule(function (module) {
 
   const stdoutColor = supportsColor_1.stdout;
-  const isSimpleWindowsTerm = process.platform === 'win32' && !(process.env.TERM || '').toLowerCase().startsWith('xterm'); // `supportsColor.level` → `ansiStyles.color[name]` mapping
+  const isSimpleWindowsTerm = process.platform === 'win32' && !(process.env.TERM || '').toLowerCase().startsWith('xterm');
 
-  const levelMapping = ['ansi', 'ansi', 'ansi256', 'ansi16m']; // `color-convert` models to exclude from the Chalk API due to conflicts and such
+  const levelMapping = ['ansi', 'ansi', 'ansi256', 'ansi16m'];
 
   const skipModels = new Set(['gray']);
   const styles = Object.create(null);
 
   function applyOptions(obj, options) {
-    options = options || {}; // Detect level if not set manually
+    options = options || {};
 
     const scLevel = stdoutColor ? stdoutColor.level : 0;
     obj.level = options.level === undefined ? scLevel : options.level;
@@ -2283,8 +2236,6 @@ var chalk = createCommonjsModule(function (module) {
   }
 
   function Chalk(options) {
-    // We check for this.template here since calling `chalk.constructor()`
-    // by itself will have a `this` of a previously constructed chalk object
     if (!this || !(this instanceof Chalk) || this.template) {
       const chalk = {};
       applyOptions(chalk, options);
@@ -2301,7 +2252,7 @@ var chalk = createCommonjsModule(function (module) {
     }
 
     applyOptions(this, options);
-  } // Use bright blue on Windows as the normal blue color is illegible
+  }
 
 
   if (isSimpleWindowsTerm) {
@@ -2407,18 +2358,16 @@ var chalk = createCommonjsModule(function (module) {
         self.enabled = enabled;
       }
 
-    }); // See below for fix regarding invisible grey/dim combination on Windows
+    });
 
-    builder.hasGrey = this.hasGrey || key === 'gray' || key === 'grey'; // `__proto__` is used because we must return a function, but there is
-    // no way to create a function with a different prototype
+    builder.hasGrey = this.hasGrey || key === 'gray' || key === 'grey';
 
-    builder.__proto__ = proto; // eslint-disable-line no-proto
+    builder.__proto__ = proto;
 
     return builder;
   }
 
   function applyStyle() {
-    // Support varags, but simply cast to string in case there's only one arg
     const args = arguments;
     const argsLen = args.length;
     let str = String(arguments[0]);
@@ -2428,7 +2377,6 @@ var chalk = createCommonjsModule(function (module) {
     }
 
     if (argsLen > 1) {
-      // Don't slice `arguments`, it prevents V8 optimizations
       for (let a = 1; a < argsLen; a++) {
         str += ' ' + args[a];
       }
@@ -2436,9 +2384,7 @@ var chalk = createCommonjsModule(function (module) {
 
     if (!this.enabled || this.level <= 0 || !str) {
       return this._empty ? '' : str;
-    } // Turns out that on Windows dimmed gray text becomes invisible in cmd.exe,
-    // see https://github.com/chalk/chalk/issues/58
-    // If we're on Windows and we're dealing with a gray color, temporarily make 'dim' a noop.
+    }
 
 
     const originalDim = ansiStyles.dim.open;
@@ -2448,15 +2394,10 @@ var chalk = createCommonjsModule(function (module) {
     }
 
     for (const code of this._styles.slice().reverse()) {
-      // Replace any instances already present with a re-opening code
-      // otherwise only the part of the string until said closing code
-      // will be colored, and the rest will simply be 'plain'.
-      str = code.open + str.replace(code.closeRe, code.open) + code.close; // Close the styling before a linebreak and reopen
-      // after next line to fix a bleed issue on macOS
-      // https://github.com/chalk/chalk/pull/92
+      str = code.open + str.replace(code.closeRe, code.open) + code.close;
 
       str = str.replace(/\r?\n/g, `${code.close}$&${code.open}`);
-    } // Reset the original `dim` if we changed it to work around the Windows dimmed gray issue
+    }
 
 
     ansiStyles.dim.open = originalDim;
@@ -2465,8 +2406,6 @@ var chalk = createCommonjsModule(function (module) {
 
   function chalkTag(chalk, strings) {
     if (!Array.isArray(strings)) {
-      // If chalk() was called by itself or with a string,
-      // return the string itself as a string.
       return [].slice.call(arguments, 1).join(' ');
     }
 
@@ -2482,10 +2421,10 @@ var chalk = createCommonjsModule(function (module) {
   }
 
   Object.defineProperties(Chalk.prototype, styles);
-  module.exports = Chalk(); // eslint-disable-line new-cap
+  module.exports = Chalk();
 
   module.exports.supportsColor = stdoutColor;
-  module.exports.default = module.exports; // For TypeScript
+  module.exports.default = module.exports;
 });
 
 var shouldHighlight_1 = shouldHighlight;
@@ -2886,26 +2825,7 @@ function getSrcInfo(cst) {
     src
   };
 }
-/**
- * @typedef {Object} LinePos - One-indexed position in the source
- * @property {number} line
- * @property {number} col
- */
 
-/**
- * Determine the line/col position matching a character offset.
- *
- * Accepts a source string or a CST document as the second parameter. With
- * the latter, starting indices for lines are cached in the document as
- * `lineStarts: number[]`.
- *
- * Returns a one-indexed `{ line, col }` location if found, or
- * `undefined` otherwise.
- *
- * @param {number} offset
- * @param {string|Document|Document[]} cst
- * @returns {?LinePos}
- */
 
 
 function getLinePos(offset, cst) {
@@ -2938,19 +2858,6 @@ function getLinePos(offset, cst) {
     col: offset - lineStarts[line - 1] + 1
   };
 }
-/**
- * Get a specified line from the source.
- *
- * Accepts a source string or a CST document as the second parameter. With
- * the latter, starting indices for lines are cached in the document as
- * `lineStarts: number[]`.
- *
- * Returns the line as a string if found, or `null` otherwise.
- *
- * @param {number} line One-indexed line number
- * @param {string|Document|Document[]} cst
- * @returns {?string}
- */
 
 
 function getLine(line, cst) {
@@ -2960,28 +2867,12 @@ function getLine(line, cst) {
   } = getSrcInfo(cst);
   if (!lineStarts || !(line >= 1) || line > lineStarts.length) return null;
   const start = lineStarts[line - 1];
-  let end = lineStarts[line]; // undefined for last line; that's ok for slice()
+  let end = lineStarts[line];
 
   while (end && end > start && src[end - 1] === '\n') --end;
 
   return src.slice(start, end);
 }
-/**
- * Pretty-print the starting line from the source indicated by the range `pos`
- *
- * Trims output to `maxWidth` chars while keeping the starting column visible,
- * using `…` at either end to indicate dropped characters.
- *
- * Returns a two-line string (or `null`) with `\n` as separator; the second line
- * will hold appropriately indented `^` marks indicating the column range.
- *
- * @param {Object} pos
- * @param {LinePos} pos.start
- * @param {LinePos} [pos.end]
- * @param {string|Document|Document[]*} cst
- * @param {number} [maxWidth=80]
- * @returns {?string}
- */
 
 
 function getPrettyContext({
@@ -3035,14 +2926,6 @@ class Range {
   isEmpty() {
     return typeof this.start !== 'number' || !this.end || this.end <= this.start;
   }
-  /**
-   * Set `origStart` and `origEnd` to point to the original source range for
-   * this node, which may differ due to dropped CR characters.
-   *
-   * @param {number[]} cr - Positions of dropped CR characters
-   * @param {number} offset - Starting index of `cr` from the last call
-   * @returns {number} - The next offset, matching the one found for `origStart`
-   */
 
 
   setOrigRange(cr, offset) {
@@ -3067,7 +2950,6 @@ class Range {
     const nextOffset = i;
 
     while (i < cr.length) {
-      // if end was at \n, it should now be at \r
       if (cr[i] >= end) break;else ++i;
     }
 
@@ -3076,7 +2958,6 @@ class Range {
   }
 
 }
-/** Root class of all nodes */
 
 
 class Node$1 {
@@ -3084,7 +2965,7 @@ class Node$1 {
     if (str[str.length - 1] === '\n') return str;
     const next = Node$1.endOfWhiteSpace(src, offset);
     return next >= src.length || src[next] === '\n' ? str + '\n' : str;
-  } // ^(---|...)
+  }
 
 
   static atDocumentBoundary(src, offset, sep) {
@@ -3149,15 +3030,6 @@ class Node$1 {
 
     return offset + 1;
   }
-  /**
-   * End of indentation, or null if the line's indent level is not more
-   * than `indent`
-   *
-   * @param {string} src
-   * @param {number} indent
-   * @param {number} lineStart
-   * @returns {?number}
-   */
 
 
   static endOfBlockIndent(src, indent, lineStart) {
@@ -3183,14 +3055,13 @@ class Node$1 {
     if (!ch || indentDiff < 0) return false;
     if (indentDiff > 0) return true;
     return indicatorAsIndent && ch === '-';
-  } // should be at line or string end, or at next non-whitespace char
+  }
 
 
   static normalizeOffset(src, offset) {
     const ch = src[offset];
     return !ch ? offset : ch !== '\n' && src[offset - 1] === '\n' ? offset - 1 : Node$1.endOfWhiteSpace(src, offset);
-  } // fold single newline into space, multiple newlines to N - 1 newlines
-  // presumes src[offset] === '\n'
+  }
 
 
   static foldNewline(src, offset, indent) {
@@ -3351,7 +3222,6 @@ class Node$1 {
             verbatim: tag.slice(2, -1)
           };
         } else {
-          // eslint-disable-next-line no-unused-vars
           const [_, handle, suffix] = tag.match(/^(.*!)([^!]*)$/);
           return {
             handle,
@@ -3395,14 +3265,6 @@ class Node$1 {
 
     return start;
   }
-  /**
-   * Populates the `origStart` and `origEnd` values of all ranges for this
-   * node. Extended by child classes to handle descendant nodes.
-   *
-   * @param {number[]} cr - Positions of dropped CR characters
-   * @param {number} offset - Starting index of `cr` from the last call
-   * @returns {number} - The next offset, matching the one found for `origStart`
-   */
 
 
   setOrigRanges(cr, offset) {
@@ -3563,7 +3425,6 @@ class PlainValue extends Node$1 {
         str += fold;
         i = offset;
       } else if (ch === ' ' || ch === '\t') {
-        // trim trailing whitespace
         const wsStart = i;
         let next = src[i + 1];
 
@@ -3633,31 +3494,6 @@ class PlainValue extends Node$1 {
     this.valueRange.end = valueEnd;
     return valueEnd;
   }
-  /**
-   * Parses a plain value from the source
-   *
-   * Accepted forms are:
-   * ```
-   * #comment
-   *
-   * first line
-   *
-   * first line #comment
-   *
-   * first line
-   * block
-   * lines
-   *
-   * #comment
-   * block
-   * lines
-   * ```
-   * where block lines are empty or have an indent level greater than `indent`.
-   *
-   * @param {ParseContext} context
-   * @param {number} start - Index of first character
-   * @returns {number} - Index of the character after this scalar, may be `\n`
-   */
 
 
   parse(context, start) {
@@ -3719,21 +3555,11 @@ class BlankLine extends PlainValueEc8e588e.Node {
   constructor() {
     super(PlainValueEc8e588e.Type.BLANK_LINE);
   }
-  /* istanbul ignore next */
 
 
   get includesTrailingLines() {
-    // This is never called from anywhere, but if it were,
-    // this is the value it should return.
     return true;
   }
-  /**
-   * Parses a blank line from the source
-   *
-   * @param {ParseContext} context
-   * @param {number} start - Index of first \n character
-   * @returns {number} - Index of the character after this
-   */
 
 
   parse(context, start) {
@@ -3753,11 +3579,6 @@ class CollectionItem extends PlainValueEc8e588e.Node {
   get includesTrailingLines() {
     return !!this.node && this.node.includesTrailingLines;
   }
-  /**
-   * @param {ParseContext} context
-   * @param {number} start - Index of first character
-   * @returns {number} - Index of the character after this
-   */
 
 
   parse(context, start) {
@@ -3815,9 +3636,6 @@ class CollectionItem extends PlainValueEc8e588e.Node {
 
     if (this.node) {
       if (blankLine) {
-        // Only blank lines preceding non-empty nodes are captured. Note that
-        // this means that collection item range start indices do not always
-        // increase monotonically. -- eemeli/yaml#126
         const items = context.parent.items || context.parent.contents;
         if (items) items.push(blankLine);
       }
@@ -3864,13 +3682,6 @@ class Comment extends PlainValueEc8e588e.Node {
   constructor() {
     super(PlainValueEc8e588e.Type.COMMENT);
   }
-  /**
-   * Parses a comment line from the source
-   *
-   * @param {ParseContext} context
-   * @param {number} start - Index of first character
-   * @returns {number} - Index of the character after this scalar
-   */
 
 
   parse(context, start) {
@@ -3895,7 +3706,6 @@ function grabCollectionEndComments(node) {
     const n = cnode.items[i];
 
     if (n.type === PlainValueEc8e588e.Type.COMMENT) {
-      // Keep sufficiently indented comments with preceding node
       const {
         indent,
         lineStart
@@ -3935,7 +3745,6 @@ class Collection$1 extends PlainValueEc8e588e.Node {
 
     for (let i = firstItem.props.length - 1; i >= 0; --i) {
       if (firstItem.props[i].start < firstItem.context.lineStart) {
-        // props on previous line are assumed by the collection
         this.props = firstItem.props.slice(0, i + 1);
         firstItem.props = firstItem.props.slice(i + 1);
         const itemRange = firstItem.props[0] || firstItem.valueRange;
@@ -3952,11 +3761,6 @@ class Collection$1 extends PlainValueEc8e588e.Node {
   get includesTrailingLines() {
     return this.items.length > 0;
   }
-  /**
-   * @param {ParseContext} context
-   * @param {number} start - Index of first character
-   * @returns {number} - Index of the character after this
-   */
 
 
   parse(context, start) {
@@ -3964,12 +3768,10 @@ class Collection$1 extends PlainValueEc8e588e.Node {
     const {
       parseNode,
       src
-    } = context; // It's easier to recalculate lineStart here rather than tracking down the
-    // last context from which to read it -- eemeli/yaml#2
+    } = context;
 
     let lineStart = PlainValueEc8e588e.Node.startOfLine(src, start);
-    const firstItem = this.items[0]; // First-item context needs to be correct for later comment handling
-    // -- eemeli/yaml#17
+    const firstItem = this.items[0];
 
     firstItem.context.parent = this;
     this.valueRange = PlainValueEc8e588e.Range.copy(firstItem.valueRange);
@@ -3995,7 +3797,7 @@ class Collection$1 extends PlainValueEc8e588e.Node {
           }
 
           this.items.push(blankLine);
-          offset -= 1; // blankLine.parse() consumes terminal newline
+          offset -= 1;
         } else if (ch === '#') {
           if (offset < lineStart + indent && !Collection$1.nextContentHasIndent(src, offset, indent)) {
             return offset;
@@ -4052,7 +3854,6 @@ class Collection$1 extends PlainValueEc8e588e.Node {
           break;
         }
       } else if (ch === '-' && !this.error) {
-        // map key may start with -, as long as it's followed by a non-whitespace char
         const next = src[offset + 1];
 
         if (!next || next === '\n' || next === '\t' || next === ' ') {
@@ -4068,16 +3869,14 @@ class Collection$1 extends PlainValueEc8e588e.Node {
         lineStart,
         parent: this
       }, offset);
-      if (!node) return offset; // at next document start
+      if (!node) return offset;
 
       this.items.push(node);
       this.valueRange.end = node.valueRange.end;
       offset = PlainValueEc8e588e.Node.normalizeOffset(src, node.range.end);
       ch = src[offset];
       atLineStart = false;
-      prevIncludesTrailingLines = node.includesTrailingLines; // Need to reset lineStart and atLineStart here if preceding node's range
-      // has advanced to check the current line's indentation level
-      // -- eemeli/yaml#10 & eemeli/yaml#38
+      prevIncludesTrailingLines = node.includesTrailingLines;
 
       if (ch) {
         let ls = offset - 1;
@@ -4334,7 +4133,7 @@ class Document$2 extends PlainValueEc8e588e.Node {
               parent: this
             };
             const node = parseNode(context, iEnd);
-            if (!node) return this.valueRange.end = iEnd; // at next document start
+            if (!node) return this.valueRange.end = iEnd;
 
             this.contents.push(node);
             offset = node.range.end;
@@ -4380,11 +4179,6 @@ class Document$2 extends PlainValueEc8e588e.Node {
 
     return offset;
   }
-  /**
-   * @param {ParseContext} context
-   * @param {number} start - Index of first character
-   * @returns {number} - Index of the character after this
-   */
 
 
   parse(context, start) {
@@ -4393,7 +4187,7 @@ class Document$2 extends PlainValueEc8e588e.Node {
     const {
       src
     } = context;
-    let offset = src.charCodeAt(start) === 0xfeff ? start + 1 : start; // skip BOM
+    let offset = src.charCodeAt(start) === 0xfeff ? start + 1 : start;
 
     offset = this.parseDirectives(offset);
     offset = this.parseContents(offset);
@@ -4434,13 +4228,6 @@ class Document$2 extends PlainValueEc8e588e.Node {
 }
 
 class Alias$1 extends PlainValueEc8e588e.Node {
-  /**
-   * Parses an *alias from the source
-   *
-   * @param {ParseContext} context
-   * @param {number} start - Index of first character
-   * @returns {number} - Index of the character after this scalar
-   */
   parse(context, start) {
     this.context = context;
     const {
@@ -4491,7 +4278,7 @@ class BlockValue extends PlainValueEc8e588e.Node {
       end -= 1;
 
       if (end <= start) {
-        if (this.chomping === Chomp.KEEP) break;else return ''; // probably never happens
+        if (this.chomping === Chomp.KEEP) break;else return '';
       }
 
       if (ch === '\n') lastNewLine = end;
@@ -4533,7 +4320,7 @@ class BlockValue extends PlainValueEc8e588e.Node {
 
         if (folded && (ch === ' ' || ch === '\t') && i < keepStart) {
           if (sep === ' ') sep = '\n';else if (!prevMoreIndented && !atStart && sep === '\n') sep = '\n\n';
-          str += sep + line; //+ ((lineEnd < end && src[lineEnd]) || '')
+          str += sep + line;
 
           sep = lineEnd < end && src[lineEnd] || '';
           prevMoreIndented = true;
@@ -4605,16 +4392,14 @@ class BlockValue extends PlainValueEc8e588e.Node {
     for (let ch = src[offset]; ch === '\n'; ch = src[offset]) {
       offset += 1;
       if (PlainValueEc8e588e.Node.atDocumentBoundary(src, offset)) break;
-      const end = PlainValueEc8e588e.Node.endOfBlockIndent(src, indent, offset); // should not include tab?
+      const end = PlainValueEc8e588e.Node.endOfBlockIndent(src, indent, offset);
 
       if (end === null) break;
       const ch = src[end];
       const lineIndent = end - (offset + indent);
 
       if (!this.blockIndent) {
-        // no explicit block indent, none yet detected
         if (src[end] !== '\n') {
-          // first line with non-whitespace content
           if (lineIndent < minBlockIndent) {
             const msg = 'Block scalars with more-indented leading empty lines must use an explicit indentation indicator';
             this.error = new PlainValueEc8e588e.YAMLSemanticError(this, msg);
@@ -4622,7 +4407,6 @@ class BlockValue extends PlainValueEc8e588e.Node {
 
           this.blockIndent = lineIndent;
         } else if (lineIndent > minBlockIndent) {
-          // empty line with more whitespace
           minBlockIndent = lineIndent;
         }
       } else if (ch && ch !== '\n' && lineIndent < this.blockIndent) {
@@ -4649,26 +4433,6 @@ class BlockValue extends PlainValueEc8e588e.Node {
     this.valueRange = new PlainValueEc8e588e.Range(start + 1, offset);
     return offset;
   }
-  /**
-   * Parses a block value from the source
-   *
-   * Accepted forms are:
-   * ```
-   * BS
-   * block
-   * lines
-   *
-   * BS #comment
-   * block
-   * lines
-   * ```
-   * where the block style BS matches the regexp `[|>][-+1-9]*` and block lines
-   * are empty or have an indent level greater than `indent`.
-   *
-   * @param {ParseContext} context
-   * @param {number} start - Index of first character
-   * @returns {number} - Index of the character after this block
-   */
 
 
   parse(context, start) {
@@ -4700,11 +4464,6 @@ class FlowCollection extends PlainValueEc8e588e.Node {
     const node = this.items[idx - 1];
     return !!node && (node.jsonLike || node.type === PlainValueEc8e588e.Type.COMMENT && this.prevNodeIsJsonLike(idx - 1));
   }
-  /**
-   * @param {ParseContext} context
-   * @param {number} start - Index of first character
-   * @returns {number} - Index of the character after this
-   */
 
 
   parse(context, start) {
@@ -4717,7 +4476,7 @@ class FlowCollection extends PlainValueEc8e588e.Node {
       indent,
       lineStart
     } = context;
-    let char = src[start]; // { or [
+    let char = src[start];
 
     this.items = [{
       char,
@@ -4779,7 +4538,7 @@ class FlowCollection extends PlainValueEc8e588e.Node {
           {
             const next = src[offset + 1];
 
-            if (next === '\n' || next === '\t' || next === ' ' || next === ',' || // in-flow : after JSON-like key does not need to be followed by whitespace
+            if (next === '\n' || next === '\t' || next === ' ' || next === ',' ||
             char === ':' && this.prevNodeIsJsonLike()) {
               this.items.push({
                 char,
@@ -4789,7 +4548,6 @@ class FlowCollection extends PlainValueEc8e588e.Node {
               break;
             }
           }
-        // fallthrough
 
         default:
           {
@@ -4803,7 +4561,6 @@ class FlowCollection extends PlainValueEc8e588e.Node {
             }, offset);
 
             if (!node) {
-              // at next document start
               this.valueRange = new PlainValueEc8e588e.Range(start, offset);
               return offset;
             }
@@ -4871,9 +4628,6 @@ class FlowCollection extends PlainValueEc8e588e.Node {
       str += prefix + String(node);
 
       if (str[str.length - 1] === '\n' && src[prevEnd - 1] !== '\n' && src[prevEnd] === '\n') {
-        // Comment range does not include the terminal newline, but its
-        // stringified value does. Without this fix, newlines at comment ends
-        // get duplicated.
         prevEnd += 1;
       }
     });
@@ -4894,9 +4648,6 @@ class QuoteDouble extends PlainValueEc8e588e.Node {
 
     return offset + 1;
   }
-  /**
-   * @returns {string | { str: string, errors: YAMLSyntaxError[] }}
-   */
 
 
   get strValue() {
@@ -4910,8 +4661,7 @@ class QuoteDouble extends PlainValueEc8e588e.Node {
       indent,
       src
     } = this.context;
-    if (src[end - 1] !== '"') errors.push(new PlainValueEc8e588e.YAMLSyntaxError(this, 'Missing closing "quote')); // Using String#replace is too painful with escaped newlines preceded by
-    // escaped backslashes; also, this should be faster.
+    if (src[end - 1] !== '"') errors.push(new PlainValueEc8e588e.YAMLSyntaxError(this, 'Missing closing "quote'));
 
     let str = '';
 
@@ -4935,67 +4685,54 @@ class QuoteDouble extends PlainValueEc8e588e.Node {
           case '0':
             str += '\0';
             break;
-          // null character
 
           case 'a':
             str += '\x07';
             break;
-          // bell character
 
           case 'b':
             str += '\b';
             break;
-          // backspace
 
           case 'e':
             str += '\x1b';
             break;
-          // escape character
 
           case 'f':
             str += '\f';
             break;
-          // form feed
 
           case 'n':
             str += '\n';
             break;
-          // line feed
 
           case 'r':
             str += '\r';
             break;
-          // carriage return
 
           case 't':
             str += '\t';
             break;
-          // horizontal tab
 
           case 'v':
             str += '\v';
             break;
-          // vertical tab
 
           case 'N':
             str += '\u0085';
             break;
-          // Unicode next line
 
           case '_':
             str += '\u00a0';
             break;
-          // Unicode non-breaking space
 
           case 'L':
             str += '\u2028';
             break;
-          // Unicode line separator
 
           case 'P':
             str += '\u2029';
             break;
-          // Unicode paragraph separator
 
           case ' ':
             str += ' ';
@@ -5033,7 +4770,6 @@ class QuoteDouble extends PlainValueEc8e588e.Node {
             break;
 
           case '\n':
-            // skip escaped newlines, but still trim the following line
             while (src[i + 1] === ' ' || src[i + 1] === '\t') i += 1;
 
             break;
@@ -5043,7 +4779,6 @@ class QuoteDouble extends PlainValueEc8e588e.Node {
             str += '\\' + src[i];
         }
       } else if (ch === ' ' || ch === '\t') {
-        // trim trailing whitespace
         const wsStart = i;
         let next = src[i + 1];
 
@@ -5079,13 +4814,6 @@ class QuoteDouble extends PlainValueEc8e588e.Node {
 
     return String.fromCodePoint(code);
   }
-  /**
-   * Parses a "double quoted" value from the source
-   *
-   * @param {ParseContext} context
-   * @param {number} start - Index of first character
-   * @returns {number} - Index of the character after this scalar
-   */
 
 
   parse(context, start) {
@@ -5117,9 +4845,6 @@ class QuoteSingle extends PlainValueEc8e588e.Node {
 
     return offset + 1;
   }
-  /**
-   * @returns {string | { str: string, errors: YAMLSyntaxError[] }}
-   */
 
 
   get strValue() {
@@ -5154,7 +4879,6 @@ class QuoteSingle extends PlainValueEc8e588e.Node {
         i += 1;
         if (src[i] !== "'") errors.push(new PlainValueEc8e588e.YAMLSyntaxError(this, 'Unescaped single quote? This should not happen.'));
       } else if (ch === ' ' || ch === '\t') {
-        // trim trailing whitespace
         const wsStart = i;
         let next = src[i + 1];
 
@@ -5174,13 +4898,6 @@ class QuoteSingle extends PlainValueEc8e588e.Node {
       str
     } : str;
   }
-  /**
-   * Parses a 'single quoted' value from the source
-   *
-   * @param {ParseContext} context
-   * @param {number} start - Index of first character
-   * @returns {number} - Index of the character after this scalar
-   */
 
 
   parse(context, start) {
@@ -5225,22 +4942,11 @@ function createNewNode(type, props) {
     case PlainValueEc8e588e.Type.QUOTE_SINGLE:
       return new QuoteSingle(type, props);
 
-    /* istanbul ignore next */
 
     default:
       return null;
-    // should never happen
   }
 }
-/**
- * @param {boolean} atLineStart - Node starts at beginning of line
- * @param {boolean} inFlow - true if currently in a flow context
- * @param {boolean} inCollection - true if currently in a collection context
- * @param {number} indent - Current level of indentation
- * @param {number} lineStart - Start of the current line
- * @param {Node} parent - The parent of the node
- * @param {string} src - Source of the YAML document
- */
 
 
 class ParseContext {
@@ -5300,11 +5006,8 @@ class ParseContext {
       const node = createNewNode(type, props);
       let offset = node.parse(context, valueStart);
       node.range = new PlainValueEc8e588e.Range(start, offset);
-      /* istanbul ignore if */
 
       if (offset <= start) {
-        // This should never happen, but if it does, let's make sure to at least
-        // step one character forward to avoid a busy loop.
         node.error = new Error(`Node#parse consumed no characters`);
         node.error.parseEnd = offset;
         node.error.source = node;
@@ -5342,14 +5045,13 @@ class ParseContext {
       src
     } = this;
     if (inCollection || inFlow) return false;
-    if (node instanceof CollectionItem) return true; // check for implicit key
+    if (node instanceof CollectionItem) return true;
 
     let offset = node.range.end;
     if (src[offset] === '\n' || src[offset - 1] === '\n') return false;
     offset = PlainValueEc8e588e.Node.endOfWhiteSpace(src, offset);
     return src[offset] === ':';
-  } // Anchor and tag are before type, which determines the node implementation
-  // class; hence this intermediate step.
+  }
 
 
   parseProps(offset) {
@@ -5388,10 +5090,6 @@ class ParseContext {
         let end = PlainValueEc8e588e.Node.endOfIdentifier(src, offset + 1);
 
         if (ch === PlainValueEc8e588e.Char.TAG && src[end] === ',' && /^[a-zA-Z0-9-]+\.[a-zA-Z0-9-]+,\d\d\d\d(-\d\d){0,2}\/\S/.test(src.slice(offset + 1, end + 13))) {
-          // Let's presume we're dealing with a YAML 1.0 domain tag here, rather
-          // than an empty but 'foo.bar' private-tagged node in a flow collection
-          // followed without whitespace by a plain string starting with a year
-          // or date divided by something.
           end = PlainValueEc8e588e.Node.endOfIdentifier(src, end + 5);
         }
 
@@ -5401,7 +5099,7 @@ class ParseContext {
       }
 
       ch = src[offset];
-    } // '- &a : b' has an anchor on an empty node
+    }
 
 
     if (lineHasProps && ch === ':' && PlainValueEc8e588e.Node.atBlank(src, offset + 1, true)) offset -= 1;
@@ -5412,15 +5110,9 @@ class ParseContext {
       valueStart: offset
     };
   }
-  /**
-   * Parses a node from the source
-   * @param {ParseContext} overlay
-   * @param {number} start - Index of first non-whitespace character for the node
-   * @returns {?Node} - null if at a document boundary
-   */
 
 
-} // Published as 'yaml/parse-cst'
+}
 
 
 function parse$1(src) {
@@ -5539,7 +5231,7 @@ function collectionFromPath(schema, path, value) {
   }
 
   return schema.createNode(v, false);
-} // null, undefined, or an empty non-string iterable (e.g. [])
+}
 
 
 const isEmptyPath = path => path == null || typeof path === 'object' && path[Symbol.iterator]().next().done;
@@ -5593,9 +5285,8 @@ class Collection extends Node {
       const node = this.get(key, true);
       if (node instanceof Collection) node.setIn(rest, value);else if (node === undefined && this.schema) this.set(key, collectionFromPath(this.schema, rest, value));else throw new Error(`Expected YAML collection at ${key}. Remaining path: ${rest}`);
     }
-  } // overridden in implementations
+  }
 
-  /* istanbul ignore next */
 
 
   toJSON() {
@@ -5874,7 +5565,6 @@ class Pair extends Node {
     str = explicitKey ? `? ${str}\n${indent}:` : `${str}:`;
 
     if (this.comment) {
-      // expected (but not strictly required) to be a single-line comment
       str = addComment(str, ctx.indent, this.comment);
       if (onComment) onComment();
     }
@@ -5900,7 +5590,6 @@ class Pair extends Node {
     chompKeep = false;
 
     if (!indentSeq && indentSize >= 2 && !ctx.inFlow && !explicitKey && value instanceof YAMLSeq && value.type !== PlainValueEc8e588e.Type.FLOW_SEQ && !value.tag && !doc.anchors.getName(value)) {
-      // If indentSeq === false, consider '- ' as part of indentation where possible
       ctx.indent = ctx.indent.substr(2);
     }
 
@@ -5981,7 +5670,6 @@ class Alias extends Node {
       maxAliasCount
     } = ctx;
     const anchor = anchors.get(this.source);
-    /* istanbul ignore if */
 
     if (!anchor || anchor.res === undefined) {
       const msg = 'This should not happen: Alias anchor was not resolved?';
@@ -5999,8 +5687,7 @@ class Alias extends Node {
     }
 
     return anchor.res;
-  } // Only called when stringifying an alias mapping key while constructing
-  // Object output.
+  }
 
 
   toString(ctx) {
@@ -6060,12 +5747,6 @@ class YAMLMap extends Collection {
   set(key, value) {
     this.add(new Pair(key, value), true);
   }
-  /**
-   * @param {*} arg ignored
-   * @param {*} ctx Conversion context, originally set in Document#toJSON()
-   * @param {Class} Type If set, forces the returned collection type
-   * @returns {*} Instance of Type, Map, or Object
-   */
 
 
   toJSON(_, ctx, Type) {
@@ -6117,13 +5798,7 @@ class Merge extends Pair {
     }
 
     this.type = Pair.Type.MERGE_PAIR;
-  } // If the value associated with a merge key is a single mapping node, each of
-  // its key/value pairs is inserted into the current mapping, unless the key
-  // already exists in it. If the value associated with the merge key is a
-  // sequence, then this sequence is expected to contain mapping nodes and each
-  // of these nodes is merged in turn according to its order in the sequence.
-  // Keys in mapping nodes earlier in the sequence override keys specified in
-  // later mapping nodes. -- http://yaml.org/type/merge.html
+  }
 
 
   addToJSMap(ctx, map) {
@@ -6213,8 +5888,7 @@ function resolveScalar(str, tags, scalarFallback) {
 
 const FOLD_FLOW = 'flow';
 const FOLD_BLOCK = 'block';
-const FOLD_QUOTED = 'quoted'; // presumes i+1 is at the start of a line
-// returns index of last newline in more-indented block
+const FOLD_QUOTED = 'quoted';
 
 const consumeMoreIndentedLines = (text, i) => {
   let ch = text[i + 1];
@@ -6229,26 +5903,6 @@ const consumeMoreIndentedLines = (text, i) => {
 
   return i;
 };
-/**
- * Tries to keep input at up to `lineWidth` characters, splitting only on spaces
- * not followed by newlines or spaces unless `mode` is `'quoted'`. Lines are
- * terminated with `\n` and started with `indent`.
- *
- * @param {string} text
- * @param {string} indent
- * @param {string} [mode='flow'] `'block'` prevents more-indented lines
- *   from being folded; `'quoted'` allows for `\` escapes, including escaped
- *   newlines
- * @param {Object} options
- * @param {number} [options.indentAtStart] Accounts for leading contents on
- *   the first line, defaulting to `indent.length`
- * @param {number} [options.lineWidth=80]
- * @param {number} [options.minContentWidth=20] Allow highly indented lines to
- *   stretch the line width or indent content from the start
- * @param {function} options.onFold Called once if the text is folded
- * @param {function} options.onFold Called once if any line of text exceeds
- *   lineWidth characters
- */
 
 
 function foldFlowLines(text, indent, mode, {
@@ -6311,7 +5965,6 @@ function foldFlowLines(text, indent, mode, {
       split = undefined;
     } else {
       if (ch === ' ' && prev && prev !== ' ' && prev !== '\n' && prev !== '\t') {
-        // space surrounded by non-space can be replaced with newline + indent
         const next = text[i + 1];
         if (next && next !== ' ' && next !== '\n' && next !== '\t') split = i;
       }
@@ -6322,15 +5975,14 @@ function foldFlowLines(text, indent, mode, {
           end = split + endStep;
           split = undefined;
         } else if (mode === FOLD_QUOTED) {
-          // white-space collected at end may stretch past lineWidth
           while (prev === ' ' || prev === '\t') {
             prev = ch;
             ch = text[i += 1];
             overflow = true;
-          } // Account for newline escape, but don't break preceding escape
+          }
 
 
-          const j = i > escEnd + 1 ? i - 2 : escStart - 1; // Bail out if lineWidth & minContentWidth are shorter than an escape string
+          const j = i > escEnd + 1 ? i - 2 : escStart - 1;
 
           if (escapedFolds[j]) return text;
           folds.push(j);
@@ -6367,8 +6019,7 @@ const getFoldOptions = ({
   indentAtStart
 }) => indentAtStart ? Object.assign({
   indentAtStart
-}, strOptions.fold) : strOptions.fold; // Also checks for lines starting with %, as parsing the output as YAML 1.1 will
-// presume that's starting a new document.
+}, strOptions.fold) : strOptions.fold;
 
 
 const containsDocumentMarker = str => /^(%|---|\.\.\.)/m.test(str);
@@ -6406,7 +6057,6 @@ function doubleQuotedString(value, ctx) {
 
   for (let i = 0, ch = json[i]; ch; ch = json[++i]) {
     if (ch === ' ' && json[i + 1] === '\\' && json[i + 2] === 'n') {
-      // space before newline needs to be escaped to not be folded
       str += json.slice(start, i) + '\\ ';
       i += 1;
       start = i;
@@ -6465,7 +6115,6 @@ function doubleQuotedString(value, ctx) {
         if (implicitKey || json[i + 2] === '"' || json.length < minMultiLineLength) {
           i += 1;
         } else {
-          // folding will eat first newline
           str += json.slice(start, i) + '\n\n';
 
           while (json[i + 2] === '\\' && json[i + 3] === 'n' && json[i + 4] !== '"') {
@@ -6473,7 +6122,7 @@ function doubleQuotedString(value, ctx) {
             i += 2;
           }
 
-          str += indent; // space after newline needs to be escaped to not be folded
+          str += indent;
 
           if (json[i + 2] === ' ') str += '\\';
           i += 1;
@@ -6495,7 +6144,6 @@ function singleQuotedString(value, ctx) {
   if (ctx.implicitKey) {
     if (/\n/.test(value)) return doubleQuotedString(value, ctx);
   } else {
-    // single quoted string can't have leading or trailing whitespace around newline
     if (/[ \t]\n|\n[ \t]/.test(value)) return doubleQuotedString(value, ctx);
   }
 
@@ -6509,14 +6157,12 @@ function blockString({
   type,
   value
 }, ctx, onComment, onChompKeep) {
-  // 1. Block can't end in whitespace unless the last line is non-empty.
-  // 2. Strings consisting of only whitespace are best rendered explicitly.
   if (/\n[\t ]+$/.test(value) || /^\s*$/.test(value)) {
     return doubleQuotedString(value, ctx);
   }
 
   const indent = ctx.indent || (ctx.forceBlockIndent || containsDocumentMarker(value) ? '  ' : '');
-  const indentSize = indent ? '2' : '1'; // root is at -1
+  const indentSize = indent ? '2' : '1';
 
   const literal = type === PlainValueEc8e588e.Type.BLOCK_FOLDED ? false : type === PlainValueEc8e588e.Type.BLOCK_LITERAL ? true : !lineLengthOverLimit(value, strOptions.fold.lineWidth, indent.length);
   let header = literal ? '|' : '>';
@@ -6527,9 +6173,9 @@ function blockString({
     const n = ws.indexOf('\n');
 
     if (n === -1) {
-      header += '-'; // strip
+      header += '-';
     } else if (value === ws || n !== ws.length - 1) {
-      header += '+'; // keep
+      header += '+';
 
       if (onChompKeep) onChompKeep();
     }
@@ -6563,8 +6209,7 @@ function blockString({
     return `${header}\n${indent}${wsStart}${value}${wsEnd}`;
   }
 
-  value = value.replace(/\n+/g, '\n$&').replace(/(?:^|\n)([\t ].*)(?:([\n\t ]*)\n(?![\n\t ]))?/g, '$1$2') // more-indented lines aren't folded
-  //         ^ ind.line  ^ empty     ^ capture next empty lines only at end of indent
+  value = value.replace(/\n+/g, '\n$&').replace(/(?:^|\n)([\t ].*)(?:([\n\t ]*)\n(?![\n\t ]))?/g, '$1$2')
   .replace(/\n+/g, `$&${indent}`);
   const body = foldFlowLines(`${wsStart}${value}${wsEnd}`, indent, FOLD_BLOCK, strOptions.fold);
   return `${header}\n${indent}${body}`;
@@ -6588,17 +6233,10 @@ function plainString(item, ctx, onComment, onChompKeep) {
   }
 
   if (!value || /^[\n\t ,[\]{}#&*!|>'"%@`]|^[?-]$|^[?-][ \t]|[\n:][ \t]|[ \t]\n|[\n\t ]#|[\n\t :]$/.test(value)) {
-    // not allowed:
-    // - empty string, '-' or '?'
-    // - start with an indicator character (except [?:-]) or /[?-] /
-    // - '\n ', ': ' or ' \n' anywhere
-    // - '#' not preceded by a non-space char
-    // - end with ' ' or ':'
     return implicitKey || inFlow || value.indexOf('\n') === -1 ? value.indexOf('"') !== -1 && value.indexOf("'") === -1 ? singleQuotedString(value, ctx) : doubleQuotedString(value, ctx) : blockString(item, ctx, onComment, onChompKeep);
   }
 
   if (!implicitKey && !inFlow && type !== PlainValueEc8e588e.Type.PLAIN && value.indexOf('\n') !== -1) {
-    // Where allowed & type not set explicitly, prefer block style for multiline strings
     return blockString(item, ctx, onComment, onChompKeep);
   }
 
@@ -6607,9 +6245,7 @@ function plainString(item, ctx, onComment, onChompKeep) {
     return blockString(item, ctx, onComment, onChompKeep);
   }
 
-  const str = value.replace(/\n+/g, `$&\n${indent}`); // Verify that output will be parsed as a string, as e.g. plain numbers and
-  // booleans get parsed with those types in v1.2 (e.g. '42', 'true' & '0.9e-3'),
-  // and others in v1.1.
+  const str = value.replace(/\n+/g, `$&\n${indent}`);
 
   if (actualString) {
     const {
@@ -6670,10 +6306,8 @@ function stringifyString(item, ctx, onComment, onChompKeep) {
   };
 
   if (type !== PlainValueEc8e588e.Type.QUOTE_DOUBLE && /[\x00-\x08\x0b-\x1f\x7f-\x9f]/.test(value)) {
-    // force double quotes on control characters
     type = PlainValueEc8e588e.Type.QUOTE_DOUBLE;
   } else if ((implicitKey || inFlow) && (type === PlainValueEc8e588e.Type.BLOCK_FOLDED || type === PlainValueEc8e588e.Type.BLOCK_LITERAL)) {
-    // should not happen; blocks are not valid inside flow containers
     type = PlainValueEc8e588e.Type.QUOTE_DOUBLE;
   }
 
@@ -6796,7 +6430,7 @@ function resolveComments(collection, comments) {
       }
     }
   }
-} // on error, will return { str: string, errors: Error[] }
+}
 
 
 function resolveString(doc, node) {
@@ -6832,7 +6466,6 @@ function resolveTagHandle(doc, node) {
     }
 
     if (/[:/]/.test(suffix)) {
-      // word/foo -> tag:word.yaml.org,2002:foo
       const vocab = suffix.match(/^([a-z0-9-]+)\/(.*)/i);
       return vocab ? `tag:${vocab[1]}.yaml.org,2002:${vocab[2]}` : `tag:${suffix}`;
     }
@@ -6939,7 +6572,6 @@ function resolveTag(doc, node, tagName) {
       return res;
     }
   } catch (error) {
-    /* istanbul ignore if */
     if (!error.source) error.source = node;
     doc.errors.push(error);
     return null;
@@ -6998,7 +6630,6 @@ function resolveNodeProps(errors, node) {
           cc.push(node.context.src.slice(start + 1, end));
           break;
         }
-      // Actual anchor & tag resolution is handled by schema, here we just complain
 
       case PlainValueEc8e588e.Char.ANCHOR:
         if (hasAnchor) {
@@ -7042,7 +6673,7 @@ function resolveNodeValue(doc, node) {
       const msg = `Aliased anchor not found: ${name}`;
       errors.push(new PlainValueEc8e588e.YAMLReferenceError(node, msg));
       return null;
-    } // Lazy resolution for circular references
+    }
 
 
     const res = new Alias(src);
@@ -7069,7 +6700,7 @@ function resolveNodeValue(doc, node) {
     errors.push(error);
     return null;
   }
-} // sets node.resolved on success
+}
 
 
 function resolveNode(doc, node) {
@@ -7086,12 +6717,9 @@ function resolveNode(doc, node) {
       anchors
     } = doc;
     const name = node.anchor;
-    const prev = anchors.getNode(name); // At this point, aliases for any preceding node with the same anchor
-    // name have already been resolved, so it may safely be renamed.
+    const prev = anchors.getNode(name);
 
-    if (prev) anchors.map[anchors.newName(name)] = prev; // During parsing, we need to store the CST node in anchors.map as
-    // anchors need to be available during resolution to allow for
-    // circular references.
+    if (prev) anchors.map[anchors.newName(name)] = prev;
 
     anchors.map[name] = node;
   }
@@ -7148,8 +6776,6 @@ function resolveMap(doc, cst) {
       let error = null;
       sources.some(node => {
         if (node instanceof Alias) {
-          // During parsing, alias sources are CST nodes; to account for
-          // circular references their resolved values can't be used here.
           const {
             type
           } = node.source;
@@ -7270,9 +6896,6 @@ function resolveBlockMapItems(doc, cst) {
           let valueNode = item.node;
 
           if (!valueNode && item.props.length > 0) {
-            // Comments on an empty mapping value need to be preserved, so we
-            // need to construct a minimal empty node here to use instead of the
-            // missing `item.node`. -- eemeli/yaml#19
             valueNode = new PlainValueEc8e588e.PlainValue(PlainValueEc8e588e.Type.PLAIN, []);
             valueNode.context = {
               parent: item,
@@ -7664,15 +7287,11 @@ var check = function (it) {
   return it && it.Math == Math && it;
 };
 
-// https://github.com/zloirock/core-js/issues/86#issuecomment-115759028
 var global =
-  // eslint-disable-next-line es/no-global-this -- safe
   check(typeof globalThis == 'object' && globalThis) ||
   check(typeof window == 'object' && window) ||
-  // eslint-disable-next-line no-restricted-globals -- safe
   check(typeof self == 'object' && self) ||
   check(typeof global == 'object' && global) ||
-  // eslint-disable-next-line no-new-func -- fallback
   (function () { return this; })() || Function('return this')();
 
 var fails = function (exec) {
@@ -7683,21 +7302,15 @@ var fails = function (exec) {
   }
 };
 
-// Detect IE8's incomplete defineProperty implementation
 var descriptors = !fails(function () {
-  // eslint-disable-next-line es/no-object-defineproperty -- required for testing
   return Object.defineProperty({}, 1, { get: function () { return 7; } })[1] != 7;
 });
 
 var $propertyIsEnumerable = {}.propertyIsEnumerable;
-// eslint-disable-next-line es/no-object-getownpropertydescriptor -- safe
 var getOwnPropertyDescriptor$1 = Object.getOwnPropertyDescriptor;
 
-// Nashorn ~ JDK8 bug
 var NASHORN_BUG = getOwnPropertyDescriptor$1 && !$propertyIsEnumerable.call({ 1: 2 }, 1);
 
-// `Object.prototype.propertyIsEnumerable` method implementation
-// https://tc39.es/ecma262/#sec-object.prototype.propertyisenumerable
 var f$4 = NASHORN_BUG ? function propertyIsEnumerable(V) {
   var descriptor = getOwnPropertyDescriptor$1(this, V);
   return !!descriptor && descriptor.enumerable;
@@ -7724,23 +7337,17 @@ var classofRaw = function (it) {
 
 var split = ''.split;
 
-// fallback for non-array-like ES3 and non-enumerable old V8 strings
 var indexedObject = fails(function () {
-  // throws an error in rhino, see https://github.com/mozilla/rhino/issues/346
-  // eslint-disable-next-line no-prototype-builtins -- safe
   return !Object('z').propertyIsEnumerable(0);
 }) ? function (it) {
   return classofRaw(it) == 'String' ? split.call(it, '') : Object(it);
 } : Object;
 
-// `RequireObjectCoercible` abstract operation
-// https://tc39.es/ecma262/#sec-requireobjectcoercible
 var requireObjectCoercible = function (it) {
   if (it == undefined) throw TypeError("Can't call method on " + it);
   return it;
 };
 
-// toObject with fallback for non-array-like ES3 strings
 
 
 
@@ -7752,10 +7359,6 @@ var isObject = function (it) {
   return typeof it === 'object' ? it !== null : typeof it === 'function';
 };
 
-// `ToPrimitive` abstract operation
-// https://tc39.es/ecma262/#sec-toprimitive
-// instead of the ES6 spec version, we didn't implement @@toPrimitive case
-// and the second argument - flag - preferred type is a string
 var toPrimitive = function (input, PREFERRED_STRING) {
   if (!isObject(input)) return input;
   var fn, val;
@@ -7765,8 +7368,6 @@ var toPrimitive = function (input, PREFERRED_STRING) {
   throw TypeError("Can't convert object to primitive value");
 };
 
-// `ToObject` abstract operation
-// https://tc39.es/ecma262/#sec-toobject
 var toObject = function (argument) {
   return Object(requireObjectCoercible(argument));
 };
@@ -7778,32 +7379,26 @@ var has$1 = Object.hasOwn || function hasOwn(it, key) {
 };
 
 var document = global.document;
-// typeof document.createElement is 'object' in old IE
 var EXISTS = isObject(document) && isObject(document.createElement);
 
 var documentCreateElement = function (it) {
   return EXISTS ? document.createElement(it) : {};
 };
 
-// Thank's IE8 for his funny defineProperty
 var ie8DomDefine = !descriptors && !fails(function () {
-  // eslint-disable-next-line es/no-object-defineproperty -- requied for testing
   return Object.defineProperty(documentCreateElement('div'), 'a', {
     get: function () { return 7; }
   }).a != 7;
 });
 
-// eslint-disable-next-line es/no-object-getownpropertydescriptor -- safe
 var $getOwnPropertyDescriptor = Object.getOwnPropertyDescriptor;
 
-// `Object.getOwnPropertyDescriptor` method
-// https://tc39.es/ecma262/#sec-object.getownpropertydescriptor
 var f$3 = descriptors ? $getOwnPropertyDescriptor : function getOwnPropertyDescriptor(O, P) {
   O = toIndexedObject(O);
   P = toPrimitive(P, true);
   if (ie8DomDefine) try {
     return $getOwnPropertyDescriptor(O, P);
-  } catch (error) { /* empty */ }
+  } catch (error) { }
   if (has$1(O, P)) return createPropertyDescriptor(!objectPropertyIsEnumerable.f.call(O, P), O[P]);
 };
 
@@ -7817,18 +7412,15 @@ var anObject = function (it) {
   } return it;
 };
 
-// eslint-disable-next-line es/no-object-defineproperty -- safe
 var $defineProperty = Object.defineProperty;
 
-// `Object.defineProperty` method
-// https://tc39.es/ecma262/#sec-object.defineproperty
 var f$2 = descriptors ? $defineProperty : function defineProperty(O, P, Attributes) {
   anObject(O);
   P = toPrimitive(P, true);
   anObject(Attributes);
   if (ie8DomDefine) try {
     return $defineProperty(O, P, Attributes);
-  } catch (error) { /* empty */ }
+  } catch (error) { }
   if ('get' in Attributes || 'set' in Attributes) throw TypeError('Accessors not supported');
   if ('value' in Attributes) O[P] = Attributes.value;
   return O;
@@ -7860,7 +7452,6 @@ var sharedStore = store$1;
 
 var functionToString = Function.toString;
 
-// this helper broken in `core-js@3.4.1-3.4.4`, so we can't use `shared` helper
 if (typeof sharedStore.inspectSource != 'function') {
   sharedStore.inspectSource = function (it) {
     return functionToString.call(it);
@@ -7987,7 +7578,6 @@ var TEMPLATE = String(String).split('String');
   }
   if (simple) O[key] = value;
   else createNonEnumerableProperty(O, key, value);
-// add fake Function#toString for correct work wrapped methods / constructors with methods like LoDash isNative
 })(Function.prototype, 'toString', function toString() {
   return typeof this == 'function' && getInternalState(this).source || inspectSource(this);
 });
@@ -8007,45 +7597,33 @@ var getBuiltIn = function (namespace, method) {
 var ceil = Math.ceil;
 var floor$1 = Math.floor;
 
-// `ToInteger` abstract operation
-// https://tc39.es/ecma262/#sec-tointeger
 var toInteger = function (argument) {
   return isNaN(argument = +argument) ? 0 : (argument > 0 ? floor$1 : ceil)(argument);
 };
 
 var min$1 = Math.min;
 
-// `ToLength` abstract operation
-// https://tc39.es/ecma262/#sec-tolength
 var toLength = function (argument) {
-  return argument > 0 ? min$1(toInteger(argument), 0x1FFFFFFFFFFFFF) : 0; // 2 ** 53 - 1 == 9007199254740991
+  return argument > 0 ? min$1(toInteger(argument), 0x1FFFFFFFFFFFFF) : 0;
 };
 
 var max = Math.max;
 var min = Math.min;
 
-// Helper for a popular repeating case of the spec:
-// Let integer be ? ToInteger(index).
-// If integer < 0, let result be max((length + integer), 0); else let result be min(integer, length).
 var toAbsoluteIndex = function (index, length) {
   var integer = toInteger(index);
   return integer < 0 ? max(integer + length, 0) : min(integer, length);
 };
 
-// `Array.prototype.{ indexOf, includes }` methods implementation
 var createMethod = function (IS_INCLUDES) {
   return function ($this, el, fromIndex) {
     var O = toIndexedObject($this);
     var length = toLength(O.length);
     var index = toAbsoluteIndex(fromIndex, length);
     var value;
-    // Array#includes uses SameValueZero equality algorithm
-    // eslint-disable-next-line no-self-compare -- NaN check
     if (IS_INCLUDES && el != el) while (length > index) {
       value = O[index++];
-      // eslint-disable-next-line no-self-compare -- NaN check
       if (value != value) return true;
-    // Array#indexOf ignores holes, Array#includes - not
     } else for (;length > index; index++) {
       if ((IS_INCLUDES || index in O) && O[index] === el) return IS_INCLUDES || index || 0;
     } return !IS_INCLUDES && -1;
@@ -8053,11 +7631,7 @@ var createMethod = function (IS_INCLUDES) {
 };
 
 var arrayIncludes = {
-  // `Array.prototype.includes` method
-  // https://tc39.es/ecma262/#sec-array.prototype.includes
   includes: createMethod(true),
-  // `Array.prototype.indexOf` method
-  // https://tc39.es/ecma262/#sec-array.prototype.indexof
   indexOf: createMethod(false)
 };
 
@@ -8070,14 +7644,12 @@ var objectKeysInternal = function (object, names) {
   var result = [];
   var key;
   for (key in O) !has$1(hiddenKeys$1, key) && has$1(O, key) && result.push(key);
-  // Don't enum bug & hidden keys
   while (names.length > i) if (has$1(O, key = names[i++])) {
     ~indexOf(result, key) || result.push(key);
   }
   return result;
 };
 
-// IE8- don't enum bug keys
 var enumBugKeys = [
   'constructor',
   'hasOwnProperty',
@@ -8090,9 +7662,6 @@ var enumBugKeys = [
 
 var hiddenKeys = enumBugKeys.concat('length', 'prototype');
 
-// `Object.getOwnPropertyNames` method
-// https://tc39.es/ecma262/#sec-object.getownpropertynames
-// eslint-disable-next-line es/no-object-getownpropertynames -- safe
 var f$1 = Object.getOwnPropertyNames || function getOwnPropertyNames(O) {
   return objectKeysInternal(O, hiddenKeys);
 };
@@ -8101,14 +7670,12 @@ var objectGetOwnPropertyNames = {
 	f: f$1
 };
 
-// eslint-disable-next-line es/no-object-getownpropertysymbols -- safe
 var f = Object.getOwnPropertySymbols;
 
 var objectGetOwnPropertySymbols = {
 	f: f
 };
 
-// all object keys, includes non-enumerable and symbols
 var ownKeys = getBuiltIn('Reflect', 'ownKeys') || function ownKeys(it) {
   var keys = objectGetOwnPropertyNames.f(anObject(it));
   var getOwnPropertySymbols = objectGetOwnPropertySymbols.f;
@@ -8152,20 +7719,6 @@ var getOwnPropertyDescriptor = objectGetOwnPropertyDescriptor.f;
 
 
 
-/*
-  options.target      - name of the target object
-  options.global      - target is the global object
-  options.stat        - export as static methods of target
-  options.proto       - export as prototype methods of target
-  options.real        - real prototype method for the `pure` version
-  options.forced      - export even if the native feature is available
-  options.bind        - bind methods to the target, required for the `pure` version
-  options.wrap        - wrap constructors to preventing global pollution, required for the `pure` version
-  options.unsafe      - use the simple assignment of property instead of delete + defineProperty
-  options.sham        - add a flag to not completely full polyfills
-  options.enumerable  - export as enumerable property
-  options.noTargetGet - prevent calling a getter on target
-*/
 var _export = function (options, source) {
   var TARGET = options.target;
   var GLOBAL = options.global;
@@ -8185,16 +7738,13 @@ var _export = function (options, source) {
       targetProperty = descriptor && descriptor.value;
     } else targetProperty = target[key];
     FORCED = isForced_1(GLOBAL ? key : TARGET + (STATIC ? '.' : '#') + key, options.forced);
-    // contained in target
     if (!FORCED && targetProperty !== undefined) {
       if (typeof sourceProperty === typeof targetProperty) continue;
       copyConstructorProperties(sourceProperty, targetProperty);
     }
-    // add a flag to not completely full polyfills
     if (options.sham || (targetProperty && targetProperty.sham)) {
       createNonEnumerableProperty(sourceProperty, 'sham', true);
     }
-    // extend global
     redefine(target, key, sourceProperty, options);
   }
 };
@@ -8205,7 +7755,6 @@ var aFunction = function (it) {
   } return it;
 };
 
-// TODO: use something more complex like timsort?
 var floor = Math.floor;
 
 var mergeSort = function (array, comparefn) {
@@ -8254,7 +7803,6 @@ var arraySort = mergeSort;
 var arrayMethodIsStrict = function (METHOD_NAME, argument) {
   var method = [][METHOD_NAME];
   return !!method && fails(function () {
-    // eslint-disable-next-line no-useless-call,no-throw-literal -- required for testing
     method.call(null, argument || function () { throw 1; }, 1);
   });
 };
@@ -8292,19 +7840,15 @@ var engineWebkitVersion = !!webkit && +webkit[1];
 var test = [];
 var nativeSort = test.sort;
 
-// IE8-
 var FAILS_ON_UNDEFINED = fails(function () {
   test.sort(undefined);
 });
-// V8 bug
 var FAILS_ON_NULL = fails(function () {
   test.sort(null);
 });
-// Old WebKit
 var STRICT_METHOD = arrayMethodIsStrict('sort');
 
 var STABLE_SORT = !fails(function () {
-  // feature detection can be too slow, so check engines versions
   if (engineV8Version) return engineV8Version < 70;
   if (engineFfVersion && engineFfVersion > 3) return;
   if (engineIsIeOrEdge) return true;
@@ -8313,7 +7857,6 @@ var STABLE_SORT = !fails(function () {
   var result = '';
   var code, chr, value, index;
 
-  // generate an array with more 512 elements (Chakra and old V8 fails only in this case)
   for (code = 65; code < 76; code++) {
     chr = String.fromCharCode(code);
 
@@ -8349,8 +7892,6 @@ var getSortCompare = function (comparefn) {
   };
 };
 
-// `Array.prototype.sort` method
-// https://tc39.es/ecma262/#sec-array.prototype.sort
 _export({ target: 'Array', proto: true, forced: FORCED }, {
   sort: function sort(comparefn) {
     if (comparefn !== undefined) aFunction(comparefn);
@@ -8378,30 +7919,19 @@ _export({ target: 'Array', proto: true, forced: FORCED }, {
   }
 });
 
-/* global atob, btoa, Buffer */
 
 
 const binary = {
   identify: value => value instanceof Uint8Array,
-  // Buffer inherits from Uint8Array
   default: false,
   tag: 'tag:yaml.org,2002:binary',
 
-  /**
-   * Returns a Buffer in node and an Uint8Array in browsers
-   *
-   * To use the resulting buffer as an image, you'll want to do something like:
-   *
-   *   const blob = new Blob([buffer], { type: 'image/jpeg' })
-   *   document.querySelector('#photo').src = URL.createObjectURL(blob)
-   */
   resolve: (doc, node) => {
     const src = resolveSeqD03cb037.resolveString(doc, node);
 
     if (typeof Buffer === 'function') {
       return Buffer.from(src, 'base64');
     } else if (typeof atob === 'function') {
-      // On IE 11, atob() can't handle newlines
       const str = atob(src.replace(/[\n\r]/g, ''));
       const buffer = new Uint8Array(str.length);
 
@@ -8664,7 +8194,7 @@ const set = {
 const parseSexagesimal = (sign, parts) => {
   const n = parts.split(':').reduce((n, p) => n * 60 + Number(p), 0);
   return sign === '-' ? -n : n;
-}; // hhhh:mm:ss.sss
+};
 
 
 const stringifySexagesimal = ({
@@ -8678,21 +8208,21 @@ const stringifySexagesimal = ({
     value = Math.abs(value);
   }
 
-  const parts = [value % 60]; // seconds, including ms
+  const parts = [value % 60];
 
   if (value < 60) {
-    parts.unshift(0); // at least one : is required
+    parts.unshift(0);
   } else {
     value = Math.round((value - parts[0]) / 60);
-    parts.unshift(value % 60); // minutes
+    parts.unshift(value % 60);
 
     if (value >= 60) {
       value = Math.round((value - parts[0]) / 60);
-      parts.unshift(value); // hours
+      parts.unshift(value);
     }
   }
 
-  return sign + parts.map(n => n < 10 ? '0' + String(n) : String(n)).join(':').replace(/000000\d*$/, '') // % 60 may introduce error
+  return sign + parts.map(n => n < 10 ? '0' + String(n) : String(n)).join(':').replace(/000000\d*$/, '')
   ;
 };
 
@@ -8718,13 +8248,10 @@ const timestamp = {
   identify: value => value instanceof Date,
   default: true,
   tag: 'tag:yaml.org,2002:timestamp',
-  // If the time zone is omitted, the timestamp is assumed to be specified in UTC. The time part
-  // may be omitted altogether, resulting in a date format. In such a case, the time part is
-  // assumed to be 00:00:00Z (start of day, UTC).
-  test: RegExp('^(?:' + '([0-9]{4})-([0-9]{1,2})-([0-9]{1,2})' + // YYYY-Mm-Dd
-  '(?:(?:t|T|[ \\t]+)' + // t | T | whitespace
-  '([0-9]{1,2}):([0-9]{1,2}):([0-9]{1,2}(\\.[0-9]+)?)' + // Hh:Mm:Ss(.ss)?
-  '(?:[ \\t]*(Z|[-+][012]?[0-9](?::[0-9]{2})?))?' + // Z | +5 | -03:30
+  test: RegExp('^(?:' + '([0-9]{4})-([0-9]{1,2})-([0-9]{1,2})' +
+  '(?:(?:t|T|[ \\t]+)' +
+  '([0-9]{1,2}):([0-9]{1,2}):([0-9]{1,2}(\\.[0-9]+)?)' +
+  '(?:[ \\t]*(Z|[-+][012]?[0-9](?::[0-9]{2})?))?' +
   ')?' + ')$'),
   resolve: (str, year, month, day, hour, minute, second, millisec, tz) => {
     if (millisec) millisec = (millisec + '00').substr(1, 3);
@@ -8742,7 +8269,6 @@ const timestamp = {
     value
   }) => value.toISOString().replace(/((T00:00)?:00)?\.000Z$/, '')
 };
-/* global console, process, YAML_SILENCE_DEPRECATION_WARNINGS, YAML_SILENCE_WARNINGS */
 
 function shouldWarn(deprecation) {
   const env = typeof process !== 'undefined' && process.env || {};
@@ -8758,11 +8284,9 @@ function shouldWarn(deprecation) {
 
 function warn(warning, type) {
   if (shouldWarn(false)) {
-    const emit = typeof process !== 'undefined' && process.emitWarning; // This will throw in Jest if `warning` is an Error instance due to
-    // https://github.com/facebook/jest/issues/2549
+    const emit = typeof process !== 'undefined' && process.emitWarning;
 
     if (emit) emit(warning, type);else {
-      // eslint-disable-next-line no-console
       console.warn(type ? `${type}: ${warning}` : warning);
     }
   }
@@ -8869,7 +8393,6 @@ const string = {
   options: resolveSeqD03cb037.strOptions
 };
 const failsafe = [map, seq, string];
-/* global BigInt */
 
 const intIdentify$2 = value => typeof value === 'bigint' || Number.isInteger(value);
 
@@ -8968,7 +8491,6 @@ const floatObj = {
   stringify: resolveSeqD03cb037.stringifyNumber
 };
 const core = failsafe.concat([nullObj, boolObj, octObj, intObj, hexObj, nanObj, expObj, floatObj]);
-/* global BigInt */
 
 const intIdentify$1 = value => typeof value === 'bigint' || Number.isInteger(value);
 
@@ -9018,7 +8540,6 @@ const json = [map, seq, {
 json.scalarFallback = str => {
   throw new SyntaxError(`Unresolved plain scalar ${JSON.stringify(str)}`);
 };
-/* global BigInt */
 
 
 const boolStringify = ({
@@ -9190,7 +8711,7 @@ function findTagObject(value, tagName, tags) {
     const tagObj = match.find(t => !t.format) || match[0];
     if (!tagObj) throw new Error(`Tag ${tagName} not found`);
     return tagObj;
-  } // TODO: deprecate/remove class check
+  }
 
 
   return tags.find(t => (t.identify && t.identify(value) || t.class && value instanceof t.class) && !t.format);
@@ -9217,8 +8738,7 @@ function createNode$1(value, tagName, ctx) {
   if (onTagObj) {
     onTagObj(tagObj);
     delete ctx.onTagObj;
-  } // Detect duplicate references to the same object & use Alias nodes for all
-  // after first. The `obj` wrapper allows for circular references to resolve.
+  }
 
 
   const obj = {
@@ -9230,9 +8750,9 @@ function createNode$1(value, tagName, ctx) {
     const prev = prevObjects.get(value);
 
     if (prev) {
-      const alias = new resolveSeqD03cb037.Alias(prev); // leaves source dirty; must be cleaned by caller
+      const alias = new resolveSeqD03cb037.Alias(prev);
 
-      ctx.aliasNodes.push(alias); // defined along with prevObjects
+      ctx.aliasNodes.push(alias);
 
       return alias;
     }
@@ -9247,7 +8767,7 @@ function createNode$1(value, tagName, ctx) {
 }
 
 function getSchemaTags(schemas, knownTags, customTags, schemaId) {
-  let tags = schemas[schemaId.replace(/\W/g, '')]; // 'yaml-1.1' -> 'yaml11'
+  let tags = schemas[schemaId.replace(/\W/g, '')];
 
   if (!tags) {
     const keys = Object.keys(schemas).map(key => JSON.stringify(key)).join(', ');
@@ -9281,8 +8801,6 @@ function getSchemaTags(schemas, knownTags, customTags, schemaId) {
 const sortMapEntriesByKey = (a, b) => a.key < b.key ? -1 : a.key > b.key ? 1 : 0;
 
 class Schema {
-  // TODO: remove in v2
-  // TODO: remove in v2
   constructor({
     customTags,
     merge,
@@ -9338,7 +8856,6 @@ const defaultOptions = {
   mapAsMap: false,
   maxAliasCount: 100,
   prettyErrors: false,
-  // TODO Set true in v2
   simpleKeys: false,
   version: '1.2'
 };
@@ -9458,7 +8975,7 @@ function getTagObject(tags, item) {
   let tagObj, obj;
 
   if (item instanceof resolveSeqD03cb037.Scalar) {
-    obj = item.value; // TODO: deprecate/remove class check
+    obj = item.value;
 
     const match = tags.filter(t => t.identify && t.identify(obj) || t.class && obj instanceof t.class);
     tagObj = match.find(t => t.format === item.format) || match.find(t => !t.format);
@@ -9473,7 +8990,7 @@ function getTagObject(tags, item) {
   }
 
   return tagObj;
-} // needs to be called before value stringifier to allow for circular anchor refs
+}
 
 
 function stringifyProps(node, tagObj, {
@@ -9585,7 +9102,7 @@ class Anchors {
       const name = `${prefix}${i}`;
       if (!names.includes(name)) return name;
     }
-  } // During parsing, map & aliases contain CST nodes
+  }
 
 
   resolveNodes() {
@@ -9692,7 +9209,6 @@ function parseContents(doc, contents) {
       spaceBefore = true;
 
       if (body === undefined && comments.before.length > 0 && !doc.commentBefore) {
-        // space-separated comments at start are parsed as document comments
         doc.commentBefore = comments.before.join('\n');
         comments.before = [];
       }
@@ -9978,7 +9494,7 @@ class Document$1 {
       keep,
       mapAsMap: keep && !!mapAsMap,
       maxAliasCount,
-      stringify: stringify$1 // Requiring directly in Pair would create circular dependencies
+      stringify: stringify$1
 
     };
     const anchorNames = Object.keys(this.anchors.map);
@@ -10041,7 +9557,7 @@ class Document$1 {
       doc: this,
       indent: '',
       indentStep: ' '.repeat(indentSize),
-      stringify: stringify$1 // Requiring directly in nodes would create circular dependencies
+      stringify: stringify$1
 
     };
     let chompKeep = false;
@@ -10050,7 +9566,7 @@ class Document$1 {
     if (this.contents) {
       if (this.contents instanceof resolveSeqD03cb037.Node) {
         if (this.contents.spaceBefore && (hasDirectives || this.directivesEndMarker)) lines.push('');
-        if (this.contents.commentBefore) lines.push(this.contents.commentBefore.replace(/^/gm, '#')); // top-level block scalars need to be indented if followed by a comment
+        if (this.contents.commentBefore) lines.push(this.contents.commentBefore.replace(/^/gm, '#'));
 
         ctx.forceBlockIndent = !!this.comment;
         contentComment = this.contents.comment;
@@ -10165,7 +9681,6 @@ var loaders_1 = createCommonjsModule(function (module, exports) {
     value: true
   });
   exports.loaders = void 0;
-  /* eslint-disable @typescript-eslint/no-require-imports */
 
   let importFresh$1;
 
@@ -10220,18 +9735,14 @@ var loaders_1 = createCommonjsModule(function (module, exports) {
   exports.loaders = loaders;
 });
 
-var getPropertyByPath_2 = getPropertyByPath; // Resolves property names or property paths defined with period-delimited
-// strings or arrays of strings. Property names that are found on the source
-// object are used directly (even if they include a period).
-// Nested property names that include periods, within a path, are only
-// understood in array paths.
+var getPropertyByPath_2 = getPropertyByPath;
 
 function getPropertyByPath(source, path) {
   if (typeof path === 'string' && Object.prototype.hasOwnProperty.call(source, path)) {
     return source[path];
   }
 
-  const parsedPath = typeof path === 'string' ? path.split('.') : path; // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const parsedPath = typeof path === 'string' ? path.split('.') : path;
 
   return parsedPath.reduce((previous, key) => {
     if (previous === undefined) {
@@ -10636,7 +10147,7 @@ var Explorer_1 = createCommonjsModule(function (module, exports) {
         if (this.shouldSearchStopWithResult(placeResult) === true) {
           return placeResult;
         }
-      } // config not found
+      }
 
 
       return null;
@@ -10751,7 +10262,7 @@ var ExplorerSync_1 = createCommonjsModule(function (module, exports) {
         if (this.shouldSearchStopWithResult(placeResult) === true) {
           return placeResult;
         }
-      } // config not found
+      }
 
 
       return null;
@@ -10827,8 +10338,6 @@ var dist = createCommonjsModule(function (module, exports) {
       default: obj
     };
   }
-  /* eslint-disable @typescript-eslint/explicit-module-boundary-types */
-  // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
 
 
   function cosmiconfig(moduleName, options = {}) {
@@ -10841,7 +10350,7 @@ var dist = createCommonjsModule(function (module, exports) {
       clearSearchCache: explorer.clearSearchCache.bind(explorer),
       clearCaches: explorer.clearCaches.bind(explorer)
     };
-  } // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
+  }
 
 
   function cosmiconfigSync(moduleName, options = {}) {
@@ -10854,7 +10363,7 @@ var dist = createCommonjsModule(function (module, exports) {
       clearSearchCache: explorerSync.clearSearchCache.bind(explorerSync),
       clearCaches: explorerSync.clearCaches.bind(explorerSync)
     };
-  } // do not allow mutation of default loaders. Make sure it is set inside options
+  }
 
 
   const defaultLoaders = Object.freeze({
@@ -10895,7 +10404,7 @@ var findParentDir = createCommonjsModule(function (module, exports) {
 
   function splitPath(path) {
     var parts = path.split(/(\/|\\)/);
-    if (!parts.length) return parts; // when path starts with a slash, the first part is empty string
+    if (!parts.length) return parts;
 
     return !parts[0].length ? parts.slice(1) : parts;
   }
@@ -11211,7 +10720,7 @@ var vendors = [
 
 var ciInfo = createCommonjsModule(function (module, exports) {
 
-  const env = process.env; // Used for testing only
+  const env = process.env;
 
   Object.defineProperty(exports, '_vendors', {
     value: vendors.map(function (v) {
@@ -11232,36 +10741,31 @@ var ciInfo = createCommonjsModule(function (module, exports) {
 
       switch (typeof vendor.pr) {
         case 'string':
-          // "pr": "CIRRUS_PR"
           exports.isPR = !!env[vendor.pr];
           break;
 
         case 'object':
           if ('env' in vendor.pr) {
-            // "pr": { "env": "BUILDKITE_PULL_REQUEST", "ne": "false" }
             exports.isPR = vendor.pr.env in env && env[vendor.pr.env] !== vendor.pr.ne;
           } else if ('any' in vendor.pr) {
-            // "pr": { "any": ["ghprbPullId", "CHANGE_ID"] }
             exports.isPR = vendor.pr.any.some(function (key) {
               return !!env[key];
             });
           } else {
-            // "pr": { "DRONE_BUILD_EVENT": "pull_request" }
             exports.isPR = checkEnv(vendor.pr);
           }
 
           break;
 
         default:
-          // PR detection not supported for this vendor
           exports.isPR = null;
       }
     }
   });
-  exports.isCI = !!(env.CI || // Travis CI, CircleCI, Cirrus CI, Gitlab CI, Appveyor, CodeShip, dsari
-  env.CONTINUOUS_INTEGRATION || // Travis CI, Cirrus CI
-  env.BUILD_NUMBER || // Jenkins, TeamCity
-  env.RUN_ID || // TaskCluster, dsari
+  exports.isCI = !!(env.CI ||
+  env.CONTINUOUS_INTEGRATION ||
+  env.BUILD_NUMBER ||
+  env.RUN_ID ||
   exports.name || false);
 
   function checkEnv(obj) {

@@ -4,18 +4,9 @@
   (global = typeof globalThis !== 'undefined' ? globalThis : global || self, global.doc = factory());
 }(this, (function () { 'use strict';
 
-  /**
-   * @param {Doc[]} parts
-   * @returns Doc
-   */
 
 
   function concat(parts) {
-    // access the internals of a document directly.
-    // if(parts.length === 1) {
-    //   // If it's a single document, no need to concat it.
-    //   return parts[0];
-    // }
 
 
     return {
@@ -23,10 +14,6 @@
       parts
     };
   }
-  /**
-   * @param {Doc} contents
-   * @returns Doc
-   */
 
 
   function indent$1(contents) {
@@ -36,11 +23,6 @@
       contents
     };
   }
-  /**
-   * @param {number | string} widthOrString
-   * @param {Doc} contents
-   * @returns Doc
-   */
 
 
   function align(widthOrString, contents) {
@@ -51,11 +33,6 @@
       n: widthOrString
     };
   }
-  /**
-   * @param {Doc} contents
-   * @param {object} [opts] - TBD ???
-   * @returns Doc
-   */
 
 
   function group(contents, opts = {}) {
@@ -68,41 +45,23 @@
       expandedStates: opts.expandedStates
     };
   }
-  /**
-   * @param {Doc} contents
-   * @returns Doc
-   */
 
 
   function dedentToRoot(contents) {
     return align(Number.NEGATIVE_INFINITY, contents);
   }
-  /**
-   * @param {Doc} contents
-   * @returns Doc
-   */
 
 
   function markAsRoot(contents) {
-    // @ts-ignore - TBD ???:
     return align({
       type: "root"
     }, contents);
   }
-  /**
-   * @param {Doc} contents
-   * @returns Doc
-   */
 
 
   function dedent(contents) {
     return align(-1, contents);
   }
-  /**
-   * @param {Doc[]} states
-   * @param {object} [opts] - TBD ???
-   * @returns Doc
-   */
 
 
   function conditionalGroup(states, opts) {
@@ -110,10 +69,6 @@
       expandedStates: states
     }));
   }
-  /**
-   * @param {Doc[]} parts
-   * @returns Doc
-   */
 
 
   function fill$1(parts) {
@@ -123,12 +78,6 @@
       parts
     };
   }
-  /**
-   * @param {Doc} [breakContents]
-   * @param {Doc} [flatContents]
-   * @param {object} [opts] - TBD ???
-   * @returns Doc
-   */
 
 
   function ifBreak(breakContents, flatContents, opts = {}) {
@@ -140,12 +89,6 @@
       groupId: opts.groupId
     };
   }
-  /**
-   * Optimized version of `ifBreak(indent(doc), doc, { groupId: ... })`
-   * @param {Doc} contents
-   * @param {{ groupId: symbol, negate?: boolean }} opts
-   * @returns Doc
-   */
 
 
   function indentIfBreak(contents, opts) {
@@ -156,10 +99,6 @@
       negate: opts.negate
     };
   }
-  /**
-   * @param {Doc} contents
-   * @returns Doc
-   */
 
 
   function lineSuffix(contents) {
@@ -194,20 +133,15 @@
   const softline = {
     type: "line",
     soft: true
-  }; // eslint-disable-next-line prettier-internal-rules/no-doc-builder-concat
+  };
 
-  const hardline = concat([hardlineWithoutBreakParent, breakParent]); // eslint-disable-next-line prettier-internal-rules/no-doc-builder-concat
+  const hardline = concat([hardlineWithoutBreakParent, breakParent]);
 
   const literalline$1 = concat([literallineWithoutBreakParent, breakParent]);
   const cursor$1 = {
     type: "cursor",
     placeholder: Symbol("cursor")
   };
-  /**
-   * @param {Doc} sep
-   * @param {Doc[]} arr
-   * @returns Doc
-   */
 
   function join$1(sep, arr) {
     const res = [];
@@ -218,30 +152,23 @@
       }
 
       res.push(arr[i]);
-    } // eslint-disable-next-line prettier-internal-rules/no-doc-builder-concat
+    }
 
 
     return concat(res);
   }
-  /**
-   * @param {Doc} doc
-   * @param {number} size
-   * @param {number} tabWidth
-   */
 
 
   function addAlignmentToDoc(doc, size, tabWidth) {
     let aligned = doc;
 
     if (size > 0) {
-      // Use indent to add tabs for all the levels of tabs we need
       for (let i = 0; i < Math.floor(size / tabWidth); ++i) {
         aligned = indent$1(aligned);
-      } // Use align for all the spaces that are needed
+      }
 
 
-      aligned = align(size % tabWidth, aligned); // size is absolute from 0 and not relative to the current
-      // indentation, so we use -Infinity to reset the indentation to 0
+      aligned = align(size % tabWidth, aligned);
 
       aligned = align(Number.NEGATIVE_INFINITY, aligned);
     }
@@ -294,30 +221,27 @@
 
   var stripAnsi = string => typeof string === 'string' ? string.replace(ansiRegex(), '') : string;
 
-  /* eslint-disable yoda */
 
   const isFullwidthCodePoint = codePoint => {
     if (Number.isNaN(codePoint)) {
       return false;
-    } // Code points are derived from:
-    // http://www.unix.org/Public/UNIDATA/EastAsianWidth.txt
+    }
 
 
-    if (codePoint >= 0x1100 && (codePoint <= 0x115F || // Hangul Jamo
-    codePoint === 0x2329 || // LEFT-POINTING ANGLE BRACKET
-    codePoint === 0x232A || // RIGHT-POINTING ANGLE BRACKET
-    // CJK Radicals Supplement .. Enclosed CJK Letters and Months
-    0x2E80 <= codePoint && codePoint <= 0x3247 && codePoint !== 0x303F || // Enclosed CJK Letters and Months .. CJK Unified Ideographs Extension A
-    0x3250 <= codePoint && codePoint <= 0x4DBF || // CJK Unified Ideographs .. Yi Radicals
-    0x4E00 <= codePoint && codePoint <= 0xA4C6 || // Hangul Jamo Extended-A
-    0xA960 <= codePoint && codePoint <= 0xA97C || // Hangul Syllables
-    0xAC00 <= codePoint && codePoint <= 0xD7A3 || // CJK Compatibility Ideographs
-    0xF900 <= codePoint && codePoint <= 0xFAFF || // Vertical Forms
-    0xFE10 <= codePoint && codePoint <= 0xFE19 || // CJK Compatibility Forms .. Small Form Variants
-    0xFE30 <= codePoint && codePoint <= 0xFE6B || // Halfwidth and Fullwidth Forms
-    0xFF01 <= codePoint && codePoint <= 0xFF60 || 0xFFE0 <= codePoint && codePoint <= 0xFFE6 || // Kana Supplement
-    0x1B000 <= codePoint && codePoint <= 0x1B001 || // Enclosed Ideographic Supplement
-    0x1F200 <= codePoint && codePoint <= 0x1F251 || // CJK Unified Ideographs Extension B .. Tertiary Ideographic Plane
+    if (codePoint >= 0x1100 && (codePoint <= 0x115F ||
+    codePoint === 0x2329 ||
+    codePoint === 0x232A ||
+    0x2E80 <= codePoint && codePoint <= 0x3247 && codePoint !== 0x303F ||
+    0x3250 <= codePoint && codePoint <= 0x4DBF ||
+    0x4E00 <= codePoint && codePoint <= 0xA4C6 ||
+    0xA960 <= codePoint && codePoint <= 0xA97C ||
+    0xAC00 <= codePoint && codePoint <= 0xD7A3 ||
+    0xF900 <= codePoint && codePoint <= 0xFAFF ||
+    0xFE10 <= codePoint && codePoint <= 0xFE19 ||
+    0xFE30 <= codePoint && codePoint <= 0xFE6B ||
+    0xFF01 <= codePoint && codePoint <= 0xFF60 || 0xFFE0 <= codePoint && codePoint <= 0xFFE6 ||
+    0x1B000 <= codePoint && codePoint <= 0x1B001 ||
+    0x1F200 <= codePoint && codePoint <= 0x1F251 ||
     0x20000 <= codePoint && codePoint <= 0x3FFFD)) {
       return true;
     }
@@ -330,7 +254,6 @@
   isFullwidthCodePoint_1.default = _default$1;
 
   var emojiRegex = function () {
-    // https://mths.be/emoji
     return /\uD83C\uDFF4\uDB40\uDC67\uDB40\uDC62(?:\uDB40\uDC65\uDB40\uDC6E\uDB40\uDC67|\uDB40\uDC73\uDB40\uDC63\uDB40\uDC74|\uDB40\uDC77\uDB40\uDC6C\uDB40\uDC73)\uDB40\uDC7F|\uD83D\uDC68(?:\uD83C\uDFFC\u200D(?:\uD83E\uDD1D\u200D\uD83D\uDC68\uD83C\uDFFB|\uD83C[\uDF3E\uDF73\uDF93\uDFA4\uDFA8\uDFEB\uDFED]|\uD83D[\uDCBB\uDCBC\uDD27\uDD2C\uDE80\uDE92]|\uD83E[\uDDAF-\uDDB3\uDDBC\uDDBD])|\uD83C\uDFFF\u200D(?:\uD83E\uDD1D\u200D\uD83D\uDC68(?:\uD83C[\uDFFB-\uDFFE])|\uD83C[\uDF3E\uDF73\uDF93\uDFA4\uDFA8\uDFEB\uDFED]|\uD83D[\uDCBB\uDCBC\uDD27\uDD2C\uDE80\uDE92]|\uD83E[\uDDAF-\uDDB3\uDDBC\uDDBD])|\uD83C\uDFFE\u200D(?:\uD83E\uDD1D\u200D\uD83D\uDC68(?:\uD83C[\uDFFB-\uDFFD])|\uD83C[\uDF3E\uDF73\uDF93\uDFA4\uDFA8\uDFEB\uDFED]|\uD83D[\uDCBB\uDCBC\uDD27\uDD2C\uDE80\uDE92]|\uD83E[\uDDAF-\uDDB3\uDDBC\uDDBD])|\uD83C\uDFFD\u200D(?:\uD83E\uDD1D\u200D\uD83D\uDC68(?:\uD83C[\uDFFB\uDFFC])|\uD83C[\uDF3E\uDF73\uDF93\uDFA4\uDFA8\uDFEB\uDFED]|\uD83D[\uDCBB\uDCBC\uDD27\uDD2C\uDE80\uDE92]|\uD83E[\uDDAF-\uDDB3\uDDBC\uDDBD])|\u200D(?:\u2764\uFE0F\u200D(?:\uD83D\uDC8B\u200D)?\uD83D\uDC68|(?:\uD83D[\uDC68\uDC69])\u200D(?:\uD83D\uDC66\u200D\uD83D\uDC66|\uD83D\uDC67\u200D(?:\uD83D[\uDC66\uDC67]))|\uD83D\uDC66\u200D\uD83D\uDC66|\uD83D\uDC67\u200D(?:\uD83D[\uDC66\uDC67])|(?:\uD83D[\uDC68\uDC69])\u200D(?:\uD83D[\uDC66\uDC67])|[\u2695\u2696\u2708]\uFE0F|\uD83D[\uDC66\uDC67]|\uD83C[\uDF3E\uDF73\uDF93\uDFA4\uDFA8\uDFEB\uDFED]|\uD83D[\uDCBB\uDCBC\uDD27\uDD2C\uDE80\uDE92]|\uD83E[\uDDAF-\uDDB3\uDDBC\uDDBD])|(?:\uD83C\uDFFB\u200D[\u2695\u2696\u2708]|\uD83C\uDFFF\u200D[\u2695\u2696\u2708]|\uD83C\uDFFE\u200D[\u2695\u2696\u2708]|\uD83C\uDFFD\u200D[\u2695\u2696\u2708]|\uD83C\uDFFC\u200D[\u2695\u2696\u2708])\uFE0F|\uD83C\uDFFB\u200D(?:\uD83C[\uDF3E\uDF73\uDF93\uDFA4\uDFA8\uDFEB\uDFED]|\uD83D[\uDCBB\uDCBC\uDD27\uDD2C\uDE80\uDE92]|\uD83E[\uDDAF-\uDDB3\uDDBC\uDDBD])|\uD83C[\uDFFB-\uDFFF])|(?:\uD83E\uDDD1\uD83C\uDFFB\u200D\uD83E\uDD1D\u200D\uD83E\uDDD1|\uD83D\uDC69\uD83C\uDFFC\u200D\uD83E\uDD1D\u200D\uD83D\uDC69)\uD83C\uDFFB|\uD83E\uDDD1(?:\uD83C\uDFFF\u200D\uD83E\uDD1D\u200D\uD83E\uDDD1(?:\uD83C[\uDFFB-\uDFFF])|\u200D\uD83E\uDD1D\u200D\uD83E\uDDD1)|(?:\uD83E\uDDD1\uD83C\uDFFE\u200D\uD83E\uDD1D\u200D\uD83E\uDDD1|\uD83D\uDC69\uD83C\uDFFF\u200D\uD83E\uDD1D\u200D(?:\uD83D[\uDC68\uDC69]))(?:\uD83C[\uDFFB-\uDFFE])|(?:\uD83E\uDDD1\uD83C\uDFFC\u200D\uD83E\uDD1D\u200D\uD83E\uDDD1|\uD83D\uDC69\uD83C\uDFFD\u200D\uD83E\uDD1D\u200D\uD83D\uDC69)(?:\uD83C[\uDFFB\uDFFC])|\uD83D\uDC69(?:\uD83C\uDFFE\u200D(?:\uD83E\uDD1D\u200D\uD83D\uDC68(?:\uD83C[\uDFFB-\uDFFD\uDFFF])|\uD83C[\uDF3E\uDF73\uDF93\uDFA4\uDFA8\uDFEB\uDFED]|\uD83D[\uDCBB\uDCBC\uDD27\uDD2C\uDE80\uDE92]|\uD83E[\uDDAF-\uDDB3\uDDBC\uDDBD])|\uD83C\uDFFC\u200D(?:\uD83E\uDD1D\u200D\uD83D\uDC68(?:\uD83C[\uDFFB\uDFFD-\uDFFF])|\uD83C[\uDF3E\uDF73\uDF93\uDFA4\uDFA8\uDFEB\uDFED]|\uD83D[\uDCBB\uDCBC\uDD27\uDD2C\uDE80\uDE92]|\uD83E[\uDDAF-\uDDB3\uDDBC\uDDBD])|\uD83C\uDFFB\u200D(?:\uD83E\uDD1D\u200D\uD83D\uDC68(?:\uD83C[\uDFFC-\uDFFF])|\uD83C[\uDF3E\uDF73\uDF93\uDFA4\uDFA8\uDFEB\uDFED]|\uD83D[\uDCBB\uDCBC\uDD27\uDD2C\uDE80\uDE92]|\uD83E[\uDDAF-\uDDB3\uDDBC\uDDBD])|\uD83C\uDFFD\u200D(?:\uD83E\uDD1D\u200D\uD83D\uDC68(?:\uD83C[\uDFFB\uDFFC\uDFFE\uDFFF])|\uD83C[\uDF3E\uDF73\uDF93\uDFA4\uDFA8\uDFEB\uDFED]|\uD83D[\uDCBB\uDCBC\uDD27\uDD2C\uDE80\uDE92]|\uD83E[\uDDAF-\uDDB3\uDDBC\uDDBD])|\u200D(?:\u2764\uFE0F\u200D(?:\uD83D\uDC8B\u200D(?:\uD83D[\uDC68\uDC69])|\uD83D[\uDC68\uDC69])|\uD83C[\uDF3E\uDF73\uDF93\uDFA4\uDFA8\uDFEB\uDFED]|\uD83D[\uDCBB\uDCBC\uDD27\uDD2C\uDE80\uDE92]|\uD83E[\uDDAF-\uDDB3\uDDBC\uDDBD])|\uD83C\uDFFF\u200D(?:\uD83C[\uDF3E\uDF73\uDF93\uDFA4\uDFA8\uDFEB\uDFED]|\uD83D[\uDCBB\uDCBC\uDD27\uDD2C\uDE80\uDE92]|\uD83E[\uDDAF-\uDDB3\uDDBC\uDDBD]))|\uD83D\uDC69\u200D\uD83D\uDC69\u200D(?:\uD83D\uDC66\u200D\uD83D\uDC66|\uD83D\uDC67\u200D(?:\uD83D[\uDC66\uDC67]))|(?:\uD83E\uDDD1\uD83C\uDFFD\u200D\uD83E\uDD1D\u200D\uD83E\uDDD1|\uD83D\uDC69\uD83C\uDFFE\u200D\uD83E\uDD1D\u200D\uD83D\uDC69)(?:\uD83C[\uDFFB-\uDFFD])|\uD83D\uDC69\u200D\uD83D\uDC66\u200D\uD83D\uDC66|\uD83D\uDC69\u200D\uD83D\uDC69\u200D(?:\uD83D[\uDC66\uDC67])|(?:\uD83D\uDC41\uFE0F\u200D\uD83D\uDDE8|\uD83D\uDC69(?:\uD83C\uDFFF\u200D[\u2695\u2696\u2708]|\uD83C\uDFFE\u200D[\u2695\u2696\u2708]|\uD83C\uDFFC\u200D[\u2695\u2696\u2708]|\uD83C\uDFFB\u200D[\u2695\u2696\u2708]|\uD83C\uDFFD\u200D[\u2695\u2696\u2708]|\u200D[\u2695\u2696\u2708])|(?:(?:\u26F9|\uD83C[\uDFCB\uDFCC]|\uD83D\uDD75)\uFE0F|\uD83D\uDC6F|\uD83E[\uDD3C\uDDDE\uDDDF])\u200D[\u2640\u2642]|(?:\u26F9|\uD83C[\uDFCB\uDFCC]|\uD83D\uDD75)(?:\uD83C[\uDFFB-\uDFFF])\u200D[\u2640\u2642]|(?:\uD83C[\uDFC3\uDFC4\uDFCA]|\uD83D[\uDC6E\uDC71\uDC73\uDC77\uDC81\uDC82\uDC86\uDC87\uDE45-\uDE47\uDE4B\uDE4D\uDE4E\uDEA3\uDEB4-\uDEB6]|\uD83E[\uDD26\uDD37-\uDD39\uDD3D\uDD3E\uDDB8\uDDB9\uDDCD-\uDDCF\uDDD6-\uDDDD])(?:(?:\uD83C[\uDFFB-\uDFFF])\u200D[\u2640\u2642]|\u200D[\u2640\u2642])|\uD83C\uDFF4\u200D\u2620)\uFE0F|\uD83D\uDC69\u200D\uD83D\uDC67\u200D(?:\uD83D[\uDC66\uDC67])|\uD83C\uDFF3\uFE0F\u200D\uD83C\uDF08|\uD83D\uDC15\u200D\uD83E\uDDBA|\uD83D\uDC69\u200D\uD83D\uDC66|\uD83D\uDC69\u200D\uD83D\uDC67|\uD83C\uDDFD\uD83C\uDDF0|\uD83C\uDDF4\uD83C\uDDF2|\uD83C\uDDF6\uD83C\uDDE6|[#\*0-9]\uFE0F\u20E3|\uD83C\uDDE7(?:\uD83C[\uDDE6\uDDE7\uDDE9-\uDDEF\uDDF1-\uDDF4\uDDF6-\uDDF9\uDDFB\uDDFC\uDDFE\uDDFF])|\uD83C\uDDF9(?:\uD83C[\uDDE6\uDDE8\uDDE9\uDDEB-\uDDED\uDDEF-\uDDF4\uDDF7\uDDF9\uDDFB\uDDFC\uDDFF])|\uD83C\uDDEA(?:\uD83C[\uDDE6\uDDE8\uDDEA\uDDEC\uDDED\uDDF7-\uDDFA])|\uD83E\uDDD1(?:\uD83C[\uDFFB-\uDFFF])|\uD83C\uDDF7(?:\uD83C[\uDDEA\uDDF4\uDDF8\uDDFA\uDDFC])|\uD83D\uDC69(?:\uD83C[\uDFFB-\uDFFF])|\uD83C\uDDF2(?:\uD83C[\uDDE6\uDDE8-\uDDED\uDDF0-\uDDFF])|\uD83C\uDDE6(?:\uD83C[\uDDE8-\uDDEC\uDDEE\uDDF1\uDDF2\uDDF4\uDDF6-\uDDFA\uDDFC\uDDFD\uDDFF])|\uD83C\uDDF0(?:\uD83C[\uDDEA\uDDEC-\uDDEE\uDDF2\uDDF3\uDDF5\uDDF7\uDDFC\uDDFE\uDDFF])|\uD83C\uDDED(?:\uD83C[\uDDF0\uDDF2\uDDF3\uDDF7\uDDF9\uDDFA])|\uD83C\uDDE9(?:\uD83C[\uDDEA\uDDEC\uDDEF\uDDF0\uDDF2\uDDF4\uDDFF])|\uD83C\uDDFE(?:\uD83C[\uDDEA\uDDF9])|\uD83C\uDDEC(?:\uD83C[\uDDE6\uDDE7\uDDE9-\uDDEE\uDDF1-\uDDF3\uDDF5-\uDDFA\uDDFC\uDDFE])|\uD83C\uDDF8(?:\uD83C[\uDDE6-\uDDEA\uDDEC-\uDDF4\uDDF7-\uDDF9\uDDFB\uDDFD-\uDDFF])|\uD83C\uDDEB(?:\uD83C[\uDDEE-\uDDF0\uDDF2\uDDF4\uDDF7])|\uD83C\uDDF5(?:\uD83C[\uDDE6\uDDEA-\uDDED\uDDF0-\uDDF3\uDDF7-\uDDF9\uDDFC\uDDFE])|\uD83C\uDDFB(?:\uD83C[\uDDE6\uDDE8\uDDEA\uDDEC\uDDEE\uDDF3\uDDFA])|\uD83C\uDDF3(?:\uD83C[\uDDE6\uDDE8\uDDEA-\uDDEC\uDDEE\uDDF1\uDDF4\uDDF5\uDDF7\uDDFA\uDDFF])|\uD83C\uDDE8(?:\uD83C[\uDDE6\uDDE8\uDDE9\uDDEB-\uDDEE\uDDF0-\uDDF5\uDDF7\uDDFA-\uDDFF])|\uD83C\uDDF1(?:\uD83C[\uDDE6-\uDDE8\uDDEE\uDDF0\uDDF7-\uDDFB\uDDFE])|\uD83C\uDDFF(?:\uD83C[\uDDE6\uDDF2\uDDFC])|\uD83C\uDDFC(?:\uD83C[\uDDEB\uDDF8])|\uD83C\uDDFA(?:\uD83C[\uDDE6\uDDEC\uDDF2\uDDF3\uDDF8\uDDFE\uDDFF])|\uD83C\uDDEE(?:\uD83C[\uDDE8-\uDDEA\uDDF1-\uDDF4\uDDF6-\uDDF9])|\uD83C\uDDEF(?:\uD83C[\uDDEA\uDDF2\uDDF4\uDDF5])|(?:\uD83C[\uDFC3\uDFC4\uDFCA]|\uD83D[\uDC6E\uDC71\uDC73\uDC77\uDC81\uDC82\uDC86\uDC87\uDE45-\uDE47\uDE4B\uDE4D\uDE4E\uDEA3\uDEB4-\uDEB6]|\uD83E[\uDD26\uDD37-\uDD39\uDD3D\uDD3E\uDDB8\uDDB9\uDDCD-\uDDCF\uDDD6-\uDDDD])(?:\uD83C[\uDFFB-\uDFFF])|(?:\u26F9|\uD83C[\uDFCB\uDFCC]|\uD83D\uDD75)(?:\uD83C[\uDFFB-\uDFFF])|(?:[\u261D\u270A-\u270D]|\uD83C[\uDF85\uDFC2\uDFC7]|\uD83D[\uDC42\uDC43\uDC46-\uDC50\uDC66\uDC67\uDC6B-\uDC6D\uDC70\uDC72\uDC74-\uDC76\uDC78\uDC7C\uDC83\uDC85\uDCAA\uDD74\uDD7A\uDD90\uDD95\uDD96\uDE4C\uDE4F\uDEC0\uDECC]|\uD83E[\uDD0F\uDD18-\uDD1C\uDD1E\uDD1F\uDD30-\uDD36\uDDB5\uDDB6\uDDBB\uDDD2-\uDDD5])(?:\uD83C[\uDFFB-\uDFFF])|(?:[\u231A\u231B\u23E9-\u23EC\u23F0\u23F3\u25FD\u25FE\u2614\u2615\u2648-\u2653\u267F\u2693\u26A1\u26AA\u26AB\u26BD\u26BE\u26C4\u26C5\u26CE\u26D4\u26EA\u26F2\u26F3\u26F5\u26FA\u26FD\u2705\u270A\u270B\u2728\u274C\u274E\u2753-\u2755\u2757\u2795-\u2797\u27B0\u27BF\u2B1B\u2B1C\u2B50\u2B55]|\uD83C[\uDC04\uDCCF\uDD8E\uDD91-\uDD9A\uDDE6-\uDDFF\uDE01\uDE1A\uDE2F\uDE32-\uDE36\uDE38-\uDE3A\uDE50\uDE51\uDF00-\uDF20\uDF2D-\uDF35\uDF37-\uDF7C\uDF7E-\uDF93\uDFA0-\uDFCA\uDFCF-\uDFD3\uDFE0-\uDFF0\uDFF4\uDFF8-\uDFFF]|\uD83D[\uDC00-\uDC3E\uDC40\uDC42-\uDCFC\uDCFF-\uDD3D\uDD4B-\uDD4E\uDD50-\uDD67\uDD7A\uDD95\uDD96\uDDA4\uDDFB-\uDE4F\uDE80-\uDEC5\uDECC\uDED0-\uDED2\uDED5\uDEEB\uDEEC\uDEF4-\uDEFA\uDFE0-\uDFEB]|\uD83E[\uDD0D-\uDD3A\uDD3C-\uDD45\uDD47-\uDD71\uDD73-\uDD76\uDD7A-\uDDA2\uDDA5-\uDDAA\uDDAE-\uDDCA\uDDCD-\uDDFF\uDE70-\uDE73\uDE78-\uDE7A\uDE80-\uDE82\uDE90-\uDE95])|(?:[#\*0-9\xA9\xAE\u203C\u2049\u2122\u2139\u2194-\u2199\u21A9\u21AA\u231A\u231B\u2328\u23CF\u23E9-\u23F3\u23F8-\u23FA\u24C2\u25AA\u25AB\u25B6\u25C0\u25FB-\u25FE\u2600-\u2604\u260E\u2611\u2614\u2615\u2618\u261D\u2620\u2622\u2623\u2626\u262A\u262E\u262F\u2638-\u263A\u2640\u2642\u2648-\u2653\u265F\u2660\u2663\u2665\u2666\u2668\u267B\u267E\u267F\u2692-\u2697\u2699\u269B\u269C\u26A0\u26A1\u26AA\u26AB\u26B0\u26B1\u26BD\u26BE\u26C4\u26C5\u26C8\u26CE\u26CF\u26D1\u26D3\u26D4\u26E9\u26EA\u26F0-\u26F5\u26F7-\u26FA\u26FD\u2702\u2705\u2708-\u270D\u270F\u2712\u2714\u2716\u271D\u2721\u2728\u2733\u2734\u2744\u2747\u274C\u274E\u2753-\u2755\u2757\u2763\u2764\u2795-\u2797\u27A1\u27B0\u27BF\u2934\u2935\u2B05-\u2B07\u2B1B\u2B1C\u2B50\u2B55\u3030\u303D\u3297\u3299]|\uD83C[\uDC04\uDCCF\uDD70\uDD71\uDD7E\uDD7F\uDD8E\uDD91-\uDD9A\uDDE6-\uDDFF\uDE01\uDE02\uDE1A\uDE2F\uDE32-\uDE3A\uDE50\uDE51\uDF00-\uDF21\uDF24-\uDF93\uDF96\uDF97\uDF99-\uDF9B\uDF9E-\uDFF0\uDFF3-\uDFF5\uDFF7-\uDFFF]|\uD83D[\uDC00-\uDCFD\uDCFF-\uDD3D\uDD49-\uDD4E\uDD50-\uDD67\uDD6F\uDD70\uDD73-\uDD7A\uDD87\uDD8A-\uDD8D\uDD90\uDD95\uDD96\uDDA4\uDDA5\uDDA8\uDDB1\uDDB2\uDDBC\uDDC2-\uDDC4\uDDD1-\uDDD3\uDDDC-\uDDDE\uDDE1\uDDE3\uDDE8\uDDEF\uDDF3\uDDFA-\uDE4F\uDE80-\uDEC5\uDECB-\uDED2\uDED5\uDEE0-\uDEE5\uDEE9\uDEEB\uDEEC\uDEF0\uDEF3-\uDEFA\uDFE0-\uDFEB]|\uD83E[\uDD0D-\uDD3A\uDD3C-\uDD45\uDD47-\uDD71\uDD73-\uDD76\uDD7A-\uDDA2\uDDA5-\uDDAA\uDDAE-\uDDCA\uDDCD-\uDDFF\uDE70-\uDE73\uDE78-\uDE7A\uDE80-\uDE82\uDE90-\uDE95])\uFE0F|(?:[\u261D\u26F9\u270A-\u270D]|\uD83C[\uDF85\uDFC2-\uDFC4\uDFC7\uDFCA-\uDFCC]|\uD83D[\uDC42\uDC43\uDC46-\uDC50\uDC66-\uDC78\uDC7C\uDC81-\uDC83\uDC85-\uDC87\uDC8F\uDC91\uDCAA\uDD74\uDD75\uDD7A\uDD90\uDD95\uDD96\uDE45-\uDE47\uDE4B-\uDE4F\uDEA3\uDEB4-\uDEB6\uDEC0\uDECC]|\uD83E[\uDD0F\uDD18-\uDD1F\uDD26\uDD30-\uDD39\uDD3C-\uDD3E\uDDB5\uDDB6\uDDB8\uDDB9\uDDBB\uDDCD-\uDDCF\uDDD1-\uDDDD])/g;
   };
 
@@ -349,16 +272,16 @@
     let width = 0;
 
     for (let i = 0; i < string.length; i++) {
-      const code = string.codePointAt(i); // Ignore control characters
+      const code = string.codePointAt(i);
 
       if (code <= 0x1F || code >= 0x7F && code <= 0x9F) {
         continue;
-      } // Ignore combining characters
+      }
 
 
       if (code >= 0x300 && code <= 0x36F) {
         continue;
-      } // Surrogates
+      }
 
 
       if (code > 0xFFFF) {
@@ -371,7 +294,7 @@
     return width;
   };
 
-  var stringWidth_1 = stringWidth; // TODO: remove this in the next major version
+  var stringWidth_1 = stringWidth;
 
   var _default = stringWidth;
   stringWidth_1.default = _default;
@@ -379,8 +302,7 @@
   var escapeStringRegexp = string => {
     if (typeof string !== 'string') {
       throw new TypeError('Expected a string');
-    } // Escape characters with special meaning either inside or outside character sets.
-    // Use a simple backslash escape when it’s always valid, and a \unnnn escape when the simpler form would be disallowed by Unicode patterns’ stricter grammar.
+    }
 
 
     return string.replace(/[|\\{}()[\]^$+*?.]/g, '\\$&').replace(/-/g, '\\x2d');
@@ -437,15 +359,11 @@
     return it && it.Math == Math && it;
   };
 
-  // https://github.com/zloirock/core-js/issues/86#issuecomment-115759028
   var global$2 =
-    // eslint-disable-next-line es/no-global-this -- safe
     check(typeof globalThis == 'object' && globalThis) ||
     check(typeof window == 'object' && window) ||
-    // eslint-disable-next-line no-restricted-globals -- safe
     check(typeof self == 'object' && self) ||
     check(typeof commonjsGlobal == 'object' && commonjsGlobal) ||
-    // eslint-disable-next-line no-new-func -- fallback
     (function () { return this; })() || Function('return this')();
 
   var fails = function (exec) {
@@ -456,21 +374,15 @@
     }
   };
 
-  // Detect IE8's incomplete defineProperty implementation
   var descriptors = !fails(function () {
-    // eslint-disable-next-line es/no-object-defineproperty -- required for testing
     return Object.defineProperty({}, 1, { get: function () { return 7; } })[1] != 7;
   });
 
   var $propertyIsEnumerable = {}.propertyIsEnumerable;
-  // eslint-disable-next-line es/no-object-getownpropertydescriptor -- safe
   var getOwnPropertyDescriptor$1 = Object.getOwnPropertyDescriptor;
 
-  // Nashorn ~ JDK8 bug
   var NASHORN_BUG = getOwnPropertyDescriptor$1 && !$propertyIsEnumerable.call({ 1: 2 }, 1);
 
-  // `Object.prototype.propertyIsEnumerable` method implementation
-  // https://tc39.es/ecma262/#sec-object.prototype.propertyisenumerable
   var f$4 = NASHORN_BUG ? function propertyIsEnumerable(V) {
     var descriptor = getOwnPropertyDescriptor$1(this, V);
     return !!descriptor && descriptor.enumerable;
@@ -497,23 +409,17 @@
 
   var split = ''.split;
 
-  // fallback for non-array-like ES3 and non-enumerable old V8 strings
   var indexedObject = fails(function () {
-    // throws an error in rhino, see https://github.com/mozilla/rhino/issues/346
-    // eslint-disable-next-line no-prototype-builtins -- safe
     return !Object('z').propertyIsEnumerable(0);
   }) ? function (it) {
     return classofRaw(it) == 'String' ? split.call(it, '') : Object(it);
   } : Object;
 
-  // `RequireObjectCoercible` abstract operation
-  // https://tc39.es/ecma262/#sec-requireobjectcoercible
   var requireObjectCoercible = function (it) {
     if (it == undefined) throw TypeError("Can't call method on " + it);
     return it;
   };
 
-  // toObject with fallback for non-array-like ES3 strings
 
 
 
@@ -525,10 +431,6 @@
     return typeof it === 'object' ? it !== null : typeof it === 'function';
   };
 
-  // `ToPrimitive` abstract operation
-  // https://tc39.es/ecma262/#sec-toprimitive
-  // instead of the ES6 spec version, we didn't implement @@toPrimitive case
-  // and the second argument - flag - preferred type is a string
   var toPrimitive = function (input, PREFERRED_STRING) {
     if (!isObject(input)) return input;
     var fn, val;
@@ -538,8 +440,6 @@
     throw TypeError("Can't convert object to primitive value");
   };
 
-  // `ToObject` abstract operation
-  // https://tc39.es/ecma262/#sec-toobject
   var toObject = function (argument) {
     return Object(requireObjectCoercible(argument));
   };
@@ -551,32 +451,26 @@
   };
 
   var document$1 = global$2.document;
-  // typeof document.createElement is 'object' in old IE
   var EXISTS = isObject(document$1) && isObject(document$1.createElement);
 
   var documentCreateElement = function (it) {
     return EXISTS ? document$1.createElement(it) : {};
   };
 
-  // Thank's IE8 for his funny defineProperty
   var ie8DomDefine = !descriptors && !fails(function () {
-    // eslint-disable-next-line es/no-object-defineproperty -- requied for testing
     return Object.defineProperty(documentCreateElement('div'), 'a', {
       get: function () { return 7; }
     }).a != 7;
   });
 
-  // eslint-disable-next-line es/no-object-getownpropertydescriptor -- safe
   var $getOwnPropertyDescriptor = Object.getOwnPropertyDescriptor;
 
-  // `Object.getOwnPropertyDescriptor` method
-  // https://tc39.es/ecma262/#sec-object.getownpropertydescriptor
   var f$3 = descriptors ? $getOwnPropertyDescriptor : function getOwnPropertyDescriptor(O, P) {
     O = toIndexedObject(O);
     P = toPrimitive(P, true);
     if (ie8DomDefine) try {
       return $getOwnPropertyDescriptor(O, P);
-    } catch (error) { /* empty */ }
+    } catch (error) { }
     if (has$1(O, P)) return createPropertyDescriptor(!objectPropertyIsEnumerable.f.call(O, P), O[P]);
   };
 
@@ -590,18 +484,15 @@
     } return it;
   };
 
-  // eslint-disable-next-line es/no-object-defineproperty -- safe
   var $defineProperty = Object.defineProperty;
 
-  // `Object.defineProperty` method
-  // https://tc39.es/ecma262/#sec-object.defineproperty
   var f$2 = descriptors ? $defineProperty : function defineProperty(O, P, Attributes) {
     anObject(O);
     P = toPrimitive(P, true);
     anObject(Attributes);
     if (ie8DomDefine) try {
       return $defineProperty(O, P, Attributes);
-    } catch (error) { /* empty */ }
+    } catch (error) { }
     if ('get' in Attributes || 'set' in Attributes) throw TypeError('Accessors not supported');
     if ('value' in Attributes) O[P] = Attributes.value;
     return O;
@@ -633,7 +524,6 @@
 
   var functionToString = Function.toString;
 
-  // this helper broken in `core-js@3.4.1-3.4.4`, so we can't use `shared` helper
   if (typeof sharedStore.inspectSource != 'function') {
     sharedStore.inspectSource = function (it) {
       return functionToString.call(it);
@@ -760,7 +650,6 @@
     }
     if (simple) O[key] = value;
     else createNonEnumerableProperty(O, key, value);
-  // add fake Function#toString for correct work wrapped methods / constructors with methods like LoDash isNative
   })(Function.prototype, 'toString', function toString() {
     return typeof this == 'function' && getInternalState(this).source || inspectSource(this);
   });
@@ -780,45 +669,33 @@
   var ceil = Math.ceil;
   var floor$1 = Math.floor;
 
-  // `ToInteger` abstract operation
-  // https://tc39.es/ecma262/#sec-tointeger
   var toInteger = function (argument) {
     return isNaN(argument = +argument) ? 0 : (argument > 0 ? floor$1 : ceil)(argument);
   };
 
   var min$1 = Math.min;
 
-  // `ToLength` abstract operation
-  // https://tc39.es/ecma262/#sec-tolength
   var toLength = function (argument) {
-    return argument > 0 ? min$1(toInteger(argument), 0x1FFFFFFFFFFFFF) : 0; // 2 ** 53 - 1 == 9007199254740991
+    return argument > 0 ? min$1(toInteger(argument), 0x1FFFFFFFFFFFFF) : 0;
   };
 
   var max = Math.max;
   var min = Math.min;
 
-  // Helper for a popular repeating case of the spec:
-  // Let integer be ? ToInteger(index).
-  // If integer < 0, let result be max((length + integer), 0); else let result be min(integer, length).
   var toAbsoluteIndex = function (index, length) {
     var integer = toInteger(index);
     return integer < 0 ? max(integer + length, 0) : min(integer, length);
   };
 
-  // `Array.prototype.{ indexOf, includes }` methods implementation
   var createMethod = function (IS_INCLUDES) {
     return function ($this, el, fromIndex) {
       var O = toIndexedObject($this);
       var length = toLength(O.length);
       var index = toAbsoluteIndex(fromIndex, length);
       var value;
-      // Array#includes uses SameValueZero equality algorithm
-      // eslint-disable-next-line no-self-compare -- NaN check
       if (IS_INCLUDES && el != el) while (length > index) {
         value = O[index++];
-        // eslint-disable-next-line no-self-compare -- NaN check
         if (value != value) return true;
-      // Array#indexOf ignores holes, Array#includes - not
       } else for (;length > index; index++) {
         if ((IS_INCLUDES || index in O) && O[index] === el) return IS_INCLUDES || index || 0;
       } return !IS_INCLUDES && -1;
@@ -826,11 +703,7 @@
   };
 
   var arrayIncludes = {
-    // `Array.prototype.includes` method
-    // https://tc39.es/ecma262/#sec-array.prototype.includes
     includes: createMethod(true),
-    // `Array.prototype.indexOf` method
-    // https://tc39.es/ecma262/#sec-array.prototype.indexof
     indexOf: createMethod(false)
   };
 
@@ -843,14 +716,12 @@
     var result = [];
     var key;
     for (key in O) !has$1(hiddenKeys$1, key) && has$1(O, key) && result.push(key);
-    // Don't enum bug & hidden keys
     while (names.length > i) if (has$1(O, key = names[i++])) {
       ~indexOf(result, key) || result.push(key);
     }
     return result;
   };
 
-  // IE8- don't enum bug keys
   var enumBugKeys = [
     'constructor',
     'hasOwnProperty',
@@ -863,9 +734,6 @@
 
   var hiddenKeys = enumBugKeys.concat('length', 'prototype');
 
-  // `Object.getOwnPropertyNames` method
-  // https://tc39.es/ecma262/#sec-object.getownpropertynames
-  // eslint-disable-next-line es/no-object-getownpropertynames -- safe
   var f$1 = Object.getOwnPropertyNames || function getOwnPropertyNames(O) {
     return objectKeysInternal(O, hiddenKeys);
   };
@@ -874,14 +742,12 @@
   	f: f$1
   };
 
-  // eslint-disable-next-line es/no-object-getownpropertysymbols -- safe
   var f = Object.getOwnPropertySymbols;
 
   var objectGetOwnPropertySymbols = {
   	f: f
   };
 
-  // all object keys, includes non-enumerable and symbols
   var ownKeys = getBuiltIn('Reflect', 'ownKeys') || function ownKeys(it) {
     var keys = objectGetOwnPropertyNames.f(anObject(it));
     var getOwnPropertySymbols = objectGetOwnPropertySymbols.f;
@@ -925,20 +791,6 @@
 
 
 
-  /*
-    options.target      - name of the target object
-    options.global      - target is the global object
-    options.stat        - export as static methods of target
-    options.proto       - export as prototype methods of target
-    options.real        - real prototype method for the `pure` version
-    options.forced      - export even if the native feature is available
-    options.bind        - bind methods to the target, required for the `pure` version
-    options.wrap        - wrap constructors to preventing global pollution, required for the `pure` version
-    options.unsafe      - use the simple assignment of property instead of delete + defineProperty
-    options.sham        - add a flag to not completely full polyfills
-    options.enumerable  - export as enumerable property
-    options.noTargetGet - prevent calling a getter on target
-  */
   var _export = function (options, source) {
     var TARGET = options.target;
     var GLOBAL = options.global;
@@ -958,23 +810,17 @@
         targetProperty = descriptor && descriptor.value;
       } else targetProperty = target[key];
       FORCED = isForced_1(GLOBAL ? key : TARGET + (STATIC ? '.' : '#') + key, options.forced);
-      // contained in target
       if (!FORCED && targetProperty !== undefined) {
         if (typeof sourceProperty === typeof targetProperty) continue;
         copyConstructorProperties(sourceProperty, targetProperty);
       }
-      // add a flag to not completely full polyfills
       if (options.sham || (targetProperty && targetProperty.sham)) {
         createNonEnumerableProperty(sourceProperty, 'sham', true);
       }
-      // extend global
       redefine(target, key, sourceProperty, options);
     }
   };
 
-  // `IsArray` abstract operation
-  // https://tc39.es/ecma262/#sec-isarray
-  // eslint-disable-next-line es/no-array-isarray -- safe
   var isArray = Array.isArray || function isArray(arg) {
     return classofRaw(arg) == 'Array';
   };
@@ -985,7 +831,6 @@
     } return it;
   };
 
-  // optional / simple context binding
   var functionBindContext = function (fn, that, length) {
     aFunction(fn);
     if (that === undefined) return fn;
@@ -1003,13 +848,11 @@
         return fn.call(that, a, b, c);
       };
     }
-    return function (/* ...args */) {
+    return function () {
       return fn.apply(that, arguments);
     };
   };
 
-  // `FlattenIntoArray` abstract operation
-  // https://tc39.github.io/proposal-flatMap/#sec-FlattenIntoArray
   var flattenIntoArray = function (target, original, source, sourceLen, start, depth, mapper, thisArg) {
     var targetIndex = start;
     var sourceIndex = 0;
@@ -1056,19 +899,13 @@
 
   var engineV8Version = version$2 && +version$2;
 
-  /* eslint-disable es/no-symbol -- required for testing */
 
-  // eslint-disable-next-line es/no-object-getownpropertysymbols -- required for testing
   var nativeSymbol = !!Object.getOwnPropertySymbols && !fails(function () {
     var symbol = Symbol();
-    // Chrome 38 Symbol has incorrect toString conversion
-    // `get-own-property-symbols` polyfill symbols converted to object are not Symbol instances
     return !String(symbol) || !(Object(symbol) instanceof Symbol) ||
-      // Chrome 38-40 symbols are not inherited from DOM collections prototypes to instances
       !Symbol.sham && engineV8Version && engineV8Version < 41;
   });
 
-  /* eslint-disable es/no-symbol -- required for testing */
 
   var useSymbolAsUid = nativeSymbol
     && !Symbol.sham
@@ -1090,13 +927,10 @@
 
   var SPECIES = wellKnownSymbol('species');
 
-  // `ArraySpeciesCreate` abstract operation
-  // https://tc39.es/ecma262/#sec-arrayspeciescreate
   var arraySpeciesCreate = function (originalArray, length) {
     var C;
     if (isArray(originalArray)) {
       C = originalArray.constructor;
-      // cross-realm fallback
       if (typeof C == 'function' && (C === Array || isArray(C.prototype))) C = undefined;
       else if (isObject(C)) {
         C = C[SPECIES];
@@ -1105,10 +939,8 @@
     } return new (C === undefined ? Array : C)(length === 0 ? 0 : length);
   };
 
-  // `Array.prototype.flatMap` method
-  // https://tc39.es/ecma262/#sec-array.prototype.flatmap
   _export({ target: 'Array', proto: true }, {
-    flatMap: function flatMap(callbackfn /* , thisArg */) {
+    flatMap: function flatMap(callbackfn) {
       var O = toObject(this);
       var sourceLen = toLength(O.length);
       var A;
@@ -1119,7 +951,6 @@
     }
   });
 
-  // TODO: use something more complex like timsort?
   var floor = Math.floor;
 
   var mergeSort = function (array, comparefn) {
@@ -1168,7 +999,6 @@
   var arrayMethodIsStrict = function (METHOD_NAME, argument) {
     var method = [][METHOD_NAME];
     return !!method && fails(function () {
-      // eslint-disable-next-line no-useless-call,no-throw-literal -- required for testing
       method.call(null, argument || function () { throw 1; }, 1);
     });
   };
@@ -1186,19 +1016,15 @@
   var test$1 = [];
   var nativeSort = test$1.sort;
 
-  // IE8-
   var FAILS_ON_UNDEFINED = fails(function () {
     test$1.sort(undefined);
   });
-  // V8 bug
   var FAILS_ON_NULL = fails(function () {
     test$1.sort(null);
   });
-  // Old WebKit
   var STRICT_METHOD = arrayMethodIsStrict('sort');
 
   var STABLE_SORT = !fails(function () {
-    // feature detection can be too slow, so check engines versions
     if (engineV8Version) return engineV8Version < 70;
     if (engineFfVersion && engineFfVersion > 3) return;
     if (engineIsIeOrEdge) return true;
@@ -1207,7 +1033,6 @@
     var result = '';
     var code, chr, value, index;
 
-    // generate an array with more 512 elements (Chakra and old V8 fails only in this case)
     for (code = 65; code < 76; code++) {
       chr = String.fromCharCode(code);
 
@@ -1243,8 +1068,6 @@
     };
   };
 
-  // `Array.prototype.sort` method
-  // https://tc39.es/ecma262/#sec-array.prototype.sort
   _export({ target: 'Array', proto: true, forced: FORCED }, {
     sort: function sort(comparefn) {
       if (comparefn !== undefined) aFunction(comparefn);
@@ -1277,7 +1100,6 @@
   var ITERATOR$1 = wellKnownSymbol('iterator');
   var ArrayPrototype = Array.prototype;
 
-  // check on default Array iterator
   var isArrayIteratorMethod = function (it) {
     return it !== undefined && (iterators.Array === it || ArrayPrototype[ITERATOR$1] === it);
   };
@@ -1290,25 +1112,19 @@
   var toStringTagSupport = String(test) === '[object z]';
 
   var TO_STRING_TAG = wellKnownSymbol('toStringTag');
-  // ES3 wrong here
   var CORRECT_ARGUMENTS = classofRaw(function () { return arguments; }()) == 'Arguments';
 
-  // fallback for IE11 Script Access Denied error
   var tryGet = function (it, key) {
     try {
       return it[key];
-    } catch (error) { /* empty */ }
+    } catch (error) { }
   };
 
-  // getting tag from ES6+ `Object.prototype.toString`
   var classof = toStringTagSupport ? classofRaw : function (it) {
     var O, tag, result;
     return it === undefined ? 'Undefined' : it === null ? 'Null'
-      // @@toStringTag case
       : typeof (tag = tryGet(O = Object(it), TO_STRING_TAG)) == 'string' ? tag
-      // builtinTag case
       : CORRECT_ARGUMENTS ? classofRaw(O)
-      // ES3 arguments fallback
       : (result = classofRaw(O)) == 'Object' && typeof O.callee == 'function' ? 'Arguments' : result;
   };
 
@@ -1357,7 +1173,6 @@
     } else {
       iterFn = getIteratorMethod(iterable);
       if (typeof iterFn != 'function') throw TypeError('Target is not iterable');
-      // optimisation for array iterators
       if (isArrayIteratorMethod(iterFn)) {
         for (index = 0, length = toLength(iterable.length); length > index; index++) {
           result = callFn(iterable[index]);
@@ -1385,8 +1200,6 @@
     else object[propertyKey] = value;
   };
 
-  // `Object.fromEntries` method
-  // https://github.com/tc39/proposal-object-from-entries
   _export({ target: 'Object', stat: true }, {
     fromEntries: function fromEntries(iterable) {
       var obj = {};
@@ -1401,8 +1214,6 @@
     typeof self !== "undefined" ? self :
     typeof window !== "undefined" ? window : {});
 
-  // shim for using process in browser
-  // based off https://github.com/defunctzombie/node-process/blob/master/browser.js
 
   function defaultSetTimout() {
       throw new Error('setTimeout has not been defined');
@@ -1421,23 +1232,18 @@
 
   function runTimeout(fun) {
       if (cachedSetTimeout === setTimeout) {
-          //normal enviroments in sane situations
           return setTimeout(fun, 0);
       }
-      // if setTimeout wasn't available but was latter defined
       if ((cachedSetTimeout === defaultSetTimout || !cachedSetTimeout) && setTimeout) {
           cachedSetTimeout = setTimeout;
           return setTimeout(fun, 0);
       }
       try {
-          // when when somebody has screwed with setTimeout but no I.E. maddness
           return cachedSetTimeout(fun, 0);
       } catch(e){
           try {
-              // When we are in I.E. but the script has been evaled so I.E. doesn't trust the global object when called normally
               return cachedSetTimeout.call(null, fun, 0);
           } catch(e){
-              // same as above but when it's a version of I.E. that must have the global object for 'this', hopfully our context correct otherwise it will throw a global error
               return cachedSetTimeout.call(this, fun, 0);
           }
       }
@@ -1446,24 +1252,18 @@
   }
   function runClearTimeout(marker) {
       if (cachedClearTimeout === clearTimeout) {
-          //normal enviroments in sane situations
           return clearTimeout(marker);
       }
-      // if clearTimeout wasn't available but was latter defined
       if ((cachedClearTimeout === defaultClearTimeout || !cachedClearTimeout) && clearTimeout) {
           cachedClearTimeout = clearTimeout;
           return clearTimeout(marker);
       }
       try {
-          // when when somebody has screwed with setTimeout but no I.E. maddness
           return cachedClearTimeout(marker);
       } catch (e){
           try {
-              // When we are in I.E. but the script has been evaled so I.E. doesn't  trust the global object when called normally
               return cachedClearTimeout.call(null, marker);
           } catch (e){
-              // same as above but when it's a version of I.E. that must have the global object for 'this', hopfully our context correct otherwise it will throw a global error.
-              // Some versions of I.E. have different rules for clearTimeout vs setTimeout
               return cachedClearTimeout.call(this, marker);
           }
       }
@@ -1526,7 +1326,6 @@
           runTimeout(drainQueue);
       }
   }
-  // v8 likes predictible objects
   function Item(fun, array) {
       this.fun = fun;
       this.array = array;
@@ -1539,7 +1338,7 @@
   var browser$1 = true;
   var env = {};
   var argv = [];
-  var version$1 = ''; // empty string to avoid regexp issues
+  var version$1 = '';
   var versions = {};
   var release = {};
   var config = {};
@@ -1563,7 +1362,6 @@
       throw new Error('process.chdir is not supported');
   }function umask() { return 0; }
 
-  // from https://github.com/kumavis/browser-process-hrtime/blob/master/index.js
   var performance = global$1.performance || {};
   var performanceNow =
     performance.now        ||
@@ -1573,8 +1371,6 @@
     performance.webkitNow  ||
     function(){ return (new Date()).getTime() };
 
-  // generate timestamp or delta
-  // see http://nodejs.org/api/process.html#process_process_hrtime
   function hrtime(previousTimestamp){
     var clocktime = performanceNow.call(performance)*1e-3;
     var seconds = Math.floor(clocktime);
@@ -1626,13 +1422,10 @@
   const debug = typeof browser$1$1 === 'object' && browser$1$1.env && browser$1$1.env.NODE_DEBUG && /\bsemver\b/i.test(browser$1$1.env.NODE_DEBUG) ? (...args) => console.error('SEMVER', ...args) : () => {};
   var debug_1 = debug;
 
-  // Note: this is the semver.org version of the spec that it implements
-  // Not necessarily the package version of this code.
   const SEMVER_SPEC_VERSION = '2.0.0';
   const MAX_LENGTH$1 = 256;
   const MAX_SAFE_INTEGER$1 = Number.MAX_SAFE_INTEGER ||
-  /* istanbul ignore next */
-  9007199254740991; // Max safe segment length for coercion.
+  9007199254740991;
 
   const MAX_SAFE_COMPONENT_LENGTH = 16;
   var constants = {
@@ -1646,7 +1439,7 @@
     const {
       MAX_SAFE_COMPONENT_LENGTH
     } = constants;
-    exports = module.exports = {}; // The actual regexps go on exports.re
+    exports = module.exports = {};
 
     const re = exports.re = [];
     const src = exports.src = [];
@@ -1659,102 +1452,71 @@
       t[name] = index;
       src[index] = value;
       re[index] = new RegExp(value, isGlobal ? 'g' : undefined);
-    }; // The following Regular Expressions can be used for tokenizing,
-    // validating, and parsing SemVer version strings.
-    // ## Numeric Identifier
-    // A single `0`, or a non-zero digit followed by zero or more digits.
+    };
 
 
     createToken('NUMERICIDENTIFIER', '0|[1-9]\\d*');
-    createToken('NUMERICIDENTIFIERLOOSE', '[0-9]+'); // ## Non-numeric Identifier
-    // Zero or more digits, followed by a letter or hyphen, and then zero or
-    // more letters, digits, or hyphens.
+    createToken('NUMERICIDENTIFIERLOOSE', '[0-9]+');
 
-    createToken('NONNUMERICIDENTIFIER', '\\d*[a-zA-Z-][a-zA-Z0-9-]*'); // ## Main Version
-    // Three dot-separated numeric identifiers.
+    createToken('NONNUMERICIDENTIFIER', '\\d*[a-zA-Z-][a-zA-Z0-9-]*');
 
     createToken('MAINVERSION', `(${src[t.NUMERICIDENTIFIER]})\\.` + `(${src[t.NUMERICIDENTIFIER]})\\.` + `(${src[t.NUMERICIDENTIFIER]})`);
-    createToken('MAINVERSIONLOOSE', `(${src[t.NUMERICIDENTIFIERLOOSE]})\\.` + `(${src[t.NUMERICIDENTIFIERLOOSE]})\\.` + `(${src[t.NUMERICIDENTIFIERLOOSE]})`); // ## Pre-release Version Identifier
-    // A numeric identifier, or a non-numeric identifier.
+    createToken('MAINVERSIONLOOSE', `(${src[t.NUMERICIDENTIFIERLOOSE]})\\.` + `(${src[t.NUMERICIDENTIFIERLOOSE]})\\.` + `(${src[t.NUMERICIDENTIFIERLOOSE]})`);
 
     createToken('PRERELEASEIDENTIFIER', `(?:${src[t.NUMERICIDENTIFIER]}|${src[t.NONNUMERICIDENTIFIER]})`);
-    createToken('PRERELEASEIDENTIFIERLOOSE', `(?:${src[t.NUMERICIDENTIFIERLOOSE]}|${src[t.NONNUMERICIDENTIFIER]})`); // ## Pre-release Version
-    // Hyphen, followed by one or more dot-separated pre-release version
-    // identifiers.
+    createToken('PRERELEASEIDENTIFIERLOOSE', `(?:${src[t.NUMERICIDENTIFIERLOOSE]}|${src[t.NONNUMERICIDENTIFIER]})`);
 
     createToken('PRERELEASE', `(?:-(${src[t.PRERELEASEIDENTIFIER]}(?:\\.${src[t.PRERELEASEIDENTIFIER]})*))`);
-    createToken('PRERELEASELOOSE', `(?:-?(${src[t.PRERELEASEIDENTIFIERLOOSE]}(?:\\.${src[t.PRERELEASEIDENTIFIERLOOSE]})*))`); // ## Build Metadata Identifier
-    // Any combination of digits, letters, or hyphens.
+    createToken('PRERELEASELOOSE', `(?:-?(${src[t.PRERELEASEIDENTIFIERLOOSE]}(?:\\.${src[t.PRERELEASEIDENTIFIERLOOSE]})*))`);
 
-    createToken('BUILDIDENTIFIER', '[0-9A-Za-z-]+'); // ## Build Metadata
-    // Plus sign, followed by one or more period-separated build metadata
-    // identifiers.
+    createToken('BUILDIDENTIFIER', '[0-9A-Za-z-]+');
 
-    createToken('BUILD', `(?:\\+(${src[t.BUILDIDENTIFIER]}(?:\\.${src[t.BUILDIDENTIFIER]})*))`); // ## Full Version String
-    // A main version, followed optionally by a pre-release version and
-    // build metadata.
-    // Note that the only major, minor, patch, and pre-release sections of
-    // the version string are capturing groups.  The build metadata is not a
-    // capturing group, because it should not ever be used in version
-    // comparison.
+    createToken('BUILD', `(?:\\+(${src[t.BUILDIDENTIFIER]}(?:\\.${src[t.BUILDIDENTIFIER]})*))`);
 
     createToken('FULLPLAIN', `v?${src[t.MAINVERSION]}${src[t.PRERELEASE]}?${src[t.BUILD]}?`);
-    createToken('FULL', `^${src[t.FULLPLAIN]}$`); // like full, but allows v1.2.3 and =1.2.3, which people do sometimes.
-    // also, 1.0.0alpha1 (prerelease without the hyphen) which is pretty
-    // common in the npm registry.
+    createToken('FULL', `^${src[t.FULLPLAIN]}$`);
 
     createToken('LOOSEPLAIN', `[v=\\s]*${src[t.MAINVERSIONLOOSE]}${src[t.PRERELEASELOOSE]}?${src[t.BUILD]}?`);
     createToken('LOOSE', `^${src[t.LOOSEPLAIN]}$`);
-    createToken('GTLT', '((?:<|>)?=?)'); // Something like "2.*" or "1.2.x".
-    // Note that "x.x" is a valid xRange identifer, meaning "any version"
-    // Only the first item is strictly required.
+    createToken('GTLT', '((?:<|>)?=?)');
 
     createToken('XRANGEIDENTIFIERLOOSE', `${src[t.NUMERICIDENTIFIERLOOSE]}|x|X|\\*`);
     createToken('XRANGEIDENTIFIER', `${src[t.NUMERICIDENTIFIER]}|x|X|\\*`);
     createToken('XRANGEPLAIN', `[v=\\s]*(${src[t.XRANGEIDENTIFIER]})` + `(?:\\.(${src[t.XRANGEIDENTIFIER]})` + `(?:\\.(${src[t.XRANGEIDENTIFIER]})` + `(?:${src[t.PRERELEASE]})?${src[t.BUILD]}?` + `)?)?`);
     createToken('XRANGEPLAINLOOSE', `[v=\\s]*(${src[t.XRANGEIDENTIFIERLOOSE]})` + `(?:\\.(${src[t.XRANGEIDENTIFIERLOOSE]})` + `(?:\\.(${src[t.XRANGEIDENTIFIERLOOSE]})` + `(?:${src[t.PRERELEASELOOSE]})?${src[t.BUILD]}?` + `)?)?`);
     createToken('XRANGE', `^${src[t.GTLT]}\\s*${src[t.XRANGEPLAIN]}$`);
-    createToken('XRANGELOOSE', `^${src[t.GTLT]}\\s*${src[t.XRANGEPLAINLOOSE]}$`); // Coercion.
-    // Extract anything that could conceivably be a part of a valid semver
+    createToken('XRANGELOOSE', `^${src[t.GTLT]}\\s*${src[t.XRANGEPLAINLOOSE]}$`);
 
     createToken('COERCE', `${'(^|[^\\d])' + '(\\d{1,'}${MAX_SAFE_COMPONENT_LENGTH}})` + `(?:\\.(\\d{1,${MAX_SAFE_COMPONENT_LENGTH}}))?` + `(?:\\.(\\d{1,${MAX_SAFE_COMPONENT_LENGTH}}))?` + `(?:$|[^\\d])`);
-    createToken('COERCERTL', src[t.COERCE], true); // Tilde ranges.
-    // Meaning is "reasonably at or greater than"
+    createToken('COERCERTL', src[t.COERCE], true);
 
     createToken('LONETILDE', '(?:~>?)');
     createToken('TILDETRIM', `(\\s*)${src[t.LONETILDE]}\\s+`, true);
     exports.tildeTrimReplace = '$1~';
     createToken('TILDE', `^${src[t.LONETILDE]}${src[t.XRANGEPLAIN]}$`);
-    createToken('TILDELOOSE', `^${src[t.LONETILDE]}${src[t.XRANGEPLAINLOOSE]}$`); // Caret ranges.
-    // Meaning is "at least and backwards compatible with"
+    createToken('TILDELOOSE', `^${src[t.LONETILDE]}${src[t.XRANGEPLAINLOOSE]}$`);
 
     createToken('LONECARET', '(?:\\^)');
     createToken('CARETTRIM', `(\\s*)${src[t.LONECARET]}\\s+`, true);
     exports.caretTrimReplace = '$1^';
     createToken('CARET', `^${src[t.LONECARET]}${src[t.XRANGEPLAIN]}$`);
-    createToken('CARETLOOSE', `^${src[t.LONECARET]}${src[t.XRANGEPLAINLOOSE]}$`); // A simple gt/lt/eq thing, or just "" to indicate "any version"
+    createToken('CARETLOOSE', `^${src[t.LONECARET]}${src[t.XRANGEPLAINLOOSE]}$`);
 
     createToken('COMPARATORLOOSE', `^${src[t.GTLT]}\\s*(${src[t.LOOSEPLAIN]})$|^$`);
-    createToken('COMPARATOR', `^${src[t.GTLT]}\\s*(${src[t.FULLPLAIN]})$|^$`); // An expression to strip any whitespace between the gtlt and the thing
-    // it modifies, so that `> 1.2.3` ==> `>1.2.3`
+    createToken('COMPARATOR', `^${src[t.GTLT]}\\s*(${src[t.FULLPLAIN]})$|^$`);
 
     createToken('COMPARATORTRIM', `(\\s*)${src[t.GTLT]}\\s*(${src[t.LOOSEPLAIN]}|${src[t.XRANGEPLAIN]})`, true);
-    exports.comparatorTrimReplace = '$1$2$3'; // Something like `1.2.3 - 1.2.4`
-    // Note that these all use the loose form, because they'll be
-    // checked against either the strict or loose comparator form
-    // later.
+    exports.comparatorTrimReplace = '$1$2$3';
 
     createToken('HYPHENRANGE', `^\\s*(${src[t.XRANGEPLAIN]})` + `\\s+-\\s+` + `(${src[t.XRANGEPLAIN]})` + `\\s*$`);
-    createToken('HYPHENRANGELOOSE', `^\\s*(${src[t.XRANGEPLAINLOOSE]})` + `\\s+-\\s+` + `(${src[t.XRANGEPLAINLOOSE]})` + `\\s*$`); // Star ranges basically just allow anything at all.
+    createToken('HYPHENRANGELOOSE', `^\\s*(${src[t.XRANGEPLAINLOOSE]})` + `\\s+-\\s+` + `(${src[t.XRANGEPLAINLOOSE]})` + `\\s*$`);
 
-    createToken('STAR', '(<|>)?=?\\s*\\*'); // >=0.0.0 is like a star
+    createToken('STAR', '(<|>)?=?\\s*\\*');
 
     createToken('GTE0', '^\\s*>=\\s*0\.0\.0\\s*$');
     createToken('GTE0PRE', '^\\s*>=\\s*0\.0\.0-0\\s*$');
   });
 
-  // parse out just the options we care about so we always get a consistent
-  // obj with keys in a consistent order.
   const opts = ['includePrerelease', 'loose', 'rtl'];
 
   const parseOptions = options => !options ? {} : typeof options !== 'object' ? {
@@ -1819,8 +1581,7 @@
 
       debug_1('SemVer', version, options);
       this.options = options;
-      this.loose = !!options.loose; // this isn't actually relevant for versions, but keep it so that we
-      // don't run into trouble passing this.options around.
+      this.loose = !!options.loose;
 
       this.includePrerelease = !!options.includePrerelease;
       const m = version.trim().match(options.loose ? re[t.LOOSE] : re[t.FULL]);
@@ -1829,7 +1590,7 @@
         throw new TypeError(`Invalid Version: ${version}`);
       }
 
-      this.raw = version; // these are actually numbers
+      this.raw = version;
 
       this.major = +m[1];
       this.minor = +m[2];
@@ -1845,7 +1606,7 @@
 
       if (this.patch > MAX_SAFE_INTEGER || this.patch < 0) {
         throw new TypeError('Invalid patch version');
-      } // numberify any prerelease numeric ids
+      }
 
 
       if (!m[4]) {
@@ -1911,7 +1672,7 @@
     comparePre(other) {
       if (!(other instanceof SemVer)) {
         other = new SemVer(other, this.options);
-      } // NOT having a prerelease is > having one
+      }
 
 
       if (this.prerelease.length && !other.prerelease.length) {
@@ -1967,8 +1728,7 @@
           return compareIdentifiers(a, b);
         }
       } while (++i);
-    } // preminor will bump the version up to the next minor release, and immediately
-    // down to pre-release. premajor and prepatch work the same way.
+    }
 
 
     inc(release, identifier) {
@@ -1989,15 +1749,10 @@
           break;
 
         case 'prepatch':
-          // If this is already a prerelease, it will bump to the next version
-          // drop any prereleases that might already exist, since they are not
-          // relevant at this point.
           this.prerelease.length = 0;
           this.inc('patch', identifier);
           this.inc('pre', identifier);
           break;
-        // If the input is a non-prerelease version, this acts the same as
-        // prepatch.
 
         case 'prerelease':
           if (this.prerelease.length === 0) {
@@ -2008,10 +1763,6 @@
           break;
 
         case 'major':
-          // If this is a pre-major version, bump up to the same major version.
-          // Otherwise increment major.
-          // 1.0.0-5 bumps to 1.0.0
-          // 1.1.0 bumps to 2.0.0
           if (this.minor !== 0 || this.patch !== 0 || this.prerelease.length === 0) {
             this.major++;
           }
@@ -2022,10 +1773,6 @@
           break;
 
         case 'minor':
-          // If this is a pre-minor version, bump up to the same minor version.
-          // Otherwise increment minor.
-          // 1.2.0-5 bumps to 1.2.0
-          // 1.2.1 bumps to 1.3.0
           if (this.patch !== 0 || this.prerelease.length === 0) {
             this.minor++;
           }
@@ -2035,18 +1782,12 @@
           break;
 
         case 'patch':
-          // If this is not a pre-release version, it will increment the patch.
-          // If it is a pre-release it will bump up to the same patch version.
-          // 1.2.0-5 patches to 1.2.0
-          // 1.2.0 patches to 1.2.1
           if (this.prerelease.length === 0) {
             this.patch++;
           }
 
           this.prerelease = [];
           break;
-        // This probably shouldn't be used publicly.
-        // 1.0.0 'pre' would become 1.0.0-0 which is the wrong direction.
 
         case 'pre':
           if (this.prerelease.length === 0) {
@@ -2062,14 +1803,11 @@
             }
 
             if (i === -1) {
-              // didn't increment anything
               this.prerelease.push(0);
             }
           }
 
           if (identifier) {
-            // 1.2.0-beta.1 bumps to 1.2.0-beta.2,
-            // 1.2.0-beta.fooblz or 1.2.0-beta bumps to 1.2.0-beta.0
             if (this.prerelease[0] === identifier) {
               if (isNaN(this.prerelease[1])) {
                 this.prerelease = [identifier, 0];
@@ -2294,7 +2032,7 @@
     Object.defineProperty(exports, "__esModule", {
       value: true
     });
-    exports.outdent = void 0; // In the absence of a WeakSet or WeakMap implementation, don't break, but don't cache either.
+    exports.outdent = void 0;
 
     function noop() {
       var args = [];
@@ -2311,9 +2049,6 @@
         return fakeSetOrMap();
       }
     }
-    /**
-     * Creates and returns a no-op implementation of a WeakMap / WeakSet that never stores anything.
-     */
 
 
     function fakeSetOrMap() {
@@ -2326,14 +2061,14 @@
           return false;
         }
       };
-    } // Safe hasOwnProperty
+    }
 
 
     var hop = Object.prototype.hasOwnProperty;
 
     var has = function (obj, prop) {
       return hop.call(obj, prop);
-    }; // Copy all own enumerable properties from source to target
+    };
 
 
     function extend(target, source) {
@@ -2353,8 +2088,6 @@
     var reOnlyWhitespaceWithAtLeastOneNewline = /^[ \t]*[\r\n][ \t\r\n]*$/;
 
     function _outdentArray(strings, firstInterpolatedValueSetsIndentationLevel, options) {
-      // If first interpolated value is a reference to outdent,
-      // determine indentation level from the indentation of the interpolated value.
       var indentationLevel = 0;
       var match = strings[0].match(reDetectIndentation);
 
@@ -2375,17 +2108,16 @@
       var normalizeNewlines = typeof newline === "string";
       var l = strings.length;
       var outdentedStrings = strings.map(function (v, i) {
-        // Remove leading indentation from all lines
-        v = v.replace(reMatchIndent, "$1"); // Trim a leading newline from the first string
+        v = v.replace(reMatchIndent, "$1");
 
         if (i === 0 && trimLeadingNewline) {
           v = v.replace(reLeadingNewline, "");
-        } // Trim a trailing newline from the last string
+        }
 
 
         if (i === l - 1 && trimTrailingNewline) {
           v = v.replace(reTrailingNewline, "");
-        } // Normalize newlines
+        }
 
 
         if (normalizeNewlines) {
@@ -2416,21 +2148,10 @@
     function isTemplateStringsArray(v) {
       return has(v, "raw") && has(v, "length");
     }
-    /**
-     * It is assumed that opts will not change.  If this is a problem, clone your options object and pass the clone to
-     * makeInstance
-     * @param options
-     * @return {outdent}
-     */
 
 
     function createInstance(options) {
-      /** Cache of pre-processed template literal arrays */
       var arrayAutoIndentCache = createWeakMap();
-      /**
-         * Cache of pre-processed template literal arrays, where first interpolated value is a reference to outdent,
-         * before interpolated values are injected.
-         */
 
       var arrayFirstInterpSetsIndentCache = createWeakMap();
 
@@ -2440,13 +2161,12 @@
         for (var _i = 1; _i < arguments.length; _i++) {
           values[_i - 1] = arguments[_i];
         }
-        /* tslint:enable:no-shadowed-variable */
 
 
         if (isTemplateStringsArray(stringsOrOptions)) {
-          var strings = stringsOrOptions; // Is first interpolated value a reference to outdent, alone on its own line, without any preceding non-whitespace?
+          var strings = stringsOrOptions;
 
-          var firstInterpolatedValueSetsIndentationLevel = (values[0] === outdent || values[0] === defaultOutdent) && reOnlyWhitespaceWithAtLeastOneNewline.test(strings[0]) && reStartsWithNewlineOrIsEmpty.test(strings[1]); // Perform outdentation
+          var firstInterpolatedValueSetsIndentationLevel = (values[0] === outdent || values[0] === defaultOutdent) && reOnlyWhitespaceWithAtLeastOneNewline.test(strings[0]) && reStartsWithNewlineOrIsEmpty.test(strings[1]);
 
           var cache = firstInterpolatedValueSetsIndentationLevel ? arrayFirstInterpSetsIndentCache : arrayAutoIndentCache;
           var renderedArray = cache.get(strings);
@@ -2455,19 +2175,16 @@
             renderedArray = _outdentArray(strings, firstInterpolatedValueSetsIndentationLevel, options);
             cache.set(strings, renderedArray);
           }
-          /** If no interpolated values, skip concatenation step */
 
 
           if (values.length === 0) {
             return renderedArray[0];
           }
-          /** Concatenate string literals with interpolated values */
 
 
           var rendered = concatStringsAndValues(renderedArray, firstInterpolatedValueSetsIndentationLevel ? values.slice(1) : values);
           return rendered;
         } else {
-          // Create and return a new instance of outdent with the given options
           return createInstance(extend(extend({}, options), stringsOrOptions || {}));
         }
       }
@@ -2484,14 +2201,11 @@
       trimLeadingNewline: true,
       trimTrailingNewline: true
     });
-    exports.outdent = defaultOutdent; // Named exports.  Simple and preferred.
-    // import outdent from 'outdent';
+    exports.outdent = defaultOutdent;
 
     exports.default = defaultOutdent;
 
     {
-      // In webpack harmony-modules environments, module.exports is read-only,
-      // so we fail gracefully.
       try {
         module.exports = defaultOutdent;
         Object.defineProperty(defaultOutdent, "__esModule", {
@@ -2513,44 +2227,7 @@
   const CATEGORY_OUTPUT = "Output";
   const CATEGORY_GLOBAL = "Global";
   const CATEGORY_SPECIAL = "Special";
-  /**
-   * @typedef {Object} OptionInfo
-   * @property {string} [since] - available since version
-   * @property {string} category
-   * @property {'int' | 'boolean' | 'choice' | 'path'} type
-   * @property {boolean} [array] - indicate it's an array of the specified type
-   * @property {OptionValueInfo} [default]
-   * @property {OptionRangeInfo} [range] - for type int
-   * @property {string} description
-   * @property {string} [deprecated] - deprecated since version
-   * @property {OptionRedirectInfo} [redirect] - redirect deprecated option
-   * @property {(value: any) => boolean} [exception]
-   * @property {OptionChoiceInfo[]} [choices] - for type choice
-   * @property {string} [cliName]
-   * @property {string} [cliCategory]
-   * @property {string} [cliDescription]
-   *
-   * @typedef {number | boolean | string} OptionValue
-   * @typedef {OptionValue | [{ value: OptionValue[] }] | Array<{ since: string, value: OptionValue}>} OptionValueInfo
-   *
-   * @typedef {Object} OptionRedirectInfo
-   * @property {string} option
-   * @property {OptionValue} value
-   *
-   * @typedef {Object} OptionRangeInfo
-   * @property {number} start - recommended range start
-   * @property {number} end - recommended range end
-   * @property {number} step - recommended range step
-   *
-   * @typedef {Object} OptionChoiceInfo
-   * @property {boolean | string} value - boolean for the option that is originally boolean type
-   * @property {string} description
-   * @property {string} [since] - undefined if available since the first version of the option
-   * @property {string} [deprecated] - deprecated since version
-   * @property {OptionValueInfo} [redirect] - redirect deprecated value
-   */
 
-  /** @type {{ [name: string]: OptionInfo }} */
 
   const options = {
     cursorOffset: {
@@ -2860,16 +2537,6 @@
   };
   const currentVersion = require$$3.version;
   const coreOptions = coreOptions$1.options;
-  /**
-   * Strings in `plugins` and `pluginSearchDirs` are handled by a wrapped version
-   * of this function created by `withPlugins`. Don't pass them here directly.
-   * @param {object} param0
-   * @param {(string | object)[]=} param0.plugins Strings are resolved by `withPlugins`.
-   * @param {string[]=} param0.pluginSearchDirs Added by `withPlugins`.
-   * @param {boolean=} param0.showUnreleased
-   * @param {boolean=} param0.showDeprecated
-   * @param {boolean=} param0.showInternal
-   */
 
   function getSupportInfo$1({
     plugins = [],
@@ -2877,8 +2544,6 @@
     showDeprecated = false,
     showInternal = false
   } = {}) {
-    // pre-release version is smaller than the normal version in semver,
-    // we need to treat it as the normal one so as to test new features.
     const version = currentVersion.split("-", 1)[0];
     const languages = plugins.flatMap(plugin => plugin.languages || []).filter(filterSince);
     const options = arrayify(Object.assign({}, ...plugins.map(({
@@ -2962,22 +2627,13 @@
   const notAsciiRegex = /[^\x20-\x7F]/;
 
   const getPenultimate = arr => arr[arr.length - 2];
-  /**
-   * @typedef {{backwards?: boolean}} SkipOptions
-   */
 
-  /**
-   * @param {string | RegExp} chars
-   * @returns {(text: string, index: number | false, opts?: SkipOptions) => number | false}
-   */
 
 
   function skip(chars) {
     return (text, index, opts) => {
-      const backwards = opts && opts.backwards; // Allow `skip` functions to be threaded together without having
-      // to check for failures (did someone say monads?).
+      const backwards = opts && opts.backwards;
 
-      /* istanbul ignore next */
 
       if (index === false) {
         return false;
@@ -3003,45 +2659,23 @@
       }
 
       if (cursor === -1 || cursor === length) {
-        // If we reached the beginning or end of the file, return the
-        // out-of-bounds cursor. It's up to the caller to handle this
-        // correctly. We don't want to indicate `false` though if it
-        // actually skipped valid characters.
         return cursor;
       }
 
       return false;
     };
   }
-  /**
-   * @type {(text: string, index: number | false, opts?: SkipOptions) => number | false}
-   */
 
 
   const skipWhitespace = skip(/\s/);
-  /**
-   * @type {(text: string, index: number | false, opts?: SkipOptions) => number | false}
-   */
 
   const skipSpaces = skip(" \t");
-  /**
-   * @type {(text: string, index: number | false, opts?: SkipOptions) => number | false}
-   */
 
   const skipToLineEnd = skip(",; \t");
-  /**
-   * @type {(text: string, index: number | false, opts?: SkipOptions) => number | false}
-   */
 
   const skipEverythingButNewLine = skip(/[^\n\r]/);
-  /**
-   * @param {string} text
-   * @param {number | false} index
-   * @returns {number | false}
-   */
 
   function skipInlineComment(text, index) {
-    /* istanbul ignore next */
     if (index === false) {
       return false;
     }
@@ -3056,15 +2690,9 @@
 
     return index;
   }
-  /**
-   * @param {string} text
-   * @param {number | false} index
-   * @returns {number | false}
-   */
 
 
   function skipTrailingComment(text, index) {
-    /* istanbul ignore next */
     if (index === false) {
       return false;
     }
@@ -3074,16 +2702,8 @@
     }
 
     return index;
-  } // This one doesn't use the above helper function because it wants to
-  // test \r\n in order and `skip` doesn't support ordering and we only
-  // want to skip one newline. It's simple to implement.
+  }
 
-  /**
-   * @param {string} text
-   * @param {number | false} index
-   * @param {SkipOptions=} opts
-   * @returns {number | false}
-   */
 
 
   function skipNewline(text, index, opts) {
@@ -3096,9 +2716,7 @@
     const atIndex = text.charAt(index);
 
     if (backwards) {
-      // We already replace `\r\n` with `\n` before parsing
 
-      /* istanbul ignore next */
       if (text.charAt(index - 1) === "\r" && atIndex === "\n") {
         return index - 2;
       }
@@ -3107,9 +2725,7 @@
         return index - 1;
       }
     } else {
-      // We already replace `\r\n` with `\n` before parsing
 
-      /* istanbul ignore next */
       if (atIndex === "\r" && text.charAt(index + 1) === "\n") {
         return index + 2;
       }
@@ -3121,12 +2737,6 @@
 
     return index;
   }
-  /**
-   * @param {string} text
-   * @param {number} index
-   * @param {SkipOptions=} opts
-   * @returns {boolean}
-   */
 
 
   function hasNewline(text, index, opts = {}) {
@@ -3134,12 +2744,6 @@
     const idx2 = skipNewline(text, idx, opts);
     return idx !== idx2;
   }
-  /**
-   * @param {string} text
-   * @param {number} start
-   * @param {number} end
-   * @returns {boolean}
-   */
 
 
   function hasNewlineInRange(text, start, end) {
@@ -3150,18 +2754,11 @@
     }
 
     return false;
-  } // Note: this function doesn't ignore leading comments unlike isNextLineEmpty
+  }
 
-  /**
-   * @template N
-   * @param {string} text
-   * @param {N} node
-   * @param {(node: N) => number} locStart
-   */
 
 
   function isPreviousLineEmpty(text, node, locStart) {
-    /** @type {number | false} */
     let idx = locStart(node) - 1;
     idx = skipSpaces(text, idx, {
       backwards: true
@@ -3177,22 +2774,14 @@
     });
     return idx !== idx2;
   }
-  /**
-   * @param {string} text
-   * @param {number} index
-   * @returns {boolean}
-   */
 
 
   function isNextLineEmptyAfterIndex(text, index) {
-    /** @type {number | false} */
     let oldIdx = null;
-    /** @type {number | false} */
 
     let idx = index;
 
     while (idx !== oldIdx) {
-      // We need to skip all the potential trailing inline comments
       oldIdx = idx;
       idx = skipToLineEnd(text, idx);
       idx = skipInlineComment(text, idx);
@@ -3203,29 +2792,15 @@
     idx = skipNewline(text, idx);
     return idx !== false && hasNewline(text, idx);
   }
-  /**
-   * @template N
-   * @param {string} text
-   * @param {N} node
-   * @param {(node: N) => number} locEnd
-   * @returns {boolean}
-   */
 
 
   function isNextLineEmpty(text, node, locEnd) {
     return isNextLineEmptyAfterIndex(text, locEnd(node));
   }
-  /**
-   * @param {string} text
-   * @param {number} idx
-   * @returns {number | false}
-   */
 
 
   function getNextNonSpaceNonCommentCharacterIndexWithStartIndex(text, idx) {
-    /** @type {number | false} */
     let oldIdx = null;
-    /** @type {number | false} */
 
     let nextIdx = idx;
 
@@ -3239,52 +2814,25 @@
 
     return nextIdx;
   }
-  /**
-   * @template N
-   * @param {string} text
-   * @param {N} node
-   * @param {(node: N) => number} locEnd
-   * @returns {number | false}
-   */
 
 
   function getNextNonSpaceNonCommentCharacterIndex(text, node, locEnd) {
     return getNextNonSpaceNonCommentCharacterIndexWithStartIndex(text, locEnd(node));
   }
-  /**
-   * @template N
-   * @param {string} text
-   * @param {N} node
-   * @param {(node: N) => number} locEnd
-   * @returns {string}
-   */
 
 
   function getNextNonSpaceNonCommentCharacter(text, node, locEnd) {
-    return text.charAt( // @ts-ignore => TBD: can return false, should we define a fallback?
+    return text.charAt(
     getNextNonSpaceNonCommentCharacterIndex(text, node, locEnd));
-  } // Not using, but it's public utils
+  }
 
-  /* istanbul ignore next */
 
-  /**
-   * @param {string} text
-   * @param {number} index
-   * @param {SkipOptions=} opts
-   * @returns {boolean}
-   */
 
 
   function hasSpaces(text, index, opts = {}) {
     const idx = skipSpaces(text, opts.backwards ? index - 1 : index, opts);
     return idx !== index;
   }
-  /**
-   * @param {string} value
-   * @param {number} tabWidth
-   * @param {number=} startIndex
-   * @returns {number}
-   */
 
 
   function getAlignmentSize(value, tabWidth, startIndex = 0) {
@@ -3292,10 +2840,6 @@
 
     for (let i = startIndex; i < value.length; ++i) {
       if (value[i] === "\t") {
-        // Tabs behave in a way that they are aligned to the nearest
-        // multiple of tabWidth:
-        // 0 -> 4, 1 -> 4, 2 -> 4, 3 -> 4
-        // 4 -> 8, 5 -> 8, 6 -> 8, 7 -> 8 ...
         size = size + tabWidth - size % tabWidth;
       } else {
         size++;
@@ -3304,11 +2848,6 @@
 
     return size;
   }
-  /**
-   * @param {string} value
-   * @param {number} tabWidth
-   * @returns {number}
-   */
 
 
   function getIndentSize(value, tabWidth) {
@@ -3318,32 +2857,19 @@
       return 0;
     }
 
-    return getAlignmentSize( // All the leading whitespaces
+    return getAlignmentSize(
     value.slice(lastNewlineIndex + 1).match(/^[\t ]*/)[0], tabWidth);
   }
-  /**
-   * @typedef {'"' | "'"} Quote
-   */
 
-  /**
-   *
-   * @param {string} raw
-   * @param {Quote} preferredQuote
-   * @returns {Quote}
-   */
 
 
   function getPreferredQuote(raw, preferredQuote) {
-    // `rawContent` is the string exactly like it appeared in the input source
-    // code, without its enclosing quotes.
     const rawContent = raw.slice(1, -1);
-    /** @type {{ quote: '"', regex: RegExp }} */
 
     const double = {
       quote: '"',
       regex: /"/g
     };
-    /** @type {{ quote: "'", regex: RegExp }} */
 
     const single = {
       quote: "'",
@@ -3351,9 +2877,7 @@
     };
     const preferred = preferredQuote === "'" ? single : double;
     const alternate = preferred === single ? double : single;
-    let result = preferred.quote; // If `rawContent` contains at least one of the quote preferred for enclosing
-    // the string, we might want to enclose with the alternate quote instead, to
-    // minimize the number of escaped quotes.
+    let result = preferred.quote;
 
     if (rawContent.includes(preferred.quote) || rawContent.includes(alternate.quote)) {
       const numPreferredQuotes = (rawContent.match(preferred.regex) || []).length;
@@ -3365,41 +2889,23 @@
   }
 
   function printString(raw, options) {
-    // `rawContent` is the string exactly like it appeared in the input source
-    // code, without its enclosing quotes.
     const rawContent = raw.slice(1, -1);
-    /** @type {Quote} */
 
-    const enclosingQuote = options.parser === "json" || options.parser === "json5" && options.quoteProps === "preserve" && !options.singleQuote ? '"' : options.__isInHtmlAttribute ? "'" : getPreferredQuote(raw, options.singleQuote ? "'" : '"'); // It might sound unnecessary to use `makeString` even if the string already
-    // is enclosed with `enclosingQuote`, but it isn't. The string could contain
-    // unnecessary escapes (such as in `"\'"`). Always using `makeString` makes
-    // sure that we consistently output the minimum amount of escaped quotes.
+    const enclosingQuote = options.parser === "json" || options.parser === "json5" && options.quoteProps === "preserve" && !options.singleQuote ? '"' : options.__isInHtmlAttribute ? "'" : getPreferredQuote(raw, options.singleQuote ? "'" : '"');
 
     return makeString(rawContent, enclosingQuote, !(options.parser === "css" || options.parser === "less" || options.parser === "scss" || options.__embeddedInHtml));
   }
-  /**
-   * @param {string} rawContent
-   * @param {Quote} enclosingQuote
-   * @param {boolean=} unescapeUnnecessaryEscapes
-   * @returns {string}
-   */
 
 
   function makeString(rawContent, enclosingQuote, unescapeUnnecessaryEscapes) {
-    const otherQuote = enclosingQuote === '"' ? "'" : '"'; // Matches _any_ escape and unescaped quotes (both single and double).
+    const otherQuote = enclosingQuote === '"' ? "'" : '"';
 
-    const regex = /\\(.)|(["'])/gs; // Escape and unescape single and double quotes as needed to be able to
-    // enclose `rawContent` with `enclosingQuote`.
+    const regex = /\\(.)|(["'])/gs;
 
     const newContent = rawContent.replace(regex, (match, escaped, quote) => {
-      // If we matched an escape, and the escaped character is a quote of the
-      // other type than we intend to enclose the string with, there's no need for
-      // it to be escaped, so return it _without_ the backslash.
       if (escaped === otherQuote) {
         return escaped;
-      } // If we matched an unescaped quote and it is of the _same_ type as we
-      // intend to enclose the string with, it must be escaped, so return it with
-      // a backslash.
+      }
 
 
       if (quote === enclosingQuote) {
@@ -3408,8 +2914,7 @@
 
       if (quote) {
         return quote;
-      } // Unescape any unnecessarily escaped character.
-      // Adapted from https://github.com/eslint/eslint/blob/de0b4ad7bd820ade41b1f606008bea68683dc11a/lib/rules/no-useless-escape.js#L27
+      }
 
 
       return unescapeUnnecessaryEscapes && /^[^\n\r"'0-7\\bfnrt-vx\u2028\u2029]$/.test(escaped) ? escaped : "\\" + escaped;
@@ -3418,18 +2923,13 @@
   }
 
   function printNumber(rawNumber) {
-    return rawNumber.toLowerCase() // Remove unnecessary plus and zeroes from scientific notation.
-    .replace(/^([+-]?[\d.]+e)(?:\+|(-))?0*(\d)/, "$1$2$3") // Remove unnecessary scientific notation (1e0).
-    .replace(/^([+-]?[\d.]+)e[+-]?0+$/, "$1") // Make sure numbers always start with a digit.
-    .replace(/^([+-])?\./, "$10.") // Remove extraneous trailing decimal zeroes.
-    .replace(/(\.\d+?)0+(?=e|$)/, "$1") // Remove trailing dot.
+    return rawNumber.toLowerCase()
+    .replace(/^([+-]?[\d.]+e)(?:\+|(-))?0*(\d)/, "$1$2$3")
+    .replace(/^([+-]?[\d.]+)e[+-]?0+$/, "$1")
+    .replace(/^([+-])?\./, "$10.")
+    .replace(/(\.\d+?)0+(?=e|$)/, "$1")
     .replace(/\.(?=e|$)/, "");
   }
-  /**
-   * @param {string} str
-   * @param {string} target
-   * @returns {number}
-   */
 
 
   function getMaxContinuousCount(str, target) {
@@ -3469,16 +2969,12 @@
 
     return max + 1;
   }
-  /**
-   * @param {string} text
-   * @returns {number}
-   */
 
 
   function getStringWidth$1(text) {
     if (!text) {
       return 0;
-    } // shortcut to avoid needless string `RegExp`s, replacements, and allocations within `string-width`
+    }
 
 
     if (!notAsciiRegex.test(text)) {
@@ -3551,19 +3047,11 @@
 
     return text.slice(0, index);
   }
-  /**
-   * @param {any} object
-   * @returns {object is Array<any>}
-   */
 
 
   function isNonEmptyArray(object) {
     return Array.isArray(object) && object.length > 0;
   }
-  /**
-   * @param {string} description
-   * @returns {(node: any) => symbol}
-   */
 
 
   function createGroupIdMapper(description) {
@@ -3652,7 +3140,6 @@
 
   function countEndOfLineChars(text, eol) {
     let regex;
-    /* istanbul ignore else */
 
     if (eol === "\n") {
       regex = /\n/g;
@@ -3690,7 +3177,6 @@
     if (Array.isArray(doc)) {
       return doc;
     }
-    /* istanbul ignore next */
 
 
     if (doc.type !== "concat" && doc.type !== "fill") {
@@ -3698,7 +3184,7 @@
     }
 
     return doc.parts;
-  }; // Using a unique object to compare by reference.
+  };
 
 
   const traverseDocOnExitStackMarker = {};
@@ -3718,12 +3204,8 @@
         docsStack.push(doc, traverseDocOnExitStackMarker);
       }
 
-      if ( // Should Recurse
+      if (
       !onEnter || onEnter(doc) !== false) {
-        // When there are multiple parts to process,
-        // the parts need to be pushed onto the stack in reverse order,
-        // so that they are processed in the original order
-        // when the stack is popped.
         if (isConcat$2(doc) || doc.type === "fill") {
           const parts = getDocParts$2(doc);
 
@@ -3754,11 +3236,6 @@
   }
 
   function mapDoc(doc, cb) {
-    // Within a doc tree, the same subtrees can be found multiple times.
-    // E.g., often this happens in conditional groups.
-    // As an optimization (those subtrees can be huge) and to maintain the
-    // reference structure of the tree, the mapping results are cached in
-    // a map and reused.
     const mapped = new Map();
     return rec(doc);
 
@@ -3854,12 +3331,9 @@
 
   function breakParentGroup(groupStack) {
     if (groupStack.length > 0) {
-      const parentGroup = getLast_1(groupStack); // Breaks are not propagated through conditional groups because
-      // the user is expected to manually handle what breaks.
+      const parentGroup = getLast_1(groupStack);
 
       if (!parentGroup.expandedStates && !parentGroup.break) {
-        // An alternative truthy value allows to distinguish propagated group breaks
-        // and not to print them as `group(..., { break: true })` in `--debug-print-doc`.
         parentGroup.break = "propagated";
       }
     }
@@ -3898,15 +3372,10 @@
     }
 
     traverseDoc(doc, propagateBreaksOnEnterFn, propagateBreaksOnExitFn,
-    /* shouldTraverseConditionalGroups */
     true);
   }
 
   function removeLinesFn(doc) {
-    // Force this doc into flat mode by statically converting all
-    // lines into spaces (or soft lines into nothing). Hard lines
-    // should still output because there's too great of a chance
-    // of breaking existing assumptions otherwise.
     if (doc.type === "line" && !doc.hard) {
       return doc.soft ? "" : " ";
     }
@@ -3975,7 +3444,6 @@
   }
 
   function stripTrailingHardline(doc) {
-    // HACK remove ending hardline, original PR: #1984
     return stripDocTrailingHardlineFromDoc(cleanDoc(doc));
   }
 
@@ -3991,7 +3459,7 @@
       case "group":
         if (!doc.contents && !doc.id && !doc.break && !doc.expandedStates) {
           return "";
-        } // Remove nested only group
+        }
 
 
         if (doc.contents.type === "group" && doc.contents.id === doc.id && doc.contents.break === doc.break && doc.contents.expandedStates === doc.expandedStates) {
@@ -4051,10 +3519,7 @@
     return Array.isArray(doc) ? parts : Object.assign(Object.assign({}, doc), {}, {
       parts
     });
-  } // A safer version of `normalizeDoc`
-  // - `normalizeDoc` concat strings and flat "concat" in `fill`, while `cleanDoc` don't
-  // - On `concat` object, `normalizeDoc` always return object with `parts`, `cleanDoc` may return strings
-  // - `cleanDoc` also remove nested `group`s and empty `fill`/`align`/`indent`/`line-suffix`/`if-break` if possible
+  }
 
 
   function cleanDoc(doc) {
@@ -4106,8 +3571,7 @@
 
   function replaceNewlinesWithLiterallines(doc) {
     return mapDoc(doc, currentDoc => typeof currentDoc === "string" && currentDoc.includes("\n") ? join(literalline, currentDoc.split("\n")) : currentDoc);
-  } // This function need return array
-  // TODO: remove `.parts` when we remove `docBuilders.concat()`
+  }
 
 
   function replaceEndOfLineWith(text, replacement) {
@@ -4147,7 +3611,6 @@
     isConcat: isConcat$1,
     getDocParts: getDocParts$1
   } = docUtils;
-  /** @type {Record<symbol, typeof MODE_BREAK | typeof MODE_FLAT>} */
 
   let groupModeMap;
   const MODE_BREAK = 1;
@@ -4226,7 +3689,6 @@
           lastSpaces += part.n;
           break;
 
-        /* istanbul ignore next */
 
         default:
           throw new Error(`Unexpected type '${part.type}'`);
@@ -4285,7 +3747,7 @@
       return 0;
     }
 
-    let trimCount = 0; // Trim whitespace at the end of line
+    let trimCount = 0;
 
     while (out.length > 0 && typeof getLast(out) === "string" && /^[\t ]*$/.test(getLast(out))) {
       trimCount += out.pop().length;
@@ -4302,8 +3764,7 @@
 
   function fits(next, restCommands, width, options, hasLineSuffix, mustBeFlat) {
     let restIdx = restCommands.length;
-    const cmds = [next]; // `out` is only used for width counting because `trim` requires to look
-    // backwards for space characters.
+    const cmds = [next];
 
     const out = [];
 
@@ -4350,7 +3811,7 @@
               }
 
               const groupMode = doc.break ? MODE_BREAK : mode;
-              cmds.push([ind, groupMode, // The most expanded state takes up the least space on the current line.
+              cmds.push([ind, groupMode,
               doc.expandedStates && groupMode === MODE_BREAK ? getLast(doc.expandedStates) : doc.contents]);
 
               if (doc.id) {
@@ -4393,7 +3854,6 @@
 
           case "line":
             switch (mode) {
-              // fallthrough
               case MODE_FLAT:
                 if (!doc.hard) {
                   if (!doc.soft) {
@@ -4437,9 +3897,7 @@
     groupModeMap = {};
     const width = options.printWidth;
     const newLine = convertEndOfLineToChars(options.endOfLine);
-    let pos = 0; // cmds is basically a stack. We've turned a recursive call into a
-    // while loop which is much faster. The while loop below adds new
-    // cmds to the array instead of recursively calling `print`.
+    let pos = 0;
 
     const cmds = [[rootIndent(), MODE_BREAK, doc]];
     const out = [];
@@ -4485,7 +3943,6 @@
                   break;
                 }
 
-              // fallthrough
 
               case MODE_BREAK:
                 {
@@ -4497,13 +3954,6 @@
                   if (!doc.break && fits(next, cmds, rem, options, hasLineSuffix)) {
                     cmds.push(next);
                   } else {
-                    // Expanded states are a rare case where a document
-                    // can manually provide multiple representations of
-                    // itself. It provides an array of documents
-                    // going from the least expanded (most flattened)
-                    // representation first to the most expanded. If a
-                    // group has these, we need to manually go through
-                    // these states and find the first one that fits.
                     if (doc.expandedStates) {
                       const mostExpanded = getLast(doc.expandedStates);
 
@@ -4540,26 +3990,6 @@
             }
 
             break;
-          // Fills each line with as much code as possible before moving to a new
-          // line with the same indentation.
-          //
-          // Expects doc.parts to be an array of alternating content and
-          // whitespace. The whitespace contains the linebreaks.
-          //
-          // For example:
-          //   ["I", line, "love", line, "monkeys"]
-          // or
-          //   [{ type: group, ... }, softline, { type: group, ... }]
-          //
-          // It uses this parts structure to handle three main layout cases:
-          // * The first two content items fit on the same line without
-          //   breaking
-          //   -> output the first content item and the whitespace "flat".
-          // * Only the first content item fits on the line without breaking
-          //   -> output the first content item "flat" and the whitespace with
-          //   "break".
-          // * Neither content item fits on the line without breaking
-          //   -> output the first content item and the whitespace with "break".
 
           case "fill":
             {
@@ -4598,11 +4028,7 @@
                 }
 
                 break;
-              } // At this point we've handled the first pair (context, separator)
-              // and will create a new fill doc for the rest of the content.
-              // Ideally we wouldn't mutate the array here but copying all the
-              // elements to a new array would make this algorithm quadratic,
-              // which is unusable for large arrays (e.g. large texts in JSX).
+              }
 
 
               parts.splice(0, 2);
@@ -4671,16 +4097,9 @@
 
                   break;
                 } else {
-                  // This line was forced into the output even if we
-                  // were in flattened mode, so we need to tell the next
-                  // group that no matter what, it needs to remeasure
-                  // because the previous measurement didn't accurately
-                  // capture the entire expression (this is necessary
-                  // for nested groups)
                   shouldRemeasure = true;
                 }
 
-              // fallthrough
 
               case MODE_BREAK:
                 if (lineSuffix.length > 0) {
@@ -4712,8 +4131,7 @@
             cmds.push([ind, mode, doc.contents]);
             break;
         }
-      } // Flush remaining line-suffix contents at the end of the document, in case
-      // there is no new line after the line-suffix.
+      }
 
 
       if (cmds.length === 0 && lineSuffix.length > 0) {
@@ -4807,9 +4225,7 @@
   }
 
   function printDocToDebug(doc) {
-    /** @type Record<symbol, string> */
     const printedSymbols = Object.create(null);
-    /** @type Set<string> */
 
     const usedKeysForSymbols = new Set();
     return printDoc(flattenDoc(doc));
@@ -4924,7 +4340,7 @@
 
       if (id in printedSymbols) {
         return printedSymbols[id];
-      } // TODO: use Symbol.prototype.description instead of slice once Node 10 is dropped
+      }
 
 
       const prefix = String(id).slice(7, -1) || "symbol";
@@ -4944,9 +4360,6 @@
     printDocToDebug
   };
 
-  /**
-   * @typedef {import("./doc-builders").Doc} Doc
-   */
 
 
   var document = {

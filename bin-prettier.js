@@ -63,15 +63,11 @@ var check = function (it) {
   return it && it.Math == Math && it;
 };
 
-// https://github.com/zloirock/core-js/issues/86#issuecomment-115759028
 var global$1 =
-  // eslint-disable-next-line es/no-global-this -- safe
   check(typeof globalThis == 'object' && globalThis) ||
   check(typeof window == 'object' && window) ||
-  // eslint-disable-next-line no-restricted-globals -- safe
   check(typeof self == 'object' && self) ||
   check(typeof global$1 == 'object' && global$1) ||
-  // eslint-disable-next-line no-new-func -- fallback
   (function () { return this; })() || Function('return this')();
 
 var fails = function (exec) {
@@ -82,21 +78,15 @@ var fails = function (exec) {
   }
 };
 
-// Detect IE8's incomplete defineProperty implementation
 var descriptors = !fails(function () {
-  // eslint-disable-next-line es/no-object-defineproperty -- required for testing
   return Object.defineProperty({}, 1, { get: function () { return 7; } })[1] != 7;
 });
 
 var $propertyIsEnumerable = {}.propertyIsEnumerable;
-// eslint-disable-next-line es/no-object-getownpropertydescriptor -- safe
 var getOwnPropertyDescriptor$1 = Object.getOwnPropertyDescriptor;
 
-// Nashorn ~ JDK8 bug
 var NASHORN_BUG = getOwnPropertyDescriptor$1 && !$propertyIsEnumerable.call({ 1: 2 }, 1);
 
-// `Object.prototype.propertyIsEnumerable` method implementation
-// https://tc39.es/ecma262/#sec-object.prototype.propertyisenumerable
 var f$4 = NASHORN_BUG ? function propertyIsEnumerable(V) {
   var descriptor = getOwnPropertyDescriptor$1(this, V);
   return !!descriptor && descriptor.enumerable;
@@ -123,23 +113,17 @@ var classofRaw = function (it) {
 
 var split = ''.split;
 
-// fallback for non-array-like ES3 and non-enumerable old V8 strings
 var indexedObject = fails(function () {
-  // throws an error in rhino, see https://github.com/mozilla/rhino/issues/346
-  // eslint-disable-next-line no-prototype-builtins -- safe
   return !Object('z').propertyIsEnumerable(0);
 }) ? function (it) {
   return classofRaw(it) == 'String' ? split.call(it, '') : Object(it);
 } : Object;
 
-// `RequireObjectCoercible` abstract operation
-// https://tc39.es/ecma262/#sec-requireobjectcoercible
 var requireObjectCoercible = function (it) {
   if (it == undefined) throw TypeError("Can't call method on " + it);
   return it;
 };
 
-// toObject with fallback for non-array-like ES3 strings
 
 
 
@@ -151,10 +135,6 @@ var isObject$3 = function (it) {
   return typeof it === 'object' ? it !== null : typeof it === 'function';
 };
 
-// `ToPrimitive` abstract operation
-// https://tc39.es/ecma262/#sec-toprimitive
-// instead of the ES6 spec version, we didn't implement @@toPrimitive case
-// and the second argument - flag - preferred type is a string
 var toPrimitive = function (input, PREFERRED_STRING) {
   if (!isObject$3(input)) return input;
   var fn, val;
@@ -164,8 +144,6 @@ var toPrimitive = function (input, PREFERRED_STRING) {
   throw TypeError("Can't convert object to primitive value");
 };
 
-// `ToObject` abstract operation
-// https://tc39.es/ecma262/#sec-toobject
 var toObject = function (argument) {
   return Object(requireObjectCoercible(argument));
 };
@@ -177,32 +155,26 @@ var has$1 = Object.hasOwn || function hasOwn(it, key) {
 };
 
 var document = global$1.document;
-// typeof document.createElement is 'object' in old IE
 var EXISTS = isObject$3(document) && isObject$3(document.createElement);
 
 var documentCreateElement = function (it) {
   return EXISTS ? document.createElement(it) : {};
 };
 
-// Thank's IE8 for his funny defineProperty
 var ie8DomDefine = !descriptors && !fails(function () {
-  // eslint-disable-next-line es/no-object-defineproperty -- requied for testing
   return Object.defineProperty(documentCreateElement('div'), 'a', {
     get: function () { return 7; }
   }).a != 7;
 });
 
-// eslint-disable-next-line es/no-object-getownpropertydescriptor -- safe
 var $getOwnPropertyDescriptor = Object.getOwnPropertyDescriptor;
 
-// `Object.getOwnPropertyDescriptor` method
-// https://tc39.es/ecma262/#sec-object.getownpropertydescriptor
 var f$3 = descriptors ? $getOwnPropertyDescriptor : function getOwnPropertyDescriptor(O, P) {
   O = toIndexedObject(O);
   P = toPrimitive(P, true);
   if (ie8DomDefine) try {
     return $getOwnPropertyDescriptor(O, P);
-  } catch (error) { /* empty */ }
+  } catch (error) { }
   if (has$1(O, P)) return createPropertyDescriptor(!objectPropertyIsEnumerable.f.call(O, P), O[P]);
 };
 
@@ -216,18 +188,15 @@ var anObject = function (it) {
   } return it;
 };
 
-// eslint-disable-next-line es/no-object-defineproperty -- safe
 var $defineProperty = Object.defineProperty;
 
-// `Object.defineProperty` method
-// https://tc39.es/ecma262/#sec-object.defineproperty
 var f$2 = descriptors ? $defineProperty : function defineProperty(O, P, Attributes) {
   anObject(O);
   P = toPrimitive(P, true);
   anObject(Attributes);
   if (ie8DomDefine) try {
     return $defineProperty(O, P, Attributes);
-  } catch (error) { /* empty */ }
+  } catch (error) { }
   if ('get' in Attributes || 'set' in Attributes) throw TypeError('Accessors not supported');
   if ('value' in Attributes) O[P] = Attributes.value;
   return O;
@@ -264,7 +233,6 @@ var sharedStore = store$1;
 
 var functionToString = Function.toString;
 
-// this helper broken in `core-js@3.4.1-3.4.4`, so we can't use `shared` helper
 if (typeof sharedStore.inspectSource != 'function') {
   sharedStore.inspectSource = function (it) {
     return functionToString.call(it);
@@ -391,7 +359,6 @@ var TEMPLATE = String(String).split('String');
   }
   if (simple) O[key] = value;
   else createNonEnumerableProperty(O, key, value);
-// add fake Function#toString for correct work wrapped methods / constructors with methods like LoDash isNative
 })(Function.prototype, 'toString', function toString() {
   return typeof this == 'function' && getInternalState(this).source || inspectSource(this);
 });
@@ -411,45 +378,33 @@ var getBuiltIn = function (namespace, method) {
 var ceil = Math.ceil;
 var floor$1 = Math.floor;
 
-// `ToInteger` abstract operation
-// https://tc39.es/ecma262/#sec-tointeger
 var toInteger = function (argument) {
   return isNaN(argument = +argument) ? 0 : (argument > 0 ? floor$1 : ceil)(argument);
 };
 
 var min$1 = Math.min;
 
-// `ToLength` abstract operation
-// https://tc39.es/ecma262/#sec-tolength
 var toLength = function (argument) {
-  return argument > 0 ? min$1(toInteger(argument), 0x1FFFFFFFFFFFFF) : 0; // 2 ** 53 - 1 == 9007199254740991
+  return argument > 0 ? min$1(toInteger(argument), 0x1FFFFFFFFFFFFF) : 0;
 };
 
 var max = Math.max;
 var min = Math.min;
 
-// Helper for a popular repeating case of the spec:
-// Let integer be ? ToInteger(index).
-// If integer < 0, let result be max((length + integer), 0); else let result be min(integer, length).
 var toAbsoluteIndex = function (index, length) {
   var integer = toInteger(index);
   return integer < 0 ? max(integer + length, 0) : min(integer, length);
 };
 
-// `Array.prototype.{ indexOf, includes }` methods implementation
 var createMethod = function (IS_INCLUDES) {
   return function ($this, el, fromIndex) {
     var O = toIndexedObject($this);
     var length = toLength(O.length);
     var index = toAbsoluteIndex(fromIndex, length);
     var value;
-    // Array#includes uses SameValueZero equality algorithm
-    // eslint-disable-next-line no-self-compare -- NaN check
     if (IS_INCLUDES && el != el) while (length > index) {
       value = O[index++];
-      // eslint-disable-next-line no-self-compare -- NaN check
       if (value != value) return true;
-    // Array#indexOf ignores holes, Array#includes - not
     } else for (;length > index; index++) {
       if ((IS_INCLUDES || index in O) && O[index] === el) return IS_INCLUDES || index || 0;
     } return !IS_INCLUDES && -1;
@@ -457,11 +412,7 @@ var createMethod = function (IS_INCLUDES) {
 };
 
 var arrayIncludes = {
-  // `Array.prototype.includes` method
-  // https://tc39.es/ecma262/#sec-array.prototype.includes
   includes: createMethod(true),
-  // `Array.prototype.indexOf` method
-  // https://tc39.es/ecma262/#sec-array.prototype.indexof
   indexOf: createMethod(false)
 };
 
@@ -474,14 +425,12 @@ var objectKeysInternal = function (object, names) {
   var result = [];
   var key;
   for (key in O) !has$1(hiddenKeys$1, key) && has$1(O, key) && result.push(key);
-  // Don't enum bug & hidden keys
   while (names.length > i) if (has$1(O, key = names[i++])) {
     ~indexOf(result, key) || result.push(key);
   }
   return result;
 };
 
-// IE8- don't enum bug keys
 var enumBugKeys = [
   'constructor',
   'hasOwnProperty',
@@ -494,9 +443,6 @@ var enumBugKeys = [
 
 var hiddenKeys = enumBugKeys.concat('length', 'prototype');
 
-// `Object.getOwnPropertyNames` method
-// https://tc39.es/ecma262/#sec-object.getownpropertynames
-// eslint-disable-next-line es/no-object-getownpropertynames -- safe
 var f$1 = Object.getOwnPropertyNames || function getOwnPropertyNames(O) {
   return objectKeysInternal(O, hiddenKeys);
 };
@@ -505,14 +451,12 @@ var objectGetOwnPropertyNames = {
 	f: f$1
 };
 
-// eslint-disable-next-line es/no-object-getownpropertysymbols -- safe
 var f = Object.getOwnPropertySymbols;
 
 var objectGetOwnPropertySymbols = {
 	f: f
 };
 
-// all object keys, includes non-enumerable and symbols
 var ownKeys = getBuiltIn('Reflect', 'ownKeys') || function ownKeys(it) {
   var keys = objectGetOwnPropertyNames.f(anObject(it));
   var getOwnPropertySymbols = objectGetOwnPropertySymbols.f;
@@ -556,20 +500,6 @@ var getOwnPropertyDescriptor = objectGetOwnPropertyDescriptor.f;
 
 
 
-/*
-  options.target      - name of the target object
-  options.global      - target is the global object
-  options.stat        - export as static methods of target
-  options.proto       - export as prototype methods of target
-  options.real        - real prototype method for the `pure` version
-  options.forced      - export even if the native feature is available
-  options.bind        - bind methods to the target, required for the `pure` version
-  options.wrap        - wrap constructors to preventing global pollution, required for the `pure` version
-  options.unsafe      - use the simple assignment of property instead of delete + defineProperty
-  options.sham        - add a flag to not completely full polyfills
-  options.enumerable  - export as enumerable property
-  options.noTargetGet - prevent calling a getter on target
-*/
 var _export = function (options, source) {
   var TARGET = options.target;
   var GLOBAL = options.global;
@@ -589,16 +519,13 @@ var _export = function (options, source) {
       targetProperty = descriptor && descriptor.value;
     } else targetProperty = target[key];
     FORCED = isForced_1(GLOBAL ? key : TARGET + (STATIC ? '.' : '#') + key, options.forced);
-    // contained in target
     if (!FORCED && targetProperty !== undefined) {
       if (typeof sourceProperty === typeof targetProperty) continue;
       copyConstructorProperties(sourceProperty, targetProperty);
     }
-    // add a flag to not completely full polyfills
     if (options.sham || (targetProperty && targetProperty.sham)) {
       createNonEnumerableProperty(sourceProperty, 'sham', true);
     }
-    // extend global
     redefine(target, key, sourceProperty, options);
   }
 };
@@ -609,7 +536,6 @@ var aFunction = function (it) {
   } return it;
 };
 
-// TODO: use something more complex like timsort?
 var floor = Math.floor;
 
 var mergeSort = function (array, comparefn) {
@@ -658,7 +584,6 @@ var arraySort = mergeSort;
 var arrayMethodIsStrict = function (METHOD_NAME, argument) {
   var method = [][METHOD_NAME];
   return !!method && fails(function () {
-    // eslint-disable-next-line no-useless-call,no-throw-literal -- required for testing
     method.call(null, argument || function () { throw 1; }, 1);
   });
 };
@@ -696,19 +621,15 @@ var engineWebkitVersion = !!webkit && +webkit[1];
 var test$1 = [];
 var nativeSort = test$1.sort;
 
-// IE8-
 var FAILS_ON_UNDEFINED = fails(function () {
   test$1.sort(undefined);
 });
-// V8 bug
 var FAILS_ON_NULL = fails(function () {
   test$1.sort(null);
 });
-// Old WebKit
 var STRICT_METHOD = arrayMethodIsStrict('sort');
 
 var STABLE_SORT = !fails(function () {
-  // feature detection can be too slow, so check engines versions
   if (engineV8Version) return engineV8Version < 70;
   if (engineFfVersion && engineFfVersion > 3) return;
   if (engineIsIeOrEdge) return true;
@@ -717,7 +638,6 @@ var STABLE_SORT = !fails(function () {
   var result = '';
   var code, chr, value, index;
 
-  // generate an array with more 512 elements (Chakra and old V8 fails only in this case)
   for (code = 65; code < 76; code++) {
     chr = String.fromCharCode(code);
 
@@ -753,8 +673,6 @@ var getSortCompare = function (comparefn) {
   };
 };
 
-// `Array.prototype.sort` method
-// https://tc39.es/ecma262/#sec-array.prototype.sort
 _export({ target: 'Array', proto: true, forced: FORCED }, {
   sort: function sort(comparefn) {
     if (comparefn !== undefined) aFunction(comparefn);
@@ -1004,11 +922,6 @@ var colorName = {
   "yellowgreen": [154, 205, 50]
 };
 
-/* MIT license */
-/* eslint-disable no-mixed-operators */
-// NOTE: conversions should only return primitive values (i.e. arrays, or
-//       values that give correct `typeof` results).
-//       do not use box values types (i.e. Number(), String(), etc.)
 
 const reverseKeywords = {};
 
@@ -1078,7 +991,7 @@ const convert$1 = {
     labels: ['gray']
   }
 };
-var conversions = convert$1; // Hide .channels and .labels properties
+var conversions = convert$1;
 
 for (const model of Object.keys(convert$1)) {
   if (!('channels' in convert$1[model])) {
@@ -1211,9 +1124,6 @@ convert$1.rgb.cmyk = function (rgb) {
 };
 
 function comparativeDistance(x, y) {
-  /*
-  	See https://en.m.wikipedia.org/wiki/Euclidean_distance#Squared_Euclidean_distance
-  */
   return (x[0] - y[0]) ** 2 + (x[1] - y[1]) ** 2 + (x[2] - y[2]) ** 2;
 }
 
@@ -1228,9 +1138,9 @@ convert$1.rgb.keyword = function (rgb) {
   let currentClosestKeyword;
 
   for (const keyword of Object.keys(colorName)) {
-    const value = colorName[keyword]; // Compute comparative distance
+    const value = colorName[keyword];
 
-    const distance = comparativeDistance(rgb, value); // Check if its less, if so set as closest
+    const distance = comparativeDistance(rgb, value);
 
     if (distance < currentClosestDistance) {
       currentClosestDistance = distance;
@@ -1248,7 +1158,7 @@ convert$1.keyword.rgb = function (keyword) {
 convert$1.rgb.xyz = function (rgb) {
   let r = rgb[0] / 255;
   let g = rgb[1] / 255;
-  let b = rgb[2] / 255; // Assume sRGB
+  let b = rgb[2] / 255;
 
   r = r > 0.04045 ? ((r + 0.055) / 1.055) ** 2.4 : r / 12.92;
   g = g > 0.04045 ? ((g + 0.055) / 1.055) ** 2.4 : g / 12.92;
@@ -1385,7 +1295,7 @@ convert$1.hsv.hsl = function (hsv) {
   sl = sl || 0;
   l /= 2;
   return [h, sl * 100, l * 100];
-}; // http://dev.w3.org/csswg/css-color/#hwb-to-rgb
+};
 
 
 convert$1.hwb.rgb = function (hwb) {
@@ -1393,7 +1303,7 @@ convert$1.hwb.rgb = function (hwb) {
   let wh = hwb[1] / 100;
   let bl = hwb[2] / 100;
   const ratio = wh + bl;
-  let f; // Wh + bl cant be > 1
+  let f;
 
   if (ratio > 1) {
     wh /= ratio;
@@ -1408,12 +1318,11 @@ convert$1.hwb.rgb = function (hwb) {
     f = 1 - f;
   }
 
-  const n = wh + f * (v - wh); // Linear interpolation
+  const n = wh + f * (v - wh);
 
   let r;
   let g;
   let b;
-  /* eslint-disable max-statements-per-line,no-multi-spaces */
 
   switch (i) {
     default:
@@ -1454,7 +1363,6 @@ convert$1.hwb.rgb = function (hwb) {
       b = n;
       break;
   }
-  /* eslint-enable max-statements-per-line,no-multi-spaces */
 
 
   return [r * 255, g * 255, b * 255];
@@ -1480,7 +1388,7 @@ convert$1.xyz.rgb = function (xyz) {
   let b;
   r = x * 3.2406 + y * -1.5372 + z * -0.4986;
   g = x * -0.9689 + y * 1.8758 + z * 0.0415;
-  b = x * 0.0557 + y * -0.2040 + z * 1.0570; // Assume sRGB
+  b = x * 0.0557 + y * -0.2040 + z * 1.0570;
 
   r = r > 0.0031308 ? 1.055 * r ** (1.0 / 2.4) - 0.055 : r * 12.92;
   g = g > 0.0031308 ? 1.055 * g ** (1.0 / 2.4) - 0.055 : g * 12.92;
@@ -1557,7 +1465,7 @@ convert$1.lch.lab = function (lch) {
 
 convert$1.rgb.ansi16 = function (args, saturation = null) {
   const [r, g, b] = args;
-  let value = saturation === null ? convert$1.rgb.hsv(args)[2] : saturation; // Hsv -> ansi16 optimization
+  let value = saturation === null ? convert$1.rgb.hsv(args)[2] : saturation;
 
   value = Math.round(value / 50);
 
@@ -1575,16 +1483,13 @@ convert$1.rgb.ansi16 = function (args, saturation = null) {
 };
 
 convert$1.hsv.ansi16 = function (args) {
-  // Optimization here; we already know the value and don't need to get
-  // it converted for us.
   return convert$1.rgb.ansi16(convert$1.hsv.rgb(args), args[2]);
 };
 
 convert$1.rgb.ansi256 = function (args) {
   const r = args[0];
   const g = args[1];
-  const b = args[2]; // We use the extended greyscale palette here, with the exception of
-  // black and white. normal palette only has 4 greyscale shades.
+  const b = args[2];
 
   if (r === g && g === b) {
     if (r < 8) {
@@ -1603,7 +1508,7 @@ convert$1.rgb.ansi256 = function (args) {
 };
 
 convert$1.ansi16.rgb = function (args) {
-  let color = args % 10; // Handle greyscale
+  let color = args % 10;
 
   if (color === 0 || color === 7) {
     if (args > 50) {
@@ -1622,7 +1527,6 @@ convert$1.ansi16.rgb = function (args) {
 };
 
 convert$1.ansi256.rgb = function (args) {
-  // Handle greyscale
   if (args >= 232) {
     const c = (args - 232) * 10 + 8;
     return [c, c, c];
@@ -1735,7 +1639,6 @@ convert$1.hcg.rgb = function (hcg) {
   const v = hi % 1;
   const w = 1 - v;
   let mg = 0;
-  /* eslint-disable max-statements-per-line */
 
   switch (Math.floor(hi)) {
     case 0:
@@ -1773,7 +1676,6 @@ convert$1.hcg.rgb = function (hcg) {
       pure[1] = 0;
       pure[2] = w;
   }
-  /* eslint-enable max-statements-per-line */
 
 
   mg = (1.0 - c) * g;
@@ -1871,38 +1773,26 @@ convert$1.rgb.gray = function (rgb) {
   return [val / 255 * 100];
 };
 
-/*
-	This function routes a model to all other models.
-
-	all functions that are routed have a property `.conversion` attached
-	to the returned synthetic function. This property is an array
-	of strings, each with the steps in between the 'from' and 'to'
-	color models (inclusive).
-
-	conversions that are not possible simply are not included.
-*/
 
 function buildGraph() {
-  const graph = {}; // https://jsperf.com/object-keys-vs-for-in-with-closure/3
+  const graph = {};
 
   const models = Object.keys(conversions);
 
   for (let len = models.length, i = 0; i < len; i++) {
     graph[models[i]] = {
-      // http://jsperf.com/1-vs-infinity
-      // micro-opt, but this is simple.
       distance: -1,
       parent: null
     };
   }
 
   return graph;
-} // https://en.wikipedia.org/wiki/Breadth-first_search
+}
 
 
 function deriveBFS(fromModel) {
   const graph = buildGraph();
-  const queue = [fromModel]; // Unshift -> queue -> pop
+  const queue = [fromModel];
 
   graph[fromModel].distance = 0;
 
@@ -1956,7 +1846,6 @@ var route = function (fromModel) {
     const node = graph[toModel];
 
     if (node.parent === null) {
-      // No possible conversion, or this node is the source model.
       continue;
     }
 
@@ -1982,7 +1871,7 @@ function wrapRaw(fn) {
     }
 
     return fn(args);
-  }; // Preserve .conversion property if there is one
+  };
 
 
   if ('conversion' in fn) {
@@ -2004,9 +1893,7 @@ function wrapRounded(fn) {
       args = arg0;
     }
 
-    const result = fn(args); // We're assuming the result is an array here.
-    // see notice in conversions.js; don't use box types
-    // in conversion functions.
+    const result = fn(args);
 
     if (typeof result === 'object') {
       for (let len = result.length, i = 0; i < len; i++) {
@@ -2015,7 +1902,7 @@ function wrapRounded(fn) {
     }
 
     return result;
-  }; // Preserve .conversion property if there is one
+  };
 
 
   if ('conversion' in fn) {
@@ -2079,7 +1966,6 @@ var ansiStyles = createCommonjsModule(function (module) {
       configurable: true
     });
   };
-  /** @type {typeof import('color-convert')} */
 
 
   let colorConvert$1;
@@ -2110,7 +1996,6 @@ var ansiStyles = createCommonjsModule(function (module) {
     const styles = {
       modifier: {
         reset: [0, 0],
-        // 21 isn't widely supported and 22 does the same thing
         bold: [1, 22],
         dim: [2, 22],
         italic: [3, 23],
@@ -2128,7 +2013,6 @@ var ansiStyles = createCommonjsModule(function (module) {
         magenta: [35, 39],
         cyan: [36, 39],
         white: [37, 39],
-        // Bright color
         blackBright: [90, 39],
         redBright: [91, 39],
         greenBright: [92, 39],
@@ -2147,7 +2031,6 @@ var ansiStyles = createCommonjsModule(function (module) {
         bgMagenta: [45, 49],
         bgCyan: [46, 49],
         bgWhite: [47, 49],
-        // Bright color
         bgBlackBright: [100, 49],
         bgRedBright: [101, 49],
         bgGreenBright: [102, 49],
@@ -2157,7 +2040,7 @@ var ansiStyles = createCommonjsModule(function (module) {
         bgCyanBright: [106, 49],
         bgWhiteBright: [107, 49]
       }
-    }; // Alias bright black as gray (and grey)
+    };
 
     styles.color.gray = styles.color.blackBright;
     styles.bgColor.bgGray = styles.bgColor.bgBlackBright;
@@ -2193,7 +2076,7 @@ var ansiStyles = createCommonjsModule(function (module) {
     setLazyProperty(styles.bgColor, 'ansi256', () => makeDynamicStyles(wrapAnsi256, 'ansi256', ansi2ansi, true));
     setLazyProperty(styles.bgColor, 'ansi16m', () => makeDynamicStyles(wrapAnsi16m, 'rgb', rgb2rgb, true));
     return styles;
-  } // Make the export immutable
+  }
 
 
   Object.defineProperty(module, 'exports', {
@@ -2267,8 +2150,6 @@ function supportsColor(haveStream, streamIsTTY) {
   }
 
   if (process.platform === 'win32') {
-    // Windows 10 build 10586 is the first Windows release that supports 256 colors.
-    // Windows 10 build 14931 is the first release that supports 16m/TrueColor.
     const osRelease = os__default['default'].release().split('.');
 
     if (Number(osRelease[0]) >= 10 && Number(osRelease[2]) >= 10586) {
@@ -2303,7 +2184,6 @@ function supportsColor(haveStream, streamIsTTY) {
 
       case 'Apple_Terminal':
         return 2;
-      // No default
     }
   }
 
@@ -2463,7 +2343,7 @@ function buildStyle(chalk, styles) {
 var templates = (chalk, temporary) => {
   const styles = [];
   const chunks = [];
-  let chunk = []; // eslint-disable-next-line max-params
+  let chunk = [];
 
   temporary.replace(TEMPLATE_REGEX, (m, escapeCharacter, inverse, style, close, character) => {
     if (escapeCharacter) {
@@ -2508,7 +2388,7 @@ const {
 } = util;
 const {
   isArray: isArray$2
-} = Array; // `supportsColor.level` → `ansiStyles.color[name]` mapping
+} = Array;
 
 const levelMapping = ['ansi', 'ansi', 'ansi256', 'ansi16m'];
 const styles = Object.create(null);
@@ -2516,7 +2396,7 @@ const styles = Object.create(null);
 const applyOptions = (object, options = {}) => {
   if (options.level && !(Number.isInteger(options.level) && options.level >= 0 && options.level <= 3)) {
     throw new Error('The `level` option should be an integer from 0 to 3');
-  } // Detect level if not set manually
+  }
 
 
   const colorLevel = stdoutColor ? stdoutColor.level : 0;
@@ -2525,7 +2405,6 @@ const applyOptions = (object, options = {}) => {
 
 class ChalkClass {
   constructor(options) {
-    // eslint-disable-next-line no-constructor-return
     return chalkFactory(options);
   }
 
@@ -2647,15 +2526,12 @@ const createStyler = (open, close, parent) => {
 const createBuilder = (self, _styler, _isEmpty) => {
   const builder = (...arguments_) => {
     if (isArray$2(arguments_[0]) && isArray$2(arguments_[0].raw)) {
-      // Called as a template literal, for example: chalk.red`2 + 3 = {bold ${2+3}}`
       return applyStyle(builder, chalkTag(builder, ...arguments_));
-    } // Single argument is hot path, implicit coercion is faster than anything
-    // eslint-disable-next-line no-implicit-coercion
+    }
 
 
     return applyStyle(builder, arguments_.length === 1 ? '' + arguments_[0] : arguments_.join(' '));
-  }; // We alter the prototype because we must return a function, but there is
-  // no way to create a function with a different prototype
+  };
 
 
   Object.setPrototypeOf(builder, proto);
@@ -2683,15 +2559,10 @@ const applyStyle = (self, string) => {
 
   if (string.indexOf('\u001B') !== -1) {
     while (styler !== undefined) {
-      // Replace any instances already present with a re-opening code
-      // otherwise only the part of the string until said closing code
-      // will be colored, and the rest will simply be 'plain'.
       string = stringReplaceAll(string, styler.close, styler.open);
       styler = styler.parent;
     }
-  } // We can move both next actions out of loop, because remaining actions in loop won't have
-  // any/visible effect on parts we add here. Close the styling before a linebreak and reopen
-  // after next line to fix a bleed issue on macOS: https://github.com/chalk/chalk/pull/92
+  }
 
 
   const lfIndex = string.indexOf('\n');
@@ -2709,8 +2580,6 @@ const chalkTag = (chalk, ...strings) => {
   const [firstString] = strings;
 
   if (!isArray$2(firstString) || !isArray$2(firstString.raw)) {
-    // If chalk() was called by itself or with a string,
-    // return the string itself as a string.
     return strings.join(' ');
   }
 
@@ -2729,12 +2598,12 @@ const chalkTag = (chalk, ...strings) => {
 };
 
 Object.defineProperties(Chalk.prototype, styles);
-const chalk = Chalk(); // eslint-disable-line new-cap
+const chalk = Chalk();
 
 chalk.supportsColor = stdoutColor;
 chalk.stderr = Chalk({
   level: stderrColor ? stderrColor.level : 0
-}); // eslint-disable-line new-cap
+});
 
 chalk.stderr.supportsColor = stderrColor;
 var source = chalk;
@@ -2743,14 +2612,10 @@ var require$$1 = require("./third-party.js");
 
 var prettierInternal = prettier$1.__internal;
 
-// `IsArray` abstract operation
-// https://tc39.es/ecma262/#sec-isarray
-// eslint-disable-next-line es/no-array-isarray -- safe
 var isArray$1 = Array.isArray || function isArray(arg) {
   return classofRaw(arg) == 'Array';
 };
 
-// optional / simple context binding
 var functionBindContext = function (fn, that, length) {
   aFunction(fn);
   if (that === undefined) return fn;
@@ -2768,13 +2633,11 @@ var functionBindContext = function (fn, that, length) {
       return fn.call(that, a, b, c);
     };
   }
-  return function (/* ...args */) {
+  return function () {
     return fn.apply(that, arguments);
   };
 };
 
-// `FlattenIntoArray` abstract operation
-// https://tc39.github.io/proposal-flatMap/#sec-FlattenIntoArray
 var flattenIntoArray = function (target, original, source, sourceLen, start, depth, mapper, thisArg) {
   var targetIndex = start;
   var sourceIndex = 0;
@@ -2801,19 +2664,13 @@ var flattenIntoArray = function (target, original, source, sourceLen, start, dep
 
 var flattenIntoArray_1 = flattenIntoArray;
 
-/* eslint-disable es/no-symbol -- required for testing */
 
-// eslint-disable-next-line es/no-object-getownpropertysymbols -- required for testing
 var nativeSymbol = !!Object.getOwnPropertySymbols && !fails(function () {
   var symbol = Symbol();
-  // Chrome 38 Symbol has incorrect toString conversion
-  // `get-own-property-symbols` polyfill symbols converted to object are not Symbol instances
   return !String(symbol) || !(Object(symbol) instanceof Symbol) ||
-    // Chrome 38-40 symbols are not inherited from DOM collections prototypes to instances
     !Symbol.sham && engineV8Version && engineV8Version < 41;
 });
 
-/* eslint-disable es/no-symbol -- required for testing */
 
 var useSymbolAsUid = nativeSymbol
   && !Symbol.sham
@@ -2835,13 +2692,10 @@ var wellKnownSymbol = function (name) {
 
 var SPECIES = wellKnownSymbol('species');
 
-// `ArraySpeciesCreate` abstract operation
-// https://tc39.es/ecma262/#sec-arrayspeciescreate
 var arraySpeciesCreate = function (originalArray, length) {
   var C;
   if (isArray$1(originalArray)) {
     C = originalArray.constructor;
-    // cross-realm fallback
     if (typeof C == 'function' && (C === Array || isArray$1(C.prototype))) C = undefined;
     else if (isObject$3(C)) {
       C = C[SPECIES];
@@ -2850,10 +2704,8 @@ var arraySpeciesCreate = function (originalArray, length) {
   } return new (C === undefined ? Array : C)(length === 0 ? 0 : length);
 };
 
-// `Array.prototype.flatMap` method
-// https://tc39.es/ecma262/#sec-array.prototype.flatmap
 _export({ target: 'Array', proto: true }, {
-  flatMap: function flatMap(callbackfn /* , thisArg */) {
+  flatMap: function flatMap(callbackfn) {
     var O = toObject(this);
     var sourceLen = toLength(O.length);
     var A;
@@ -2944,12 +2796,9 @@ var path_1 = createCommonjsModule(function (module, exports) {
     value: true
   });
   exports.removeLeadingDotSegment = exports.escape = exports.makeAbsolute = exports.unixify = void 0;
-  const LEADING_DOT_SEGMENT_CHARACTERS_COUNT = 2; // ./ or .\\
+  const LEADING_DOT_SEGMENT_CHARACTERS_COUNT = 2;
 
   const UNESCAPED_GLOB_SYMBOLS_RE = /(\\?)([()*?[\]{|}]|^!|[!+@](?=\())/g;
-  /**
-   * Designed to work only with simple paths: `dir\\file`.
-   */
 
   function unixify(filepath) {
     return filepath.replace(/\\/g, '/');
@@ -2970,8 +2819,6 @@ var path_1 = createCommonjsModule(function (module, exports) {
   exports.escape = escape;
 
   function removeLeadingDotSegment(entry) {
-    // We do not use `startsWith` because this is 10x slower than current implementation for some cases.
-    // eslint-disable-next-line @typescript-eslint/prefer-string-starts-ends-with
     if (entry.charAt(0) === '.') {
       const secondCharactery = entry.charAt(1);
 
@@ -3031,7 +2878,7 @@ var isGlob = function isGlob(str, options) {
   }
 
   var regex = strictRegex;
-  var match; // optionally relax regex
+  var match;
 
   if (options && options.strict === false) {
     regex = relaxedRegex;
@@ -3039,8 +2886,7 @@ var isGlob = function isGlob(str, options) {
 
   while (match = regex.exec(str)) {
     if (match[2]) return true;
-    var idx = match.index + match[0].length; // if an open bracket/brace/paren is escaped,
-    // set the index to the next closing character
+    var idx = match.index + match[0].length;
 
     var open = match[1];
     var close = open ? chars[open] : null;
@@ -3066,33 +2912,27 @@ var backslash = /\\/g;
 var enclosure = /[\{\[].*[\}\]]$/;
 var globby = /(^|[^\\])([\{\[]|\([^\)]+$)/;
 var escaped = /\\([\!\*\?\|\[\]\(\)\{\}])/g;
-/**
- * @param {string} str
- * @param {Object} opts
- * @param {boolean} [opts.flipBackslashes=true]
- * @returns {string}
- */
 
 var globParent = function globParent(str, opts) {
   var options = Object.assign({
     flipBackslashes: true
-  }, opts); // flip windows path separators
+  }, opts);
 
   if (options.flipBackslashes && isWin32 && str.indexOf(slash) < 0) {
     str = str.replace(backslash, slash);
-  } // special case for strings ending in enclosure containing path separator
+  }
 
 
   if (enclosure.test(str)) {
     str += slash;
-  } // preserves full path in case of trailing path separator
+  }
 
 
-  str += 'a'; // remove path parts that are globby
+  str += 'a';
 
   do {
     str = pathPosixDirname(str);
-  } while (isGlob(str) || globby.test(str)); // remove escape chars and return result
+  } while (isGlob(str) || globby.test(str));
 
 
   return str.replace(escaped, '$1');
@@ -3111,15 +2951,9 @@ var utils$3 = createCommonjsModule(function (module, exports) {
 
     return false;
   };
-  /**
-   * Find a node of the given type
-   */
 
 
   exports.find = (node, type) => node.nodes.find(node => node.type === type);
-  /**
-   * Find a node of the given type
-   */
 
 
   exports.exceedsLimit = (min, max, step = 1, limit) => {
@@ -3127,9 +2961,6 @@ var utils$3 = createCommonjsModule(function (module, exports) {
     if (!exports.isInteger(min) || !exports.isInteger(max)) return false;
     return (Number(max) - Number(min)) / Number(step) >= limit;
   };
-  /**
-   * Escape the given node with '\\' before node.value
-   */
 
 
   exports.escapeNode = (block, n = 0, type) => {
@@ -3143,9 +2974,6 @@ var utils$3 = createCommonjsModule(function (module, exports) {
       }
     }
   };
-  /**
-   * Returns true if the given brace node should be enclosed in literal braces
-   */
 
 
   exports.encloseBrace = node => {
@@ -3158,9 +2986,6 @@ var utils$3 = createCommonjsModule(function (module, exports) {
 
     return false;
   };
-  /**
-   * Returns true if a brace node is invalid.
-   */
 
 
   exports.isInvalidBrace = block => {
@@ -3179,9 +3004,6 @@ var utils$3 = createCommonjsModule(function (module, exports) {
 
     return false;
   };
-  /**
-   * Returns true if a node is an open or close node
-   */
 
 
   exports.isOpenOrClose = node => {
@@ -3191,9 +3013,6 @@ var utils$3 = createCommonjsModule(function (module, exports) {
 
     return node.open === true || node.close === true;
   };
-  /**
-   * Reduce an array of text nodes.
-   */
 
 
   exports.reduce = nodes => nodes.reduce((acc, node) => {
@@ -3201,9 +3020,6 @@ var utils$3 = createCommonjsModule(function (module, exports) {
     if (node.type === 'range') node.type = 'text';
     return acc;
   }, []);
-  /**
-   * Flatten an array
-   */
 
 
   exports.flatten = (...args) => {
@@ -3391,12 +3207,6 @@ function splitToRanges(min, max) {
   stops.sort(compare);
   return stops;
 }
-/**
- * Convert a range to a regex pattern
- * @param {Number} `start`
- * @param {Number} `stop`
- * @return {String}
- */
 
 
 function rangeToPattern(start, stop, options) {
@@ -3477,11 +3287,11 @@ function filterPatterns(arr, comparison, prefix, intersection, options) {
   for (let ele of arr) {
     let {
       string
-    } = ele; // only push if _both_ are negative...
+    } = ele;
 
     if (!intersection && !contains(comparison, 'string', string)) {
       result.push(prefix + string);
-    } // or _both_ are positive
+    }
 
 
     if (intersection && contains(comparison, 'string', string)) {
@@ -3491,9 +3301,6 @@ function filterPatterns(arr, comparison, prefix, intersection, options) {
 
   return result;
 }
-/**
- * Zip strings
- */
 
 
 function zip(a, b) {
@@ -3562,17 +3369,11 @@ function padZeros(value, tok, options) {
       }
   }
 }
-/**
- * Cache
- */
 
 
 toRegexRange.cache = {};
 
 toRegexRange.clearCache = () => toRegexRange.cache = {};
-/**
- * Expose `toRegexRange`
- */
 
 
 var toRegexRange_1 = toRegexRange;
@@ -3711,7 +3512,7 @@ const fillNumbers = (start, end, step = 1, options = {}) => {
   if (!Number.isInteger(a) || !Number.isInteger(b)) {
     if (options.strictRanges === true) throw rangeError([start, end]);
     return [];
-  } // fix negative zero
+  }
 
 
   if (a === 0) a = 0;
@@ -4001,192 +3802,127 @@ var expand_1 = expand;
 
 var constants$2 = {
   MAX_LENGTH: 1024 * 64,
-  // Digits
   CHAR_0: '0',
 
-  /* 0 */
   CHAR_9: '9',
 
-  /* 9 */
-  // Alphabet chars.
   CHAR_UPPERCASE_A: 'A',
 
-  /* A */
   CHAR_LOWERCASE_A: 'a',
 
-  /* a */
   CHAR_UPPERCASE_Z: 'Z',
 
-  /* Z */
   CHAR_LOWERCASE_Z: 'z',
 
-  /* z */
   CHAR_LEFT_PARENTHESES: '(',
 
-  /* ( */
   CHAR_RIGHT_PARENTHESES: ')',
 
-  /* ) */
   CHAR_ASTERISK: '*',
 
-  /* * */
-  // Non-alphabetic chars.
   CHAR_AMPERSAND: '&',
 
-  /* & */
   CHAR_AT: '@',
 
-  /* @ */
   CHAR_BACKSLASH: '\\',
 
-  /* \ */
   CHAR_BACKTICK: '`',
 
-  /* ` */
   CHAR_CARRIAGE_RETURN: '\r',
 
-  /* \r */
   CHAR_CIRCUMFLEX_ACCENT: '^',
 
-  /* ^ */
   CHAR_COLON: ':',
 
-  /* : */
   CHAR_COMMA: ',',
 
-  /* , */
   CHAR_DOLLAR: '$',
 
-  /* . */
   CHAR_DOT: '.',
 
-  /* . */
   CHAR_DOUBLE_QUOTE: '"',
 
-  /* " */
   CHAR_EQUAL: '=',
 
-  /* = */
   CHAR_EXCLAMATION_MARK: '!',
 
-  /* ! */
   CHAR_FORM_FEED: '\f',
 
-  /* \f */
   CHAR_FORWARD_SLASH: '/',
 
-  /* / */
   CHAR_HASH: '#',
 
-  /* # */
   CHAR_HYPHEN_MINUS: '-',
 
-  /* - */
   CHAR_LEFT_ANGLE_BRACKET: '<',
 
-  /* < */
   CHAR_LEFT_CURLY_BRACE: '{',
 
-  /* { */
   CHAR_LEFT_SQUARE_BRACKET: '[',
 
-  /* [ */
   CHAR_LINE_FEED: '\n',
 
-  /* \n */
   CHAR_NO_BREAK_SPACE: '\u00A0',
 
-  /* \u00A0 */
   CHAR_PERCENT: '%',
 
-  /* % */
   CHAR_PLUS: '+',
 
-  /* + */
   CHAR_QUESTION_MARK: '?',
 
-  /* ? */
   CHAR_RIGHT_ANGLE_BRACKET: '>',
 
-  /* > */
   CHAR_RIGHT_CURLY_BRACE: '}',
 
-  /* } */
   CHAR_RIGHT_SQUARE_BRACKET: ']',
 
-  /* ] */
   CHAR_SEMICOLON: ';',
 
-  /* ; */
   CHAR_SINGLE_QUOTE: '\'',
 
-  /* ' */
   CHAR_SPACE: ' ',
 
-  /*   */
   CHAR_TAB: '\t',
 
-  /* \t */
   CHAR_UNDERSCORE: '_',
 
-  /* _ */
   CHAR_VERTICAL_LINE: '|',
 
-  /* | */
   CHAR_ZERO_WIDTH_NOBREAK_SPACE: '\uFEFF'
-  /* \uFEFF */
 
 };
 
-/**
- * Constants
- */
 
 
 const {
   MAX_LENGTH: MAX_LENGTH$1,
   CHAR_BACKSLASH,
 
-  /* \ */
   CHAR_BACKTICK,
 
-  /* ` */
   CHAR_COMMA: CHAR_COMMA$1,
 
-  /* , */
   CHAR_DOT: CHAR_DOT$1,
 
-  /* . */
   CHAR_LEFT_PARENTHESES: CHAR_LEFT_PARENTHESES$1,
 
-  /* ( */
   CHAR_RIGHT_PARENTHESES: CHAR_RIGHT_PARENTHESES$1,
 
-  /* ) */
   CHAR_LEFT_CURLY_BRACE: CHAR_LEFT_CURLY_BRACE$1,
 
-  /* { */
   CHAR_RIGHT_CURLY_BRACE: CHAR_RIGHT_CURLY_BRACE$1,
 
-  /* } */
   CHAR_LEFT_SQUARE_BRACKET: CHAR_LEFT_SQUARE_BRACKET$1,
 
-  /* [ */
   CHAR_RIGHT_SQUARE_BRACKET: CHAR_RIGHT_SQUARE_BRACKET$1,
 
-  /* ] */
   CHAR_DOUBLE_QUOTE,
 
-  /* " */
   CHAR_SINGLE_QUOTE,
 
-  /* ' */
   CHAR_NO_BREAK_SPACE,
   CHAR_ZERO_WIDTH_NOBREAK_SPACE
 } = constants$2;
-/**
- * parse
- */
 
 const parse$2 = (input, options = {}) => {
   if (typeof input !== 'string') {
@@ -4213,9 +3949,6 @@ const parse$2 = (input, options = {}) => {
   let index = 0;
   let depth = 0;
   let value;
-  /**
-   * Helpers
-   */
 
   const advance = () => input[index++];
 
@@ -4243,16 +3976,10 @@ const parse$2 = (input, options = {}) => {
   while (index < length) {
     block = stack[stack.length - 1];
     value = advance();
-    /**
-     * Invalid chars
-     */
 
     if (value === CHAR_ZERO_WIDTH_NOBREAK_SPACE || value === CHAR_NO_BREAK_SPACE) {
       continue;
     }
-    /**
-     * Escaped chars
-     */
 
 
     if (value === CHAR_BACKSLASH) {
@@ -4262,9 +3989,6 @@ const parse$2 = (input, options = {}) => {
       });
       continue;
     }
-    /**
-     * Right square bracket (literal): ']'
-     */
 
 
     if (value === CHAR_RIGHT_SQUARE_BRACKET$1) {
@@ -4274,9 +3998,6 @@ const parse$2 = (input, options = {}) => {
       });
       continue;
     }
-    /**
-     * Left square bracket: '['
-     */
 
 
     if (value === CHAR_LEFT_SQUARE_BRACKET$1) {
@@ -4311,9 +4032,6 @@ const parse$2 = (input, options = {}) => {
       });
       continue;
     }
-    /**
-     * Parentheses
-     */
 
 
     if (value === CHAR_LEFT_PARENTHESES$1) {
@@ -4346,9 +4064,6 @@ const parse$2 = (input, options = {}) => {
       block = stack[stack.length - 1];
       continue;
     }
-    /**
-     * Quotes: '|"|`
-     */
 
 
     if (value === CHAR_DOUBLE_QUOTE || value === CHAR_SINGLE_QUOTE || value === CHAR_BACKTICK) {
@@ -4379,9 +4094,6 @@ const parse$2 = (input, options = {}) => {
       });
       continue;
     }
-    /**
-     * Left curly brace: '{'
-     */
 
 
     if (value === CHAR_LEFT_CURLY_BRACE$1) {
@@ -4405,9 +4117,6 @@ const parse$2 = (input, options = {}) => {
       });
       continue;
     }
-    /**
-     * Right curly brace: '}'
-     */
 
 
     if (value === CHAR_RIGHT_CURLY_BRACE$1) {
@@ -4430,9 +4139,6 @@ const parse$2 = (input, options = {}) => {
       block = stack[stack.length - 1];
       continue;
     }
-    /**
-     * Comma: ','
-     */
 
 
     if (value === CHAR_COMMA$1 && depth > 0) {
@@ -4452,9 +4158,6 @@ const parse$2 = (input, options = {}) => {
       block.commas++;
       continue;
     }
-    /**
-     * Dot: '.'
-     */
 
 
     if (value === CHAR_DOT$1 && depth > 0 && block.commas === 0) {
@@ -4500,16 +4203,13 @@ const parse$2 = (input, options = {}) => {
       });
       continue;
     }
-    /**
-     * Text
-     */
 
 
     push({
       type: 'text',
       value
     });
-  } // Mark imbalanced braces and brackets as invalid
+  }
 
 
   do {
@@ -4523,10 +4223,10 @@ const parse$2 = (input, options = {}) => {
           if (!node.nodes) node.type = 'text';
           node.invalid = true;
         }
-      }); // get the location of the block on parent.nodes (block's siblings)
+      });
 
       let parent = stack[stack.length - 1];
-      let index = parent.nodes.indexOf(block); // replace the (invalid) block with it's nodes
+      let index = parent.nodes.indexOf(block);
 
       parent.nodes.splice(index, 1, ...block.nodes);
     }
@@ -4540,19 +4240,6 @@ const parse$2 = (input, options = {}) => {
 
 var parse_1$1 = parse$2;
 
-/**
- * Expand the given pattern or create a regex-compatible string.
- *
- * ```js
- * const braces = require('braces');
- * console.log(braces('{a,b,c}', { compile: true })); //=> ['(a|b|c)']
- * console.log(braces('{a,b,c}')); //=> ['a', 'b', 'c']
- * ```
- * @param {String} `str`
- * @param {Object} `options`
- * @return {String}
- * @api public
- */
 
 
 const braces = (input, options = {}) => {
@@ -4578,35 +4265,9 @@ const braces = (input, options = {}) => {
 
   return output;
 };
-/**
- * Parse the given `str` with the given `options`.
- *
- * ```js
- * // braces.parse(pattern, [, options]);
- * const ast = braces.parse('a/{b,c}/d');
- * console.log(ast);
- * ```
- * @param {String} pattern Brace pattern to parse
- * @param {Object} options
- * @return {Object} Returns an AST
- * @api public
- */
 
 
 braces.parse = (input, options = {}) => parse_1$1(input, options);
-/**
- * Creates a braces string from an AST, or an AST node.
- *
- * ```js
- * const braces = require('braces');
- * let ast = braces.parse('foo/{a,b}/bar');
- * console.log(stringify(ast.nodes[2])); //=> '{a,b}'
- * ```
- * @param {String} `input` Brace pattern or AST.
- * @param {Object} `options`
- * @return {Array} Returns an array of expanded values.
- * @api public
- */
 
 
 braces.stringify = (input, options = {}) => {
@@ -4616,20 +4277,6 @@ braces.stringify = (input, options = {}) => {
 
   return stringify$1(input, options);
 };
-/**
- * Compiles a brace pattern into a regex-compatible, optimized string.
- * This method is called by the main [braces](#braces) function by default.
- *
- * ```js
- * const braces = require('braces');
- * console.log(braces.compile('a/{b,c}/d'));
- * //=> ['a/(b|c)/d']
- * ```
- * @param {String} `input` Brace pattern or AST.
- * @param {Object} `options`
- * @return {Array} Returns an array of expanded values.
- * @api public
- */
 
 
 braces.compile = (input, options = {}) => {
@@ -4639,22 +4286,6 @@ braces.compile = (input, options = {}) => {
 
   return compile_1(input, options);
 };
-/**
- * Expands a brace pattern into an array. This method is called by the
- * main [braces](#braces) function when `options.expand` is true. Before
- * using this method it's recommended that you read the [performance notes](#performance))
- * and advantages of using [.compile](#compile) instead.
- *
- * ```js
- * const braces = require('braces');
- * console.log(braces.expand('a/{b,c}/d'));
- * //=> ['a/b/d', 'a/c/d'];
- * ```
- * @param {String} `pattern` Brace pattern
- * @param {Object} `options`
- * @return {Array} Returns an array of expanded values.
- * @api public
- */
 
 
 braces.expand = (input, options = {}) => {
@@ -4662,11 +4293,11 @@ braces.expand = (input, options = {}) => {
     input = braces.parse(input, options);
   }
 
-  let result = expand_1(input, options); // filter out empty strings if specified
+  let result = expand_1(input, options);
 
   if (options.noempty === true) {
     result = result.filter(Boolean);
-  } // filter out duplicates if specified
+  }
 
 
   if (options.nodupes === true) {
@@ -4675,21 +4306,6 @@ braces.expand = (input, options = {}) => {
 
   return result;
 };
-/**
- * Processes a brace pattern and returns either an expanded array
- * (if `options.expand` is true), a highly optimized regex-compatible string.
- * This method is called by the main [braces](#braces) function.
- *
- * ```js
- * const braces = require('braces');
- * console.log(braces.create('user-{200..300}/project-{a,b,c}-{1..10}'))
- * //=> 'user-(20[0-9]|2[1-9][0-9]|300)/project-(a|b|c)-([1-9]|10)'
- * ```
- * @param {String} `pattern` Brace pattern
- * @param {Object} `options`
- * @return {Array} Returns an array of expanded values.
- * @api public
- */
 
 
 braces.create = (input, options = {}) => {
@@ -4699,18 +4315,12 @@ braces.create = (input, options = {}) => {
 
   return options.expand !== true ? braces.compile(input, options) : braces.expand(input, options);
 };
-/**
- * Expose "braces"
- */
 
 
 var braces_1 = braces;
 
 const WIN_SLASH = '\\\\/';
 const WIN_NO_SLASH = `[^${WIN_SLASH}]`;
-/**
- * Posix glob regex
- */
 
 const DOT_LITERAL = '\\.';
 const PLUS_LITERAL = '\\+';
@@ -4744,9 +4354,6 @@ const POSIX_CHARS = {
   STAR,
   START_ANCHOR
 };
-/**
- * Windows glob regex
- */
 
 const WINDOWS_CHARS = Object.assign(Object.assign({}, POSIX_CHARS), {}, {
   SLASH_LITERAL: `[${WIN_SLASH}]`,
@@ -4761,9 +4368,6 @@ const WINDOWS_CHARS = Object.assign(Object.assign({}, POSIX_CHARS), {}, {
   START_ANCHOR: `(?:^|[${WIN_SLASH}])`,
   END_ANCHOR: `(?:[${WIN_SLASH}]|$)`
 });
-/**
- * POSIX Bracket Regex
- */
 
 const POSIX_REGEX_SOURCE$1 = {
   alnum: 'a-zA-Z0-9',
@@ -4784,156 +4388,105 @@ const POSIX_REGEX_SOURCE$1 = {
 var constants$1 = {
   MAX_LENGTH: 1024 * 64,
   POSIX_REGEX_SOURCE: POSIX_REGEX_SOURCE$1,
-  // regular expressions
   REGEX_BACKSLASH: /\\(?![*+?^${}(|)[\]])/g,
   REGEX_NON_SPECIAL_CHARS: /^[^@![\].,$*+?^{}()|\\/]+/,
   REGEX_SPECIAL_CHARS: /[-*+?.^${}(|)[\]]/,
   REGEX_SPECIAL_CHARS_BACKREF: /(\\?)((\W)(\3*))/g,
   REGEX_SPECIAL_CHARS_GLOBAL: /([-*+?.^${}(|)[\]])/g,
   REGEX_REMOVE_BACKSLASH: /(?:\[.*?[^\\]\]|\\(?=.))/g,
-  // Replace globs with equivalent patterns to reduce parsing time.
   REPLACEMENTS: {
     '***': '*',
     '**/**': '**',
     '**/**/**': '**'
   },
-  // Digits
   CHAR_0: 48,
 
-  /* 0 */
   CHAR_9: 57,
 
-  /* 9 */
-  // Alphabet chars.
   CHAR_UPPERCASE_A: 65,
 
-  /* A */
   CHAR_LOWERCASE_A: 97,
 
-  /* a */
   CHAR_UPPERCASE_Z: 90,
 
-  /* Z */
   CHAR_LOWERCASE_Z: 122,
 
-  /* z */
   CHAR_LEFT_PARENTHESES: 40,
 
-  /* ( */
   CHAR_RIGHT_PARENTHESES: 41,
 
-  /* ) */
   CHAR_ASTERISK: 42,
 
-  /* * */
-  // Non-alphabetic chars.
   CHAR_AMPERSAND: 38,
 
-  /* & */
   CHAR_AT: 64,
 
-  /* @ */
   CHAR_BACKWARD_SLASH: 92,
 
-  /* \ */
   CHAR_CARRIAGE_RETURN: 13,
 
-  /* \r */
   CHAR_CIRCUMFLEX_ACCENT: 94,
 
-  /* ^ */
   CHAR_COLON: 58,
 
-  /* : */
   CHAR_COMMA: 44,
 
-  /* , */
   CHAR_DOT: 46,
 
-  /* . */
   CHAR_DOUBLE_QUOTE: 34,
 
-  /* " */
   CHAR_EQUAL: 61,
 
-  /* = */
   CHAR_EXCLAMATION_MARK: 33,
 
-  /* ! */
   CHAR_FORM_FEED: 12,
 
-  /* \f */
   CHAR_FORWARD_SLASH: 47,
 
-  /* / */
   CHAR_GRAVE_ACCENT: 96,
 
-  /* ` */
   CHAR_HASH: 35,
 
-  /* # */
   CHAR_HYPHEN_MINUS: 45,
 
-  /* - */
   CHAR_LEFT_ANGLE_BRACKET: 60,
 
-  /* < */
   CHAR_LEFT_CURLY_BRACE: 123,
 
-  /* { */
   CHAR_LEFT_SQUARE_BRACKET: 91,
 
-  /* [ */
   CHAR_LINE_FEED: 10,
 
-  /* \n */
   CHAR_NO_BREAK_SPACE: 160,
 
-  /* \u00A0 */
   CHAR_PERCENT: 37,
 
-  /* % */
   CHAR_PLUS: 43,
 
-  /* + */
   CHAR_QUESTION_MARK: 63,
 
-  /* ? */
   CHAR_RIGHT_ANGLE_BRACKET: 62,
 
-  /* > */
   CHAR_RIGHT_CURLY_BRACE: 125,
 
-  /* } */
   CHAR_RIGHT_SQUARE_BRACKET: 93,
 
-  /* ] */
   CHAR_SEMICOLON: 59,
 
-  /* ; */
   CHAR_SINGLE_QUOTE: 39,
 
-  /* ' */
   CHAR_SPACE: 32,
 
-  /*   */
   CHAR_TAB: 9,
 
-  /* \t */
   CHAR_UNDERSCORE: 95,
 
-  /* _ */
   CHAR_VERTICAL_LINE: 124,
 
-  /* | */
   CHAR_ZERO_WIDTH_NOBREAK_SPACE: 65279,
 
-  /* \uFEFF */
   SEP: path__default['default'].sep,
 
-  /**
-   * Create EXTGLOB_CHARS
-   */
   extglobChars(chars) {
     return {
       '!': {
@@ -4964,9 +4517,6 @@ var constants$1 = {
     };
   },
 
-  /**
-   * Create GLOB_CHARS
-   */
   globChars(win32) {
     return win32 === true ? WINDOWS_CHARS : POSIX_CHARS;
   }
@@ -5051,48 +4601,33 @@ var utils$2 = createCommonjsModule(function (module, exports) {
 const {
   CHAR_ASTERISK,
 
-  /* * */
   CHAR_AT,
 
-  /* @ */
   CHAR_BACKWARD_SLASH,
 
-  /* \ */
   CHAR_COMMA,
 
-  /* , */
   CHAR_DOT,
 
-  /* . */
   CHAR_EXCLAMATION_MARK,
 
-  /* ! */
   CHAR_FORWARD_SLASH,
 
-  /* / */
   CHAR_LEFT_CURLY_BRACE,
 
-  /* { */
   CHAR_LEFT_PARENTHESES,
 
-  /* ( */
   CHAR_LEFT_SQUARE_BRACKET,
 
-  /* [ */
   CHAR_PLUS,
 
-  /* + */
   CHAR_QUESTION_MARK,
 
-  /* ? */
   CHAR_RIGHT_CURLY_BRACE,
 
-  /* } */
   CHAR_RIGHT_PARENTHESES,
 
-  /* ) */
   CHAR_RIGHT_SQUARE_BRACKET
-  /* ] */
 
 } = constants$1;
 
@@ -5105,22 +4640,6 @@ const depth = token => {
     token.depth = token.isGlobstar ? Infinity : 1;
   }
 };
-/**
- * Quickly scans a glob pattern and returns an object with a handful of
- * useful properties, like `isGlob`, `path` (the leading non-glob, if it exists),
- * `glob` (the actual pattern), `negated` (true if the path starts with `!` but not
- * with `!(`) and `negatedExtglob` (true if the path starts with `!(`).
- *
- * ```js
- * const pm = require('picomatch');
- * console.log(pm.scan('foo/bar/*.js'));
- * { isGlob: true, input: 'foo/bar/*.js', base: 'foo/bar', glob: '*.js' }
- * ```
- * @param {String} `str`
- * @param {Object} `options`
- * @return {Object} Returns an object with tokens and regex source string.
- * @api public
- */
 
 
 const scan = (input, options) => {
@@ -5485,9 +5004,6 @@ const scan = (input, options) => {
 
 var scan_1 = scan;
 
-/**
- * Constants
- */
 
 
 const {
@@ -5497,9 +5013,6 @@ const {
   REGEX_SPECIAL_CHARS_BACKREF,
   REPLACEMENTS
 } = constants$1;
-/**
- * Helpers
- */
 
 const expandRange = (args, options) => {
   if (typeof options.expandRange === 'function') {
@@ -5510,7 +5023,6 @@ const expandRange = (args, options) => {
   const value = `[${args.join('-')}]`;
 
   try {
-    /* eslint-disable-next-line no-new */
     new RegExp(value);
   } catch (ex) {
     return args.map(v => utils$2.escapeRegex(v)).join('..');
@@ -5518,20 +5030,11 @@ const expandRange = (args, options) => {
 
   return value;
 };
-/**
- * Create the message for a syntax error
- */
 
 
 const syntaxError = (type, char) => {
   return `Missing ${type}: "${char}" - use "\\\\${char}" to match literal characters`;
 };
-/**
- * Parse the given input string.
- * @param {String} input
- * @param {Object} options
- * @return {Object}
- */
 
 
 const parse$1 = (input, options) => {
@@ -5555,7 +5058,7 @@ const parse$1 = (input, options) => {
   };
   const tokens = [bos];
   const capture = opts.capture ? '' : '?:';
-  const win32 = utils$2.isWindows(options); // create constants based on platform, for windows or posix
+  const win32 = utils$2.isWindows(options);
 
   const PLATFORM_CHARS = constants$1.globChars(win32);
   const EXTGLOB_CHARS = constants$1.extglobChars(PLATFORM_CHARS);
@@ -5584,7 +5087,7 @@ const parse$1 = (input, options) => {
 
   if (opts.capture) {
     star = `(${star})`;
-  } // minimatch options support
+  }
 
 
   if (typeof opts.noext === 'boolean') {
@@ -5615,9 +5118,6 @@ const parse$1 = (input, options) => {
   const stack = [];
   let prev = bos;
   let value;
-  /**
-   * Tokenizing helpers
-   */
 
   const eos = () => state.index === len - 1;
 
@@ -5664,13 +5164,6 @@ const parse$1 = (input, options) => {
     state[type]--;
     stack.pop();
   };
-  /**
-   * Push tokens onto the tokens array. This helper speeds up
-   * tokenizing by 1) helping us avoid backtracking as much as possible,
-   * and 2) helping us avoid creating extra tokens when consecutive
-   * characters are plain text. This improves performance and simplifies
-   * lookbehinds.
-   */
 
 
   const push = tok => {
@@ -5760,9 +5253,6 @@ const parse$1 = (input, options) => {
     });
     decrement('parens');
   };
-  /**
-   * Fast paths
-   */
 
 
   if (opts.fastpaths !== false && !/(^[*!]|[/()[\]{}"])/.test(input)) {
@@ -5818,9 +5308,6 @@ const parse$1 = (input, options) => {
     state.output = utils$2.wrapOutput(output, state, options);
     return state;
   }
-  /**
-   * Tokenize input until we reach end-of-string
-   */
 
 
   while (!eos()) {
@@ -5829,9 +5316,6 @@ const parse$1 = (input, options) => {
     if (value === '\u0000') {
       continue;
     }
-    /**
-     * Escaped characters
-     */
 
 
     if (value === '\\') {
@@ -5852,7 +5336,7 @@ const parse$1 = (input, options) => {
           value
         });
         continue;
-      } // collapse slashes to reduce potential for exploits
+      }
 
 
       const match = /^\\+/.exec(remaining());
@@ -5881,10 +5365,6 @@ const parse$1 = (input, options) => {
         continue;
       }
     }
-    /**
-     * If we're inside a regex character class, continue
-     * until we reach the closing bracket.
-     */
 
 
     if (state.brackets > 0 && (value !== ']' || prev.value === '[' || prev.value === '[^')) {
@@ -5933,10 +5413,6 @@ const parse$1 = (input, options) => {
       });
       continue;
     }
-    /**
-     * If we're inside a quoted string, continue
-     * until we reach the closing double quote.
-     */
 
 
     if (state.quotes === 1 && value !== '"') {
@@ -5947,9 +5423,6 @@ const parse$1 = (input, options) => {
       });
       continue;
     }
-    /**
-     * Double quotes
-     */
 
 
     if (value === '"') {
@@ -5964,9 +5437,6 @@ const parse$1 = (input, options) => {
 
       continue;
     }
-    /**
-     * Parentheses
-     */
 
 
     if (value === '(') {
@@ -5998,9 +5468,6 @@ const parse$1 = (input, options) => {
       decrement('parens');
       continue;
     }
-    /**
-     * Square brackets
-     */
 
 
     if (value === '[') {
@@ -6054,31 +5521,26 @@ const parse$1 = (input, options) => {
       prev.value += value;
       append({
         value
-      }); // when literal brackets are explicitly disabled
-      // assume we should match with a regex character class
+      });
 
       if (opts.literalBrackets === false || utils$2.hasRegexChars(prevValue)) {
         continue;
       }
 
       const escaped = utils$2.escapeRegex(prev.value);
-      state.output = state.output.slice(0, -prev.value.length); // when literal brackets are explicitly enabled
-      // assume we should escape the brackets to match literal characters
+      state.output = state.output.slice(0, -prev.value.length);
 
       if (opts.literalBrackets === true) {
         state.output += escaped;
         prev.value = escaped;
         continue;
-      } // when the user specifies nothing, try to match both
+      }
 
 
       prev.value = `(${capture}${escaped}|${prev.value})`;
       state.output += prev.value;
       continue;
     }
-    /**
-     * Braces
-     */
 
 
     if (value === '{' && opts.nobrace !== true) {
@@ -6150,9 +5612,6 @@ const parse$1 = (input, options) => {
       braces.pop();
       continue;
     }
-    /**
-     * Pipes
-     */
 
 
     if (value === '|') {
@@ -6166,9 +5625,6 @@ const parse$1 = (input, options) => {
       });
       continue;
     }
-    /**
-     * Commas
-     */
 
 
     if (value === ',') {
@@ -6187,22 +5643,15 @@ const parse$1 = (input, options) => {
       });
       continue;
     }
-    /**
-     * Slashes
-     */
 
 
     if (value === '/') {
-      // if the beginning of the glob is "./", advance the start
-      // to the current index, and don't add the "./" characters
-      // to the state. This greatly simplifies lookbehinds when
-      // checking for BOS characters like "!" and "." (not "./")
       if (prev.type === 'dot' && state.index === state.start + 1) {
         state.start = state.index + 1;
         state.consumed = '';
         state.output = '';
         tokens.pop();
-        prev = bos; // reset "prev" to the first token
+        prev = bos;
 
         continue;
       }
@@ -6214,9 +5663,6 @@ const parse$1 = (input, options) => {
       });
       continue;
     }
-    /**
-     * Dots
-     */
 
 
     if (value === '.') {
@@ -6246,9 +5692,6 @@ const parse$1 = (input, options) => {
       });
       continue;
     }
-    /**
-     * Question marks
-     */
 
 
     if (value === '?') {
@@ -6295,9 +5738,6 @@ const parse$1 = (input, options) => {
       });
       continue;
     }
-    /**
-     * Exclamation
-     */
 
 
     if (value === '!') {
@@ -6313,9 +5753,6 @@ const parse$1 = (input, options) => {
         continue;
       }
     }
-    /**
-     * Plus
-     */
 
 
     if (value === '+') {
@@ -6347,9 +5784,6 @@ const parse$1 = (input, options) => {
       });
       continue;
     }
-    /**
-     * Plain text
-     */
 
 
     if (value === '@') {
@@ -6369,9 +5803,6 @@ const parse$1 = (input, options) => {
       });
       continue;
     }
-    /**
-     * Plain text
-     */
 
 
     if (value !== '*') {
@@ -6392,9 +5823,6 @@ const parse$1 = (input, options) => {
       });
       continue;
     }
-    /**
-     * Stars
-     */
 
 
     if (prev && (prev.type === 'globstar' || prev.star === true)) {
@@ -6445,7 +5873,7 @@ const parse$1 = (input, options) => {
           output: ''
         });
         continue;
-      } // strip consecutive `/**/`
+      }
 
 
       while (rest.slice(0, 3) === '/**') {
@@ -6512,14 +5940,14 @@ const parse$1 = (input, options) => {
           output: ''
         });
         continue;
-      } // remove single star from output
+      }
 
 
-      state.output = state.output.slice(0, -prev.output.length); // reset previous token to globstar
+      state.output = state.output.slice(0, -prev.output.length);
 
       prev.type = 'globstar';
       prev.output = globstar(opts);
-      prev.value += value; // reset output with globstar
+      prev.value += value;
 
       state.output += prev.output;
       state.globstar = true;
@@ -6595,7 +6023,7 @@ const parse$1 = (input, options) => {
       value: '',
       output: `${SLASH_LITERAL}?`
     });
-  } // rebuild the output if we had to backtrack at any point
+  }
 
 
   if (state.backtrack === true) {
@@ -6612,11 +6040,6 @@ const parse$1 = (input, options) => {
 
   return state;
 };
-/**
- * Fast paths for creating regular expressions for common glob patterns.
- * This can significantly speed up processing and has very little downside
- * impact when none of the fast paths match.
- */
 
 
 parse$1.fastpaths = (input, options) => {
@@ -6629,7 +6052,7 @@ parse$1.fastpaths = (input, options) => {
   }
 
   input = REPLACEMENTS[input] || input;
-  const win32 = utils$2.isWindows(options); // create constants based on platform, for windows or posix
+  const win32 = utils$2.isWindows(options);
 
   const {
     DOT_LITERAL,
@@ -6710,27 +6133,6 @@ parse$1.fastpaths = (input, options) => {
 var parse_1 = parse$1;
 
 const isObject$1 = val => val && typeof val === 'object' && !Array.isArray(val);
-/**
- * Creates a matcher function from one or more glob patterns. The
- * returned function takes a string to match as its first argument,
- * and returns true if the string is a match. The returned matcher
- * function also takes a boolean as the second argument that, when true,
- * returns an object with additional information.
- *
- * ```js
- * const picomatch = require('picomatch');
- * // picomatch(glob[, options]);
- *
- * const isMatch = picomatch('*.!(*a)');
- * console.log(isMatch('a.a')); //=> false
- * console.log(isMatch('a.b')); //=> true
- * ```
- * @name picomatch
- * @param {String|Array} `globs` One or more glob patterns.
- * @param {Object=} `options`
- * @return {Function=} Returns a matcher function.
- * @api public
- */
 
 
 const picomatch$1 = (glob, options, returnState = false) => {
@@ -6823,22 +6225,6 @@ const picomatch$1 = (glob, options, returnState = false) => {
 
   return matcher;
 };
-/**
- * Test `input` with the given `regex`. This is used by the main
- * `picomatch()` function to test the input string.
- *
- * ```js
- * const picomatch = require('picomatch');
- * // picomatch.test(input, regex[, options]);
- *
- * console.log(picomatch.test('foo/bar', /^(?:([^/]*?)\/([^/]*?))$/));
- * // { isMatch: true, match: [ 'foo/', 'foo', 'bar' ], output: 'foo/bar' }
- * ```
- * @param {String} `input` String to test.
- * @param {RegExp} `regex`
- * @return {Object} Returns an object with matching info.
- * @api public
- */
 
 
 picomatch$1.test = (input, regex, options, {
@@ -6880,57 +6266,15 @@ picomatch$1.test = (input, regex, options, {
     output
   };
 };
-/**
- * Match the basename of a filepath.
- *
- * ```js
- * const picomatch = require('picomatch');
- * // picomatch.matchBase(input, glob[, options]);
- * console.log(picomatch.matchBase('foo/bar.js', '*.js'); // true
- * ```
- * @param {String} `input` String to test.
- * @param {RegExp|String} `glob` Glob pattern or regex created by [.makeRe](#makeRe).
- * @return {Boolean}
- * @api public
- */
 
 
 picomatch$1.matchBase = (input, glob, options, posix = utils$2.isWindows(options)) => {
   const regex = glob instanceof RegExp ? glob : picomatch$1.makeRe(glob, options);
   return regex.test(path__default['default'].basename(input));
 };
-/**
- * Returns true if **any** of the given glob `patterns` match the specified `string`.
- *
- * ```js
- * const picomatch = require('picomatch');
- * // picomatch.isMatch(string, patterns[, options]);
- *
- * console.log(picomatch.isMatch('a.a', ['b.*', '*.a'])); //=> true
- * console.log(picomatch.isMatch('a.a', 'b.*')); //=> false
- * ```
- * @param {String|Array} str The string to test.
- * @param {String|Array} patterns One or more glob patterns to use for matching.
- * @param {Object} [options] See available [options](#options).
- * @return {Boolean} Returns true if any patterns match `str`
- * @api public
- */
 
 
 picomatch$1.isMatch = (str, patterns, options) => picomatch$1(patterns, options)(str);
-/**
- * Parse a glob pattern to create the source string for a regular
- * expression.
- *
- * ```js
- * const picomatch = require('picomatch');
- * const result = picomatch.parse(pattern[, options]);
- * ```
- * @param {String} `pattern`
- * @param {Object} `options`
- * @return {Object} Returns an object with useful properties and output to be used as a regex source string.
- * @api public
- */
 
 
 picomatch$1.parse = (pattern, options) => {
@@ -6939,46 +6283,9 @@ picomatch$1.parse = (pattern, options) => {
     fastpaths: false
   }));
 };
-/**
- * Scan a glob pattern to separate the pattern into segments.
- *
- * ```js
- * const picomatch = require('picomatch');
- * // picomatch.scan(input[, options]);
- *
- * const result = picomatch.scan('!./foo/*.js');
- * console.log(result);
- * { prefix: '!./',
- *   input: '!./foo/*.js',
- *   start: 3,
- *   base: 'foo',
- *   glob: '*.js',
- *   isBrace: false,
- *   isBracket: false,
- *   isGlob: true,
- *   isExtglob: false,
- *   isGlobstar: false,
- *   negated: true }
- * ```
- * @param {String} `input` Glob pattern to scan.
- * @param {Object} `options`
- * @return {Object} Returns an object with
- * @api public
- */
 
 
 picomatch$1.scan = (input, options) => scan_1(input, options);
-/**
- * Compile a regular expression from the `state` object returned by the
- * [parse()](#parse) method.
- *
- * @param {Object} `state`
- * @param {Object} `options`
- * @param {Boolean} `returnOutput` Intended for implementors, this argument allows you to return the raw output from the parser.
- * @param {Boolean} `returnState` Adds the state to a `state` property on the returned regex. Useful for implementors and debugging.
- * @return {RegExp}
- * @api public
- */
 
 
 picomatch$1.compileRe = (state, options, returnOutput = false, returnState = false) => {
@@ -7003,24 +6310,6 @@ picomatch$1.compileRe = (state, options, returnOutput = false, returnState = fal
 
   return regex;
 };
-/**
- * Create a regular expression from a parsed glob pattern.
- *
- * ```js
- * const picomatch = require('picomatch');
- * const state = picomatch.parse('*.js');
- * // picomatch.compileRe(state[, options]);
- *
- * console.log(picomatch.compileRe(state));
- * //=> /^(?:(?!\.)(?=.)[^/]*?\.js)$/
- * ```
- * @param {String} `state` The object returned from the `.parse` method.
- * @param {Object} `options`
- * @param {Boolean} `returnOutput` Implementors may use this argument to return the compiled output, instead of a regular expression. This is not exposed on the options to prevent end-users from mutating the result.
- * @param {Boolean} `returnState` Implementors may use this argument to return the state from the parsed glob with the returned regular expression.
- * @return {RegExp} Returns a regex created from the given pattern.
- * @api public
- */
 
 
 picomatch$1.makeRe = (input, options = {}, returnOutput = false, returnState = false) => {
@@ -7043,22 +6332,6 @@ picomatch$1.makeRe = (input, options = {}, returnOutput = false, returnState = f
 
   return picomatch$1.compileRe(parsed, options, returnOutput, returnState);
 };
-/**
- * Create a regular expression from the given regex source string.
- *
- * ```js
- * const picomatch = require('picomatch');
- * // picomatch.toRegex(source[, options]);
- *
- * const { output } = picomatch.parse('*.js');
- * console.log(picomatch.toRegex(output));
- * //=> /^(?:(?!\.)(?=.)[^/]*?\.js)$/
- * ```
- * @param {String} `source` Regular expression source string.
- * @param {Object} `options`
- * @return {RegExp}
- * @api public
- */
 
 
 picomatch$1.toRegex = (source, options) => {
@@ -7070,39 +6343,15 @@ picomatch$1.toRegex = (source, options) => {
     return /$^/;
   }
 };
-/**
- * Picomatch constants.
- * @return {Object}
- */
 
 
 picomatch$1.constants = constants$1;
-/**
- * Expose "picomatch"
- */
 
 var picomatch_1 = picomatch$1;
 
 var picomatch = picomatch_1;
 
 const isEmptyString = val => val === '' || val === './';
-/**
- * Returns an array of strings that match one or more glob patterns.
- *
- * ```js
- * const mm = require('micromatch');
- * // mm(list, patterns[, options]);
- *
- * console.log(mm(['a.js', 'a.txt'], ['*.js']));
- * //=> [ 'a.js' ]
- * ```
- * @param {String|Array<string>} `list` List of strings to match.
- * @param {String|Array<string>} `patterns` One or more glob patterns to use for matching.
- * @param {Object} `options` See available [options](#options)
- * @return {Array} Returns an array of matches
- * @summary false
- * @api public
- */
 
 
 const micromatch = (list, patterns, options) => {
@@ -7157,73 +6406,17 @@ const micromatch = (list, patterns, options) => {
 
   return matches;
 };
-/**
- * Backwards compatibility
- */
 
 
 micromatch.match = micromatch;
-/**
- * Returns a matcher function from the given glob `pattern` and `options`.
- * The returned function takes a string to match as its only argument and returns
- * true if the string is a match.
- *
- * ```js
- * const mm = require('micromatch');
- * // mm.matcher(pattern[, options]);
- *
- * const isMatch = mm.matcher('*.!(*a)');
- * console.log(isMatch('a.a')); //=> false
- * console.log(isMatch('a.b')); //=> true
- * ```
- * @param {String} `pattern` Glob pattern
- * @param {Object} `options`
- * @return {Function} Returns a matcher function.
- * @api public
- */
 
 micromatch.matcher = (pattern, options) => picomatch(pattern, options);
-/**
- * Returns true if **any** of the given glob `patterns` match the specified `string`.
- *
- * ```js
- * const mm = require('micromatch');
- * // mm.isMatch(string, patterns[, options]);
- *
- * console.log(mm.isMatch('a.a', ['b.*', '*.a'])); //=> true
- * console.log(mm.isMatch('a.a', 'b.*')); //=> false
- * ```
- * @param {String} `str` The string to test.
- * @param {String|Array} `patterns` One or more glob patterns to use for matching.
- * @param {Object} `[options]` See available [options](#options).
- * @return {Boolean} Returns true if any patterns match `str`
- * @api public
- */
 
 
 micromatch.isMatch = (str, patterns, options) => picomatch(patterns, options)(str);
-/**
- * Backwards compatibility
- */
 
 
 micromatch.any = micromatch.isMatch;
-/**
- * Returns a list of strings that _**do not match any**_ of the given `patterns`.
- *
- * ```js
- * const mm = require('micromatch');
- * // mm.not(list, patterns[, options]);
- *
- * console.log(mm.not(['a.a', 'b.b', 'c.c'], '*.a'));
- * //=> ['b.b', 'c.c']
- * ```
- * @param {Array} `list` Array of strings to match.
- * @param {String|Array} `patterns` One or more glob pattern to use for matching.
- * @param {Object} `options` See available [options](#options) for changing how matches are performed
- * @return {Array} Returns an array of strings that **do not match** the given patterns.
- * @api public
- */
 
 micromatch.not = (list, patterns, options = {}) => {
   patterns = [].concat(patterns).map(String);
@@ -7247,25 +6440,6 @@ micromatch.not = (list, patterns, options = {}) => {
 
   return [...result];
 };
-/**
- * Returns true if the given `string` contains the given pattern. Similar
- * to [.isMatch](#isMatch) but the pattern can match any part of the string.
- *
- * ```js
- * var mm = require('micromatch');
- * // mm.contains(string, pattern[, options]);
- *
- * console.log(mm.contains('aa/bb/cc', '*b'));
- * //=> true
- * console.log(mm.contains('aa/bb/cc', '*d'));
- * //=> false
- * ```
- * @param {String} `str` The string to match.
- * @param {String|Array} `patterns` Glob pattern to use for matching.
- * @param {Object} `options` See available [options](#options) for changing how matches are performed
- * @return {Boolean} Returns true if any of the patterns matches any part of `str`.
- * @api public
- */
 
 
 micromatch.contains = (str, pattern, options) => {
@@ -7291,25 +6465,6 @@ micromatch.contains = (str, pattern, options) => {
     contains: true
   }));
 };
-/**
- * Filter the keys of the given object with the given `glob` pattern
- * and `options`. Does not attempt to match nested keys. If you need this feature,
- * use [glob-object][] instead.
- *
- * ```js
- * const mm = require('micromatch');
- * // mm.matchKeys(object, patterns[, options]);
- *
- * const obj = { aa: 'a', ab: 'b', ac: 'c' };
- * console.log(mm.matchKeys(obj, '*b'));
- * //=> { ab: 'b' }
- * ```
- * @param {Object} `object` The object with keys to filter.
- * @param {String|Array} `patterns` One or more glob patterns to use for matching.
- * @param {Object} `options` See available [options](#options) for changing how matches are performed
- * @return {Object} Returns an object with only keys that match the given patterns.
- * @api public
- */
 
 
 micromatch.matchKeys = (obj, patterns, options) => {
@@ -7324,24 +6479,6 @@ micromatch.matchKeys = (obj, patterns, options) => {
 
   return res;
 };
-/**
- * Returns true if some of the strings in the given `list` match any of the given glob `patterns`.
- *
- * ```js
- * const mm = require('micromatch');
- * // mm.some(list, patterns[, options]);
- *
- * console.log(mm.some(['foo.js', 'bar.js'], ['*.js', '!foo.js']));
- * // true
- * console.log(mm.some(['foo.js'], ['*.js', '!foo.js']));
- * // false
- * ```
- * @param {String|Array} `list` The string or array of strings to test. Returns as soon as the first match is found.
- * @param {String|Array} `patterns` One or more glob patterns to use for matching.
- * @param {Object} `options` See available [options](#options) for changing how matches are performed
- * @return {Boolean} Returns true if any `patterns` matches any of the strings in `list`
- * @api public
- */
 
 
 micromatch.some = (list, patterns, options) => {
@@ -7357,29 +6494,6 @@ micromatch.some = (list, patterns, options) => {
 
   return false;
 };
-/**
- * Returns true if every string in the given `list` matches
- * any of the given glob `patterns`.
- *
- * ```js
- * const mm = require('micromatch');
- * // mm.every(list, patterns[, options]);
- *
- * console.log(mm.every('foo.js', ['foo.js']));
- * // true
- * console.log(mm.every(['foo.js', 'bar.js'], ['*.js']));
- * // true
- * console.log(mm.every(['foo.js', 'bar.js'], ['*.js', '!foo.js']));
- * // false
- * console.log(mm.every(['foo.js'], ['*.js', '!foo.js']));
- * // false
- * ```
- * @param {String|Array} `list` The string or array of strings to test.
- * @param {String|Array} `patterns` One or more glob patterns to use for matching.
- * @param {Object} `options` See available [options](#options) for changing how matches are performed
- * @return {Boolean} Returns true if all `patterns` matches all of the strings in `list`
- * @api public
- */
 
 
 micromatch.every = (list, patterns, options) => {
@@ -7395,32 +6509,6 @@ micromatch.every = (list, patterns, options) => {
 
   return true;
 };
-/**
- * Returns true if **all** of the given `patterns` match
- * the specified string.
- *
- * ```js
- * const mm = require('micromatch');
- * // mm.all(string, patterns[, options]);
- *
- * console.log(mm.all('foo.js', ['foo.js']));
- * // true
- *
- * console.log(mm.all('foo.js', ['*.js', '!foo.js']));
- * // false
- *
- * console.log(mm.all('foo.js', ['*.js', 'foo.js']));
- * // true
- *
- * console.log(mm.all('foo.js', ['*.js', 'f*', '*o*', '*o.js']));
- * // true
- * ```
- * @param {String|Array} `str` The string to test.
- * @param {String|Array} `patterns` One or more glob patterns to use for matching.
- * @param {Object} `options` See available [options](#options) for changing how matches are performed
- * @return {Boolean} Returns true if any patterns match `str`
- * @api public
- */
 
 
 micromatch.all = (str, patterns, options) => {
@@ -7430,24 +6518,6 @@ micromatch.all = (str, patterns, options) => {
 
   return [].concat(patterns).every(p => picomatch(p, options)(str));
 };
-/**
- * Returns an array of matches captured by `pattern` in `string, or `null` if the pattern did not match.
- *
- * ```js
- * const mm = require('micromatch');
- * // mm.capture(pattern, string[, options]);
- *
- * console.log(mm.capture('test/*.js', 'test/foo.js'));
- * //=> ['foo']
- * console.log(mm.capture('test/*.js', 'foo/bar.css'));
- * //=> null
- * ```
- * @param {String} `glob` Glob pattern to use for matching.
- * @param {String} `input` String to match
- * @param {Object} `options` See available [options](#options) for changing how matches are performed
- * @return {Array|null} Returns an array of captures if the input matches the glob pattern, otherwise `null`.
- * @api public
- */
 
 
 micromatch.capture = (glob, input, options) => {
@@ -7461,53 +6531,12 @@ micromatch.capture = (glob, input, options) => {
     return match.slice(1).map(v => v === void 0 ? '' : v);
   }
 };
-/**
- * Create a regular expression from the given glob `pattern`.
- *
- * ```js
- * const mm = require('micromatch');
- * // mm.makeRe(pattern[, options]);
- *
- * console.log(mm.makeRe('*.js'));
- * //=> /^(?:(\.[\\\/])?(?!\.)(?=.)[^\/]*?\.js)$/
- * ```
- * @param {String} `pattern` A glob pattern to convert to regex.
- * @param {Object} `options`
- * @return {RegExp} Returns a regex created from the given pattern.
- * @api public
- */
 
 
 micromatch.makeRe = (...args) => picomatch.makeRe(...args);
-/**
- * Scan a glob pattern to separate the pattern into segments. Used
- * by the [split](#split) method.
- *
- * ```js
- * const mm = require('micromatch');
- * const state = mm.scan(pattern[, options]);
- * ```
- * @param {String} `pattern`
- * @param {Object} `options`
- * @return {Object} Returns an object with
- * @api public
- */
 
 
 micromatch.scan = (...args) => picomatch.scan(...args);
-/**
- * Parse a glob pattern to create the source string for a regular
- * expression.
- *
- * ```js
- * const mm = require('micromatch');
- * const state = mm(pattern[, options]);
- * ```
- * @param {String} `glob`
- * @param {Object} `options`
- * @return {Object} Returns an object with useful properties and output to be used as regex source string.
- * @api public
- */
 
 
 micromatch.parse = (patterns, options) => {
@@ -7521,22 +6550,6 @@ micromatch.parse = (patterns, options) => {
 
   return res;
 };
-/**
- * Process the given brace `pattern`.
- *
- * ```js
- * const { braces } = require('micromatch');
- * console.log(braces('foo/{a,b,c}/bar'));
- * //=> [ 'foo/(a|b|c)/bar' ]
- *
- * console.log(braces('foo/{a,b,c}/bar', { expand: true }));
- * //=> [ 'foo/a/bar', 'foo/b/bar', 'foo/c/bar' ]
- * ```
- * @param {String} `pattern` String with brace pattern to process.
- * @param {Object} `options` Any [options](#options) to change how expansion is performed. See the [braces][] library for all available options.
- * @return {Array}
- * @api public
- */
 
 
 micromatch.braces = (pattern, options) => {
@@ -7548,9 +6561,6 @@ micromatch.braces = (pattern, options) => {
 
   return braces_1(pattern, options);
 };
-/**
- * Expand braces
- */
 
 
 micromatch.braceExpand = (pattern, options) => {
@@ -7559,9 +6569,6 @@ micromatch.braceExpand = (pattern, options) => {
     expand: true
   }));
 };
-/**
- * Expose micromatch
- */
 
 
 var micromatch_1 = micromatch;
@@ -7587,18 +6594,9 @@ var pattern = createCommonjsModule(function (module, exports) {
   exports.isStaticPattern = isStaticPattern;
 
   function isDynamicPattern(pattern, options = {}) {
-    /**
-     * A special case with an empty string is necessary for matching patterns that start with a forward slash.
-     * An empty string cannot be a dynamic pattern.
-     * For example, the pattern `/lib/*` will be spread into parts: '', 'lib', '*'.
-     */
     if (pattern === '') {
       return false;
     }
-    /**
-     * When the `caseSensitiveMatch` option is disabled, all patterns must be marked as dynamic, because we cannot check
-     * filepath directly (without read directory).
-     */
 
 
     if (options.caseSensitiveMatch === false || pattern.includes(ESCAPE_SYMBOL)) {
@@ -7708,18 +6706,10 @@ var pattern = createCommonjsModule(function (module, exports) {
     } = picomatch.scan(pattern, Object.assign(Object.assign({}, options), {
       parts: true
     }));
-    /**
-     * The scan method returns an empty array in some cases.
-     * See micromatch/picomatch#58 for more details.
-     */
 
     if (parts.length === 0) {
       parts = [pattern];
     }
-    /**
-     * The scan method does not return an empty part for the pattern with a forward slash.
-     * This is another part of micromatch/picomatch#58.
-     */
 
 
     if (parts[0].startsWith('/')) {
@@ -7751,13 +6741,6 @@ var pattern = createCommonjsModule(function (module, exports) {
   exports.matchAny = matchAny;
 });
 
-/*
- * merge2
- * https://github.com/teambition/merge2
- *
- * Copyright (c) 2014-2020 Teambition
- * Licensed under the MIT license.
- */
 
 
 const PassThrough = stream_1__default['default'].PassThrough;
@@ -7840,7 +6823,7 @@ function merge2() {
 
       function onerror(err) {
         mergedStream.emit('error', err);
-      } // skip ended stream
+      }
 
 
       if (stream._readableState.endEmitted) {
@@ -7856,7 +6839,7 @@ function merge2() {
 
       stream.pipe(mergedStream, {
         end: false
-      }); // compatible for old stream
+      });
 
       stream.resume();
     }
@@ -7869,7 +6852,7 @@ function merge2() {
   }
 
   function endStream() {
-    merging = false; // emit 'queueDrain' when all streams merged.
+    merging = false;
 
     mergedStream.emit('queueDrain');
 
@@ -7889,12 +6872,11 @@ function merge2() {
   }
 
   return mergedStream;
-} // check and pause streams for pipe.
+}
 
 
 function pauseStreams(streams, options) {
   if (!Array.isArray(streams)) {
-    // Backwards-compat with old-style streams
     if (!streams._readableState && streams.pipe) {
       streams = streams.pipe(PassThrough(options));
     }
@@ -7985,10 +6967,8 @@ var tasks = createCommonjsModule(function (module, exports) {
     const staticPatterns = positivePatterns.filter(pattern => utils$1.pattern.isStaticPattern(pattern, settings));
     const dynamicPatterns = positivePatterns.filter(pattern => utils$1.pattern.isDynamicPattern(pattern, settings));
     const staticTasks = convertPatternsToTasks(staticPatterns, negativePatterns,
-    /* dynamic */
     false);
     const dynamicTasks = convertPatternsToTasks(dynamicPatterns, negativePatterns,
-    /* dynamic */
     true);
     return staticTasks.concat(dynamicTasks);
   }
@@ -7996,8 +6976,7 @@ var tasks = createCommonjsModule(function (module, exports) {
   exports.generate = generate;
 
   function convertPatternsToTasks(positive, negative, dynamic) {
-    const positivePatternsGroup = groupPatternsByBaseDirectory(positive); // When we have a global group – there is no reason to divide the patterns into independent tasks.
-    // In this case, the global task covers the rest.
+    const positivePatternsGroup = groupPatternsByBaseDirectory(positive);
 
     if ('.' in positivePatternsGroup) {
       const task = convertPatternGroupToTask('.', positive, negative, dynamic);
@@ -8228,7 +7207,7 @@ var out$3 = createCommonjsModule(function (module, exports) {
 
 /*! queue-microtask. MIT License. Feross Aboukhadijeh <https://feross.org/opensource> */
 let promise$1;
-var queueMicrotask_1 = typeof queueMicrotask === 'function' ? queueMicrotask.bind(typeof window !== 'undefined' ? window : global) // reuse resolved promise, and allocate it lazily
+var queueMicrotask_1 = typeof queueMicrotask === 'function' ? queueMicrotask.bind(typeof window !== 'undefined' ? window : global)
 : cb => (promise$1 || (promise$1 = Promise.resolve())).then(cb).catch(err => setTimeout(() => {
   throw err;
 }, 0));
@@ -8267,17 +7246,14 @@ function runParallel(tasks, cb) {
   }
 
   if (!pending) {
-    // empty
     done(null);
   } else if (keys) {
-    // object
     keys.forEach(function (key) {
       tasks[key](function (err, result) {
         each(key, err, result);
       });
     });
   } else {
-    // array
     tasks.forEach(function (task, i) {
       task(function (err, result) {
         each(i, err, result);
@@ -8306,9 +7282,6 @@ var constants = createCommonjsModule(function (module, exports) {
   const SUPPORTED_MINOR_VERSION = 10;
   const IS_MATCHED_BY_MAJOR = MAJOR_VERSION > SUPPORTED_MAJOR_VERSION;
   const IS_MATCHED_BY_MAJOR_AND_MINOR = MAJOR_VERSION === SUPPORTED_MAJOR_VERSION && MINOR_VERSION >= SUPPORTED_MINOR_VERSION;
-  /**
-   * IS `true` for Node.js 10.10 and greater.
-   */
 
   exports.IS_SUPPORT_READDIR_WITH_FILE_TYPES = IS_MATCHED_BY_MAJOR || IS_MATCHED_BY_MAJOR_AND_MINOR;
 });
@@ -8358,9 +7331,6 @@ var common$1 = createCommonjsModule(function (module, exports) {
   exports.joinPathSegments = void 0;
 
   function joinPathSegments(a, b, separator) {
-    /**
-     * The correct handling of cases when the first segment is a root (`/`, `C:/`) or UNC path (`//?/C:/`).
-     */
     if (a.endsWith(separator)) {
       return a + b;
     }
@@ -8970,9 +7940,6 @@ var common = createCommonjsModule(function (module, exports) {
     if (a === '') {
       return b;
     }
-    /**
-     * The correct handling of cases when the first segment is a root (`/`, `C:/`) or UNC path (`//?/C:/`).
-     */
 
 
     if (a.endsWith(separator)) {
@@ -9500,10 +8467,6 @@ class Matcher {
   }
 
   _fillStorage() {
-    /**
-     * The original pattern may include `{,*,**,a/*}`, which will lead to problems with matching (unresolved level).
-     * So, before expand patterns with brace expansion into separated patterns.
-     */
     const patterns = utils$1.pattern.expandPatternsWithBraceExpansion(this._patterns);
 
     for (const pattern of patterns) {
@@ -9562,13 +8525,6 @@ class PartialMatcher extends matcher.default {
 
     for (const pattern of patterns) {
       const section = pattern.sections[0];
-      /**
-       * In this case, the pattern has a globstar and we must read all directories unconditionally,
-       * but only if the level has reached the end of the first group.
-       *
-       * fixtures/{a,b}/**
-       *  ^ true/false  ^ always true
-      */
 
       if (!pattern.complete && levels > section.length) {
         return true;
@@ -9647,9 +8603,6 @@ class DeepFilter {
   }
 
   _isSkippedByDeep(basePath, entryPath) {
-    /**
-     * Avoid unnecessary depth calculations when it doesn't matter.
-     */
     if (this._settings.deep === Infinity) {
       return false;
     }
@@ -10046,10 +8999,6 @@ var settings = createCommonjsModule(function (module, exports) {
     value: true
   });
   exports.DEFAULT_FILE_SYSTEM_ADAPTER = void 0;
-  /**
-   * The `os.cpus` method can return zero. We expect the number of cores to be greater than zero.
-   * https://github.com/nodejs/node/blob/7faeddf23a98c53896f8b574a6e66589e8fb1eb8/lib/os.js#L106-L107
-   */
 
   const CPU_COUNT = Math.max(os__default['default'].cpus().length, 1);
   exports.DEFAULT_FILE_SYSTEM_ADAPTER = {
@@ -10113,8 +9062,7 @@ async function FastGlob(source, options) {
   const works = getWorks(source, async.default, options);
   const result = await Promise.all(works);
   return utils$1.array.flatten(result);
-} // https://github.com/typescript-eslint/typescript-eslint/issues/60
-// eslint-disable-next-line no-redeclare
+}
 
 
 (function (FastGlob) {
@@ -10129,11 +9077,6 @@ async function FastGlob(source, options) {
   function stream$1(source, options) {
     assertPatternsInput(source);
     const works = getWorks(source, stream.default, options);
-    /**
-     * The stream returned by the provider cannot work with an asynchronous iterator.
-     * To support asynchronous iterators, regardless of the number of tasks, we always multiplex streams.
-     * This affects performance (+25%). I don't see best solution right now.
-     */
 
     return utils$1.stream.merge(works);
   }
@@ -10187,11 +9130,7 @@ var out = FastGlob;
 const {
   promises: fs$1
 } = fs__default['default'];
-/** @typedef {import('./context').Context} Context */
 
-/**
- * @param {Context} context
- */
 
 async function* expandPatterns$1(context) {
   const cwd = process.cwd();
@@ -10206,7 +9145,7 @@ async function* expandPatterns$1(context) {
       continue;
     }
 
-    const relativePath = path__default['default'].relative(cwd, pathOrError); // filter out duplicates
+    const relativePath = path__default['default'].relative(cwd, pathOrError);
 
     if (seen.has(relativePath)) {
       continue;
@@ -10217,19 +9156,14 @@ async function* expandPatterns$1(context) {
   }
 
   if (noResults && context.argv["error-on-unmatched-pattern"] !== false) {
-    // If there was no files and no other errors, let's yield a general error.
     yield {
       error: `No matching files. Patterns: ${context.filePatterns.join(" ")}`
     };
   }
 }
-/**
- * @param {Context} context
- */
 
 
 async function* expandPatternsInternal(context) {
-  // Ignores files in version control systems directories and `node_modules`
   const silentlyIgnoredDirs = [".git", ".svn", ".hg"];
 
   if (context.argv["with-node-modules"] !== true) {
@@ -10242,7 +9176,6 @@ async function* expandPatternsInternal(context) {
   };
   let supportedFilesGlob;
   const cwd = process.cwd();
-  /** @type {Array<{ type: 'file' | 'dir' | 'glob'; glob: string; input: string; }>} */
 
   const entries = [];
 
@@ -10263,11 +9196,6 @@ async function* expandPatternsInternal(context) {
           input: pattern
         });
       } else if (stat.isDirectory()) {
-        /*
-        1. Remove trailing `/`, `fast-glob` can't find files for `src//*.js` pattern
-        2. Cleanup dirname, when glob `src/../*.js` pattern with `fast-glob`,
-          it returns files like 'src/../index.js'
-        */
         const relativePath = path__default['default'].relative(cwd, absolutePath) || ".";
         entries.push({
           type: "dir",
@@ -10276,7 +9204,6 @@ async function* expandPatternsInternal(context) {
         });
       }
     } else if (pattern[0] === "!") {
-      // convert negative patterns to `ignore` entries
       globOptions.ignore.push(fixWindowsSlashes$1(pattern.slice(1)));
     } else {
       entries.push({
@@ -10299,11 +9226,9 @@ async function* expandPatternsInternal(context) {
     } catch ({
       message
     }) {
-      /* istanbul ignore next */
       yield {
         error: `${errorMessages.globError[type]}: ${input}\n${message}`
       };
-      /* istanbul ignore next */
 
       continue;
     }
@@ -10342,62 +9267,35 @@ const errorMessages = {
     glob: "No files matching the pattern were found"
   }
 };
-/**
- * @param {string} absolutePath
- * @param {string} cwd
- * @param {string[]} ignoredDirectories
- */
 
 function containsIgnoredPathSegment(absolutePath, cwd, ignoredDirectories) {
   return path__default['default'].relative(cwd, absolutePath).split(path__default['default'].sep).some(dir => ignoredDirectories.includes(dir));
 }
-/**
- * @param {string[]} paths
- */
 
 
 function sortPaths(paths) {
   return paths.sort((a, b) => a.localeCompare(b));
 }
-/**
- * Get stats of a given path.
- * @param {string} filePath The path to target file.
- * @returns {Promise<import('fs').Stats | undefined>} The stats.
- */
 
 
 async function statSafe(filePath) {
   try {
     return await fs$1.stat(filePath);
   } catch (error) {
-    /* istanbul ignore next */
     if (error.code !== "ENOENT") {
       throw error;
     }
   }
 }
-/**
- * This function should be replaced with `fastGlob.escapePath` when these issues are fixed:
- * - https://github.com/mrmlnc/fast-glob/issues/261
- * - https://github.com/mrmlnc/fast-glob/issues/262
- * @param {string} path
- */
 
 
 function escapePathForGlob(path) {
-  return out.escapePath(path.replace(/\\/g, "\0") // Workaround for fast-glob#262 (part 1)
-  ).replace(/\\!/g, "@(!)") // Workaround for fast-glob#261
-  .replace(/\0/g, "@(\\\\)"); // Workaround for fast-glob#262 (part 2)
+  return out.escapePath(path.replace(/\\/g, "\0")
+  ).replace(/\\!/g, "@(!)")
+  .replace(/\0/g, "@(\\\\)");
 }
 
 const isWindows = path__default['default'].sep === "\\";
-/**
- * Using backslashes in globs is probably not okay, but not accepting
- * backslashes as path separators on Windows is even more not okay.
- * https://github.com/prettier/prettier/pull/6776#discussion_r380723717
- * https://github.com/mrmlnc/fast-glob#how-to-write-patterns-on-windows
- * @param {string} pattern
- */
 
 function fixWindowsSlashes$1(pattern) {
   return isWindows ? pattern.replace(/\\/g, "/") : pattern;
@@ -10413,7 +9311,6 @@ var iterators = {};
 var ITERATOR$1 = wellKnownSymbol('iterator');
 var ArrayPrototype = Array.prototype;
 
-// check on default Array iterator
 var isArrayIteratorMethod = function (it) {
   return it !== undefined && (iterators.Array === it || ArrayPrototype[ITERATOR$1] === it);
 };
@@ -10426,25 +9323,19 @@ test[TO_STRING_TAG$1] = 'z';
 var toStringTagSupport = String(test) === '[object z]';
 
 var TO_STRING_TAG = wellKnownSymbol('toStringTag');
-// ES3 wrong here
 var CORRECT_ARGUMENTS = classofRaw(function () { return arguments; }()) == 'Arguments';
 
-// fallback for IE11 Script Access Denied error
 var tryGet = function (it, key) {
   try {
     return it[key];
-  } catch (error) { /* empty */ }
+  } catch (error) { }
 };
 
-// getting tag from ES6+ `Object.prototype.toString`
 var classof = toStringTagSupport ? classofRaw : function (it) {
   var O, tag, result;
   return it === undefined ? 'Undefined' : it === null ? 'Null'
-    // @@toStringTag case
     : typeof (tag = tryGet(O = Object(it), TO_STRING_TAG)) == 'string' ? tag
-    // builtinTag case
     : CORRECT_ARGUMENTS ? classofRaw(O)
-    // ES3 arguments fallback
     : (result = classofRaw(O)) == 'Object' && typeof O.callee == 'function' ? 'Arguments' : result;
 };
 
@@ -10493,7 +9384,6 @@ var iterate = function (iterable, unboundFunction, options) {
   } else {
     iterFn = getIteratorMethod(iterable);
     if (typeof iterFn != 'function') throw TypeError('Target is not iterable');
-    // optimisation for array iterators
     if (isArrayIteratorMethod(iterFn)) {
       for (index = 0, length = toLength(iterable.length); length > index; index++) {
         result = callFn(iterable[index]);
@@ -10521,8 +9411,6 @@ var createProperty = function (object, key, value) {
   else object[propertyKey] = value;
 };
 
-// `Object.fromEntries` method
-// https://github.com/tc39/proposal-object-from-entries
 _export({ target: 'Object', stat: true }, {
   fromEntries: function fromEntries(iterable) {
     var obj = {};
@@ -10647,9 +9535,6 @@ var minimist = function (args, opts) {
     var arg = args[i];
 
     if (/^--.+=/.test(arg)) {
-      // Using [\s\S] instead of . because js doesn't support the
-      // 'dotall' regex modifier. See:
-      // http://stackoverflow.com/a/1068308/13216
       var m = arg.match(/^--([^=]+)=([\s\S]*)$/);
       var key = m[1];
       var value = m[2];
@@ -10773,9 +9658,6 @@ function isNumber(x) {
 }
 
 const PLACEHOLDER = null;
-/**
- * unspecified boolean flag without default value is parsed as `undefined` instead of `false`
- */
 
 var minimist_1 = function (args, options) {
   const boolean = options.boolean || [];
@@ -10788,16 +9670,6 @@ var minimist_1 = function (args, options) {
   return Object.fromEntries(Object.entries(parsed).filter(([, value]) => value !== PLACEHOLDER));
 };
 
-/**
- * A specialized version of `baseAggregator` for arrays.
- *
- * @private
- * @param {Array} [array] The array to iterate over.
- * @param {Function} setter The function to set `accumulator` values.
- * @param {Function} iteratee The iteratee to transform keys.
- * @param {Object} accumulator The initial aggregated object.
- * @returns {Function} Returns `accumulator`.
- */
 function arrayAggregator(array, setter, iteratee, accumulator) {
   var index = -1,
       length = array == null ? 0 : array.length;
@@ -10812,13 +9684,6 @@ function arrayAggregator(array, setter, iteratee, accumulator) {
 
 var _arrayAggregator = arrayAggregator;
 
-/**
- * Creates a base function for methods like `_.forIn` and `_.forOwn`.
- *
- * @private
- * @param {boolean} [fromRight] Specify iterating from right to left.
- * @returns {Function} Returns the new base function.
- */
 function createBaseFor(fromRight) {
   return function (object, iteratee, keysFunc) {
     var index = -1,
@@ -10840,30 +9705,10 @@ function createBaseFor(fromRight) {
 
 var _createBaseFor = createBaseFor;
 
-/**
- * The base implementation of `baseForOwn` which iterates over `object`
- * properties returned by `keysFunc` and invokes `iteratee` for each property.
- * Iteratee functions may exit iteration early by explicitly returning `false`.
- *
- * @private
- * @param {Object} object The object to iterate over.
- * @param {Function} iteratee The function invoked per iteration.
- * @param {Function} keysFunc The function to get the keys of `object`.
- * @returns {Object} Returns `object`.
- */
 
 var baseFor = _createBaseFor();
 var _baseFor = baseFor;
 
-/**
- * The base implementation of `_.times` without support for iteratee shorthands
- * or max array length checks.
- *
- * @private
- * @param {number} n The number of times to invoke `iteratee`.
- * @param {Function} iteratee The function invoked per iteration.
- * @returns {Array} Returns the array of results.
- */
 function baseTimes(n, iteratee) {
   var index = -1,
       result = Array(n);
@@ -10877,46 +9722,27 @@ function baseTimes(n, iteratee) {
 
 var _baseTimes = baseTimes;
 
-/** Detect free variable `global` from Node.js. */
 var freeGlobal = typeof global == 'object' && global && global.Object === Object && global;
 var _freeGlobal = freeGlobal;
 
-/** Detect free variable `self`. */
 
 var freeSelf = typeof self == 'object' && self && self.Object === Object && self;
-/** Used as a reference to the global object. */
 
 var root = _freeGlobal || freeSelf || Function('return this')();
 var _root = root;
 
-/** Built-in value references. */
 
 var Symbol$1 = _root.Symbol;
 var _Symbol = Symbol$1;
 
-/** Used for built-in method references. */
 
 var objectProto$d = Object.prototype;
-/** Used to check objects for own properties. */
 
 var hasOwnProperty$a = objectProto$d.hasOwnProperty;
-/**
- * Used to resolve the
- * [`toStringTag`](http://ecma-international.org/ecma-262/7.0/#sec-object.prototype.tostring)
- * of values.
- */
 
 var nativeObjectToString$1 = objectProto$d.toString;
-/** Built-in value references. */
 
 var symToStringTag$1 = _Symbol ? _Symbol.toStringTag : undefined;
-/**
- * A specialized version of `baseGetTag` which ignores `Symbol.toStringTag` values.
- *
- * @private
- * @param {*} value The value to query.
- * @returns {string} Returns the raw `toStringTag`.
- */
 
 function getRawTag(value) {
   var isOwn = hasOwnProperty$a.call(value, symToStringTag$1),
@@ -10942,22 +9768,9 @@ function getRawTag(value) {
 
 var _getRawTag = getRawTag;
 
-/** Used for built-in method references. */
 var objectProto$c = Object.prototype;
-/**
- * Used to resolve the
- * [`toStringTag`](http://ecma-international.org/ecma-262/7.0/#sec-object.prototype.tostring)
- * of values.
- */
 
 var nativeObjectToString = objectProto$c.toString;
-/**
- * Converts `value` to a string using `Object.prototype.toString`.
- *
- * @private
- * @param {*} value The value to convert.
- * @returns {string} Returns the converted string.
- */
 
 function objectToString(value) {
   return nativeObjectToString.call(value);
@@ -10965,20 +9778,11 @@ function objectToString(value) {
 
 var _objectToString = objectToString;
 
-/** `Object#toString` result references. */
 
 var nullTag = '[object Null]',
     undefinedTag = '[object Undefined]';
-/** Built-in value references. */
 
 var symToStringTag = _Symbol ? _Symbol.toStringTag : undefined;
-/**
- * The base implementation of `getTag` without fallbacks for buggy environments.
- *
- * @private
- * @param {*} value The value to query.
- * @returns {string} Returns the `toStringTag`.
- */
 
 function baseGetTag(value) {
   if (value == null) {
@@ -10990,46 +9794,14 @@ function baseGetTag(value) {
 
 var _baseGetTag = baseGetTag;
 
-/**
- * Checks if `value` is object-like. A value is object-like if it's not `null`
- * and has a `typeof` result of "object".
- *
- * @static
- * @memberOf _
- * @since 4.0.0
- * @category Lang
- * @param {*} value The value to check.
- * @returns {boolean} Returns `true` if `value` is object-like, else `false`.
- * @example
- *
- * _.isObjectLike({});
- * // => true
- *
- * _.isObjectLike([1, 2, 3]);
- * // => true
- *
- * _.isObjectLike(_.noop);
- * // => false
- *
- * _.isObjectLike(null);
- * // => false
- */
 function isObjectLike(value) {
   return value != null && typeof value == 'object';
 }
 
 var isObjectLike_1 = isObjectLike;
 
-/** `Object#toString` result references. */
 
 var argsTag$2 = '[object Arguments]';
-/**
- * The base implementation of `_.isArguments`.
- *
- * @private
- * @param {*} value The value to check.
- * @returns {boolean} Returns `true` if `value` is an `arguments` object,
- */
 
 function baseIsArguments(value) {
   return isObjectLike_1(value) && _baseGetTag(value) == argsTag$2;
@@ -11037,33 +9809,12 @@ function baseIsArguments(value) {
 
 var _baseIsArguments = baseIsArguments;
 
-/** Used for built-in method references. */
 
 var objectProto$b = Object.prototype;
-/** Used to check objects for own properties. */
 
 var hasOwnProperty$9 = objectProto$b.hasOwnProperty;
-/** Built-in value references. */
 
 var propertyIsEnumerable$1 = objectProto$b.propertyIsEnumerable;
-/**
- * Checks if `value` is likely an `arguments` object.
- *
- * @static
- * @memberOf _
- * @since 0.1.0
- * @category Lang
- * @param {*} value The value to check.
- * @returns {boolean} Returns `true` if `value` is an `arguments` object,
- *  else `false`.
- * @example
- *
- * _.isArguments(function() { return arguments; }());
- * // => true
- *
- * _.isArguments([1, 2, 3]);
- * // => false
- */
 
 var isArguments = _baseIsArguments(function () {
   return arguments;
@@ -11072,45 +9823,9 @@ var isArguments = _baseIsArguments(function () {
 };
 var isArguments_1 = isArguments;
 
-/**
- * Checks if `value` is classified as an `Array` object.
- *
- * @static
- * @memberOf _
- * @since 0.1.0
- * @category Lang
- * @param {*} value The value to check.
- * @returns {boolean} Returns `true` if `value` is an array, else `false`.
- * @example
- *
- * _.isArray([1, 2, 3]);
- * // => true
- *
- * _.isArray(document.body.children);
- * // => false
- *
- * _.isArray('abc');
- * // => false
- *
- * _.isArray(_.noop);
- * // => false
- */
 var isArray = Array.isArray;
 var isArray_1 = isArray;
 
-/**
- * This method returns `false`.
- *
- * @static
- * @memberOf _
- * @since 4.13.0
- * @category Util
- * @returns {boolean} Returns `false`.
- * @example
- *
- * _.times(2, _.stubFalse);
- * // => [false, false]
- */
 function stubFalse() {
   return false;
 }
@@ -11118,55 +9833,23 @@ function stubFalse() {
 var stubFalse_1 = stubFalse;
 
 var isBuffer_1 = createCommonjsModule(function (module, exports) {
-  /** Detect free variable `exports`. */
   var freeExports = exports && !exports.nodeType && exports;
-  /** Detect free variable `module`. */
 
   var freeModule = freeExports && 'object' == 'object' && module && !module.nodeType && module;
-  /** Detect the popular CommonJS extension `module.exports`. */
 
   var moduleExports = freeModule && freeModule.exports === freeExports;
-  /** Built-in value references. */
 
   var Buffer = moduleExports ? _root.Buffer : undefined;
-  /* Built-in method references for those with the same name as other `lodash` methods. */
 
   var nativeIsBuffer = Buffer ? Buffer.isBuffer : undefined;
-  /**
-   * Checks if `value` is a buffer.
-   *
-   * @static
-   * @memberOf _
-   * @since 4.3.0
-   * @category Lang
-   * @param {*} value The value to check.
-   * @returns {boolean} Returns `true` if `value` is a buffer, else `false`.
-   * @example
-   *
-   * _.isBuffer(new Buffer(2));
-   * // => true
-   *
-   * _.isBuffer(new Uint8Array(2));
-   * // => false
-   */
 
   var isBuffer = nativeIsBuffer || stubFalse_1;
   module.exports = isBuffer;
 });
 
-/** Used as references for various `Number` constants. */
 var MAX_SAFE_INTEGER$1 = 9007199254740991;
-/** Used to detect unsigned integer values. */
 
 var reIsUint = /^(?:0|[1-9]\d*)$/;
-/**
- * Checks if `value` is a valid array-like index.
- *
- * @private
- * @param {*} value The value to check.
- * @param {number} [length=MAX_SAFE_INTEGER] The upper bounds of a valid index.
- * @returns {boolean} Returns `true` if `value` is a valid index, else `false`.
- */
 
 function isIndex(value, length) {
   var type = typeof value;
@@ -11176,34 +9859,7 @@ function isIndex(value, length) {
 
 var _isIndex = isIndex;
 
-/** Used as references for various `Number` constants. */
 var MAX_SAFE_INTEGER = 9007199254740991;
-/**
- * Checks if `value` is a valid array-like length.
- *
- * **Note:** This method is loosely based on
- * [`ToLength`](http://ecma-international.org/ecma-262/7.0/#sec-tolength).
- *
- * @static
- * @memberOf _
- * @since 4.0.0
- * @category Lang
- * @param {*} value The value to check.
- * @returns {boolean} Returns `true` if `value` is a valid length, else `false`.
- * @example
- *
- * _.isLength(3);
- * // => true
- *
- * _.isLength(Number.MIN_VALUE);
- * // => false
- *
- * _.isLength(Infinity);
- * // => false
- *
- * _.isLength('3');
- * // => false
- */
 
 function isLength(value) {
   return typeof value == 'number' && value > -1 && value % 1 == 0 && value <= MAX_SAFE_INTEGER;
@@ -11211,7 +9867,6 @@ function isLength(value) {
 
 var isLength_1 = isLength;
 
-/** `Object#toString` result references. */
 
 var argsTag$1 = '[object Arguments]',
     arrayTag$1 = '[object Array]',
@@ -11237,18 +9892,10 @@ var arrayBufferTag$1 = '[object ArrayBuffer]',
     uint8ClampedTag = '[object Uint8ClampedArray]',
     uint16Tag = '[object Uint16Array]',
     uint32Tag = '[object Uint32Array]';
-/** Used to identify `toStringTag` values of typed arrays. */
 
 var typedArrayTags = {};
 typedArrayTags[float32Tag] = typedArrayTags[float64Tag] = typedArrayTags[int8Tag] = typedArrayTags[int16Tag] = typedArrayTags[int32Tag] = typedArrayTags[uint8Tag] = typedArrayTags[uint8ClampedTag] = typedArrayTags[uint16Tag] = typedArrayTags[uint32Tag] = true;
 typedArrayTags[argsTag$1] = typedArrayTags[arrayTag$1] = typedArrayTags[arrayBufferTag$1] = typedArrayTags[boolTag$1] = typedArrayTags[dataViewTag$2] = typedArrayTags[dateTag$1] = typedArrayTags[errorTag$1] = typedArrayTags[funcTag$1] = typedArrayTags[mapTag$2] = typedArrayTags[numberTag$1] = typedArrayTags[objectTag$2] = typedArrayTags[regexpTag$1] = typedArrayTags[setTag$2] = typedArrayTags[stringTag$1] = typedArrayTags[weakMapTag$1] = false;
-/**
- * The base implementation of `_.isTypedArray` without Node.js optimizations.
- *
- * @private
- * @param {*} value The value to check.
- * @returns {boolean} Returns `true` if `value` is a typed array, else `false`.
- */
 
 function baseIsTypedArray(value) {
   return isObjectLike_1(value) && isLength_1(value.length) && !!typedArrayTags[_baseGetTag(value)];
@@ -11256,13 +9903,6 @@ function baseIsTypedArray(value) {
 
 var _baseIsTypedArray = baseIsTypedArray;
 
-/**
- * The base implementation of `_.unary` without support for storing metadata.
- *
- * @private
- * @param {Function} func The function to cap arguments for.
- * @returns {Function} Returns the new capped function.
- */
 function baseUnary(func) {
   return function (value) {
     return func(value);
@@ -11272,27 +9912,21 @@ function baseUnary(func) {
 var _baseUnary = baseUnary;
 
 var _nodeUtil = createCommonjsModule(function (module, exports) {
-  /** Detect free variable `exports`. */
   var freeExports = exports && !exports.nodeType && exports;
-  /** Detect free variable `module`. */
 
   var freeModule = freeExports && 'object' == 'object' && module && !module.nodeType && module;
-  /** Detect the popular CommonJS extension `module.exports`. */
 
   var moduleExports = freeModule && freeModule.exports === freeExports;
-  /** Detect free variable `process` from Node.js. */
 
   var freeProcess = moduleExports && _freeGlobal.process;
-  /** Used to access faster Node.js helpers. */
 
   var nodeUtil = function () {
     try {
-      // Use `util.types` for Node.js 10+.
       var types = freeModule && freeModule.require && freeModule.require('util').types;
 
       if (types) {
         return types;
-      } // Legacy `process.binding('util')` for Node.js < 10.
+      }
 
 
       return freeProcess && freeProcess.binding && freeProcess.binding('util');
@@ -11302,44 +9936,16 @@ var _nodeUtil = createCommonjsModule(function (module, exports) {
   module.exports = nodeUtil;
 });
 
-/* Node.js helper references. */
 
 var nodeIsTypedArray = _nodeUtil && _nodeUtil.isTypedArray;
-/**
- * Checks if `value` is classified as a typed array.
- *
- * @static
- * @memberOf _
- * @since 3.0.0
- * @category Lang
- * @param {*} value The value to check.
- * @returns {boolean} Returns `true` if `value` is a typed array, else `false`.
- * @example
- *
- * _.isTypedArray(new Uint8Array);
- * // => true
- *
- * _.isTypedArray([]);
- * // => false
- */
 
 var isTypedArray = nodeIsTypedArray ? _baseUnary(nodeIsTypedArray) : _baseIsTypedArray;
 var isTypedArray_1 = isTypedArray;
 
-/** Used for built-in method references. */
 
 var objectProto$a = Object.prototype;
-/** Used to check objects for own properties. */
 
 var hasOwnProperty$8 = objectProto$a.hasOwnProperty;
-/**
- * Creates an array of the enumerable property names of the array-like `value`.
- *
- * @private
- * @param {*} value The value to query.
- * @param {boolean} inherited Specify returning inherited property names.
- * @returns {Array} Returns the array of property names.
- */
 
 function arrayLikeKeys(value, inherited) {
   var isArr = isArray_1(value),
@@ -11351,10 +9957,10 @@ function arrayLikeKeys(value, inherited) {
       length = result.length;
 
   for (var key in value) {
-    if ((inherited || hasOwnProperty$8.call(value, key)) && !(skipIndexes && ( // Safari 9 has enumerable `arguments.length` in strict mode.
-    key == 'length' || // Node.js 0.10 has enumerable non-index properties on buffers.
-    isBuff && (key == 'offset' || key == 'parent') || // PhantomJS 2 has enumerable non-index properties on typed arrays.
-    isType && (key == 'buffer' || key == 'byteLength' || key == 'byteOffset') || // Skip index properties.
+    if ((inherited || hasOwnProperty$8.call(value, key)) && !(skipIndexes && (
+    key == 'length' ||
+    isBuff && (key == 'offset' || key == 'parent') ||
+    isType && (key == 'buffer' || key == 'byteLength' || key == 'byteOffset') ||
     _isIndex(key, length)))) {
       result.push(key);
     }
@@ -11365,15 +9971,7 @@ function arrayLikeKeys(value, inherited) {
 
 var _arrayLikeKeys = arrayLikeKeys;
 
-/** Used for built-in method references. */
 var objectProto$9 = Object.prototype;
-/**
- * Checks if `value` is likely a prototype object.
- *
- * @private
- * @param {*} value The value to check.
- * @returns {boolean} Returns `true` if `value` is a prototype, else `false`.
- */
 
 function isPrototype(value) {
   var Ctor = value && value.constructor,
@@ -11383,14 +9981,6 @@ function isPrototype(value) {
 
 var _isPrototype = isPrototype;
 
-/**
- * Creates a unary function that invokes `func` with its argument transformed.
- *
- * @private
- * @param {Function} func The function to wrap.
- * @param {Function} transform The argument transform.
- * @returns {Function} Returns the new function.
- */
 function overArg(func, transform) {
   return function (arg) {
     return func(transform(arg));
@@ -11399,24 +9989,14 @@ function overArg(func, transform) {
 
 var _overArg = overArg;
 
-/* Built-in method references for those with the same name as other `lodash` methods. */
 
 var nativeKeys = _overArg(Object.keys, Object);
 var _nativeKeys = nativeKeys;
 
-/** Used for built-in method references. */
 
 var objectProto$8 = Object.prototype;
-/** Used to check objects for own properties. */
 
 var hasOwnProperty$7 = objectProto$8.hasOwnProperty;
-/**
- * The base implementation of `_.keys` which doesn't treat sparse arrays as dense.
- *
- * @private
- * @param {Object} object The object to query.
- * @returns {Array} Returns the array of property names.
- */
 
 function baseKeys(object) {
   if (!_isPrototype(object)) {
@@ -11436,31 +10016,6 @@ function baseKeys(object) {
 
 var _baseKeys = baseKeys;
 
-/**
- * Checks if `value` is the
- * [language type](http://www.ecma-international.org/ecma-262/7.0/#sec-ecmascript-language-types)
- * of `Object`. (e.g. arrays, functions, objects, regexes, `new Number(0)`, and `new String('')`)
- *
- * @static
- * @memberOf _
- * @since 0.1.0
- * @category Lang
- * @param {*} value The value to check.
- * @returns {boolean} Returns `true` if `value` is an object, else `false`.
- * @example
- *
- * _.isObject({});
- * // => true
- *
- * _.isObject([1, 2, 3]);
- * // => true
- *
- * _.isObject(_.noop);
- * // => true
- *
- * _.isObject(null);
- * // => false
- */
 function isObject(value) {
   var type = typeof value;
   return value != null && (type == 'object' || type == 'function');
@@ -11468,35 +10023,16 @@ function isObject(value) {
 
 var isObject_1 = isObject;
 
-/** `Object#toString` result references. */
 
 var asyncTag = '[object AsyncFunction]',
     funcTag = '[object Function]',
     genTag = '[object GeneratorFunction]',
     proxyTag = '[object Proxy]';
-/**
- * Checks if `value` is classified as a `Function` object.
- *
- * @static
- * @memberOf _
- * @since 0.1.0
- * @category Lang
- * @param {*} value The value to check.
- * @returns {boolean} Returns `true` if `value` is a function, else `false`.
- * @example
- *
- * _.isFunction(_);
- * // => true
- *
- * _.isFunction(/abc/);
- * // => false
- */
 
 function isFunction(value) {
   if (!isObject_1(value)) {
     return false;
-  } // The use of `Object#toString` avoids issues with the `typeof` operator
-  // in Safari 9 which returns 'object' for typed arrays and other constructors.
+  }
 
 
   var tag = _baseGetTag(value);
@@ -11505,31 +10041,6 @@ function isFunction(value) {
 
 var isFunction_1 = isFunction;
 
-/**
- * Checks if `value` is array-like. A value is considered array-like if it's
- * not a function and has a `value.length` that's an integer greater than or
- * equal to `0` and less than or equal to `Number.MAX_SAFE_INTEGER`.
- *
- * @static
- * @memberOf _
- * @since 4.0.0
- * @category Lang
- * @param {*} value The value to check.
- * @returns {boolean} Returns `true` if `value` is array-like, else `false`.
- * @example
- *
- * _.isArrayLike([1, 2, 3]);
- * // => true
- *
- * _.isArrayLike(document.body.children);
- * // => true
- *
- * _.isArrayLike('abc');
- * // => true
- *
- * _.isArrayLike(_.noop);
- * // => false
- */
 
 function isArrayLike(value) {
   return value != null && isLength_1(value.length) && !isFunction_1(value);
@@ -11537,34 +10048,6 @@ function isArrayLike(value) {
 
 var isArrayLike_1 = isArrayLike;
 
-/**
- * Creates an array of the own enumerable property names of `object`.
- *
- * **Note:** Non-object values are coerced to objects. See the
- * [ES spec](http://ecma-international.org/ecma-262/7.0/#sec-object.keys)
- * for more details.
- *
- * @static
- * @since 0.1.0
- * @memberOf _
- * @category Object
- * @param {Object} object The object to query.
- * @returns {Array} Returns the array of property names.
- * @example
- *
- * function Foo() {
- *   this.a = 1;
- *   this.b = 2;
- * }
- *
- * Foo.prototype.c = 3;
- *
- * _.keys(new Foo);
- * // => ['a', 'b'] (iteration order is not guaranteed)
- *
- * _.keys('hi');
- * // => ['0', '1']
- */
 
 function keys(object) {
   return isArrayLike_1(object) ? _arrayLikeKeys(object) : _baseKeys(object);
@@ -11572,14 +10055,6 @@ function keys(object) {
 
 var keys_1 = keys;
 
-/**
- * The base implementation of `_.forOwn` without support for iteratee shorthands.
- *
- * @private
- * @param {Object} object The object to iterate over.
- * @param {Function} iteratee The function invoked per iteration.
- * @returns {Object} Returns `object`.
- */
 
 function baseForOwn(object, iteratee) {
   return object && _baseFor(object, iteratee, keys_1);
@@ -11587,14 +10062,6 @@ function baseForOwn(object, iteratee) {
 
 var _baseForOwn = baseForOwn;
 
-/**
- * Creates a `baseEach` or `baseEachRight` function.
- *
- * @private
- * @param {Function} eachFunc The function to iterate over a collection.
- * @param {boolean} [fromRight] Specify iterating from right to left.
- * @returns {Function} Returns the new base function.
- */
 
 function createBaseEach(eachFunc, fromRight) {
   return function (collection, iteratee) {
@@ -11622,29 +10089,10 @@ function createBaseEach(eachFunc, fromRight) {
 
 var _createBaseEach = createBaseEach;
 
-/**
- * The base implementation of `_.forEach` without support for iteratee shorthands.
- *
- * @private
- * @param {Array|Object} collection The collection to iterate over.
- * @param {Function} iteratee The function invoked per iteration.
- * @returns {Array|Object} Returns `collection`.
- */
 
 var baseEach = _createBaseEach(_baseForOwn);
 var _baseEach = baseEach;
 
-/**
- * Aggregates elements of `collection` on `accumulator` with keys transformed
- * by `iteratee` and values set by `setter`.
- *
- * @private
- * @param {Array|Object} collection The collection to iterate over.
- * @param {Function} setter The function to set `accumulator` values.
- * @param {Function} iteratee The iteratee to transform keys.
- * @param {Object} accumulator The initial aggregated object.
- * @returns {Function} Returns `accumulator`.
- */
 
 function baseAggregator(collection, setter, iteratee, accumulator) {
   _baseEach(collection, function (value, key, collection) {
@@ -11655,13 +10103,6 @@ function baseAggregator(collection, setter, iteratee, accumulator) {
 
 var _baseAggregator = baseAggregator;
 
-/**
- * Removes all key-value entries from the list cache.
- *
- * @private
- * @name clear
- * @memberOf ListCache
- */
 function listCacheClear() {
   this.__data__ = [];
   this.size = 0;
@@ -11669,52 +10110,12 @@ function listCacheClear() {
 
 var _listCacheClear = listCacheClear;
 
-/**
- * Performs a
- * [`SameValueZero`](http://ecma-international.org/ecma-262/7.0/#sec-samevaluezero)
- * comparison between two values to determine if they are equivalent.
- *
- * @static
- * @memberOf _
- * @since 4.0.0
- * @category Lang
- * @param {*} value The value to compare.
- * @param {*} other The other value to compare.
- * @returns {boolean} Returns `true` if the values are equivalent, else `false`.
- * @example
- *
- * var object = { 'a': 1 };
- * var other = { 'a': 1 };
- *
- * _.eq(object, object);
- * // => true
- *
- * _.eq(object, other);
- * // => false
- *
- * _.eq('a', 'a');
- * // => true
- *
- * _.eq('a', Object('a'));
- * // => false
- *
- * _.eq(NaN, NaN);
- * // => true
- */
 function eq(value, other) {
   return value === other || value !== value && other !== other;
 }
 
 var eq_1 = eq;
 
-/**
- * Gets the index at which the `key` is found in `array` of key-value pairs.
- *
- * @private
- * @param {Array} array The array to inspect.
- * @param {*} key The key to search for.
- * @returns {number} Returns the index of the matched value, else `-1`.
- */
 
 function assocIndexOf(array, key) {
   var length = array.length;
@@ -11730,21 +10131,10 @@ function assocIndexOf(array, key) {
 
 var _assocIndexOf = assocIndexOf;
 
-/** Used for built-in method references. */
 
 var arrayProto = Array.prototype;
-/** Built-in value references. */
 
 var splice = arrayProto.splice;
-/**
- * Removes `key` and its value from the list cache.
- *
- * @private
- * @name delete
- * @memberOf ListCache
- * @param {string} key The key of the value to remove.
- * @returns {boolean} Returns `true` if the entry was removed, else `false`.
- */
 
 function listCacheDelete(key) {
   var data = this.__data__,
@@ -11768,15 +10158,6 @@ function listCacheDelete(key) {
 
 var _listCacheDelete = listCacheDelete;
 
-/**
- * Gets the list cache value for `key`.
- *
- * @private
- * @name get
- * @memberOf ListCache
- * @param {string} key The key of the value to get.
- * @returns {*} Returns the entry value.
- */
 
 function listCacheGet(key) {
   var data = this.__data__,
@@ -11786,15 +10167,6 @@ function listCacheGet(key) {
 
 var _listCacheGet = listCacheGet;
 
-/**
- * Checks if a list cache value for `key` exists.
- *
- * @private
- * @name has
- * @memberOf ListCache
- * @param {string} key The key of the entry to check.
- * @returns {boolean} Returns `true` if an entry for `key` exists, else `false`.
- */
 
 function listCacheHas(key) {
   return _assocIndexOf(this.__data__, key) > -1;
@@ -11802,16 +10174,6 @@ function listCacheHas(key) {
 
 var _listCacheHas = listCacheHas;
 
-/**
- * Sets the list cache `key` to `value`.
- *
- * @private
- * @name set
- * @memberOf ListCache
- * @param {string} key The key of the value to set.
- * @param {*} value The value to set.
- * @returns {Object} Returns the list cache instance.
- */
 
 function listCacheSet(key, value) {
   var data = this.__data__,
@@ -11829,13 +10191,6 @@ function listCacheSet(key, value) {
 
 var _listCacheSet = listCacheSet;
 
-/**
- * Creates an list cache object.
- *
- * @private
- * @constructor
- * @param {Array} [entries] The key-value pairs to cache.
- */
 
 function ListCache(entries) {
   var index = -1,
@@ -11846,7 +10201,7 @@ function ListCache(entries) {
     var entry = entries[index];
     this.set(entry[0], entry[1]);
   }
-} // Add methods to `ListCache`.
+}
 
 
 ListCache.prototype.clear = _listCacheClear;
@@ -11856,13 +10211,6 @@ ListCache.prototype.has = _listCacheHas;
 ListCache.prototype.set = _listCacheSet;
 var _ListCache = ListCache;
 
-/**
- * Removes all key-value entries from the stack.
- *
- * @private
- * @name clear
- * @memberOf Stack
- */
 
 function stackClear() {
   this.__data__ = new _ListCache();
@@ -11871,15 +10219,6 @@ function stackClear() {
 
 var _stackClear = stackClear;
 
-/**
- * Removes `key` and its value from the stack.
- *
- * @private
- * @name delete
- * @memberOf Stack
- * @param {string} key The key of the value to remove.
- * @returns {boolean} Returns `true` if the entry was removed, else `false`.
- */
 function stackDelete(key) {
   var data = this.__data__,
       result = data['delete'](key);
@@ -11889,54 +10228,27 @@ function stackDelete(key) {
 
 var _stackDelete = stackDelete;
 
-/**
- * Gets the stack value for `key`.
- *
- * @private
- * @name get
- * @memberOf Stack
- * @param {string} key The key of the value to get.
- * @returns {*} Returns the entry value.
- */
 function stackGet(key) {
   return this.__data__.get(key);
 }
 
 var _stackGet = stackGet;
 
-/**
- * Checks if a stack value for `key` exists.
- *
- * @private
- * @name has
- * @memberOf Stack
- * @param {string} key The key of the entry to check.
- * @returns {boolean} Returns `true` if an entry for `key` exists, else `false`.
- */
 function stackHas(key) {
   return this.__data__.has(key);
 }
 
 var _stackHas = stackHas;
 
-/** Used to detect overreaching core-js shims. */
 
 var coreJsData = _root['__core-js_shared__'];
 var _coreJsData = coreJsData;
 
-/** Used to detect methods masquerading as native. */
 
 var maskSrcKey = function () {
   var uid = /[^.]+$/.exec(_coreJsData && _coreJsData.keys && _coreJsData.keys.IE_PROTO || '');
   return uid ? 'Symbol(src)_1.' + uid : '';
 }();
-/**
- * Checks if `func` has its source masked.
- *
- * @private
- * @param {Function} func The function to check.
- * @returns {boolean} Returns `true` if `func` is masked, else `false`.
- */
 
 
 function isMasked(func) {
@@ -11945,18 +10257,9 @@ function isMasked(func) {
 
 var _isMasked = isMasked;
 
-/** Used for built-in method references. */
 var funcProto$1 = Function.prototype;
-/** Used to resolve the decompiled source of functions. */
 
 var funcToString$1 = funcProto$1.toString;
-/**
- * Converts `func` to its source code.
- *
- * @private
- * @param {Function} func The function to convert.
- * @returns {string} Returns the source code.
- */
 
 function toSource(func) {
   if (func != null) {
@@ -11974,36 +10277,19 @@ function toSource(func) {
 
 var _toSource = toSource;
 
-/**
- * Used to match `RegExp`
- * [syntax characters](http://ecma-international.org/ecma-262/7.0/#sec-patterns).
- */
 
 var reRegExpChar = /[\\^$.*+?()[\]{}|]/g;
-/** Used to detect host constructors (Safari). */
 
 var reIsHostCtor = /^\[object .+?Constructor\]$/;
-/** Used for built-in method references. */
 
 var funcProto = Function.prototype,
     objectProto$7 = Object.prototype;
-/** Used to resolve the decompiled source of functions. */
 
 var funcToString = funcProto.toString;
-/** Used to check objects for own properties. */
 
 var hasOwnProperty$6 = objectProto$7.hasOwnProperty;
-/** Used to detect if a method is native. */
 
 var reIsNative = RegExp('^' + funcToString.call(hasOwnProperty$6).replace(reRegExpChar, '\\$&').replace(/hasOwnProperty|(function).*?(?=\\\()| for .+?(?=\\\])/g, '$1.*?') + '$');
-/**
- * The base implementation of `_.isNative` without bad shim checks.
- *
- * @private
- * @param {*} value The value to check.
- * @returns {boolean} Returns `true` if `value` is a native function,
- *  else `false`.
- */
 
 function baseIsNative(value) {
   if (!isObject_1(value) || _isMasked(value)) {
@@ -12016,28 +10302,12 @@ function baseIsNative(value) {
 
 var _baseIsNative = baseIsNative;
 
-/**
- * Gets the value at `key` of `object`.
- *
- * @private
- * @param {Object} [object] The object to query.
- * @param {string} key The key of the property to get.
- * @returns {*} Returns the property value.
- */
 function getValue(object, key) {
   return object == null ? undefined : object[key];
 }
 
 var _getValue = getValue;
 
-/**
- * Gets the native function at `key` of `object`.
- *
- * @private
- * @param {Object} object The object to query.
- * @param {string} key The key of the method to get.
- * @returns {*} Returns the function if it's native, else `undefined`.
- */
 
 function getNative(object, key) {
   var value = _getValue(object, key);
@@ -12046,23 +10316,14 @@ function getNative(object, key) {
 
 var _getNative = getNative;
 
-/* Built-in method references that are verified to be native. */
 
 var Map$1 = _getNative(_root, 'Map');
 var _Map = Map$1;
 
-/* Built-in method references that are verified to be native. */
 
 var nativeCreate = _getNative(Object, 'create');
 var _nativeCreate = nativeCreate;
 
-/**
- * Removes all key-value entries from the hash.
- *
- * @private
- * @name clear
- * @memberOf Hash
- */
 
 function hashClear() {
   this.__data__ = _nativeCreate ? _nativeCreate(null) : {};
@@ -12071,16 +10332,6 @@ function hashClear() {
 
 var _hashClear = hashClear;
 
-/**
- * Removes `key` and its value from the hash.
- *
- * @private
- * @name delete
- * @memberOf Hash
- * @param {Object} hash The hash to modify.
- * @param {string} key The key of the value to remove.
- * @returns {boolean} Returns `true` if the entry was removed, else `false`.
- */
 function hashDelete(key) {
   var result = this.has(key) && delete this.__data__[key];
   this.size -= result ? 1 : 0;
@@ -12089,24 +10340,12 @@ function hashDelete(key) {
 
 var _hashDelete = hashDelete;
 
-/** Used to stand-in for `undefined` hash values. */
 
 var HASH_UNDEFINED$2 = '__lodash_hash_undefined__';
-/** Used for built-in method references. */
 
 var objectProto$6 = Object.prototype;
-/** Used to check objects for own properties. */
 
 var hasOwnProperty$5 = objectProto$6.hasOwnProperty;
-/**
- * Gets the hash value for `key`.
- *
- * @private
- * @name get
- * @memberOf Hash
- * @param {string} key The key of the value to get.
- * @returns {*} Returns the entry value.
- */
 
 function hashGet(key) {
   var data = this.__data__;
@@ -12121,21 +10360,10 @@ function hashGet(key) {
 
 var _hashGet = hashGet;
 
-/** Used for built-in method references. */
 
 var objectProto$5 = Object.prototype;
-/** Used to check objects for own properties. */
 
 var hasOwnProperty$4 = objectProto$5.hasOwnProperty;
-/**
- * Checks if a hash value for `key` exists.
- *
- * @private
- * @name has
- * @memberOf Hash
- * @param {string} key The key of the entry to check.
- * @returns {boolean} Returns `true` if an entry for `key` exists, else `false`.
- */
 
 function hashHas(key) {
   var data = this.__data__;
@@ -12144,19 +10372,8 @@ function hashHas(key) {
 
 var _hashHas = hashHas;
 
-/** Used to stand-in for `undefined` hash values. */
 
 var HASH_UNDEFINED$1 = '__lodash_hash_undefined__';
-/**
- * Sets the hash `key` to `value`.
- *
- * @private
- * @name set
- * @memberOf Hash
- * @param {string} key The key of the value to set.
- * @param {*} value The value to set.
- * @returns {Object} Returns the hash instance.
- */
 
 function hashSet(key, value) {
   var data = this.__data__;
@@ -12167,13 +10384,6 @@ function hashSet(key, value) {
 
 var _hashSet = hashSet;
 
-/**
- * Creates a hash object.
- *
- * @private
- * @constructor
- * @param {Array} [entries] The key-value pairs to cache.
- */
 
 function Hash(entries) {
   var index = -1,
@@ -12184,7 +10394,7 @@ function Hash(entries) {
     var entry = entries[index];
     this.set(entry[0], entry[1]);
   }
-} // Add methods to `Hash`.
+}
 
 
 Hash.prototype.clear = _hashClear;
@@ -12194,13 +10404,6 @@ Hash.prototype.has = _hashHas;
 Hash.prototype.set = _hashSet;
 var _Hash = Hash;
 
-/**
- * Removes all key-value entries from the map.
- *
- * @private
- * @name clear
- * @memberOf MapCache
- */
 
 function mapCacheClear() {
   this.size = 0;
@@ -12213,13 +10416,6 @@ function mapCacheClear() {
 
 var _mapCacheClear = mapCacheClear;
 
-/**
- * Checks if `value` is suitable for use as unique object key.
- *
- * @private
- * @param {*} value The value to check.
- * @returns {boolean} Returns `true` if `value` is suitable, else `false`.
- */
 function isKeyable(value) {
   var type = typeof value;
   return type == 'string' || type == 'number' || type == 'symbol' || type == 'boolean' ? value !== '__proto__' : value === null;
@@ -12227,14 +10423,6 @@ function isKeyable(value) {
 
 var _isKeyable = isKeyable;
 
-/**
- * Gets the data for `map`.
- *
- * @private
- * @param {Object} map The map to query.
- * @param {string} key The reference key.
- * @returns {*} Returns the map data.
- */
 
 function getMapData(map, key) {
   var data = map.__data__;
@@ -12243,15 +10431,6 @@ function getMapData(map, key) {
 
 var _getMapData = getMapData;
 
-/**
- * Removes `key` and its value from the map.
- *
- * @private
- * @name delete
- * @memberOf MapCache
- * @param {string} key The key of the value to remove.
- * @returns {boolean} Returns `true` if the entry was removed, else `false`.
- */
 
 function mapCacheDelete(key) {
   var result = _getMapData(this, key)['delete'](key);
@@ -12261,15 +10440,6 @@ function mapCacheDelete(key) {
 
 var _mapCacheDelete = mapCacheDelete;
 
-/**
- * Gets the map value for `key`.
- *
- * @private
- * @name get
- * @memberOf MapCache
- * @param {string} key The key of the value to get.
- * @returns {*} Returns the entry value.
- */
 
 function mapCacheGet(key) {
   return _getMapData(this, key).get(key);
@@ -12277,15 +10447,6 @@ function mapCacheGet(key) {
 
 var _mapCacheGet = mapCacheGet;
 
-/**
- * Checks if a map value for `key` exists.
- *
- * @private
- * @name has
- * @memberOf MapCache
- * @param {string} key The key of the entry to check.
- * @returns {boolean} Returns `true` if an entry for `key` exists, else `false`.
- */
 
 function mapCacheHas(key) {
   return _getMapData(this, key).has(key);
@@ -12293,16 +10454,6 @@ function mapCacheHas(key) {
 
 var _mapCacheHas = mapCacheHas;
 
-/**
- * Sets the map `key` to `value`.
- *
- * @private
- * @name set
- * @memberOf MapCache
- * @param {string} key The key of the value to set.
- * @param {*} value The value to set.
- * @returns {Object} Returns the map cache instance.
- */
 
 function mapCacheSet(key, value) {
   var data = _getMapData(this, key),
@@ -12314,13 +10465,6 @@ function mapCacheSet(key, value) {
 
 var _mapCacheSet = mapCacheSet;
 
-/**
- * Creates a map cache object to store key-value pairs.
- *
- * @private
- * @constructor
- * @param {Array} [entries] The key-value pairs to cache.
- */
 
 function MapCache(entries) {
   var index = -1,
@@ -12331,7 +10475,7 @@ function MapCache(entries) {
     var entry = entries[index];
     this.set(entry[0], entry[1]);
   }
-} // Add methods to `MapCache`.
+}
 
 
 MapCache.prototype.clear = _mapCacheClear;
@@ -12341,19 +10485,8 @@ MapCache.prototype.has = _mapCacheHas;
 MapCache.prototype.set = _mapCacheSet;
 var _MapCache = MapCache;
 
-/** Used as the size to enable large array optimizations. */
 
 var LARGE_ARRAY_SIZE = 200;
-/**
- * Sets the stack `key` to `value`.
- *
- * @private
- * @name set
- * @memberOf Stack
- * @param {string} key The key of the value to set.
- * @param {*} value The value to set.
- * @returns {Object} Returns the stack cache instance.
- */
 
 function stackSet(key, value) {
   var data = this.__data__;
@@ -12377,18 +10510,11 @@ function stackSet(key, value) {
 
 var _stackSet = stackSet;
 
-/**
- * Creates a stack cache object to store key-value pairs.
- *
- * @private
- * @constructor
- * @param {Array} [entries] The key-value pairs to cache.
- */
 
 function Stack(entries) {
   var data = this.__data__ = new _ListCache(entries);
   this.size = data.size;
-} // Add methods to `Stack`.
+}
 
 
 Stack.prototype.clear = _stackClear;
@@ -12398,18 +10524,7 @@ Stack.prototype.has = _stackHas;
 Stack.prototype.set = _stackSet;
 var _Stack = Stack;
 
-/** Used to stand-in for `undefined` hash values. */
 var HASH_UNDEFINED = '__lodash_hash_undefined__';
-/**
- * Adds `value` to the array cache.
- *
- * @private
- * @name add
- * @memberOf SetCache
- * @alias push
- * @param {*} value The value to cache.
- * @returns {Object} Returns the cache instance.
- */
 
 function setCacheAdd(value) {
   this.__data__.set(value, HASH_UNDEFINED);
@@ -12419,29 +10534,12 @@ function setCacheAdd(value) {
 
 var _setCacheAdd = setCacheAdd;
 
-/**
- * Checks if `value` is in the array cache.
- *
- * @private
- * @name has
- * @memberOf SetCache
- * @param {*} value The value to search for.
- * @returns {number} Returns `true` if `value` is found, else `false`.
- */
 function setCacheHas(value) {
   return this.__data__.has(value);
 }
 
 var _setCacheHas = setCacheHas;
 
-/**
- *
- * Creates an array cache object to store unique values.
- *
- * @private
- * @constructor
- * @param {Array} [values] The values to cache.
- */
 
 function SetCache(values) {
   var index = -1,
@@ -12451,23 +10549,13 @@ function SetCache(values) {
   while (++index < length) {
     this.add(values[index]);
   }
-} // Add methods to `SetCache`.
+}
 
 
 SetCache.prototype.add = SetCache.prototype.push = _setCacheAdd;
 SetCache.prototype.has = _setCacheHas;
 var _SetCache = SetCache;
 
-/**
- * A specialized version of `_.some` for arrays without support for iteratee
- * shorthands.
- *
- * @private
- * @param {Array} [array] The array to iterate over.
- * @param {Function} predicate The function invoked per iteration.
- * @returns {boolean} Returns `true` if any element passes the predicate check,
- *  else `false`.
- */
 function arraySome(array, predicate) {
   var index = -1,
       length = array == null ? 0 : array.length;
@@ -12483,37 +10571,15 @@ function arraySome(array, predicate) {
 
 var _arraySome = arraySome;
 
-/**
- * Checks if a `cache` value for `key` exists.
- *
- * @private
- * @param {Object} cache The cache to query.
- * @param {string} key The key of the entry to check.
- * @returns {boolean} Returns `true` if an entry for `key` exists, else `false`.
- */
 function cacheHas(cache, key) {
   return cache.has(key);
 }
 
 var _cacheHas = cacheHas;
 
-/** Used to compose bitmasks for value comparisons. */
 
 var COMPARE_PARTIAL_FLAG$5 = 1,
     COMPARE_UNORDERED_FLAG$3 = 2;
-/**
- * A specialized version of `baseIsEqualDeep` for arrays with support for
- * partial deep comparisons.
- *
- * @private
- * @param {Array} array The array to compare.
- * @param {Array} other The other array to compare.
- * @param {number} bitmask The bitmask flags. See `baseIsEqual` for more details.
- * @param {Function} customizer The function to customize comparisons.
- * @param {Function} equalFunc The function to determine equivalents of values.
- * @param {Object} stack Tracks traversed `array` and `other` objects.
- * @returns {boolean} Returns `true` if the arrays are equivalent, else `false`.
- */
 
 function equalArrays(array, other, bitmask, customizer, equalFunc, stack) {
   var isPartial = bitmask & COMPARE_PARTIAL_FLAG$5,
@@ -12522,7 +10588,7 @@ function equalArrays(array, other, bitmask, customizer, equalFunc, stack) {
 
   if (arrLength != othLength && !(isPartial && othLength > arrLength)) {
     return false;
-  } // Check that cyclic values are equal.
+  }
 
 
   var arrStacked = stack.get(array);
@@ -12536,7 +10602,7 @@ function equalArrays(array, other, bitmask, customizer, equalFunc, stack) {
       result = true,
       seen = bitmask & COMPARE_UNORDERED_FLAG$3 ? new _SetCache() : undefined;
   stack.set(array, other);
-  stack.set(other, array); // Ignore non-index properties.
+  stack.set(other, array);
 
   while (++index < arrLength) {
     var arrValue = array[index],
@@ -12553,7 +10619,7 @@ function equalArrays(array, other, bitmask, customizer, equalFunc, stack) {
 
       result = false;
       break;
-    } // Recursively compare arrays (susceptible to call stack limits).
+    }
 
 
     if (seen) {
@@ -12578,18 +10644,10 @@ function equalArrays(array, other, bitmask, customizer, equalFunc, stack) {
 
 var _equalArrays = equalArrays;
 
-/** Built-in value references. */
 
 var Uint8Array = _root.Uint8Array;
 var _Uint8Array = Uint8Array;
 
-/**
- * Converts `map` to its key-value pairs.
- *
- * @private
- * @param {Object} map The map to convert.
- * @returns {Array} Returns the key-value pairs.
- */
 function mapToArray(map) {
   var index = -1,
       result = Array(map.size);
@@ -12601,13 +10659,6 @@ function mapToArray(map) {
 
 var _mapToArray = mapToArray;
 
-/**
- * Converts `set` to an array of its values.
- *
- * @private
- * @param {Object} set The set to convert.
- * @returns {Array} Returns the values.
- */
 function setToArray(set) {
   var index = -1,
       result = Array(set.size);
@@ -12619,11 +10670,9 @@ function setToArray(set) {
 
 var _setToArray = setToArray;
 
-/** Used to compose bitmasks for value comparisons. */
 
 var COMPARE_PARTIAL_FLAG$4 = 1,
     COMPARE_UNORDERED_FLAG$2 = 2;
-/** `Object#toString` result references. */
 
 var boolTag = '[object Boolean]',
     dateTag = '[object Date]',
@@ -12636,27 +10685,9 @@ var boolTag = '[object Boolean]',
     symbolTag$1 = '[object Symbol]';
 var arrayBufferTag = '[object ArrayBuffer]',
     dataViewTag$1 = '[object DataView]';
-/** Used to convert symbols to primitives and strings. */
 
 var symbolProto$1 = _Symbol ? _Symbol.prototype : undefined,
     symbolValueOf = symbolProto$1 ? symbolProto$1.valueOf : undefined;
-/**
- * A specialized version of `baseIsEqualDeep` for comparing objects of
- * the same `toStringTag`.
- *
- * **Note:** This function only supports comparing values with tags of
- * `Boolean`, `Date`, `Error`, `Number`, `RegExp`, or `String`.
- *
- * @private
- * @param {Object} object The object to compare.
- * @param {Object} other The other object to compare.
- * @param {string} tag The `toStringTag` of the objects to compare.
- * @param {number} bitmask The bitmask flags. See `baseIsEqual` for more details.
- * @param {Function} customizer The function to customize comparisons.
- * @param {Function} equalFunc The function to determine equivalents of values.
- * @param {Object} stack Tracks traversed `object` and `other` objects.
- * @returns {boolean} Returns `true` if the objects are equivalent, else `false`.
- */
 
 function equalByTag(object, other, tag, bitmask, customizer, equalFunc, stack) {
   switch (tag) {
@@ -12678,8 +10709,6 @@ function equalByTag(object, other, tag, bitmask, customizer, equalFunc, stack) {
     case boolTag:
     case dateTag:
     case numberTag:
-      // Coerce booleans to `1` or `0` and dates to milliseconds.
-      // Invalid dates are coerced to `NaN`.
       return eq_1(+object, +other);
 
     case errorTag:
@@ -12687,9 +10716,6 @@ function equalByTag(object, other, tag, bitmask, customizer, equalFunc, stack) {
 
     case regexpTag:
     case stringTag:
-      // Coerce regexes to strings and treat strings, primitives and objects,
-      // as equal. See http://www.ecma-international.org/ecma-262/7.0/#sec-regexp.prototype.tostring
-      // for more details.
       return object == other + '';
 
     case mapTag$1:
@@ -12701,7 +10727,7 @@ function equalByTag(object, other, tag, bitmask, customizer, equalFunc, stack) {
 
       if (object.size != other.size && !isPartial) {
         return false;
-      } // Assume cyclic values are equal.
+      }
 
 
       var stacked = stack.get(object);
@@ -12710,7 +10736,7 @@ function equalByTag(object, other, tag, bitmask, customizer, equalFunc, stack) {
         return stacked == other;
       }
 
-      bitmask |= COMPARE_UNORDERED_FLAG$2; // Recursively compare objects (susceptible to call stack limits).
+      bitmask |= COMPARE_UNORDERED_FLAG$2;
 
       stack.set(object, other);
       var result = _equalArrays(convert(object), convert(other), bitmask, customizer, equalFunc, stack);
@@ -12729,14 +10755,6 @@ function equalByTag(object, other, tag, bitmask, customizer, equalFunc, stack) {
 
 var _equalByTag = equalByTag;
 
-/**
- * Appends the elements of `values` to `array`.
- *
- * @private
- * @param {Array} array The array to modify.
- * @param {Array} values The values to append.
- * @returns {Array} Returns `array`.
- */
 function arrayPush(array, values) {
   var index = -1,
       length = values.length,
@@ -12751,17 +10769,6 @@ function arrayPush(array, values) {
 
 var _arrayPush = arrayPush;
 
-/**
- * The base implementation of `getAllKeys` and `getAllKeysIn` which uses
- * `keysFunc` and `symbolsFunc` to get the enumerable property names and
- * symbols of `object`.
- *
- * @private
- * @param {Object} object The object to query.
- * @param {Function} keysFunc The function to get the keys of `object`.
- * @param {Function} symbolsFunc The function to get the symbols of `object`.
- * @returns {Array} Returns the array of property names and symbols.
- */
 
 function baseGetAllKeys(object, keysFunc, symbolsFunc) {
   var result = keysFunc(object);
@@ -12770,15 +10777,6 @@ function baseGetAllKeys(object, keysFunc, symbolsFunc) {
 
 var _baseGetAllKeys = baseGetAllKeys;
 
-/**
- * A specialized version of `_.filter` for arrays without support for
- * iteratee shorthands.
- *
- * @private
- * @param {Array} [array] The array to iterate over.
- * @param {Function} predicate The function invoked per iteration.
- * @returns {Array} Returns the new filtered array.
- */
 function arrayFilter(array, predicate) {
   var index = -1,
       length = array == null ? 0 : array.length,
@@ -12798,46 +10796,18 @@ function arrayFilter(array, predicate) {
 
 var _arrayFilter = arrayFilter;
 
-/**
- * This method returns a new empty array.
- *
- * @static
- * @memberOf _
- * @since 4.13.0
- * @category Util
- * @returns {Array} Returns the new empty array.
- * @example
- *
- * var arrays = _.times(2, _.stubArray);
- *
- * console.log(arrays);
- * // => [[], []]
- *
- * console.log(arrays[0] === arrays[1]);
- * // => false
- */
 function stubArray() {
   return [];
 }
 
 var stubArray_1 = stubArray;
 
-/** Used for built-in method references. */
 
 var objectProto$4 = Object.prototype;
-/** Built-in value references. */
 
 var propertyIsEnumerable = objectProto$4.propertyIsEnumerable;
-/* Built-in method references for those with the same name as other `lodash` methods. */
 
 var nativeGetSymbols = Object.getOwnPropertySymbols;
-/**
- * Creates an array of the own enumerable symbols of `object`.
- *
- * @private
- * @param {Object} object The object to query.
- * @returns {Array} Returns the array of symbols.
- */
 
 var getSymbols = !nativeGetSymbols ? stubArray_1 : function (object) {
   if (object == null) {
@@ -12851,13 +10821,6 @@ var getSymbols = !nativeGetSymbols ? stubArray_1 : function (object) {
 };
 var _getSymbols = getSymbols;
 
-/**
- * Creates an array of own enumerable property names and symbols of `object`.
- *
- * @private
- * @param {Object} object The object to query.
- * @returns {Array} Returns the array of property names and symbols.
- */
 
 function getAllKeys(object) {
   return _baseGetAllKeys(object, keys_1, _getSymbols);
@@ -12865,28 +10828,12 @@ function getAllKeys(object) {
 
 var _getAllKeys = getAllKeys;
 
-/** Used to compose bitmasks for value comparisons. */
 
 var COMPARE_PARTIAL_FLAG$3 = 1;
-/** Used for built-in method references. */
 
 var objectProto$3 = Object.prototype;
-/** Used to check objects for own properties. */
 
 var hasOwnProperty$3 = objectProto$3.hasOwnProperty;
-/**
- * A specialized version of `baseIsEqualDeep` for objects with support for
- * partial deep comparisons.
- *
- * @private
- * @param {Object} object The object to compare.
- * @param {Object} other The other object to compare.
- * @param {number} bitmask The bitmask flags. See `baseIsEqual` for more details.
- * @param {Function} customizer The function to customize comparisons.
- * @param {Function} equalFunc The function to determine equivalents of values.
- * @param {Object} stack Tracks traversed `object` and `other` objects.
- * @returns {boolean} Returns `true` if the objects are equivalent, else `false`.
- */
 
 function equalObjects(object, other, bitmask, customizer, equalFunc, stack) {
   var isPartial = bitmask & COMPARE_PARTIAL_FLAG$3,
@@ -12907,7 +10854,7 @@ function equalObjects(object, other, bitmask, customizer, equalFunc, stack) {
     if (!(isPartial ? key in other : hasOwnProperty$3.call(other, key))) {
       return false;
     }
-  } // Check that cyclic values are equal.
+  }
 
 
   var objStacked = stack.get(object);
@@ -12929,7 +10876,7 @@ function equalObjects(object, other, bitmask, customizer, equalFunc, stack) {
 
     if (customizer) {
       var compared = isPartial ? customizer(othValue, objValue, key, other, object, stack) : customizer(objValue, othValue, key, object, other, stack);
-    } // Recursively compare objects (susceptible to call stack limits).
+    }
 
 
     if (!(compared === undefined ? objValue === othValue || equalFunc(objValue, othValue, bitmask, customizer, stack) : compared)) {
@@ -12942,7 +10889,7 @@ function equalObjects(object, other, bitmask, customizer, equalFunc, stack) {
 
   if (result && !skipCtor) {
     var objCtor = object.constructor,
-        othCtor = other.constructor; // Non `Object` object instances with different constructors are not equal.
+        othCtor = other.constructor;
 
     if (objCtor != othCtor && 'constructor' in object && 'constructor' in other && !(typeof objCtor == 'function' && objCtor instanceof objCtor && typeof othCtor == 'function' && othCtor instanceof othCtor)) {
       result = false;
@@ -12956,27 +10903,22 @@ function equalObjects(object, other, bitmask, customizer, equalFunc, stack) {
 
 var _equalObjects = equalObjects;
 
-/* Built-in method references that are verified to be native. */
 
 var DataView = _getNative(_root, 'DataView');
 var _DataView = DataView;
 
-/* Built-in method references that are verified to be native. */
 
 var Promise$1 = _getNative(_root, 'Promise');
 var _Promise = Promise$1;
 
-/* Built-in method references that are verified to be native. */
 
 var Set$1 = _getNative(_root, 'Set');
 var _Set = Set$1;
 
-/* Built-in method references that are verified to be native. */
 
 var WeakMap$1 = _getNative(_root, 'WeakMap');
 var _WeakMap = WeakMap$1;
 
-/** `Object#toString` result references. */
 
 var mapTag = '[object Map]',
     objectTag$1 = '[object Object]',
@@ -12984,22 +10926,14 @@ var mapTag = '[object Map]',
     setTag = '[object Set]',
     weakMapTag = '[object WeakMap]';
 var dataViewTag = '[object DataView]';
-/** Used to detect maps, sets, and weakmaps. */
 
 var dataViewCtorString = _toSource(_DataView),
     mapCtorString = _toSource(_Map),
     promiseCtorString = _toSource(_Promise),
     setCtorString = _toSource(_Set),
     weakMapCtorString = _toSource(_WeakMap);
-/**
- * Gets the `toStringTag` of `value`.
- *
- * @private
- * @param {*} value The value to query.
- * @returns {string} Returns the `toStringTag`.
- */
 
-var getTag = _baseGetTag; // Fallback for data views, maps, sets, and weak maps in IE 11 and promises in Node.js < 6.
+var getTag = _baseGetTag;
 
 if (_DataView && getTag(new _DataView(new ArrayBuffer(1))) != dataViewTag || _Map && getTag(new _Map()) != mapTag || _Promise && getTag(_Promise.resolve()) != promiseTag || _Set && getTag(new _Set()) != setTag || _WeakMap && getTag(new _WeakMap()) != weakMapTag) {
   getTag = function (value) {
@@ -13032,34 +10966,16 @@ if (_DataView && getTag(new _DataView(new ArrayBuffer(1))) != dataViewTag || _Ma
 
 var _getTag = getTag;
 
-/** Used to compose bitmasks for value comparisons. */
 
 var COMPARE_PARTIAL_FLAG$2 = 1;
-/** `Object#toString` result references. */
 
 var argsTag = '[object Arguments]',
     arrayTag = '[object Array]',
     objectTag = '[object Object]';
-/** Used for built-in method references. */
 
 var objectProto$2 = Object.prototype;
-/** Used to check objects for own properties. */
 
 var hasOwnProperty$2 = objectProto$2.hasOwnProperty;
-/**
- * A specialized version of `baseIsEqual` for arrays and objects which performs
- * deep comparisons and tracks traversed objects enabling objects with circular
- * references to be compared.
- *
- * @private
- * @param {Object} object The object to compare.
- * @param {Object} other The other object to compare.
- * @param {number} bitmask The bitmask flags. See `baseIsEqual` for more details.
- * @param {Function} customizer The function to customize comparisons.
- * @param {Function} equalFunc The function to determine equivalents of values.
- * @param {Object} [stack] Tracks traversed `object` and `other` objects.
- * @returns {boolean} Returns `true` if the objects are equivalent, else `false`.
- */
 
 function baseIsEqualDeep(object, other, bitmask, customizer, equalFunc, stack) {
   var objIsArr = isArray_1(object),
@@ -13108,20 +11024,6 @@ function baseIsEqualDeep(object, other, bitmask, customizer, equalFunc, stack) {
 
 var _baseIsEqualDeep = baseIsEqualDeep;
 
-/**
- * The base implementation of `_.isEqual` which supports partial comparisons
- * and tracks traversed objects.
- *
- * @private
- * @param {*} value The value to compare.
- * @param {*} other The other value to compare.
- * @param {boolean} bitmask The bitmask flags.
- *  1 - Unordered comparison
- *  2 - Partial comparison
- * @param {Function} [customizer] The function to customize comparisons.
- * @param {Object} [stack] Tracks traversed `value` and `other` objects.
- * @returns {boolean} Returns `true` if the values are equivalent, else `false`.
- */
 
 function baseIsEqual(value, other, bitmask, customizer, stack) {
   if (value === other) {
@@ -13137,20 +11039,9 @@ function baseIsEqual(value, other, bitmask, customizer, stack) {
 
 var _baseIsEqual = baseIsEqual;
 
-/** Used to compose bitmasks for value comparisons. */
 
 var COMPARE_PARTIAL_FLAG$1 = 1,
     COMPARE_UNORDERED_FLAG$1 = 2;
-/**
- * The base implementation of `_.isMatch` without support for iteratee shorthands.
- *
- * @private
- * @param {Object} object The object to inspect.
- * @param {Object} source The object of property values to match.
- * @param {Array} matchData The property names, values, and compare flags to match.
- * @param {Function} [customizer] The function to customize comparisons.
- * @returns {boolean} Returns `true` if `object` is a match, else `false`.
- */
 
 function baseIsMatch(object, source, matchData, customizer) {
   var index = matchData.length,
@@ -13199,14 +11090,6 @@ function baseIsMatch(object, source, matchData, customizer) {
 
 var _baseIsMatch = baseIsMatch;
 
-/**
- * Checks if `value` is suitable for strict equality comparisons, i.e. `===`.
- *
- * @private
- * @param {*} value The value to check.
- * @returns {boolean} Returns `true` if `value` if suitable for strict
- *  equality comparisons, else `false`.
- */
 
 function isStrictComparable(value) {
   return value === value && !isObject_1(value);
@@ -13214,13 +11097,6 @@ function isStrictComparable(value) {
 
 var _isStrictComparable = isStrictComparable;
 
-/**
- * Gets the property names, values, and compare flags of `object`.
- *
- * @private
- * @param {Object} object The object to query.
- * @returns {Array} Returns the match data of `object`.
- */
 
 function getMatchData(object) {
   var result = keys_1(object),
@@ -13237,15 +11113,6 @@ function getMatchData(object) {
 
 var _getMatchData = getMatchData;
 
-/**
- * A specialized version of `matchesProperty` for source values suitable
- * for strict equality comparisons, i.e. `===`.
- *
- * @private
- * @param {string} key The key of the property to get.
- * @param {*} srcValue The value to match.
- * @returns {Function} Returns the new spec function.
- */
 function matchesStrictComparable(key, srcValue) {
   return function (object) {
     if (object == null) {
@@ -13258,13 +11125,6 @@ function matchesStrictComparable(key, srcValue) {
 
 var _matchesStrictComparable = matchesStrictComparable;
 
-/**
- * The base implementation of `_.matches` which doesn't clone `source`.
- *
- * @private
- * @param {Object} source The object of property values to match.
- * @returns {Function} Returns the new spec function.
- */
 
 function baseMatches(source) {
   var matchData = _getMatchData(source);
@@ -13280,26 +11140,8 @@ function baseMatches(source) {
 
 var _baseMatches = baseMatches;
 
-/** `Object#toString` result references. */
 
 var symbolTag = '[object Symbol]';
-/**
- * Checks if `value` is classified as a `Symbol` primitive or object.
- *
- * @static
- * @memberOf _
- * @since 4.0.0
- * @category Lang
- * @param {*} value The value to check.
- * @returns {boolean} Returns `true` if `value` is a symbol, else `false`.
- * @example
- *
- * _.isSymbol(Symbol.iterator);
- * // => true
- *
- * _.isSymbol('abc');
- * // => false
- */
 
 function isSymbol(value) {
   return typeof value == 'symbol' || isObjectLike_1(value) && _baseGetTag(value) == symbolTag;
@@ -13307,18 +11149,9 @@ function isSymbol(value) {
 
 var isSymbol_1 = isSymbol;
 
-/** Used to match property names within property paths. */
 
 var reIsDeepProp = /\.|\[(?:[^[\]]*|(["'])(?:(?!\1)[^\\]|\\.)*?\1)\]/,
     reIsPlainProp = /^\w*$/;
-/**
- * Checks if `value` is a property name and not a property path.
- *
- * @private
- * @param {*} value The value to check.
- * @param {Object} [object] The object to query keys on.
- * @returns {boolean} Returns `true` if `value` is a property name, else `false`.
- */
 
 function isKey(value, object) {
   if (isArray_1(value)) {
@@ -13336,53 +11169,8 @@ function isKey(value, object) {
 
 var _isKey = isKey;
 
-/** Error message constants. */
 
 var FUNC_ERROR_TEXT = 'Expected a function';
-/**
- * Creates a function that memoizes the result of `func`. If `resolver` is
- * provided, it determines the cache key for storing the result based on the
- * arguments provided to the memoized function. By default, the first argument
- * provided to the memoized function is used as the map cache key. The `func`
- * is invoked with the `this` binding of the memoized function.
- *
- * **Note:** The cache is exposed as the `cache` property on the memoized
- * function. Its creation may be customized by replacing the `_.memoize.Cache`
- * constructor with one whose instances implement the
- * [`Map`](http://ecma-international.org/ecma-262/7.0/#sec-properties-of-the-map-prototype-object)
- * method interface of `clear`, `delete`, `get`, `has`, and `set`.
- *
- * @static
- * @memberOf _
- * @since 0.1.0
- * @category Function
- * @param {Function} func The function to have its output memoized.
- * @param {Function} [resolver] The function to resolve the cache key.
- * @returns {Function} Returns the new memoized function.
- * @example
- *
- * var object = { 'a': 1, 'b': 2 };
- * var other = { 'c': 3, 'd': 4 };
- *
- * var values = _.memoize(_.values);
- * values(object);
- * // => [1, 2]
- *
- * values(other);
- * // => [3, 4]
- *
- * object.a = 2;
- * values(object);
- * // => [1, 2]
- *
- * // Modify the result cache.
- * values.cache.set(object, ['a', 'b']);
- * values(object);
- * // => ['a', 'b']
- *
- * // Replace `_.memoize.Cache`.
- * _.memoize.Cache = WeakMap;
- */
 
 function memoize(func, resolver) {
   if (typeof func != 'function' || resolver != null && typeof resolver != 'function') {
@@ -13405,23 +11193,14 @@ function memoize(func, resolver) {
 
   memoized.cache = new (memoize.Cache || _MapCache)();
   return memoized;
-} // Expose `MapCache`.
+}
 
 
 memoize.Cache = _MapCache;
 var memoize_1 = memoize;
 
-/** Used as the maximum memoize cache size. */
 
 var MAX_MEMOIZE_SIZE = 500;
-/**
- * A specialized version of `_.memoize` which clears the memoized function's
- * cache when it exceeds `MAX_MEMOIZE_SIZE`.
- *
- * @private
- * @param {Function} func The function to have its output memoized.
- * @returns {Function} Returns the new memoized function.
- */
 
 function memoizeCapped(func) {
   var result = memoize_1(func, function (key) {
@@ -13437,25 +11216,15 @@ function memoizeCapped(func) {
 
 var _memoizeCapped = memoizeCapped;
 
-/** Used to match property names within property paths. */
 
 var rePropName = /[^.[\]]+|\[(?:(-?\d+(?:\.\d+)?)|(["'])((?:(?!\2)[^\\]|\\.)*?)\2)\]|(?=(?:\.|\[\])(?:\.|\[\]|$))/g;
-/** Used to match backslashes in property paths. */
 
 var reEscapeChar = /\\(\\)?/g;
-/**
- * Converts `string` to a property path array.
- *
- * @private
- * @param {string} string The string to convert.
- * @returns {Array} Returns the property path array.
- */
 
 var stringToPath = _memoizeCapped(function (string) {
   var result = [];
 
   if (string.charCodeAt(0) === 46
-  /* . */
   ) {
       result.push('');
     }
@@ -13467,15 +11236,6 @@ var stringToPath = _memoizeCapped(function (string) {
 });
 var _stringToPath = stringToPath;
 
-/**
- * A specialized version of `_.map` for arrays without support for iteratee
- * shorthands.
- *
- * @private
- * @param {Array} [array] The array to iterate over.
- * @param {Function} iteratee The function invoked per iteration.
- * @returns {Array} Returns the new mapped array.
- */
 function arrayMap(array, iteratee) {
   var index = -1,
       length = array == null ? 0 : array.length,
@@ -13490,30 +11250,18 @@ function arrayMap(array, iteratee) {
 
 var _arrayMap = arrayMap;
 
-/** Used as references for various `Number` constants. */
 
 var INFINITY$1 = 1 / 0;
-/** Used to convert symbols to primitives and strings. */
 
 var symbolProto = _Symbol ? _Symbol.prototype : undefined,
     symbolToString = symbolProto ? symbolProto.toString : undefined;
-/**
- * The base implementation of `_.toString` which doesn't convert nullish
- * values to empty strings.
- *
- * @private
- * @param {*} value The value to process.
- * @returns {string} Returns the string.
- */
 
 function baseToString(value) {
-  // Exit early for strings to avoid a performance hit in some environments.
   if (typeof value == 'string') {
     return value;
   }
 
   if (isArray_1(value)) {
-    // Recursively convert values (susceptible to call stack limits).
     return _arrayMap(value, baseToString) + '';
   }
 
@@ -13527,27 +11275,6 @@ function baseToString(value) {
 
 var _baseToString = baseToString;
 
-/**
- * Converts `value` to a string. An empty string is returned for `null`
- * and `undefined` values. The sign of `-0` is preserved.
- *
- * @static
- * @memberOf _
- * @since 4.0.0
- * @category Lang
- * @param {*} value The value to convert.
- * @returns {string} Returns the converted string.
- * @example
- *
- * _.toString(null);
- * // => ''
- *
- * _.toString(-0);
- * // => '-0'
- *
- * _.toString([1, 2, 3]);
- * // => '1,2,3'
- */
 
 function toString(value) {
   return value == null ? '' : _baseToString(value);
@@ -13555,14 +11282,6 @@ function toString(value) {
 
 var toString_1 = toString;
 
-/**
- * Casts `value` to a path array if it's not one.
- *
- * @private
- * @param {*} value The value to inspect.
- * @param {Object} [object] The object to query keys on.
- * @returns {Array} Returns the cast property path array.
- */
 
 function castPath(value, object) {
   if (isArray_1(value)) {
@@ -13574,16 +11293,8 @@ function castPath(value, object) {
 
 var _castPath = castPath;
 
-/** Used as references for various `Number` constants. */
 
 var INFINITY = 1 / 0;
-/**
- * Converts `value` to a string key if it's not a string or symbol.
- *
- * @private
- * @param {*} value The value to inspect.
- * @returns {string|symbol} Returns the key.
- */
 
 function toKey(value) {
   if (typeof value == 'string' || isSymbol_1(value)) {
@@ -13596,14 +11307,6 @@ function toKey(value) {
 
 var _toKey = toKey;
 
-/**
- * The base implementation of `_.get` without support for default values.
- *
- * @private
- * @param {Object} object The object to query.
- * @param {Array|string} path The path of the property to get.
- * @returns {*} Returns the resolved value.
- */
 
 function baseGet(object, path) {
   path = _castPath(path, object);
@@ -13619,31 +11322,6 @@ function baseGet(object, path) {
 
 var _baseGet = baseGet;
 
-/**
- * Gets the value at `path` of `object`. If the resolved value is
- * `undefined`, the `defaultValue` is returned in its place.
- *
- * @static
- * @memberOf _
- * @since 3.7.0
- * @category Object
- * @param {Object} object The object to query.
- * @param {Array|string} path The path of the property to get.
- * @param {*} [defaultValue] The value returned for `undefined` resolved values.
- * @returns {*} Returns the resolved value.
- * @example
- *
- * var object = { 'a': [{ 'b': { 'c': 3 } }] };
- *
- * _.get(object, 'a[0].b.c');
- * // => 3
- *
- * _.get(object, ['a', '0', 'b', 'c']);
- * // => 3
- *
- * _.get(object, 'a.b.c', 'default');
- * // => 'default'
- */
 
 function get(object, path, defaultValue) {
   var result = object == null ? undefined : _baseGet(object, path);
@@ -13652,29 +11330,12 @@ function get(object, path, defaultValue) {
 
 var get_1 = get;
 
-/**
- * The base implementation of `_.hasIn` without support for deep paths.
- *
- * @private
- * @param {Object} [object] The object to query.
- * @param {Array|string} key The key to check.
- * @returns {boolean} Returns `true` if `key` exists, else `false`.
- */
 function baseHasIn(object, key) {
   return object != null && key in Object(object);
 }
 
 var _baseHasIn = baseHasIn;
 
-/**
- * Checks if `path` exists on `object`.
- *
- * @private
- * @param {Object} object The object to query.
- * @param {Array|string} path The path to check.
- * @param {Function} hasFunc The function to check properties.
- * @returns {boolean} Returns `true` if `path` exists, else `false`.
- */
 
 function hasPath(object, path, hasFunc) {
   path = _castPath(path, object);
@@ -13702,32 +11363,6 @@ function hasPath(object, path, hasFunc) {
 
 var _hasPath = hasPath;
 
-/**
- * Checks if `path` is a direct or inherited property of `object`.
- *
- * @static
- * @memberOf _
- * @since 4.0.0
- * @category Object
- * @param {Object} object The object to query.
- * @param {Array|string} path The path to check.
- * @returns {boolean} Returns `true` if `path` exists, else `false`.
- * @example
- *
- * var object = _.create({ 'a': _.create({ 'b': 2 }) });
- *
- * _.hasIn(object, 'a');
- * // => true
- *
- * _.hasIn(object, 'a.b');
- * // => true
- *
- * _.hasIn(object, ['a', 'b']);
- * // => true
- *
- * _.hasIn(object, 'b');
- * // => false
- */
 
 function hasIn(object, path) {
   return object != null && _hasPath(object, path, _baseHasIn);
@@ -13735,18 +11370,9 @@ function hasIn(object, path) {
 
 var hasIn_1 = hasIn;
 
-/** Used to compose bitmasks for value comparisons. */
 
 var COMPARE_PARTIAL_FLAG = 1,
     COMPARE_UNORDERED_FLAG = 2;
-/**
- * The base implementation of `_.matchesProperty` which doesn't clone `srcValue`.
- *
- * @private
- * @param {string} path The path of the property to get.
- * @param {*} srcValue The value to match.
- * @returns {Function} Returns the new spec function.
- */
 
 function baseMatchesProperty(path, srcValue) {
   if (_isKey(path) && _isStrictComparable(srcValue)) {
@@ -13761,35 +11387,12 @@ function baseMatchesProperty(path, srcValue) {
 
 var _baseMatchesProperty = baseMatchesProperty;
 
-/**
- * This method returns the first argument it receives.
- *
- * @static
- * @since 0.1.0
- * @memberOf _
- * @category Util
- * @param {*} value Any value.
- * @returns {*} Returns `value`.
- * @example
- *
- * var object = { 'a': 1 };
- *
- * console.log(_.identity(object) === object);
- * // => true
- */
 function identity(value) {
   return value;
 }
 
 var identity_1 = identity;
 
-/**
- * The base implementation of `_.property` without support for deep paths.
- *
- * @private
- * @param {string} key The key of the property to get.
- * @returns {Function} Returns the new accessor function.
- */
 function baseProperty(key) {
   return function (object) {
     return object == null ? undefined : object[key];
@@ -13798,13 +11401,6 @@ function baseProperty(key) {
 
 var _baseProperty = baseProperty;
 
-/**
- * A specialized version of `baseProperty` which supports deep paths.
- *
- * @private
- * @param {Array|string} path The path of the property to get.
- * @returns {Function} Returns the new accessor function.
- */
 
 function basePropertyDeep(path) {
   return function (object) {
@@ -13814,28 +11410,6 @@ function basePropertyDeep(path) {
 
 var _basePropertyDeep = basePropertyDeep;
 
-/**
- * Creates a function that returns the value at `path` of a given object.
- *
- * @static
- * @memberOf _
- * @since 2.4.0
- * @category Util
- * @param {Array|string} path The path of the property to get.
- * @returns {Function} Returns the new accessor function.
- * @example
- *
- * var objects = [
- *   { 'a': { 'b': 2 } },
- *   { 'a': { 'b': 1 } }
- * ];
- *
- * _.map(objects, _.property('a.b'));
- * // => [2, 1]
- *
- * _.map(_.sortBy(objects, _.property(['a', 'b'])), 'a.b');
- * // => [1, 2]
- */
 
 function property(path) {
   return _isKey(path) ? _baseProperty(_toKey(path)) : _basePropertyDeep(path);
@@ -13843,17 +11417,8 @@ function property(path) {
 
 var property_1 = property;
 
-/**
- * The base implementation of `_.iteratee`.
- *
- * @private
- * @param {*} [value=_.identity] The value to convert to an iteratee.
- * @returns {Function} Returns the iteratee.
- */
 
 function baseIteratee(value) {
-  // Don't store the `typeof` result in a variable to avoid a JIT bug in Safari 9.
-  // See https://bugs.webkit.org/show_bug.cgi?id=156034 for more details.
   if (typeof value == 'function') {
     return value;
   }
@@ -13871,14 +11436,6 @@ function baseIteratee(value) {
 
 var _baseIteratee = baseIteratee;
 
-/**
- * Creates a function like `_.groupBy`.
- *
- * @private
- * @param {Function} setter The function to set accumulator values.
- * @param {Function} [initializer] The accumulator object initializer.
- * @returns {Function} Returns the new aggregator function.
- */
 
 function createAggregator(setter, initializer) {
   return function (collection, iteratee) {
@@ -13890,42 +11447,6 @@ function createAggregator(setter, initializer) {
 
 var _createAggregator = createAggregator;
 
-/**
- * Creates an array of elements split into two groups, the first of which
- * contains elements `predicate` returns truthy for, the second of which
- * contains elements `predicate` returns falsey for. The predicate is
- * invoked with one argument: (value).
- *
- * @static
- * @memberOf _
- * @since 3.0.0
- * @category Collection
- * @param {Array|Object} collection The collection to iterate over.
- * @param {Function} [predicate=_.identity] The function invoked per iteration.
- * @returns {Array} Returns the array of grouped elements.
- * @example
- *
- * var users = [
- *   { 'user': 'barney',  'age': 36, 'active': false },
- *   { 'user': 'fred',    'age': 40, 'active': true },
- *   { 'user': 'pebbles', 'age': 1,  'active': false }
- * ];
- *
- * _.partition(users, function(o) { return o.active; });
- * // => objects for [['fred'], ['barney', 'pebbles']]
- *
- * // The `_.matches` iteratee shorthand.
- * _.partition(users, { 'age': 1, 'active': false });
- * // => objects for [['pebbles'], ['barney', 'fred']]
- *
- * // The `_.matchesProperty` iteratee shorthand.
- * _.partition(users, ['active', false]);
- * // => objects for [['barney', 'pebbles'], ['fred']]
- *
- * // The `_.property` iteratee shorthand.
- * _.partition(users, 'active');
- * // => objects for [['fred'], ['barney', 'pebbles']]
- */
 
 var partition = _createAggregator(function (result, value, key) {
   result[key ? 0 : 1].push(value);
@@ -13943,7 +11464,6 @@ var createMinimistOptions = function createMinimistOptions(detailedOptions) {
   }) => alias ? [name, alias] : [name]));
   const defaults = Object.fromEntries(detailedOptions.filter(option => !option.deprecated && (!option.forwardToApi || option.name === "plugin" || option.name === "plugin-search-dir") && option.default !== undefined).map(option => [option.name, option.default]));
   return {
-    // we use vnopts' AliasSchema to handle aliases for better error messages
     alias: {},
     boolean,
     string,
@@ -14021,9 +11541,7 @@ function applyConfigPrecedence(context, options) {
         return options || parseArgsToOptions(context);
     }
   } catch (error) {
-    /* istanbul ignore next */
     context.logger.error(error.toString());
-    /* istanbul ignore next */
 
     process.exit(2);
   }
@@ -14058,33 +11576,25 @@ var option = {
 
 const {
   isCI
-} = require$$1; // Some CI pipelines incorrectly report process.stdout.isTTY status,
-// which causes unwanted lines in the output. An additional check for isCI() helps.
-// See https://github.com/prettier/prettier/issues/5801
+} = require$$1;
 
 var isTty = function isTTY() {
   return process.stdout.isTTY && !isCI();
 };
 
-/*istanbul ignore start*/
 var base = createCommonjsModule(function (module, exports) {
 
   Object.defineProperty(exports, "__esModule", {
     value: true
   });
   exports["default"] = Diff;
-  /*istanbul ignore end*/
 
   function Diff() {}
 
   Diff.prototype = {
-    /*istanbul ignore start*/
 
-    /*istanbul ignore end*/
     diff: function diff(oldString, newString) {
-      /*istanbul ignore start*/
       var
-      /*istanbul ignore end*/
       options = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : {};
       var callback = options.callback;
 
@@ -14105,7 +11615,7 @@ var base = createCommonjsModule(function (module, exports) {
         } else {
           return value;
         }
-      } // Allow subclasses to massage the input prior to running
+      }
 
 
       oldString = this.castInput(oldString);
@@ -14119,25 +11629,22 @@ var base = createCommonjsModule(function (module, exports) {
       var bestPath = [{
         newPos: -1,
         components: []
-      }]; // Seed editLength = 0, i.e. the content starts with the same values
+      }];
 
       var oldPos = this.extractCommon(bestPath[0], newString, oldString, 0);
 
       if (bestPath[0].newPos + 1 >= newLen && oldPos + 1 >= oldLen) {
-        // Identity per the equality and tokenizer
         return done([{
           value: this.join(newString),
           count: newString.length
         }]);
-      } // Main worker method. checks all permutations of a given edit length for acceptance.
+      }
 
 
       function execEditLength() {
         for (var diagonalPath = -1 * editLength; diagonalPath <= editLength; diagonalPath += 2) {
           var basePath =
-          /*istanbul ignore start*/
           void 0
-          /*istanbul ignore end*/
           ;
 
           var addPath = bestPath[diagonalPath - 1],
@@ -14145,7 +11652,6 @@ var base = createCommonjsModule(function (module, exports) {
               _oldPos = (removePath ? removePath.newPos : 0) - diagonalPath;
 
           if (addPath) {
-            // No one else is going to attempt to use this value, clear it
             bestPath[diagonalPath - 1] = undefined;
           }
 
@@ -14153,46 +11659,38 @@ var base = createCommonjsModule(function (module, exports) {
               canRemove = removePath && 0 <= _oldPos && _oldPos < oldLen;
 
           if (!canAdd && !canRemove) {
-            // If this path is a terminal then prune
             bestPath[diagonalPath] = undefined;
             continue;
-          } // Select the diagonal that we want to branch from. We select the prior
-          // path whose position in the new string is the farthest from the origin
-          // and does not pass the bounds of the diff graph
+          }
 
 
           if (!canAdd || canRemove && addPath.newPos < removePath.newPos) {
             basePath = clonePath(removePath);
             self.pushComponent(basePath.components, undefined, true);
           } else {
-            basePath = addPath; // No need to clone, we've pulled it from the list
+            basePath = addPath;
 
             basePath.newPos++;
             self.pushComponent(basePath.components, true, undefined);
           }
 
-          _oldPos = self.extractCommon(basePath, newString, oldString, diagonalPath); // If we have hit the end of both strings, then we are done
+          _oldPos = self.extractCommon(basePath, newString, oldString, diagonalPath);
 
           if (basePath.newPos + 1 >= newLen && _oldPos + 1 >= oldLen) {
             return done(buildValues(self, basePath.components, newString, oldString, self.useLongestToken));
           } else {
-            // Otherwise track this path as a potential candidate and continue.
             bestPath[diagonalPath] = basePath;
           }
         }
 
         editLength++;
-      } // Performs the length of edit iteration. Is a bit fugly as this has to support the
-      // sync and async mode which is never fun. Loops over execEditLength until a value
-      // is produced.
+      }
 
 
       if (callback) {
         (function exec() {
           setTimeout(function () {
-            // This should not happen, but we want to be safe.
 
-            /* istanbul ignore next */
             if (editLength > maxEditLength) {
               return callback();
             }
@@ -14213,15 +11711,11 @@ var base = createCommonjsModule(function (module, exports) {
       }
     },
 
-    /*istanbul ignore start*/
 
-    /*istanbul ignore end*/
     pushComponent: function pushComponent(components, added, removed) {
       var last = components[components.length - 1];
 
       if (last && last.added === added && last.removed === removed) {
-        // We need to clone here as the component clone operation is just
-        // as shallow array clone
         components[components.length - 1] = {
           count: last.count + 1,
           added: added,
@@ -14236,9 +11730,7 @@ var base = createCommonjsModule(function (module, exports) {
       }
     },
 
-    /*istanbul ignore start*/
 
-    /*istanbul ignore end*/
     extractCommon: function extractCommon(basePath, newString, oldString, diagonalPath) {
       var newLen = newString.length,
           oldLen = oldString.length,
@@ -14262,9 +11754,7 @@ var base = createCommonjsModule(function (module, exports) {
       return oldPos;
     },
 
-    /*istanbul ignore start*/
 
-    /*istanbul ignore end*/
     equals: function equals(left, right) {
       if (this.options.comparator) {
         return this.options.comparator(left, right);
@@ -14273,9 +11763,7 @@ var base = createCommonjsModule(function (module, exports) {
       }
     },
 
-    /*istanbul ignore start*/
 
-    /*istanbul ignore end*/
     removeEmpty: function removeEmpty(array) {
       var ret = [];
 
@@ -14288,23 +11776,17 @@ var base = createCommonjsModule(function (module, exports) {
       return ret;
     },
 
-    /*istanbul ignore start*/
 
-    /*istanbul ignore end*/
     castInput: function castInput(value) {
       return value;
     },
 
-    /*istanbul ignore start*/
 
-    /*istanbul ignore end*/
     tokenize: function tokenize(value) {
       return value.split('');
     },
 
-    /*istanbul ignore start*/
 
-    /*istanbul ignore end*/
     join: function join(chars) {
       return chars.join('');
     }
@@ -14331,16 +11813,14 @@ var base = createCommonjsModule(function (module, exports) {
           component.value = diff.join(newString.slice(newPos, newPos + component.count));
         }
 
-        newPos += component.count; // Common case
+        newPos += component.count;
 
         if (!component.added) {
           oldPos += component.count;
         }
       } else {
         component.value = diff.join(oldString.slice(oldPos, oldPos + component.count));
-        oldPos += component.count; // Reverse add and remove so removes are output first to match common convention
-        // The diffing algorithm is tied to add then remove output and this is the simplest
-        // route to get the desired output with minimal overhead.
+        oldPos += component.count;
 
         if (componentPos && components[componentPos - 1].added) {
           var tmp = components[componentPos - 1];
@@ -14348,9 +11828,7 @@ var base = createCommonjsModule(function (module, exports) {
           components[componentPos] = tmp;
         }
       }
-    } // Special case handle for when one terminal is ignored (i.e. whitespace).
-    // For this case we merge the terminal into the prior string and drop the change.
-    // This is only available for string mode.
+    }
 
 
     var lastComponent = components[componentLen - 1];
@@ -14371,7 +11849,6 @@ var base = createCommonjsModule(function (module, exports) {
   }
 });
 
-/*istanbul ignore start*/
 var character = createCommonjsModule(function (module, exports) {
 
   Object.defineProperty(exports, "__esModule", {
@@ -14379,14 +11856,10 @@ var character = createCommonjsModule(function (module, exports) {
   });
   exports.diffChars = diffChars;
   exports.characterDiff = void 0;
-  /*istanbul ignore end*/
 
   var
-  /*istanbul ignore start*/
   _base = _interopRequireDefault(base)
-  /*istanbul ignore end*/
   ;
-  /*istanbul ignore start*/
 
 
   function _interopRequireDefault(obj) {
@@ -14394,39 +11867,29 @@ var character = createCommonjsModule(function (module, exports) {
       "default": obj
     };
   }
-  /*istanbul ignore end*/
 
 
   var characterDiff = new
-  /*istanbul ignore start*/
   _base
-  /*istanbul ignore end*/
   [
-  /*istanbul ignore start*/
   "default"
-  /*istanbul ignore end*/
   ]();
-  /*istanbul ignore start*/
 
   exports.characterDiff = characterDiff;
-  /*istanbul ignore end*/
 
   function diffChars(oldStr, newStr, options) {
     return characterDiff.diff(oldStr, newStr, options);
   }
 });
 
-/*istanbul ignore start*/
 
 var generateOptions_1 = generateOptions;
-/*istanbul ignore end*/
 
 function generateOptions(options, defaults) {
   if (typeof options === 'function') {
     defaults.callback = options;
   } else if (options) {
     for (var name in options) {
-      /* istanbul ignore else */
       if (options.hasOwnProperty(name)) {
         defaults[name] = options[name];
       }
@@ -14442,7 +11905,6 @@ var params = /*#__PURE__*/Object.defineProperty({
   value: true
 });
 
-/*istanbul ignore start*/
 var word = createCommonjsModule(function (module, exports) {
 
   Object.defineProperty(exports, "__esModule", {
@@ -14451,14 +11913,10 @@ var word = createCommonjsModule(function (module, exports) {
   exports.diffWords = diffWords;
   exports.diffWordsWithSpace = diffWordsWithSpace;
   exports.wordDiff = void 0;
-  /*istanbul ignore end*/
 
   var
-  /*istanbul ignore start*/
   _base = _interopRequireDefault(base)
-  /*istanbul ignore end*/
   ;
-  /*istanbul ignore start*/
 
 
   function _interopRequireDefault(obj) {
@@ -14466,42 +11924,17 @@ var word = createCommonjsModule(function (module, exports) {
       "default": obj
     };
   }
-  /*istanbul ignore end*/
-  // Based on https://en.wikipedia.org/wiki/Latin_script_in_Unicode
-  //
-  // Ranges and exceptions:
-  // Latin-1 Supplement, 0080–00FF
-  //  - U+00D7  × Multiplication sign
-  //  - U+00F7  ÷ Division sign
-  // Latin Extended-A, 0100–017F
-  // Latin Extended-B, 0180–024F
-  // IPA Extensions, 0250–02AF
-  // Spacing Modifier Letters, 02B0–02FF
-  //  - U+02C7  ˇ &#711;  Caron
-  //  - U+02D8  ˘ &#728;  Breve
-  //  - U+02D9  ˙ &#729;  Dot Above
-  //  - U+02DA  ˚ &#730;  Ring Above
-  //  - U+02DB  ˛ &#731;  Ogonek
-  //  - U+02DC  ˜ &#732;  Small Tilde
-  //  - U+02DD  ˝ &#733;  Double Acute Accent
-  // Latin Extended Additional, 1E00–1EFF
 
 
   var extendedWordChars = /^[A-Za-z\xC0-\u02C6\u02C8-\u02D7\u02DE-\u02FF\u1E00-\u1EFF]+$/;
   var reWhitespace = /\S/;
   var wordDiff = new
-  /*istanbul ignore start*/
   _base
-  /*istanbul ignore end*/
   [
-  /*istanbul ignore start*/
   "default"
-  /*istanbul ignore end*/
   ]();
-  /*istanbul ignore start*/
 
   exports.wordDiff = wordDiff;
-  /*istanbul ignore end*/
 
   wordDiff.equals = function (left, right) {
     if (this.options.ignoreCase) {
@@ -14513,11 +11946,9 @@ var word = createCommonjsModule(function (module, exports) {
   };
 
   wordDiff.tokenize = function (value) {
-    // All whitespace symbols except newline group into one token, each newline - in separate token
-    var tokens = value.split(/([^\S\r\n]+|[()[\]{}'"\r\n]|\b)/); // Join the boundary splits that we do not consider to be boundaries. This is primarily the extended Latin character set.
+    var tokens = value.split(/([^\S\r\n]+|[()[\]{}'"\r\n]|\b)/);
 
     for (var i = 0; i < tokens.length - 1; i++) {
-      // If we have an empty string in the next field and we have only word chars before and after, merge
       if (!tokens[i + 1] && tokens[i + 2] && extendedWordChars.test(tokens[i]) && extendedWordChars.test(tokens[i + 2])) {
         tokens[i] += tokens[i + 2];
         tokens.splice(i + 1, 2);
@@ -14530,16 +11961,11 @@ var word = createCommonjsModule(function (module, exports) {
 
   function diffWords(oldStr, newStr, options) {
     options =
-    /*istanbul ignore start*/
-    (/*istanbul ignore end*/
+    (
 
-    /*istanbul ignore start*/
     0, params
-    /*istanbul ignore end*/
     .
-    /*istanbul ignore start*/
     generateOptions
-    /*istanbul ignore end*/
     )(options, {
       ignoreWhitespace: true
     });
@@ -14551,7 +11977,6 @@ var word = createCommonjsModule(function (module, exports) {
   }
 });
 
-/*istanbul ignore start*/
 var line = createCommonjsModule(function (module, exports) {
 
   Object.defineProperty(exports, "__esModule", {
@@ -14560,14 +11985,10 @@ var line = createCommonjsModule(function (module, exports) {
   exports.diffLines = diffLines;
   exports.diffTrimmedLines = diffTrimmedLines;
   exports.lineDiff = void 0;
-  /*istanbul ignore end*/
 
   var
-  /*istanbul ignore start*/
   _base = _interopRequireDefault(base)
-  /*istanbul ignore end*/
   ;
-  /*istanbul ignore start*/
 
 
   function _interopRequireDefault(obj) {
@@ -14575,30 +11996,23 @@ var line = createCommonjsModule(function (module, exports) {
       "default": obj
     };
   }
-  /*istanbul ignore end*/
 
 
   var lineDiff = new
-  /*istanbul ignore start*/
   _base
-  /*istanbul ignore end*/
   [
-  /*istanbul ignore start*/
   "default"
-  /*istanbul ignore end*/
   ]();
-  /*istanbul ignore start*/
 
   exports.lineDiff = lineDiff;
-  /*istanbul ignore end*/
 
   lineDiff.tokenize = function (value) {
     var retLines = [],
-        linesAndNewlines = value.split(/(\n|\r\n)/); // Ignore the final empty token that occurs if the string ends with a new line
+        linesAndNewlines = value.split(/(\n|\r\n)/);
 
     if (!linesAndNewlines[linesAndNewlines.length - 1]) {
       linesAndNewlines.pop();
-    } // Merge the content and line separators into single tokens
+    }
 
 
     for (var i = 0; i < linesAndNewlines.length; i++) {
@@ -14624,16 +12038,11 @@ var line = createCommonjsModule(function (module, exports) {
 
   function diffTrimmedLines(oldStr, newStr, callback) {
     var options =
-    /*istanbul ignore start*/
-    (/*istanbul ignore end*/
+    (
 
-    /*istanbul ignore start*/
     0, params
-    /*istanbul ignore end*/
     .
-    /*istanbul ignore start*/
     generateOptions
-    /*istanbul ignore end*/
     )(callback, {
       ignoreWhitespace: true
     });
@@ -14641,7 +12050,6 @@ var line = createCommonjsModule(function (module, exports) {
   }
 });
 
-/*istanbul ignore start*/
 var sentence = createCommonjsModule(function (module, exports) {
 
   Object.defineProperty(exports, "__esModule", {
@@ -14649,14 +12057,10 @@ var sentence = createCommonjsModule(function (module, exports) {
   });
   exports.diffSentences = diffSentences;
   exports.sentenceDiff = void 0;
-  /*istanbul ignore end*/
 
   var
-  /*istanbul ignore start*/
   _base = _interopRequireDefault(base)
-  /*istanbul ignore end*/
   ;
-  /*istanbul ignore start*/
 
 
   function _interopRequireDefault(obj) {
@@ -14664,22 +12068,15 @@ var sentence = createCommonjsModule(function (module, exports) {
       "default": obj
     };
   }
-  /*istanbul ignore end*/
 
 
   var sentenceDiff = new
-  /*istanbul ignore start*/
   _base
-  /*istanbul ignore end*/
   [
-  /*istanbul ignore start*/
   "default"
-  /*istanbul ignore end*/
   ]();
-  /*istanbul ignore start*/
 
   exports.sentenceDiff = sentenceDiff;
-  /*istanbul ignore end*/
 
   sentenceDiff.tokenize = function (value) {
     return value.split(/(\S.+?[.!?])(?=\s+|$)/);
@@ -14690,7 +12087,6 @@ var sentence = createCommonjsModule(function (module, exports) {
   }
 });
 
-/*istanbul ignore start*/
 var css = createCommonjsModule(function (module, exports) {
 
   Object.defineProperty(exports, "__esModule", {
@@ -14698,14 +12094,10 @@ var css = createCommonjsModule(function (module, exports) {
   });
   exports.diffCss = diffCss;
   exports.cssDiff = void 0;
-  /*istanbul ignore end*/
 
   var
-  /*istanbul ignore start*/
   _base = _interopRequireDefault(base)
-  /*istanbul ignore end*/
   ;
-  /*istanbul ignore start*/
 
 
   function _interopRequireDefault(obj) {
@@ -14713,22 +12105,15 @@ var css = createCommonjsModule(function (module, exports) {
       "default": obj
     };
   }
-  /*istanbul ignore end*/
 
 
   var cssDiff = new
-  /*istanbul ignore start*/
   _base
-  /*istanbul ignore end*/
   [
-  /*istanbul ignore start*/
   "default"
-  /*istanbul ignore end*/
   ]();
-  /*istanbul ignore start*/
 
   exports.cssDiff = cssDiff;
-  /*istanbul ignore end*/
 
   cssDiff.tokenize = function (value) {
     return value.split(/([{}:;,]|\s+)/);
@@ -14747,14 +12132,10 @@ var json = createCommonjsModule(function (module, exports) {
   exports.diffJson = diffJson;
   exports.canonicalize = canonicalize;
   exports.jsonDiff = void 0;
-  /*istanbul ignore end*/
 
   var
-  /*istanbul ignore start*/
   _base = _interopRequireDefault(base)
-  /*istanbul ignore end*/
   ;
-  /*istanbul ignore start*/
 
 
   function _interopRequireDefault(obj) {
@@ -14778,49 +12159,33 @@ var json = createCommonjsModule(function (module, exports) {
 
     return _typeof(obj);
   }
-  /*istanbul ignore end*/
 
 
   var objectPrototypeToString = Object.prototype.toString;
   var jsonDiff = new
-  /*istanbul ignore start*/
   _base
-  /*istanbul ignore end*/
   [
-  /*istanbul ignore start*/
   "default"
-  /*istanbul ignore end*/
-  ](); // Discriminate between two lines of pretty-printed, serialized JSON where one of them has a
-  // dangling comma and the other doesn't. Turns out including the dangling comma yields the nicest output:
+  ]();
 
-  /*istanbul ignore start*/
 
   exports.jsonDiff = jsonDiff;
-  /*istanbul ignore end*/
 
   jsonDiff.useLongestToken = true;
   jsonDiff.tokenize =
-  /*istanbul ignore start*/
   line
-  /*istanbul ignore end*/
   .
-  /*istanbul ignore start*/
   lineDiff
-  /*istanbul ignore end*/
   .tokenize;
 
   jsonDiff.castInput = function (value) {
-    /*istanbul ignore start*/
     var _this$options =
-    /*istanbul ignore end*/
     this.options,
         undefinedReplacement = _this$options.undefinedReplacement,
         _this$options$stringi = _this$options.stringifyReplacer,
         stringifyReplacer = _this$options$stringi === void 0 ? function (k, v)
-    /*istanbul ignore start*/
     {
       return (
-        /*istanbul ignore end*/
         typeof v === 'undefined' ? undefinedReplacement : v
       );
     } : _this$options$stringi;
@@ -14829,21 +12194,16 @@ var json = createCommonjsModule(function (module, exports) {
 
   jsonDiff.equals = function (left, right) {
     return (
-      /*istanbul ignore start*/
       _base
-      /*istanbul ignore end*/
       [
-      /*istanbul ignore start*/
       "default"
-      /*istanbul ignore end*/
       ].prototype.equals.call(jsonDiff, left.replace(/,([\r\n])/g, '$1'), right.replace(/,([\r\n])/g, '$1'))
     );
   };
 
   function diffJson(oldObj, newObj, options) {
     return jsonDiff.diff(oldObj, newObj, options);
-  } // This function handles the presence of circular references by bailing out when encountering an
-  // object that is already on the "stack" of items being processed. Accepts an optional replacer
+  }
 
 
   function canonicalize(obj, stack, replacementStack, replacer, key) {
@@ -14883,9 +12243,7 @@ var json = createCommonjsModule(function (module, exports) {
     }
 
     if (
-    /*istanbul ignore start*/
     _typeof(
-    /*istanbul ignore end*/
     obj) === 'object' && obj !== null) {
       stack.push(obj);
       canonicalizedObj = {};
@@ -14895,7 +12253,6 @@ var json = createCommonjsModule(function (module, exports) {
           _key;
 
       for (_key in obj) {
-        /* istanbul ignore else */
         if (obj.hasOwnProperty(_key)) {
           sortedKeys.push(_key);
         }
@@ -14918,7 +12275,6 @@ var json = createCommonjsModule(function (module, exports) {
   }
 });
 
-/*istanbul ignore start*/
 var array$1 = createCommonjsModule(function (module, exports) {
 
   Object.defineProperty(exports, "__esModule", {
@@ -14926,14 +12282,10 @@ var array$1 = createCommonjsModule(function (module, exports) {
   });
   exports.diffArrays = diffArrays;
   exports.arrayDiff = void 0;
-  /*istanbul ignore end*/
 
   var
-  /*istanbul ignore start*/
   _base = _interopRequireDefault(base)
-  /*istanbul ignore end*/
   ;
-  /*istanbul ignore start*/
 
 
   function _interopRequireDefault(obj) {
@@ -14941,22 +12293,15 @@ var array$1 = createCommonjsModule(function (module, exports) {
       "default": obj
     };
   }
-  /*istanbul ignore end*/
 
 
   var arrayDiff = new
-  /*istanbul ignore start*/
   _base
-  /*istanbul ignore end*/
   [
-  /*istanbul ignore start*/
   "default"
-  /*istanbul ignore end*/
   ]();
-  /*istanbul ignore start*/
 
   exports.arrayDiff = arrayDiff;
-  /*istanbul ignore end*/
 
   arrayDiff.tokenize = function (value) {
     return value.slice();
@@ -14971,15 +12316,11 @@ var array$1 = createCommonjsModule(function (module, exports) {
   }
 });
 
-/*istanbul ignore start*/
 
 var parsePatch_1 = parsePatch;
-/*istanbul ignore end*/
 
 function parsePatch(uniDiff) {
-  /*istanbul ignore start*/
   var
-  /*istanbul ignore end*/
   options = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
   var diffstr = uniDiff.split(/\r\n|[\n\v\f\r\x85]/),
       delimiters = uniDiff.match(/\r\n|[\n\v\f\r\x85]/g) || [],
@@ -14988,14 +12329,14 @@ function parsePatch(uniDiff) {
 
   function parseIndex() {
     var index = {};
-    list.push(index); // Parse diff metadata
+    list.push(index);
 
     while (i < diffstr.length) {
-      var line = diffstr[i]; // File header found, end parsing diff metadata
+      var line = diffstr[i];
 
       if (/^(\-\-\-|\+\+\+|@@)\s/.test(line)) {
         break;
-      } // Diff index
+      }
 
 
       var header = /^(?:Index:|diff(?: -r \w+)+)\s+(.+?)\s*$/.exec(line);
@@ -15005,12 +12346,11 @@ function parsePatch(uniDiff) {
       }
 
       i++;
-    } // Parse file headers if they are defined. Unified diff requires them, but
-    // there's no technical issues to have an isolated hunk without file header
+    }
 
 
     parseFileHeader(index);
-    parseFileHeader(index); // Parse hunks
+    parseFileHeader(index);
 
     index.hunks = [];
 
@@ -15022,14 +12362,12 @@ function parsePatch(uniDiff) {
       } else if (/^@@/.test(_line)) {
         index.hunks.push(parseHunk());
       } else if (_line && options.strict) {
-        // Ignore unexpected content unless in strict mode
         throw new Error('Unknown line ' + (i + 1) + ' ' + JSON.stringify(_line));
       } else {
         i++;
       }
     }
-  } // Parses the --- and +++ headers, if none are found, no lines
-  // are consumed.
+  }
 
 
   function parseFileHeader(index) {
@@ -15048,8 +12386,7 @@ function parsePatch(uniDiff) {
       index[keyPrefix + 'Header'] = (data[1] || '').trim();
       i++;
     }
-  } // Parses a hunk
-  // This assumes that we are at the start of a hunk.
+  }
 
 
   function parseHunk() {
@@ -15063,9 +12400,7 @@ function parsePatch(uniDiff) {
       newLines: typeof chunkHeader[4] === 'undefined' ? 1 : +chunkHeader[4],
       lines: [],
       linedelimiters: []
-    }; // Unified Diff Format quirk: If the chunk size is 0,
-    // the first number is one lower than one would expect.
-    // https://www.artima.com/weblogs/viewpost.jsp?thread=164293
+    };
 
     if (hunk.oldLines === 0) {
       hunk.oldStart += 1;
@@ -15079,8 +12414,6 @@ function parsePatch(uniDiff) {
         removeCount = 0;
 
     for (; i < diffstr.length; i++) {
-      // Lines starting with '---' could be mistaken for the "remove line" operation
-      // But they could be the header for the next file. Therefore prune such cases out.
       if (diffstr[i].indexOf('--- ') === 0 && i + 2 < diffstr.length && diffstr[i + 1].indexOf('+++ ') === 0 && diffstr[i + 2].indexOf('@@') === 0) {
         break;
       }
@@ -15102,7 +12435,7 @@ function parsePatch(uniDiff) {
       } else {
         break;
       }
-    } // Handle the empty block count case
+    }
 
 
     if (!addCount && hunk.newLines === 1) {
@@ -15111,7 +12444,7 @@ function parsePatch(uniDiff) {
 
     if (!removeCount && hunk.oldLines === 1) {
       hunk.oldLines = 0;
-    } // Perform optional sanity checking
+    }
 
 
     if (options.strict) {
@@ -15140,22 +12473,15 @@ var parse = /*#__PURE__*/Object.defineProperty({
   value: true
 });
 
-/*istanbul ignore start*/
 var distanceIterator = createCommonjsModule(function (module, exports) {
 
   Object.defineProperty(exports, "__esModule", {
     value: true
   });
   exports["default"] = _default;
-  /*istanbul ignore end*/
-  // Iterator that traverses in the range of [min, max], stepping
-  // by distance from a given start position. I.e. for [0, 4], with
-  // start of 2, this will iterate 2, 3, 1, 4, 0.
 
   function
-  /*istanbul ignore start*/
   _default
-  /*istanbul ignore end*/
   (start, minLine, maxLine) {
     var wantForward = true,
         backwardExhausted = false,
@@ -15167,8 +12493,7 @@ var distanceIterator = createCommonjsModule(function (module, exports) {
           localOffset++;
         } else {
           wantForward = false;
-        } // Check if trying to fit beyond text length, and if not, check it fits
-        // after offset location (or desired location on first iteration)
+        }
 
 
         if (start + localOffset <= maxLine) {
@@ -15181,8 +12506,7 @@ var distanceIterator = createCommonjsModule(function (module, exports) {
       if (!backwardExhausted) {
         if (!forwardExhausted) {
           wantForward = true;
-        } // Check if trying to fit before text beginning, and if not, check it fits
-        // before offset location
+        }
 
 
         if (minLine <= start - localOffset) {
@@ -15191,25 +12515,19 @@ var distanceIterator = createCommonjsModule(function (module, exports) {
 
         backwardExhausted = true;
         return iterator();
-      } // We tried to fit hunk before text beginning and beyond text length, then
-      // hunk can't fit on the text. Return undefined
+      }
 
     };
   }
 });
 
-/*istanbul ignore start*/
 
 var applyPatch_1 = applyPatch;
 var applyPatches_1 = applyPatches;
-/*istanbul ignore end*/
 
 var
-/*istanbul ignore start*/
 _distanceIterator = _interopRequireDefault(distanceIterator)
-/*istanbul ignore end*/
 ;
-/*istanbul ignore start*/
 
 
 function _interopRequireDefault(obj) {
@@ -15217,27 +12535,19 @@ function _interopRequireDefault(obj) {
     "default": obj
   };
 }
-/*istanbul ignore end*/
 
 
 function applyPatch(source, uniDiff) {
-  /*istanbul ignore start*/
   var
-  /*istanbul ignore end*/
   options = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : {};
 
   if (typeof uniDiff === 'string') {
     uniDiff =
-    /*istanbul ignore start*/
-    (/*istanbul ignore end*/
+    (
 
-    /*istanbul ignore start*/
     0, parse
-    /*istanbul ignore end*/
     .
-    /*istanbul ignore start*/
     parsePatch
-    /*istanbul ignore end*/
     )(uniDiff);
   }
 
@@ -15247,17 +12557,15 @@ function applyPatch(source, uniDiff) {
     }
 
     uniDiff = uniDiff[0];
-  } // Apply the diff to the input
+  }
 
 
   var lines = source.split(/\r\n|[\n\v\f\r\x85]/),
       delimiters = source.match(/\r\n|[\n\v\f\r\x85]/g) || [],
       hunks = uniDiff.hunks,
       compareLine = options.compareLine || function (lineNumber, line, operation, patchContent)
-  /*istanbul ignore start*/
   {
     return (
-      /*istanbul ignore end*/
       line === patchContent
     );
   },
@@ -15267,9 +12575,6 @@ function applyPatch(source, uniDiff) {
       offset = 0,
       removeEOFNL,
       addEOFNL;
-  /**
-   * Checks if the hunk exactly fits on the provided location
-   */
 
 
   function hunkFits(hunk, toPos) {
@@ -15279,7 +12584,6 @@ function applyPatch(source, uniDiff) {
           content = line.length > 0 ? line.substr(1) : line;
 
       if (operation === ' ' || operation === '-') {
-        // Context sanity check
         if (!compareLine(toPos + 1, lines[toPos], operation, content)) {
           errorCount++;
 
@@ -15293,7 +12597,7 @@ function applyPatch(source, uniDiff) {
     }
 
     return true;
-  } // Search best fit offsets for each hunk based on the previous ones
+  }
 
 
   for (var i = 0; i < hunks.length; i++) {
@@ -15302,16 +12606,11 @@ function applyPatch(source, uniDiff) {
         localOffset = 0,
         toPos = offset + hunk.oldStart - 1;
     var iterator =
-    /*istanbul ignore start*/
-    (/*istanbul ignore end*/
+    (
 
-    /*istanbul ignore start*/
     0, _distanceIterator
-    /*istanbul ignore end*/
     [
-    /*istanbul ignore start*/
     "default"
-    /*istanbul ignore end*/
     ])(toPos, minLine, maxLine);
 
     for (; localOffset !== undefined; localOffset = iterator()) {
@@ -15323,12 +12622,11 @@ function applyPatch(source, uniDiff) {
 
     if (localOffset === undefined) {
       return false;
-    } // Set lower text limit to end of the current hunk, so next ones don't try
-    // to fit over already patched text
+    }
 
 
     minLine = hunk.offset + hunk.oldStart + hunk.oldLines;
-  } // Apply patch hunks
+  }
 
 
   var diffOffset = 0;
@@ -15350,7 +12648,6 @@ function applyPatch(source, uniDiff) {
       } else if (operation === '-') {
         lines.splice(_toPos, 1);
         delimiters.splice(_toPos, 1);
-        /* istanbul ignore else */
       } else if (operation === '+') {
         lines.splice(_toPos, 0, content);
         delimiters.splice(_toPos, 0, delimiter);
@@ -15365,7 +12662,7 @@ function applyPatch(source, uniDiff) {
         }
       }
     }
-  } // Handle EOFNL insertion/removal
+  }
 
 
   if (removeEOFNL) {
@@ -15383,22 +12680,17 @@ function applyPatch(source, uniDiff) {
   }
 
   return lines.join('');
-} // Wrapper that supports multiple file patches via callbacks.
+}
 
 
 function applyPatches(uniDiff, options) {
   if (typeof uniDiff === 'string') {
     uniDiff =
-    /*istanbul ignore start*/
-    (/*istanbul ignore end*/
+    (
 
-    /*istanbul ignore start*/
     0, parse
-    /*istanbul ignore end*/
     .
-    /*istanbul ignore start*/
     parsePatch
-    /*istanbul ignore end*/
     )(uniDiff);
   }
 
@@ -15437,15 +12729,12 @@ var apply$1 = /*#__PURE__*/Object.defineProperty({
   value: true
 });
 
-/*istanbul ignore start*/
 
 var structuredPatch_1 = structuredPatch;
 var formatPatch_1 = formatPatch;
 var createTwoFilesPatch_1 = createTwoFilesPatch;
 var createPatch_1 = createPatch;
-/*istanbul ignore end*/
 
-/*istanbul ignore start*/
 
 function _toConsumableArray$1(arr) {
   return _arrayWithoutHoles$1(arr) || _iterableToArray$1(arr) || _unsupportedIterableToArray$1(arr) || _nonIterableSpread$1();
@@ -15481,7 +12770,6 @@ function _arrayLikeToArray$1(arr, len) {
 
   return arr2;
 }
-/*istanbul ignore end*/
 
 
 function structuredPatch(oldFileName, newFileName, oldStr, newStr, oldHeader, newHeader, options) {
@@ -15494,21 +12782,16 @@ function structuredPatch(oldFileName, newFileName, oldStr, newStr, oldHeader, ne
   }
 
   var diff =
-  /*istanbul ignore start*/
-  (/*istanbul ignore end*/
+  (
 
-  /*istanbul ignore start*/
   0, line
-  /*istanbul ignore end*/
   .
-  /*istanbul ignore start*/
   diffLines
-  /*istanbul ignore end*/
   )(oldStr, newStr, options);
   diff.push({
     value: '',
     lines: []
-  }); // Append an empty value to make cleanup easier
+  });
 
   function contextLines(lines) {
     return lines.map(function (entry) {
@@ -15522,20 +12805,15 @@ function structuredPatch(oldFileName, newFileName, oldStr, newStr, oldHeader, ne
       curRange = [],
       oldLine = 1,
       newLine = 1;
-  /*istanbul ignore start*/
 
   var _loop = function _loop(
-  /*istanbul ignore end*/
   i) {
     var current = diff[i],
         lines = current.lines || current.value.replace(/\n$/, '').split('\n');
     current.lines = lines;
 
     if (current.added || current.removed) {
-      /*istanbul ignore start*/
       var _curRange;
-      /*istanbul ignore end*/
-      // If we have previous context, start with that
 
 
       if (!oldRangeStart) {
@@ -15548,28 +12826,20 @@ function structuredPatch(oldFileName, newFileName, oldStr, newStr, oldHeader, ne
           oldRangeStart -= curRange.length;
           newRangeStart -= curRange.length;
         }
-      } // Output our changes
+      }
 
-      /*istanbul ignore start*/
 
-      /*istanbul ignore end*/
 
-      /*istanbul ignore start*/
 
 
       (_curRange =
-      /*istanbul ignore end*/
       curRange).push.apply(
-      /*istanbul ignore start*/
       _curRange
-      /*istanbul ignore end*/
       ,
-      /*istanbul ignore start*/
       _toConsumableArray$1(
-      /*istanbul ignore end*/
       lines.map(function (entry) {
         return (current.added ? '+' : '-') + entry;
-      }))); // Track the updated file position
+      })));
 
 
       if (current.added) {
@@ -15578,57 +12848,33 @@ function structuredPatch(oldFileName, newFileName, oldStr, newStr, oldHeader, ne
         oldLine += lines.length;
       }
     } else {
-      // Identical context lines. Track line changes
       if (oldRangeStart) {
-        // Close out any changes that have been output (or join overlapping)
         if (lines.length <= options.context * 2 && i < diff.length - 2) {
-          /*istanbul ignore start*/
           var _curRange2;
-          /*istanbul ignore end*/
-          // Overlapping
 
-          /*istanbul ignore start*/
 
-          /*istanbul ignore end*/
 
-          /*istanbul ignore start*/
 
 
           (_curRange2 =
-          /*istanbul ignore end*/
           curRange).push.apply(
-          /*istanbul ignore start*/
           _curRange2
-          /*istanbul ignore end*/
           ,
-          /*istanbul ignore start*/
           _toConsumableArray$1(
-          /*istanbul ignore end*/
           contextLines(lines)));
         } else {
-          /*istanbul ignore start*/
           var _curRange3;
-          /*istanbul ignore end*/
-          // end the range and output
 
 
           var contextSize = Math.min(lines.length, options.context);
-          /*istanbul ignore start*/
 
-          /*istanbul ignore end*/
 
-          /*istanbul ignore start*/
 
           (_curRange3 =
-          /*istanbul ignore end*/
           curRange).push.apply(
-          /*istanbul ignore start*/
           _curRange3
-          /*istanbul ignore end*/
           ,
-          /*istanbul ignore start*/
           _toConsumableArray$1(
-          /*istanbul ignore end*/
           contextLines(lines.slice(0, contextSize))));
 
           var hunk = {
@@ -15640,14 +12886,11 @@ function structuredPatch(oldFileName, newFileName, oldStr, newStr, oldHeader, ne
           };
 
           if (i >= diff.length - 2 && lines.length <= options.context) {
-            // EOF is inside this hunk
             var oldEOFNewline = /\n$/.test(oldStr);
             var newEOFNewline = /\n$/.test(newStr);
             var noNlBeforeAdds = lines.length == 0 && curRange.length > hunk.oldLines;
 
             if (!oldEOFNewline && noNlBeforeAdds && oldStr.length > 0) {
-              // special case: old has no eol and no trailing context; no-nl can end up before adds
-              // however, if the old file is empty, do not output the no-nl line
               curRange.splice(hunk.oldLines, 0, '\\ No newline at end of file');
             }
 
@@ -15669,9 +12912,7 @@ function structuredPatch(oldFileName, newFileName, oldStr, newStr, oldHeader, ne
   };
 
   for (var i = 0; i < diff.length; i++) {
-    /*istanbul ignore start*/
     _loop(
-    /*istanbul ignore end*/
     i);
   }
 
@@ -15696,9 +12937,7 @@ function formatPatch(diff) {
   ret.push('+++ ' + diff.newFileName + (typeof diff.newHeader === 'undefined' ? '' : '\t' + diff.newHeader));
 
   for (var i = 0; i < diff.hunks.length; i++) {
-    var hunk = diff.hunks[i]; // Unified Diff Format quirk: If the chunk size is 0,
-    // the first number is one lower than one would expect.
-    // https://www.artima.com/weblogs/viewpost.jsp?thread=164293
+    var hunk = diff.hunks[i];
 
     if (hunk.oldLines === 0) {
       hunk.oldStart -= 1;
@@ -15732,11 +12971,9 @@ var create = /*#__PURE__*/Object.defineProperty({
   value: true
 });
 
-/*istanbul ignore start*/
 
 var arrayEqual_1 = arrayEqual;
 var arrayStartsWith_1 = arrayStartsWith;
-/*istanbul ignore end*/
 
 function arrayEqual(a, b) {
   if (a.length !== b.length) {
@@ -15767,13 +13004,10 @@ var array = /*#__PURE__*/Object.defineProperty({
   value: true
 });
 
-/*istanbul ignore start*/
 
 var calcLineCount_1 = calcLineCount;
 var merge_2 = merge;
-/*istanbul ignore end*/
 
-/*istanbul ignore start*/
 
 function _toConsumableArray(arr) {
   return _arrayWithoutHoles(arr) || _iterableToArray(arr) || _unsupportedIterableToArray(arr) || _nonIterableSpread();
@@ -15809,13 +13043,10 @@ function _arrayLikeToArray(arr, len) {
 
   return arr2;
 }
-/*istanbul ignore end*/
 
 
 function calcLineCount(hunk) {
-  /*istanbul ignore start*/
   var _calcOldNewLineCount =
-  /*istanbul ignore end*/
   calcOldNewLineCount(hunk.lines),
       oldLines = _calcOldNewLineCount.oldLines,
       newLines = _calcOldNewLineCount.newLines;
@@ -15836,9 +13067,7 @@ function calcLineCount(hunk) {
 function merge(mine, theirs, base) {
   mine = loadPatch(mine, base);
   theirs = loadPatch(theirs, base);
-  var ret = {}; // For index we just let it pass through as it doesn't have any necessary meaning.
-  // Leaving sanity checks on this to the API consumer that may know more about the
-  // meaning in their own context.
+  var ret = {};
 
   if (mine.index || theirs.index) {
     ret.index = mine.index || theirs.index;
@@ -15846,19 +13075,16 @@ function merge(mine, theirs, base) {
 
   if (mine.newFileName || theirs.newFileName) {
     if (!fileNameChanged(mine)) {
-      // No header or no change in ours, use theirs (and ours if theirs does not exist)
       ret.oldFileName = theirs.oldFileName || mine.oldFileName;
       ret.newFileName = theirs.newFileName || mine.newFileName;
       ret.oldHeader = theirs.oldHeader || mine.oldHeader;
       ret.newHeader = theirs.newHeader || mine.newHeader;
     } else if (!fileNameChanged(theirs)) {
-      // No header or no change in theirs, use ours
       ret.oldFileName = mine.oldFileName;
       ret.newFileName = mine.newFileName;
       ret.oldHeader = mine.oldHeader;
       ret.newHeader = mine.newHeader;
     } else {
-      // Both changed... figure it out
       ret.oldFileName = selectField(ret, mine.oldFileName, theirs.oldFileName);
       ret.newFileName = selectField(ret, mine.newFileName, theirs.newFileName);
       ret.oldHeader = selectField(ret, mine.oldHeader, theirs.oldHeader);
@@ -15881,17 +13107,14 @@ function merge(mine, theirs, base) {
     };
 
     if (hunkBefore(mineCurrent, theirsCurrent)) {
-      // This patch does not overlap with any of the others, yay.
       ret.hunks.push(cloneHunk(mineCurrent, mineOffset));
       mineIndex++;
       theirsOffset += mineCurrent.newLines - mineCurrent.oldLines;
     } else if (hunkBefore(theirsCurrent, mineCurrent)) {
-      // This patch does not overlap with any of the others, yay.
       ret.hunks.push(cloneHunk(theirsCurrent, theirsOffset));
       theirsIndex++;
       mineOffset += theirsCurrent.newLines - theirsCurrent.oldLines;
     } else {
-      // Overlap, merge as best we can
       var mergedHunk = {
         oldStart: Math.min(mineCurrent.oldStart, theirsCurrent.oldStart),
         oldLines: 0,
@@ -15913,16 +13136,11 @@ function loadPatch(param, base) {
   if (typeof param === 'string') {
     if (/^@@/m.test(param) || /^Index:/m.test(param)) {
       return (
-        /*istanbul ignore start*/
-        (/*istanbul ignore end*/
+        (
 
-        /*istanbul ignore start*/
         0, parse
-        /*istanbul ignore end*/
         .
-        /*istanbul ignore start*/
         parsePatch
-        /*istanbul ignore end*/
         )(param)[0]
       );
     }
@@ -15932,16 +13150,11 @@ function loadPatch(param, base) {
     }
 
     return (
-      /*istanbul ignore start*/
-      (/*istanbul ignore end*/
+      (
 
-      /*istanbul ignore start*/
       0, create
-      /*istanbul ignore end*/
       .
-      /*istanbul ignore start*/
       structuredPatch
-      /*istanbul ignore end*/
       )(undefined, undefined, base, param)
     );
   }
@@ -15980,8 +13193,6 @@ function cloneHunk(hunk, offset) {
 }
 
 function mergeLines(hunk, mineOffset, mineLines, theirOffset, theirLines) {
-  // This will generally result in a conflicted hunk, but there are cases where the context
-  // is the only overlap where we can successfully merge the content here.
   var mine = {
     offset: mineOffset,
     lines: mineLines,
@@ -15991,82 +13202,55 @@ function mergeLines(hunk, mineOffset, mineLines, theirOffset, theirLines) {
     offset: theirOffset,
     lines: theirLines,
     index: 0
-  }; // Handle any leading content
+  };
 
   insertLeading(hunk, mine, their);
-  insertLeading(hunk, their, mine); // Now in the overlap content. Scan through and select the best changes from each.
+  insertLeading(hunk, their, mine);
 
   while (mine.index < mine.lines.length && their.index < their.lines.length) {
     var mineCurrent = mine.lines[mine.index],
         theirCurrent = their.lines[their.index];
 
     if ((mineCurrent[0] === '-' || mineCurrent[0] === '+') && (theirCurrent[0] === '-' || theirCurrent[0] === '+')) {
-      // Both modified ...
       mutualChange(hunk, mine, their);
     } else if (mineCurrent[0] === '+' && theirCurrent[0] === ' ') {
-      /*istanbul ignore start*/
       var _hunk$lines;
-      /*istanbul ignore end*/
-      // Mine inserted
 
-      /*istanbul ignore start*/
 
-      /*istanbul ignore end*/
 
-      /*istanbul ignore start*/
 
 
       (_hunk$lines =
-      /*istanbul ignore end*/
       hunk.lines).push.apply(
-      /*istanbul ignore start*/
       _hunk$lines
-      /*istanbul ignore end*/
       ,
-      /*istanbul ignore start*/
       _toConsumableArray(
-      /*istanbul ignore end*/
       collectChange(mine)));
     } else if (theirCurrent[0] === '+' && mineCurrent[0] === ' ') {
-      /*istanbul ignore start*/
       var _hunk$lines2;
-      /*istanbul ignore end*/
-      // Theirs inserted
 
-      /*istanbul ignore start*/
 
-      /*istanbul ignore end*/
 
-      /*istanbul ignore start*/
 
 
       (_hunk$lines2 =
-      /*istanbul ignore end*/
       hunk.lines).push.apply(
-      /*istanbul ignore start*/
       _hunk$lines2
-      /*istanbul ignore end*/
       ,
-      /*istanbul ignore start*/
       _toConsumableArray(
-      /*istanbul ignore end*/
       collectChange(their)));
     } else if (mineCurrent[0] === '-' && theirCurrent[0] === ' ') {
-      // Mine removed or edited
       removal(hunk, mine, their);
     } else if (theirCurrent[0] === '-' && mineCurrent[0] === ' ') {
-      // Their removed or edited
       removal(hunk, their, mine, true);
     } else if (mineCurrent === theirCurrent) {
-      // Context identity
       hunk.lines.push(mineCurrent);
       mine.index++;
       their.index++;
     } else {
-      // Context mismatch
       conflict(hunk, collectChange(mine), collectChange(their));
     }
-  } // Now push anything that may be remaining
+  }
 
 
   insertTrailing(hunk, mine);
@@ -16079,113 +13263,67 @@ function mutualChange(hunk, mine, their) {
       theirChanges = collectChange(their);
 
   if (allRemoves(myChanges) && allRemoves(theirChanges)) {
-    // Special case for remove changes that are supersets of one another
     if (
-    /*istanbul ignore start*/
-    (/*istanbul ignore end*/
+    (
 
-    /*istanbul ignore start*/
     0, array
-    /*istanbul ignore end*/
     .
-    /*istanbul ignore start*/
     arrayStartsWith
-    /*istanbul ignore end*/
     )(myChanges, theirChanges) && skipRemoveSuperset(their, myChanges, myChanges.length - theirChanges.length)) {
-      /*istanbul ignore start*/
       var _hunk$lines3;
-      /*istanbul ignore end*/
 
-      /*istanbul ignore start*/
 
-      /*istanbul ignore end*/
 
-      /*istanbul ignore start*/
 
 
       (_hunk$lines3 =
-      /*istanbul ignore end*/
       hunk.lines).push.apply(
-      /*istanbul ignore start*/
       _hunk$lines3
-      /*istanbul ignore end*/
       ,
-      /*istanbul ignore start*/
       _toConsumableArray(
-      /*istanbul ignore end*/
       myChanges));
 
       return;
     } else if (
-    /*istanbul ignore start*/
-    (/*istanbul ignore end*/
+    (
 
-    /*istanbul ignore start*/
     0, array
-    /*istanbul ignore end*/
     .
-    /*istanbul ignore start*/
     arrayStartsWith
-    /*istanbul ignore end*/
     )(theirChanges, myChanges) && skipRemoveSuperset(mine, theirChanges, theirChanges.length - myChanges.length)) {
-      /*istanbul ignore start*/
       var _hunk$lines4;
-      /*istanbul ignore end*/
 
-      /*istanbul ignore start*/
 
-      /*istanbul ignore end*/
 
-      /*istanbul ignore start*/
 
 
       (_hunk$lines4 =
-      /*istanbul ignore end*/
       hunk.lines).push.apply(
-      /*istanbul ignore start*/
       _hunk$lines4
-      /*istanbul ignore end*/
       ,
-      /*istanbul ignore start*/
       _toConsumableArray(
-      /*istanbul ignore end*/
       theirChanges));
 
       return;
     }
   } else if (
-  /*istanbul ignore start*/
-  (/*istanbul ignore end*/
+  (
 
-  /*istanbul ignore start*/
   0, array
-  /*istanbul ignore end*/
   .
-  /*istanbul ignore start*/
   arrayEqual
-  /*istanbul ignore end*/
   )(myChanges, theirChanges)) {
-    /*istanbul ignore start*/
     var _hunk$lines5;
-    /*istanbul ignore end*/
 
-    /*istanbul ignore start*/
 
-    /*istanbul ignore end*/
 
-    /*istanbul ignore start*/
 
 
     (_hunk$lines5 =
-    /*istanbul ignore end*/
     hunk.lines).push.apply(
-    /*istanbul ignore start*/
     _hunk$lines5
-    /*istanbul ignore end*/
     ,
-    /*istanbul ignore start*/
     _toConsumableArray(
-    /*istanbul ignore end*/
     myChanges));
 
     return;
@@ -16199,27 +13337,17 @@ function removal(hunk, mine, their, swap) {
       theirChanges = collectContext(their, myChanges);
 
   if (theirChanges.merged) {
-    /*istanbul ignore start*/
     var _hunk$lines6;
-    /*istanbul ignore end*/
 
-    /*istanbul ignore start*/
 
-    /*istanbul ignore end*/
 
-    /*istanbul ignore start*/
 
 
     (_hunk$lines6 =
-    /*istanbul ignore end*/
     hunk.lines).push.apply(
-    /*istanbul ignore start*/
     _hunk$lines6
-    /*istanbul ignore end*/
     ,
-    /*istanbul ignore start*/
     _toConsumableArray(
-    /*istanbul ignore end*/
     theirChanges.merged));
   } else {
     conflict(hunk, swap ? theirChanges : myChanges, swap ? myChanges : theirChanges);
@@ -16255,7 +13383,7 @@ function collectChange(state) {
       operation = state.lines[state.index][0];
 
   while (state.index < state.lines.length) {
-    var line = state.lines[state.index]; // Group additions that are immediately after subtractions and treat them as one "atomic" modify change.
+    var line = state.lines[state.index];
 
     if (operation === '-' && line[0] === '+') {
       operation = '+';
@@ -16281,7 +13409,7 @@ function collectContext(state, matchChanges) {
 
   while (matchIndex < matchChanges.length && state.index < state.lines.length) {
     var change = state.lines[state.index],
-        match = matchChanges[matchIndex]; // Once we've hit our add, then we are done
+        match = matchChanges[matchIndex];
 
     if (match[0] === '+') {
       break;
@@ -16289,8 +13417,7 @@ function collectContext(state, matchChanges) {
 
     contextChanges = contextChanges || change[0] !== ' ';
     merged.push(match);
-    matchIndex++; // Consume any additions in the other block as a conflict to attempt
-    // to pull in the remaining context after this
+    matchIndex++;
 
     if (change[0] === '+') {
       conflicted = true;
@@ -16392,11 +13519,8 @@ var merge_1 = /*#__PURE__*/Object.defineProperty({
   value: true
 });
 
-/*istanbul ignore start*/
 
 var convertChangesToDMP_1 = convertChangesToDMP;
-/*istanbul ignore end*/
-// See: http://code.google.com/p/google-diff-match-patch/wiki/API
 
 function convertChangesToDMP(changes) {
   var ret = [],
@@ -16426,10 +13550,8 @@ var dmp = /*#__PURE__*/Object.defineProperty({
   value: true
 });
 
-/*istanbul ignore start*/
 
 var convertChangesToXML_1 = convertChangesToXML;
-/*istanbul ignore end*/
 
 function convertChangesToXML(changes) {
   var ret = [];
@@ -16470,7 +13592,6 @@ var xml = /*#__PURE__*/Object.defineProperty({
   value: true
 });
 
-/*istanbul ignore start*/
 var lib$1 = createCommonjsModule(function (module, exports) {
 
   Object.defineProperty(exports, "__esModule", {
@@ -16596,14 +13717,10 @@ var lib$1 = createCommonjsModule(function (module, exports) {
       return xml.convertChangesToXML;
     }
   });
-  /*istanbul ignore end*/
 
   var
-  /*istanbul ignore start*/
   _base = _interopRequireDefault(base)
-  /*istanbul ignore end*/
   ;
-  /*istanbul ignore start*/
 
 
   function _interopRequireDefault(obj) {
@@ -16611,14 +13728,12 @@ var lib$1 = createCommonjsModule(function (module, exports) {
       "default": obj
     };
   }
-  /*istanbul ignore end*/
 
 });
 
 const {
   promises: fs
-} = fs__default['default']; // eslint-disable-next-line no-restricted-modules
-// eslint-disable-next-line no-restricted-modules
+} = fs__default['default'];
 
 const {
   getStdin
@@ -16643,9 +13758,7 @@ function diff(a, b) {
 
 function handleError(context, filename, error, printedFilename) {
   if (error instanceof errors.UndefinedParserError) {
-    // Can't test on CI, `isTTY()` is always false, see ./is-tty.js
 
-    /* istanbul ignore next */
     if ((context.argv.write || context.argv["ignore-unknown"]) && printedFilename) {
       printedFilename.clear();
     }
@@ -16663,7 +13776,6 @@ function handleError(context, filename, error, printedFilename) {
   }
 
   if (context.argv.write) {
-    // Add newline to split errors from filename line.
     process.stdout.write("\n");
   }
 
@@ -16671,29 +13783,23 @@ function handleError(context, filename, error, printedFilename) {
   const isValidationError = /^Invalid \S+ value\./.test(error && error.message);
 
   if (isParseError) {
-    // `invalid.js: SyntaxError: Unexpected token (1:1)`.
     context.logger.error(`${filename}: ${String(error)}`);
   } else if (isValidationError || error instanceof errors.ConfigError) {
-    // `Invalid printWidth value. Expected an integer, but received 0.5.`
-    context.logger.error(error.message); // If validation fails for one file, it will fail for all of them.
+    context.logger.error(error.message);
 
     process.exit(1);
   } else if (error instanceof errors.DebugError) {
-    // `invalid.js: Some debug error message`
     context.logger.error(`${filename}: ${error.message}`);
   } else {
-    // `invalid.js: Error: Some unexpected error\n[stack trace]`
 
-    /* istanbul ignore next */
     context.logger.error(filename + ": " + (error.stack || error));
-  } // Don't exit the process if one file failed
+  }
 
 
   process.exitCode = 2;
 }
 
 function writeOutput(context, result, options) {
-  // Don't use `console.log` here since it adds an extra newline at the end.
   process.stdout.write(context.argv["debug-check"] ? result.filepath : result.formatted);
 
   if (options && options.cursorOffset >= 0) {
@@ -16755,15 +13861,12 @@ function format$1(context, input, opt) {
       const stringify = obj => JSON.stringify(obj, null, 2);
 
       const ast = stringify(prettier$1.__debug.parse(input, opt,
-      /* massage */
       true).ast);
       const past = stringify(prettier$1.__debug.parse(pp, opt,
-      /* massage */
       true).ast);
-      /* istanbul ignore next */
 
       if (ast !== past) {
-        const MAX_AST_SIZE = 2097152; // 2MB
+        const MAX_AST_SIZE = 2097152;
 
         const astDiff = ast.length > MAX_AST_SIZE || past.length > MAX_AST_SIZE ? "AST diff too large to render" : diff(ast, past);
         throw new errors.DebugError("ast(input) !== ast(prettier(input))\n" + astDiff + "\n" + diff(input, pp));
@@ -16775,14 +13878,12 @@ function format$1(context, input, opt) {
       filepath: opt.filepath || "(stdin)\n"
     };
   }
-  /* istanbul ignore next */
 
 
   if (context.argv["debug-benchmark"]) {
     let benchmark;
 
     try {
-      // eslint-disable-next-line import/no-extraneous-dependencies
       benchmark = require("benchmark");
     } catch {
       context.logger.debug("'--debug-benchmark' requires the 'benchmark' package to be installed.");
@@ -16809,7 +13910,6 @@ function format$1(context, input, opt) {
     let totalMs = 0;
 
     for (let i = 0; i < repeat; ++i) {
-      // should be using `performance.now()`, but only `Date` is cross-platform enough
       const startMs = Date.now();
       prettier$1.formatWithCursor(input, opt);
       totalMs += Date.now() - startMs;
@@ -16838,8 +13938,7 @@ async function createIgnorerFromContextOrDie(context) {
 
 async function formatStdin$1(context) {
   const filepath = context.argv["stdin-filepath"] ? path__default['default'].resolve(process.cwd(), context.argv["stdin-filepath"]) : process.cwd();
-  const ignorer = await createIgnorerFromContextOrDie(context); // If there's an ignore-path set, the filename must be relative to the
-  // ignore path, not the current working directory.
+  const ignorer = await createIgnorerFromContextOrDie(context);
 
   const relativeFilepath = context.argv["ignore-path"] ? path__default['default'].relative(path__default['default'].dirname(context.argv["ignore-path"]), filepath) : path__default['default'].relative(process.cwd(), filepath);
 
@@ -16866,8 +13965,6 @@ async function formatStdin$1(context) {
 }
 
 async function formatFiles$1(context) {
-  // The ignorer will be used to filter file paths after the glob is checked,
-  // before any files are actually written
   const ignorer = await createIgnorerFromContextOrDie(context);
   let numberOfUnformattedFilesFound = 0;
 
@@ -16877,14 +13974,13 @@ async function formatFiles$1(context) {
 
   for await (const pathOrError of expandPatterns(context)) {
     if (typeof pathOrError === "object") {
-      context.logger.error(pathOrError.error); // Don't exit, but set the exit code to 2
+      context.logger.error(pathOrError.error);
 
       process.exitCode = 2;
       continue;
     }
 
-    const filename = pathOrError; // If there's an ignore-path set, the filename must be relative to the
-    // ignore path, not the current working directory.
+    const filename = pathOrError;
 
     const ignoreFilename = context.argv["ignore-path"] ? path__default['default'].relative(path__default['default'].dirname(context.argv["ignore-path"]), filename) : filename;
     const fileIgnored = ignorer.ignores(fixWindowsSlashes(ignoreFilename));
@@ -16910,18 +14006,13 @@ async function formatFiles$1(context) {
     try {
       input = await fs.readFile(filename, "utf8");
     } catch (error) {
-      // Add newline to split errors from filename line.
 
-      /* istanbul ignore next */
       context.logger.log("");
-      /* istanbul ignore next */
 
-      context.logger.error(`Unable to read file: ${filename}\n${error.message}`); // Don't exit the process if one file failed
+      context.logger.error(`Unable to read file: ${filename}\n${error.message}`);
 
-      /* istanbul ignore next */
 
       process.exitCode = 2;
-      /* istanbul ignore next */
 
       continue;
     }
@@ -16948,13 +14039,10 @@ async function formatFiles$1(context) {
     const isDifferent = output !== input;
 
     if (printedFilename) {
-      // Remove previously printed filename to log it with duration.
       printedFilename.clear();
     }
 
     if (context.argv.write) {
-      // Don't write the file if it won't change in order not to invalidate
-      // mtime based caches.
       if (isDifferent) {
         if (!context.argv.check && !context.argv["list-different"]) {
           context.logger.log(`${filename} ${Date.now() - start}ms`);
@@ -16963,10 +14051,8 @@ async function formatFiles$1(context) {
         try {
           await fs.writeFile(filename, output, "utf8");
         } catch (error) {
-          /* istanbul ignore next */
-          context.logger.error(`Unable to write file: ${filename}\n${error.message}`); // Don't exit the process if one file failed
+          context.logger.error(`Unable to write file: ${filename}\n${error.message}`);
 
-          /* istanbul ignore next */
 
           process.exitCode = 2;
         }
@@ -16974,7 +14060,6 @@ async function formatFiles$1(context) {
         context.logger.log(`${source.grey(filename)} ${Date.now() - start}ms`);
       }
     } else if (context.argv["debug-check"]) {
-      /* istanbul ignore else */
       if (result.filepath) {
         context.logger.log(result.filepath);
       } else {
@@ -16993,7 +14078,7 @@ async function formatFiles$1(context) {
 
       numberOfUnformattedFilesFound += 1;
     }
-  } // Print check summary based on expected exit code
+  }
 
 
   if (context.argv.check) {
@@ -17002,7 +14087,7 @@ async function formatFiles$1(context) {
     } else {
       context.logger.warn(context.argv.write ? "Code style issues fixed in the above file(s)." : "Code style issues found in the above file(s). Forgot to run Prettier?");
     }
-  } // Ensure non-zero exitCode when using --check/list-different is not combined with --write
+  }
 
 
   if ((context.argv.check || context.argv["list-different"]) && numberOfUnformattedFilesFound > 0 && !process.exitCode && !context.argv.write) {
@@ -17026,15 +14111,6 @@ var defineProperty = function () {
 
 var _defineProperty = defineProperty;
 
-/**
- * The base implementation of `assignValue` and `assignMergeValue` without
- * value checks.
- *
- * @private
- * @param {Object} object The object to modify.
- * @param {string} key The key of the property to assign.
- * @param {*} value The value to assign.
- */
 
 function baseAssignValue(object, key, value) {
   if (key == '__proto__' && _defineProperty) {
@@ -17051,22 +14127,10 @@ function baseAssignValue(object, key, value) {
 
 var _baseAssignValue = baseAssignValue;
 
-/** Used for built-in method references. */
 
 var objectProto$1 = Object.prototype;
-/** Used to check objects for own properties. */
 
 var hasOwnProperty$1 = objectProto$1.hasOwnProperty;
-/**
- * Assigns `value` to `key` of `object` if the existing value is not equivalent
- * using [`SameValueZero`](http://ecma-international.org/ecma-262/7.0/#sec-samevaluezero)
- * for equality comparisons.
- *
- * @private
- * @param {Object} object The object to modify.
- * @param {string} key The key of the property to assign.
- * @param {*} value The value to assign.
- */
 
 function assignValue(object, key, value) {
   var objValue = object[key];
@@ -17078,16 +14142,6 @@ function assignValue(object, key, value) {
 
 var _assignValue = assignValue;
 
-/**
- * The base implementation of `_.set`.
- *
- * @private
- * @param {Object} object The object to modify.
- * @param {Array|string} path The path of the property to set.
- * @param {*} value The value to set.
- * @param {Function} [customizer] The function to customize path creation.
- * @returns {Object} Returns `object`.
- */
 
 function baseSet(object, path, value, customizer) {
   if (!isObject_1(object)) {
@@ -17126,15 +14180,6 @@ function baseSet(object, path, value, customizer) {
 
 var _baseSet = baseSet;
 
-/**
- * The base implementation of  `_.pickBy` without support for iteratee shorthands.
- *
- * @private
- * @param {Object} object The source object.
- * @param {string[]} paths The property paths to pick.
- * @param {Function} predicate The function invoked per property.
- * @returns {Object} Returns the new object.
- */
 
 function basePickBy(object, paths, predicate) {
   var index = -1,
@@ -17155,15 +14200,6 @@ function basePickBy(object, paths, predicate) {
 
 var _basePickBy = basePickBy;
 
-/**
- * The base implementation of `_.pick` without support for individual
- * property identifiers.
- *
- * @private
- * @param {Object} object The source object.
- * @param {string[]} paths The property paths to pick.
- * @returns {Object} Returns the new object.
- */
 
 function basePick(object, paths) {
   return _basePickBy(object, paths, function (value, path) {
@@ -17173,16 +14209,8 @@ function basePick(object, paths) {
 
 var _basePick = basePick;
 
-/** Built-in value references. */
 
 var spreadableSymbol = _Symbol ? _Symbol.isConcatSpreadable : undefined;
-/**
- * Checks if `value` is a flattenable `arguments` object or array.
- *
- * @private
- * @param {*} value The value to check.
- * @returns {boolean} Returns `true` if `value` is flattenable, else `false`.
- */
 
 function isFlattenable(value) {
   return isArray_1(value) || isArguments_1(value) || !!(spreadableSymbol && value && value[spreadableSymbol]);
@@ -17190,17 +14218,6 @@ function isFlattenable(value) {
 
 var _isFlattenable = isFlattenable;
 
-/**
- * The base implementation of `_.flatten` with support for restricting flattening.
- *
- * @private
- * @param {Array} array The array to flatten.
- * @param {number} depth The maximum recursion depth.
- * @param {boolean} [predicate=isFlattenable] The function invoked per iteration.
- * @param {boolean} [isStrict] Restrict to values that pass `predicate` checks.
- * @param {Array} [result=[]] The initial result value.
- * @returns {Array} Returns the new flattened array.
- */
 
 function baseFlatten(array, depth, predicate, isStrict, result) {
   var index = -1,
@@ -17213,7 +14230,6 @@ function baseFlatten(array, depth, predicate, isStrict, result) {
 
     if (depth > 0 && predicate(value)) {
       if (depth > 1) {
-        // Recursively flatten arrays (susceptible to call stack limits).
         baseFlatten(value, depth - 1, predicate, isStrict, result);
       } else {
         _arrayPush(result, value);
@@ -17228,20 +14244,6 @@ function baseFlatten(array, depth, predicate, isStrict, result) {
 
 var _baseFlatten = baseFlatten;
 
-/**
- * Flattens `array` a single level deep.
- *
- * @static
- * @memberOf _
- * @since 0.1.0
- * @category Array
- * @param {Array} array The array to flatten.
- * @returns {Array} Returns the new flattened array.
- * @example
- *
- * _.flatten([1, [2, [3, [4]], 5]]);
- * // => [1, 2, [3, [4]], 5]
- */
 
 function flatten(array) {
   var length = array == null ? 0 : array.length;
@@ -17250,16 +14252,6 @@ function flatten(array) {
 
 var flatten_1 = flatten;
 
-/**
- * A faster alternative to `Function#apply`, this function invokes `func`
- * with the `this` binding of `thisArg` and the arguments of `args`.
- *
- * @private
- * @param {Function} func The function to invoke.
- * @param {*} thisArg The `this` binding of `func`.
- * @param {Array} args The arguments to invoke `func` with.
- * @returns {*} Returns the result of `func`.
- */
 function apply(func, thisArg, args) {
   switch (args.length) {
     case 0:
@@ -17280,18 +14272,8 @@ function apply(func, thisArg, args) {
 
 var _apply = apply;
 
-/* Built-in method references for those with the same name as other `lodash` methods. */
 
 var nativeMax = Math.max;
-/**
- * A specialized version of `baseRest` which transforms the rest array.
- *
- * @private
- * @param {Function} func The function to apply a rest parameter to.
- * @param {number} [start=func.length-1] The start position of the rest parameter.
- * @param {Function} transform The rest array transform.
- * @returns {Function} Returns the new function.
- */
 
 function overRest(func, start, transform) {
   start = nativeMax(start === undefined ? func.length - 1 : start, 0);
@@ -17319,25 +14301,6 @@ function overRest(func, start, transform) {
 
 var _overRest = overRest;
 
-/**
- * Creates a function that returns `value`.
- *
- * @static
- * @memberOf _
- * @since 2.4.0
- * @category Util
- * @param {*} value The value to return from the new function.
- * @returns {Function} Returns the new constant function.
- * @example
- *
- * var objects = _.times(2, _.constant({ 'a': 1 }));
- *
- * console.log(objects);
- * // => [{ 'a': 1 }, { 'a': 1 }]
- *
- * console.log(objects[0] === objects[1]);
- * // => true
- */
 function constant$1(value) {
   return function () {
     return value;
@@ -17346,14 +14309,6 @@ function constant$1(value) {
 
 var constant_1 = constant$1;
 
-/**
- * The base implementation of `setToString` without support for hot loop shorting.
- *
- * @private
- * @param {Function} func The function to modify.
- * @param {Function} string The `toString` result.
- * @returns {Function} Returns `func`.
- */
 
 var baseSetToString = !_defineProperty ? identity_1 : function (func, string) {
   return _defineProperty(func, 'toString', {
@@ -17365,21 +14320,10 @@ var baseSetToString = !_defineProperty ? identity_1 : function (func, string) {
 };
 var _baseSetToString = baseSetToString;
 
-/** Used to detect hot functions by number of calls within a span of milliseconds. */
 var HOT_COUNT = 800,
     HOT_SPAN = 16;
-/* Built-in method references for those with the same name as other `lodash` methods. */
 
 var nativeNow = Date.now;
-/**
- * Creates a function that'll short out and invoke `identity` instead
- * of `func` when it's called `HOT_COUNT` or more times in `HOT_SPAN`
- * milliseconds.
- *
- * @private
- * @param {Function} func The function to restrict.
- * @returns {Function} Returns the new shortable function.
- */
 
 function shortOut(func) {
   var count = 0,
@@ -17403,25 +14347,10 @@ function shortOut(func) {
 
 var _shortOut = shortOut;
 
-/**
- * Sets the `toString` method of `func` to return `string`.
- *
- * @private
- * @param {Function} func The function to modify.
- * @param {Function} string The `toString` result.
- * @returns {Function} Returns `func`.
- */
 
 var setToString = _shortOut(_baseSetToString);
 var _setToString = setToString;
 
-/**
- * A specialized version of `baseRest` which flattens the rest array.
- *
- * @private
- * @param {Function} func The function to apply a rest parameter to.
- * @returns {Function} Returns the new function.
- */
 
 function flatRest(func) {
   return _setToString(_overRest(func, undefined, flatten_1), func + '');
@@ -17429,23 +14358,6 @@ function flatRest(func) {
 
 var _flatRest = flatRest;
 
-/**
- * Creates an object composed of the picked `object` properties.
- *
- * @static
- * @since 0.1.0
- * @memberOf _
- * @category Object
- * @param {Object} object The source object.
- * @param {...(string|string[])} [paths] The property paths to pick.
- * @returns {Object} Returns the new object.
- * @example
- *
- * var object = { 'a': 1, 'b': '2', 'c': 3 };
- *
- * _.pick(object, ['a', 'c']);
- * // => { 'a': 1, 'c': 3 }
- */
 
 var pick = _flatRest(function (object, paths) {
   return object == null ? {} : _basePick(object, paths);
@@ -17457,7 +14369,7 @@ var lib = createCommonjsModule(function (module, exports) {
   Object.defineProperty(exports, "__esModule", {
     value: true
   });
-  exports.outdent = void 0; // In the absence of a WeakSet or WeakMap implementation, don't break, but don't cache either.
+  exports.outdent = void 0;
 
   function noop() {
     var args = [];
@@ -17474,9 +14386,6 @@ var lib = createCommonjsModule(function (module, exports) {
       return fakeSetOrMap();
     }
   }
-  /**
-   * Creates and returns a no-op implementation of a WeakMap / WeakSet that never stores anything.
-   */
 
 
   function fakeSetOrMap() {
@@ -17489,14 +14398,14 @@ var lib = createCommonjsModule(function (module, exports) {
         return false;
       }
     };
-  } // Safe hasOwnProperty
+  }
 
 
   var hop = Object.prototype.hasOwnProperty;
 
   var has = function (obj, prop) {
     return hop.call(obj, prop);
-  }; // Copy all own enumerable properties from source to target
+  };
 
 
   function extend(target, source) {
@@ -17516,8 +14425,6 @@ var lib = createCommonjsModule(function (module, exports) {
   var reOnlyWhitespaceWithAtLeastOneNewline = /^[ \t]*[\r\n][ \t\r\n]*$/;
 
   function _outdentArray(strings, firstInterpolatedValueSetsIndentationLevel, options) {
-    // If first interpolated value is a reference to outdent,
-    // determine indentation level from the indentation of the interpolated value.
     var indentationLevel = 0;
     var match = strings[0].match(reDetectIndentation);
 
@@ -17538,17 +14445,16 @@ var lib = createCommonjsModule(function (module, exports) {
     var normalizeNewlines = typeof newline === "string";
     var l = strings.length;
     var outdentedStrings = strings.map(function (v, i) {
-      // Remove leading indentation from all lines
-      v = v.replace(reMatchIndent, "$1"); // Trim a leading newline from the first string
+      v = v.replace(reMatchIndent, "$1");
 
       if (i === 0 && trimLeadingNewline) {
         v = v.replace(reLeadingNewline, "");
-      } // Trim a trailing newline from the last string
+      }
 
 
       if (i === l - 1 && trimTrailingNewline) {
         v = v.replace(reTrailingNewline, "");
-      } // Normalize newlines
+      }
 
 
       if (normalizeNewlines) {
@@ -17579,21 +14485,10 @@ var lib = createCommonjsModule(function (module, exports) {
   function isTemplateStringsArray(v) {
     return has(v, "raw") && has(v, "length");
   }
-  /**
-   * It is assumed that opts will not change.  If this is a problem, clone your options object and pass the clone to
-   * makeInstance
-   * @param options
-   * @return {outdent}
-   */
 
 
   function createInstance(options) {
-    /** Cache of pre-processed template literal arrays */
     var arrayAutoIndentCache = createWeakMap();
-    /**
-       * Cache of pre-processed template literal arrays, where first interpolated value is a reference to outdent,
-       * before interpolated values are injected.
-       */
 
     var arrayFirstInterpSetsIndentCache = createWeakMap();
 
@@ -17603,13 +14498,12 @@ var lib = createCommonjsModule(function (module, exports) {
       for (var _i = 1; _i < arguments.length; _i++) {
         values[_i - 1] = arguments[_i];
       }
-      /* tslint:enable:no-shadowed-variable */
 
 
       if (isTemplateStringsArray(stringsOrOptions)) {
-        var strings = stringsOrOptions; // Is first interpolated value a reference to outdent, alone on its own line, without any preceding non-whitespace?
+        var strings = stringsOrOptions;
 
-        var firstInterpolatedValueSetsIndentationLevel = (values[0] === outdent || values[0] === defaultOutdent) && reOnlyWhitespaceWithAtLeastOneNewline.test(strings[0]) && reStartsWithNewlineOrIsEmpty.test(strings[1]); // Perform outdentation
+        var firstInterpolatedValueSetsIndentationLevel = (values[0] === outdent || values[0] === defaultOutdent) && reOnlyWhitespaceWithAtLeastOneNewline.test(strings[0]) && reStartsWithNewlineOrIsEmpty.test(strings[1]);
 
         var cache = firstInterpolatedValueSetsIndentationLevel ? arrayFirstInterpSetsIndentCache : arrayAutoIndentCache;
         var renderedArray = cache.get(strings);
@@ -17618,19 +14512,16 @@ var lib = createCommonjsModule(function (module, exports) {
           renderedArray = _outdentArray(strings, firstInterpolatedValueSetsIndentationLevel, options);
           cache.set(strings, renderedArray);
         }
-        /** If no interpolated values, skip concatenation step */
 
 
         if (values.length === 0) {
           return renderedArray[0];
         }
-        /** Concatenate string literals with interpolated values */
 
 
         var rendered = concatStringsAndValues(renderedArray, firstInterpolatedValueSetsIndentationLevel ? values.slice(1) : values);
         return rendered;
       } else {
-        // Create and return a new instance of outdent with the given options
         return createInstance(extend(extend({}, options), stringsOrOptions || {}));
       }
     }
@@ -17647,14 +14538,11 @@ var lib = createCommonjsModule(function (module, exports) {
     trimLeadingNewline: true,
     trimTrailingNewline: true
   });
-  exports.outdent = defaultOutdent; // Named exports.  Simple and preferred.
-  // import outdent from 'outdent';
+  exports.outdent = defaultOutdent;
 
   exports.default = defaultOutdent;
 
   {
-    // In webpack harmony-modules environments, module.exports is read-only,
-    // so we fail gracefully.
     try {
       module.exports = defaultOutdent;
       Object.defineProperty(defaultOutdent, "__esModule", {
@@ -17673,64 +14561,6 @@ const {
   coreOptions: coreOptions$1
 } = prettierInternal;
 const categoryOrder = [coreOptions$1.CATEGORY_OUTPUT, coreOptions$1.CATEGORY_FORMAT, coreOptions$1.CATEGORY_CONFIG, coreOptions$1.CATEGORY_EDITOR, coreOptions$1.CATEGORY_OTHER];
-/**
- * {
- *   [optionName]: {
- *     // The type of the option. For 'choice', see also `choices` below.
- *     // When passing a type other than the ones listed below, the option is
- *     // treated as taking any string as argument, and `--option <${type}>` will
- *     // be displayed in --help.
- *     type: "boolean" | "choice" | "int" | string;
- *
- *     // Default value to be passed to the minimist option `default`.
- *     default?: any;
- *
- *     // Alias name to be passed to the minimist option `alias`.
- *     alias?: string;
- *
- *     // For grouping options by category in --help.
- *     category?: string;
- *
- *     // Description to be displayed in --help. If omitted, the option won't be
- *     // shown at all in --help (but see also `oppositeDescription` below).
- *     description?: string;
- *
- *     // Description for `--no-${name}` to be displayed in --help. If omitted,
- *     // `--no-${name}` won't be shown.
- *     oppositeDescription?: string;
- *
- *     // Indicate if this option is simply passed to the API.
- *     // true: use camelified name as the API option name.
- *     // string: use this value as the API option name.
- *     forwardToApi?: boolean | string;
- *
- *     // Indicate that a CLI flag should be an array when forwarded to the API.
- *     array?: boolean;
- *
- *     // Specify available choices for validation. They will also be displayed
- *     // in --help as <a|b|c>.
- *     // Use an object instead of a string if a choice is deprecated and should
- *     // be treated as `redirect` instead, or if you'd like to add description for
- *     // the choice.
- *     choices?: Array<
- *       | string
- *       | { value: string, description?: string, deprecated?: boolean, redirect?: string }
- *     >;
- *
- *     // If the option has a value that is an exception to the regular value
- *     // constraints, indicate that value here (or use a function for more
- *     // flexibility).
- *     exception?: ((value: any) => boolean);
- *
- *     // Indicate that the option is deprecated. Use a string to add an extra
- *     // message to --help for the option, for example to suggest a replacement
- *     // option.
- *     deprecated?: true | string;
- *   }
- * }
- *
- * Note: The options below are sorted alphabetically.
- */
 
 const options = {
   check: {
@@ -17743,10 +14573,6 @@ const options = {
     `
   },
   color: {
-    // The supports-color package (a sub sub dependency) looks directly at
-    // `process.argv` for `--no-color` and such-like options. The reason it is
-    // listed here is to avoid "Ignored unknown option: --no-color" warnings.
-    // See https://github.com/chalk/supports-color/#info for more information.
     type: "boolean",
     default: true,
     description: "Colorize error messages.",
@@ -17779,11 +14605,9 @@ const options = {
     description: "Define in which order config files and CLI options should be evaluated."
   },
   "debug-benchmark": {
-    // Run the formatting benchmarks. Requires 'benchmark' module to be installed.
     type: "boolean"
   },
   "debug-check": {
-    // Run the formatting once again on the formatted output, throw if different.
     type: "boolean"
   },
   "debug-print-doc": {
@@ -17793,7 +14617,6 @@ const options = {
     type: "boolean"
   },
   "debug-repeat": {
-    // Repeat the formatting a few times and measure the average duration.
     type: "int",
     default: 0
   },
@@ -17901,10 +14724,9 @@ function normalizeDetailedOption(name, option) {
       }, typeof choice === "object" ? choice : {
         value: choice
       });
-      /* istanbul ignore next */
 
       if (newChoice.value === true) {
-        newChoice.value = ""; // backward compatibility for original boolean option
+        newChoice.value = "";
       }
 
       return newChoice;
@@ -17924,7 +14746,6 @@ function createDetailedOptionMap$2(supportOptions) {
       category: option.cliCategory || coreOptions.CATEGORY_FORMAT,
       forwardToApi: option.name
     });
-    /* istanbul ignore next */
 
     if (option.deprecated) {
       delete newOption.forwardToApi;
@@ -17955,21 +14776,6 @@ const {
   createDetailedOptionMap: createDetailedOptionMap$1,
   normalizeDetailedOptionMap: normalizeDetailedOptionMap$1
 } = optionMap;
-/**
- * @typedef {Object} Context
- * @property logger
- * @property {string[]} rawArguments
- * @property argv
- * @property {string[]} filePatterns
- * @property {any[]} supportOptions
- * @property detailedOptions
- * @property detailedOptionMap
- * @property apiDefaultOptions
- * @property languages
- * @property {Partial<Context>[]} stack
- * @property pushContextPlugins
- * @property popContextPlugins
- */
 
 class Context$1 {
   constructor({
@@ -17988,10 +14794,6 @@ class Context$1 {
     this.argv = argv;
     this.filePatterns = argv._.map(file => String(file));
   }
-  /**
-   * @param {string[]} plugins
-   * @param {string[]=} pluginSearchDirs
-   */
 
 
   pushContextPlugins(plugins, pluginSearchDirs) {
@@ -18055,10 +14857,8 @@ var context = {
   parseArgvWithoutPlugins: parseArgvWithoutPlugins$1
 };
 
-// `Array.prototype.flat` method
-// https://tc39.es/ecma262/#sec-array.prototype.flat
 _export({ target: 'Array', proto: true }, {
-  flat: function flat(/* depthArg = 1 */) {
+  flat: function flat() {
     var depthArg = arguments.length ? arguments[0] : undefined;
     var O = toObject(this);
     var sourceLen = toLength(O.length);
@@ -18068,35 +14868,10 @@ _export({ target: 'Array', proto: true }, {
   }
 });
 
-/** Used for built-in method references. */
 
 var objectProto = Object.prototype;
-/** Used to check objects for own properties. */
 
 var hasOwnProperty = objectProto.hasOwnProperty;
-/**
- * Creates an object composed of keys generated from the results of running
- * each element of `collection` thru `iteratee`. The order of grouped values
- * is determined by the order they occur in `collection`. The corresponding
- * value of each key is an array of elements responsible for generating the
- * key. The iteratee is invoked with one argument: (value).
- *
- * @static
- * @memberOf _
- * @since 0.1.0
- * @category Collection
- * @param {Array|Object} collection The collection to iterate over.
- * @param {Function} [iteratee=_.identity] The iteratee to transform keys.
- * @returns {Object} Returns the composed aggregate object.
- * @example
- *
- * _.groupBy([6.1, 4.2, 6.3], Math.floor);
- * // => { '4': [4.2], '6': [6.1, 6.3] }
- *
- * // The `_.property` iteratee shorthand.
- * _.groupBy(['one', 'two', 'three'], 'length');
- * // => { '3': ['one', 'two'], '5': ['three'] }
- */
 
 var groupBy = _createAggregator(function (result, value, key) {
   if (hasOwnProperty.call(result, key)) {
@@ -18189,7 +14964,7 @@ const camelCase = (input, options) => {
   return postProcess(input, options);
 };
 
-var camelcase = camelCase; // TODO: Remove this for the next major release
+var camelcase = camelCase;
 
 var _default = camelCase;
 camelcase.default = _default;
@@ -18207,7 +14982,6 @@ function createDefaultValueDisplay(value) {
 }
 
 function getOptionDefaultValue(context, optionName) {
-  // --no-option
   if (!(optionName in context.detailedOptionMap)) {
     return;
   }
@@ -18264,7 +15038,6 @@ function createOptionUsage(context, option, threshold) {
 }
 
 function getOptionsWithOpposites(options) {
-  // Add --no-foo after --foo.
   const optionsWithOpposites = options.map(option => [option.description ? option : null, option.oppositeDescription ? Object.assign(Object.assign({}, option), {}, {
     name: `no-${option.name}`,
     type: "boolean",
@@ -18274,7 +15047,7 @@ function getOptionsWithOpposites(options) {
 }
 
 function createUsage$1(context) {
-  const options = getOptionsWithOpposites(context.detailedOptions).filter( // remove unnecessary option (e.g. `semi`, `color`, etc.), which is only used for --help <flag>
+  const options = getOptionsWithOpposites(context.detailedOptions).filter(
   option => !(option.type === "boolean" && option.oppositeDescription && !option.name.startsWith("no-")));
   const groupedOptions = groupBy_1(options, option => option.category);
   const firstCategories = constant.categoryOrder.slice(0, -1);
@@ -18315,24 +15088,6 @@ var stripAnsi = string => typeof string === 'string' ? string.replace(ansiRegex(
 
 var clone_1 = createCommonjsModule(function (module) {
   var clone = function () {
-    /**
-     * Clones (copies) an Object using deep copying.
-     *
-     * This function supports circular references by default, but if you are certain
-     * there are no circular references in your object, you can save some CPU time
-     * by calling clone(obj, false).
-     *
-     * Caution: if `circular` is false and `parent` contains circular references,
-     * your program may enter an infinite loop and crash.
-     *
-     * @param `parent` - the object to be cloned
-     * @param `circular` - set to true if the object to be cloned may contain
-     *    circular references. (optional - true by default)
-     * @param `depth` - set to a number if the object is only to be cloned to
-     *    a particular depth. (optional - defaults to Infinity)
-     * @param `prototype` - sets the prototype to be used when cloning an object.
-     *    (optional - defaults to parent prototype).
-    */
 
     function clone(parent, circular, depth, prototype) {
 
@@ -18340,18 +15095,16 @@ var clone_1 = createCommonjsModule(function (module) {
         depth = circular.depth;
         prototype = circular.prototype;
         circular = circular.circular;
-      } // maintain two arrays for circular references, where corresponding parents
-      // and children have the same index
+      }
 
 
       var allParents = [];
       var allChildren = [];
       var useBuffer = typeof Buffer != 'undefined';
       if (typeof circular == 'undefined') circular = true;
-      if (typeof depth == 'undefined') depth = Infinity; // recurse this function so we don't reset allParents and allChildren
+      if (typeof depth == 'undefined') depth = Infinity;
 
       function _clone(parent, depth) {
-        // cloning null always returns null
         if (parent === null) return null;
         if (depth == 0) return parent;
         var child;
@@ -18370,10 +15123,8 @@ var clone_1 = createCommonjsModule(function (module) {
           child = new Date(parent.getTime());
         } else if (useBuffer && Buffer.isBuffer(parent)) {
           if (Buffer.allocUnsafe) {
-            // Node.js >= 4.5.0
             child = Buffer.allocUnsafe(parent.length);
           } else {
-            // Older Node.js versions
             child = new Buffer(parent.length);
           }
 
@@ -18419,13 +15170,6 @@ var clone_1 = createCommonjsModule(function (module) {
 
       return _clone(parent, depth);
     }
-    /**
-     * Simple flat clone using prototype, accepts only objects, usefull for property
-     * override on FLAT configuration object (no nested props).
-     *
-     * USE WITH CAUTION! This may not behave as you wish if you do not know how this
-     * works.
-     */
 
 
     clone.clonePrototype = function clonePrototype(parent) {
@@ -18435,7 +15179,7 @@ var clone_1 = createCommonjsModule(function (module) {
 
       c.prototype = parent;
       return new c();
-    }; // private utility functions
+    };
 
 
     function __objToStr(o) {
@@ -18501,29 +15245,6 @@ var config = function (opts) {
     return wcswidth(str, opts);
   };
 };
-/*
- *  The following functions define the column width of an ISO 10646
- *  character as follows:
- *  - The null character (U+0000) has a column width of 0.
- *  - Other C0/C1 control characters and DEL will lead to a return value
- *    of -1.
- *  - Non-spacing and enclosing combining characters (general category
- *    code Mn or Me in the
- *    Unicode database) have a column width of 0.
- *  - SOFT HYPHEN (U+00AD) has a column width of 1.
- *  - Other format characters (general category code Cf in the Unicode
- *    database) and ZERO WIDTH
- *    SPACE (U+200B) have a column width of 0.
- *  - Hangul Jamo medial vowels and final consonants (U+1160-U+11FF)
- *    have a column width of 0.
- *  - Spacing characters in the East Asian Wide (W) or East Asian
- *    Full-width (F) category as
- *    defined in Unicode Technical Report #11 have a column width of 2.
- *  - All remaining characters (including all printable ISO 8859-1 and
- *    WGL4 characters, Unicode control characters, etc.) have a column
- *    width of 1.
- *  This implementation assumes that characters are encoded in ISO 10646.
-*/
 
 
 function wcswidth(str, opts) {
@@ -18540,19 +15261,18 @@ function wcswidth(str, opts) {
 }
 
 function wcwidth(ucs, opts) {
-  // test for 8-bit control characters
   if (ucs === 0) return opts.nul;
-  if (ucs < 32 || ucs >= 0x7f && ucs < 0xa0) return opts.control; // binary search in table of non-spacing characters
+  if (ucs < 32 || ucs >= 0x7f && ucs < 0xa0) return opts.control;
 
-  if (bisearch(ucs)) return 0; // if we arrive here, ucs is not a combining or C0/C1 control character
+  if (bisearch(ucs)) return 0;
 
-  return 1 + (ucs >= 0x1100 && (ucs <= 0x115f || // Hangul Jamo init. consonants
-  ucs == 0x2329 || ucs == 0x232a || ucs >= 0x2e80 && ucs <= 0xa4cf && ucs != 0x303f || // CJK ... Yi
-  ucs >= 0xac00 && ucs <= 0xd7a3 || // Hangul Syllables
-  ucs >= 0xf900 && ucs <= 0xfaff || // CJK Compatibility Ideographs
-  ucs >= 0xfe10 && ucs <= 0xfe19 || // Vertical forms
-  ucs >= 0xfe30 && ucs <= 0xfe6f || // CJK Compatibility Forms
-  ucs >= 0xff00 && ucs <= 0xff60 || // Fullwidth Forms
+  return 1 + (ucs >= 0x1100 && (ucs <= 0x115f ||
+  ucs == 0x2329 || ucs == 0x232a || ucs >= 0x2e80 && ucs <= 0xa4cf && ucs != 0x303f ||
+  ucs >= 0xac00 && ucs <= 0xd7a3 ||
+  ucs >= 0xf900 && ucs <= 0xfaff ||
+  ucs >= 0xfe10 && ucs <= 0xfe19 ||
+  ucs >= 0xfe30 && ucs <= 0xfe6f ||
+  ucs >= 0xff00 && ucs <= 0xff60 ||
   ucs >= 0xffe0 && ucs <= 0xffe6 || ucs >= 0x20000 && ucs <= 0x2fffd || ucs >= 0x30000 && ucs <= 0x3fffd));
 }
 
@@ -18642,21 +15362,18 @@ function createLogger$1(logLevel = "log") {
           return true;
         }
 
-      // fall through
 
       case "log":
         if (loggerName === "log") {
           return true;
         }
 
-      // fall through
 
       case "warn":
         if (loggerName === "warn") {
           return true;
         }
 
-      // fall through
 
       case "error":
         return loggerName === "error";
@@ -18728,11 +15445,9 @@ var core = {
   createLogger
 };
 
-pleaseUpgradeNode(packageJson); // eslint-disable-next-line import/order
-// eslint-disable-next-line no-restricted-modules
+pleaseUpgradeNode(packageJson);
 
 async function run(rawArguments) {
-  // Create a default level logger, so we can log errors during `logLevel` parsing
   let logger = core.createLogger();
 
   try {
