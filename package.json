@@ -1,34 +1,66 @@
 {
-  "name": "npm-package-bundler",
-  "version": "1.0.0-xxx.0",
-  "description": "Use webpack v4 to bundle NPM package xxx v1.0",
-  "keywords": [
-    "npm",
-    "yarn",
-    "package",
-    "module",
-    "bundle",
-    "bundled",
-    "rollup",
-    "webpack"
-  ],
-  "repository": "thachnn/bundled",
+  "name": "webpack",
+  "version": "4.46.0-1",
+  "author": "Tobias Koppers @sokra",
+  "description": "Packs CommonJs/AMD modules for the browser. Allows to split your codebase into multiple bundles, which can be loaded on demand. Support loaders to preprocess files, i.e. json, jsx, es7, css, less, ... and your custom stuff.",
   "license": "MIT",
-  "engines": {
-    "node": ">=10"
+  "peerDependenciesMeta": {
+    "webpack-cli": {
+      "optional": true
+    },
+    "webpack-command": {
+      "optional": true
+    }
   },
-  "scripts": {
-    "build": "node scripts/build.js",
-    "clean": "git clean -fdx dist/ node_modules/.cache",
-    "postinstall": "git apply --reject --unidiff-zero --whitespace=nowarn scripts/fix-deps.patch",
-    "terser": "node node_modules/webpack/bin/terser --config-file scripts/terser.config.json",
-    "webpack": "node node_modules/webpack-cli/bin/cli.js --progress --display-modules",
-    "test": "grep -r --include=*.js -E \"[\\[,] ,|__webpack_require__\\.[a-z]|_WEBPACK_|webpackPoly|\\b_(iterator|interop)\" dist"
-  },
-  "dependencies": {},
   "devDependencies": {
-    "webpack": "thachnn/bundled#webpack-4.46.0",
-    "webpack-cli": "thachnn/bundled#webpack-cli-3.3.12"
+    "@webassemblyjs/ast": "1.9.0",
+    "@webassemblyjs/helper-module-context": "1.9.0",
+    "@webassemblyjs/wasm-edit": "1.9.0",
+    "@webassemblyjs/wasm-parser": "1.9.0",
+    "acorn": "^6.4.1",
+    "ajv": "^6.10.2",
+    "ajv-keywords": "^3.4.1",
+    "chrome-trace-event": "^1.0.2",
+    "enhanced-resolve": "^4.5.0",
+    "eslint-scope": "^4.0.3",
+    "json-parse-better-errors": "^1.0.2",
+    "loader-runner": "^2.4.0",
+    "loader-utils": "^1.2.3",
+    "memory-fs": "^0.4.1",
+    "micromatch": "^3.1.10",
+    "mkdirp": "^0.5.3",
+    "neo-async": "^2.6.1",
+    "node-libs-browser": "^2.2.1",
+    "schema-utils": "^1.0.0",
+    "tapable": "^1.1.3",
+    "terser-webpack-plugin": "^1.4.3",
+    "watchpack": "^1.7.4",
+    "webpack-sources": "^1.4.1"
   },
-  "resolutions": {}
+  "engines": {
+    "node": ">=6.11.5"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/webpack/webpack.git"
+  },
+  "funding": {
+    "type": "opencollective",
+    "url": "https://opencollective.com/webpack"
+  },
+  "homepage": "https://github.com/webpack/webpack",
+  "main": "lib/webpack.js",
+  "files": [
+    "lib/",
+    "bin/",
+    "buildin/",
+    "declarations/",
+    "hot/",
+    "web_modules/",
+    "vendor/",
+    "SECURITY.md"
+  ],
+  "optionalDependencies": {
+    "fsevents": "~2.1.2"
+  }
 }
