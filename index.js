@@ -3339,8 +3339,8 @@ var require_util = __commonJS2({
       });
       return enclosingQuote + newContent + enclosingQuote;
     }
-    function printNumber(rawNumber) {
-      return rawNumber.toLowerCase().replace(/^([+-]?[\d.]+e)(?:\+|(-))?0*(\d)/, "$1$2$3").replace(/^([+-]?[\d.]+)e[+-]?0+$/, "$1").replace(/^([+-])?\./, "$10.").replace(/(\.\d+?)0+(?=e|$)/, "$1").replace(/\.(?=e|$)/, "");
+    function printNumber(rawNumber, keepCase) {
+      return (keepCase ? rawNumber : rawNumber.toLowerCase()).replace(/^([+-]?[\d.]+e)(?:\+|(-))?0*(\d)/, "$1$2$3").replace(/^([+-]?[\d.]+)e[+-]?0+$/, "$1").replace(/^([+-])?\./, "$10.").replace(/(\.\d+?)0+(?=e|$)/, "$1").replace(/\.(?=e|$)/, "");
     }
     function getMaxContinuousCount(str, target) {
       const results = str.match(new RegExp(`(${escapeStringRegexp2(target)})+`, "g"));
@@ -28503,9 +28503,9 @@ var require_flow = __commonJS2({
           assert.strictEqual(typeof node.value, "number");
         case "BigIntLiteralTypeAnnotation":
           if (node.extra) {
-            return printNumber(node.extra.raw);
+            return printNumber(node.extra.raw, options.preserveQuote);
           }
-          return printNumber(node.raw);
+          return printNumber(node.raw, options.preserveQuote);
         case "TypeCastExpression": {
           return ["(", print("expression"), printTypeAnnotation(path, options, print), ")"];
         }
@@ -29433,9 +29433,9 @@ var require_literal = __commonJS2({
         case "RegExpLiteral":
           return printRegex(node);
         case "BigIntLiteral":
-          return printBigInt(node.bigint || node.extra.raw);
+          return printBigInt(node.bigint || node.extra.raw, options.preserveQuote);
         case "NumericLiteral":
-          return printNumber(node.extra.raw);
+          return printNumber(node.extra.raw, options.preserveQuote);
         case "StringLiteral":
           return replaceTextEndOfLine(printString(node.extra.raw, options));
         case "NullLiteral":
@@ -29449,7 +29449,7 @@ var require_literal = __commonJS2({
             return printRegex(node.regex);
           }
           if (node.bigint) {
-            return printBigInt(node.raw);
+            return printBigInt(node.raw, options.preserveQuote);
           }
           if (node.decimal) {
             return printNumber(node.decimal) + "m";
@@ -29458,7 +29458,7 @@ var require_literal = __commonJS2({
             value
           } = node;
           if (typeof value === "number") {
-            return printNumber(node.raw);
+            return printNumber(node.raw, options.preserveQuote);
           }
           if (typeof value === "string") {
             return isDirective(path) ? printDirective(node.raw, options) : replaceTextEndOfLine(printString(node.raw, options));
@@ -29474,8 +29474,8 @@ var require_literal = __commonJS2({
       const parent = path.getParentNode();
       return parent.type === "ExpressionStatement" && parent.directive;
     }
-    function printBigInt(raw) {
-      return raw.toLowerCase();
+    function printBigInt(raw, keepCase) {
+      return keepCase ? raw : raw.toLowerCase();
     }
     function printRegex({
       pattern,
