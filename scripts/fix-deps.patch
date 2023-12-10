@@ -50,6 +50,22 @@
 @@ -312 +312 @@ export function tokenize(input) {
 -      var _value = numberLiteralFSM.run(input.slice(current));
 +      var _value = numberLiteralFSM().run(input.slice(current));
+--- a/node_modules/@xtuc/long/src/long.js
++++ b/node_modules/@xtuc/long/src/long.js
+@@ -236,2 +236,2 @@ function fromString(str, unsigned, radix) {
+-    var p;
+-    if ((p = str.indexOf('-')) > 0)
++    var p = str.indexOf('-');
++    if (p > 0)
+@@ -251,7 +251,2 @@ function fromString(str, unsigned, radix) {
+-        if (size < 8) {
+-            var power = fromNumber(pow_dbl(radix, size));
++        var power = size < 8 ? fromNumber(pow_dbl(radix, size)) : radixToPower;
+             result = result.mul(power).add(fromNumber(value));
+-        } else {
+-            result = result.mul(radixToPower);
+-            result = result.add(fromNumber(value));
+-        }
 --- a/node_modules/acorn/dist/acorn.js
 +++ b/node_modules/acorn/dist/acorn.js
 @@ -1 +1 @@

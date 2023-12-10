@@ -124,7 +124,7 @@ const configSet = [
   //
   buildConfig('long', {
     input: 'node_modules/@xtuc/long/src/long.js',
-    output: { file: 'dist/vendor/long.js' },
+    output: { file: 'dist/vendor/long.js', strict: false },
   }),
   buildConfig('wasm-ast', {
     input: 'node_modules/@webassemblyjs/ast/esm/index.js',
