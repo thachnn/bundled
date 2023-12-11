@@ -1,3 +1,8 @@
+--- a/node_modules/@webassemblyjs/ast/esm/utils.js
++++ b/node_modules/@webassemblyjs/ast/esm/utils.js
+@@ -9 +9 @@ import { traverse } from "./traverse";
+-import constants from "@webassemblyjs/helper-wasm-bytecode";
++import * as constants from "@webassemblyjs/helper-wasm-bytecode";
 --- a/node_modules/@webassemblyjs/helper-buffer/esm/index.js
 +++ b/node_modules/@webassemblyjs/helper-buffer/esm/index.js
 @@ -4,3 +4 @@ function concatUint8Arrays() {
@@ -5,6 +10,88 @@
 -    arrays[_key] = arguments[_key];
 -  }
 +  var arrays = Array.prototype.slice.call(arguments);
+--- a/node_modules/@webassemblyjs/helper-wasm-bytecode/esm/index.js
++++ b/node_modules/@webassemblyjs/helper-wasm-bytecode/esm/index.js
+@@ -307,16 +307,16 @@ var symbolsByName = invertMap(symbolsByByte, function (obj) {
+-export default {
+-  symbolsByByte: symbolsByByte,
+-  sections: sections,
+-  magicModuleHeader: magicModuleHeader,
+-  moduleVersion: moduleVersion,
+-  types: types,
+-  valtypes: valtypes,
+-  exportTypes: exportTypes,
+-  blockTypes: blockTypes,
+-  tableTypes: tableTypes,
+-  globalTypes: globalTypes,
+-  importTypes: importTypes,
+-  valtypesByString: valtypesByString,
+-  globalTypesByString: globalTypesByString,
+-  exportTypesByName: exportTypesByName,
+-  symbolsByName: symbolsByName
++export {
++  symbolsByByte,
++  sections,
++  magicModuleHeader,
++  moduleVersion,
++  types,
++  valtypes,
++  exportTypes,
++  blockTypes,
++  tableTypes,
++  globalTypes,
++  importTypes,
++  valtypesByString,
++  globalTypesByString,
++  exportTypesByName,
++  symbolsByName
+--- a/node_modules/@webassemblyjs/helper-wasm-section/esm/create.js
++++ b/node_modules/@webassemblyjs/helper-wasm-section/esm/create.js
+@@ -5 +5 @@ import { overrideBytesInBuffer } from "@webassemblyjs/helper-buffer";
+-import constants from "@webassemblyjs/helper-wasm-bytecode";
++import * as constants from "@webassemblyjs/helper-wasm-bytecode";
+--- a/node_modules/@webassemblyjs/leb128/esm/index.js
++++ b/node_modules/@webassemblyjs/leb128/esm/index.js
+@@ -1 +1 @@
+-import leb from "./leb";
++export { decodeInt64, decodeUInt64, decodeInt32, decodeUInt32, encodeUInt32 as encodeU32, encodeInt32 as encodeI32, encodeInt64 as encodeI64 } from "./leb";
+@@ -14 +14 @@ export var MAX_NUMBER_OF_BYTE_U64 = 10;
+-export function decodeInt64(encodedBuffer, index) {
++/*export function decodeInt64(encodedBuffer, index) {
+@@ -33,2 +33,2 @@ export function encodeI64(v) {
+   return leb.encodeInt64(v);
+-}
+\ No newline at end of file
++}*/
+--- a/node_modules/@webassemblyjs/leb128/esm/leb.js
++++ b/node_modules/@webassemblyjs/leb128/esm/leb.js
+@@ -303,13 +303,13 @@ function decodeUInt64(encodedBuffer, index) {
+-export default {
+-  decodeInt32: decodeInt32,
+-  decodeInt64: decodeInt64,
+-  decodeIntBuffer: decodeIntBuffer,
+-  decodeUInt32: decodeUInt32,
+-  decodeUInt64: decodeUInt64,
+-  decodeUIntBuffer: decodeUIntBuffer,
+-  encodeInt32: encodeInt32,
+-  encodeInt64: encodeInt64,
+-  encodeIntBuffer: encodeIntBuffer,
+-  encodeUInt32: encodeUInt32,
+-  encodeUInt64: encodeUInt64,
+-  encodeUIntBuffer: encodeUIntBuffer
++export {
++  decodeInt32,
++  decodeInt64,
++  decodeIntBuffer,
++  decodeUInt32,
++  decodeUInt64,
++  decodeUIntBuffer,
++  encodeInt32,
++  encodeInt64,
++  encodeIntBuffer,
++  encodeUInt32,
++  encodeUInt64,
++  encodeUIntBuffer,
 --- a/node_modules/@webassemblyjs/wasm-edit/esm/apply.js
 +++ b/node_modules/@webassemblyjs/wasm-edit/esm/apply.js
 @@ -6 +6 @@ import { encodeNode } from "@webassemblyjs/wasm-gen";
@@ -18,6 +105,9 @@
 @@ -3 +3 @@ import { traverse } from "@webassemblyjs/ast";
 -import { cloneNode } from "@webassemblyjs/ast/lib/clone";
 +import { cloneNode } from "@webassemblyjs/ast";
+@@ -6 +6 @@ import { getSectionForNode } from "@webassemblyjs/helper-wasm-bytecode";
+-import constants from "@webassemblyjs/helper-wasm-bytecode";
++import * as constants from "@webassemblyjs/helper-wasm-bytecode";
 @@ -20 +20 @@ function sortBySectionOrder(nodes) {
 -  var _iteratorNormalCompletion = true;
 +  /*var _iteratorNormalCompletion = true;
@@ -34,11 +124,21 @@
      }
 -  }
 +  }*/
+--- a/node_modules/@webassemblyjs/wasm-gen/esm/encoder/index.js
++++ b/node_modules/@webassemblyjs/wasm-gen/esm/encoder/index.js
+@@ -6 +6 @@ import * as utf8 from "@webassemblyjs/utf8";
+-import constants from "@webassemblyjs/helper-wasm-bytecode";
++import * as constants from "@webassemblyjs/helper-wasm-bytecode";
 --- a/node_modules/@webassemblyjs/wasm-opt/esm/leb128.js
 +++ b/node_modules/@webassemblyjs/wasm-opt/esm/leb128.js
 @@ -2 +2 @@ import { traverse, shiftSection } from "@webassemblyjs/ast";
 -import { encodeU32 } from "@webassemblyjs/wasm-gen/lib/encoder";
 +import { encodeU32 } from "@webassemblyjs/wasm-gen";
+--- a/node_modules/@webassemblyjs/wasm-parser/esm/decoder.js
++++ b/node_modules/@webassemblyjs/wasm-parser/esm/decoder.js
+@@ -8 +8 @@ import { decodeInt32, decodeUInt32, MAX_NUMBER_OF_BYTE_U32, decodeInt64, decodeU
+-import constants from "@webassemblyjs/helper-wasm-bytecode";
++import * as constants from "@webassemblyjs/helper-wasm-bytecode";
 --- a/node_modules/@webassemblyjs/wast-parser/esm/tokenizer.js
 +++ b/node_modules/@webassemblyjs/wast-parser/esm/tokenizer.js
 @@ -89 +89 @@ var NUMERIC_SEPARATOR = "_";
@@ -138,6 +238,17 @@
 -                if (output.should_break()) {
 +                output.print(",");
 +                if (!output.should_break()) output.space(); else {
+@@ -1919 +1919 @@ function OutputStream(options) {
+-    function print_property_name(key, quote, output) {
++    function print_property_name(key, quote, output, tok) {
+@@ -1924,2 +1924,2 @@ function OutputStream(options) {
+             if (output.option("keep_numbers")) {
+-                return output.print(key);
++                return output.print(tok && tok.raw != null ? tok.raw : key);
+@@ -1969,2 +1969,2 @@ function OutputStream(options) {
+             if (!(self.key instanceof AST_Node)) {
+-                print_property_name(self.key, self.quote, output);
++                print_property_name(self.key, self.quote, output, self.start);
 @@ -2058,2 +2058,2 @@ function OutputStream(options) {
          if ((output.option("keep_numbers") || output.use_asm) && self.start && self.start.raw != null) {
 -            output.print(self.start.raw);

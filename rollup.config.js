@@ -98,6 +98,7 @@ const wasmBuildPlugins = [
       { search: /\b_extends(\([^)])/g, replace: 'Object.assign$1' },
       { search: /\b_slicedToArray\(([^,]+), \d+\)/g, replace: '$1' },
       { search: /(?<!\bfunction )\b_toConsumableArray\(/g, replace: '(' },
+      { search: /\) \|\| ['"]unknown['"](\)\);)/g, replace: ')$1' },
     ],
   }),
   terserPlugin({

@@ -27,7 +27,7 @@ git tag -f xxx-1.0
 
 * Unicode in bundled .js  [^\n -~]  \u00 -> \xFF  \v
 
-* Arrow funcs   /\(function (\([^()]*\)) \{\s*return ([^\n{};]*);?\s*\}/  -> \($1 => $2
+* Arrow funcs   /([?:] |\()function (\([^()]*\)) \{\s*return ([^\n{};]*);?\s*\}/  -> $1$2 => $3
 
 * Join vars   /^( *)(const|let|var)( .*);(\n+\1)\2( .*[;,])$(?!\n+\1\2 .*[;,]$)/  -> $1$2$3,$4 $5
 
@@ -37,7 +37,9 @@ git tag -f xxx-1.0
 
 * Simple block  /\b(if|else|for|while)( .*?)\{(\n[^\n{};]+;?)((\n) *\}\n|(\n *)\} +)/   -> $1$2$3$5$6
 
-* Revert `if`   /^( *)(.*) && \(([\w.$\[\]]+ = [^\n()]*)\);$/ -> $1if \($2\) $3;
+* Revert `if`   /^( *)(.*) && \(([\w.$\[\]]+ = [^\n();]*)\);$/ -> $1if \($2\) $3;
+
+* var indent  /^( *)\S.*(,\n\1  \S.*)*\n\1 {4,}/
 
 
 10:00 AM 11/25/2023
