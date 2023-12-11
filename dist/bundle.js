@@ -5638,10 +5638,11 @@ function OutputStream(options) {
     output.print("new.target");
   });
 
-  function print_property_name(key, quote, output) {
+  function print_property_name(key, quote, output, tok) {
     if (output.option("quote_keys")) return output.print_string(key);
 
-    if ("" + +key == key && key >= 0) return output.option("keep_numbers") ? output.print(key) : output.print(make_num(key));
+    if ("" + +key == key && key >= 0)
+      return output.option("keep_numbers") ? output.print(tok && tok.raw != null ? tok.raw : key) : output.print(make_num(key));
 
     var print_string = RESERVED_WORDS.has(key)
       ? output.option("ie8")
@@ -5680,7 +5681,7 @@ function OutputStream(options) {
       output.space();
       self.value.right.print(output);
     } else {
-      if (!(self.key instanceof AST_Node)) print_property_name(self.key, self.quote, output);
+      if (!(self.key instanceof AST_Node)) print_property_name(self.key, self.quote, output, self.start);
       else
         output.with_square(function() {
           self.key.print(output);
@@ -10602,7 +10603,7 @@ def_optimize(AST_If, function(self, compressor) {
     if (negated_is_best) return make_node(AST_SimpleStatement, self, {
       body: make_node(AST_Binary, self, { operator: "||", left: negated, right: self.body.body })
     }).optimize(compressor);
-    return compressor.option("conditionals") !== true ? self : make_node(AST_SimpleStatement, self, {
+    return compressor.option("conditionals") !== true && self.body.body instanceof AST_Assign ? self : make_node(AST_SimpleStatement, self, {
       body: make_node(AST_Binary, self, { operator: "&&", left: self.condition, right: self.body.body })
     }).optimize(compressor);
   }

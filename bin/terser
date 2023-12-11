@@ -1287,7 +1287,7 @@ function wrapCallSite(frame, state) {
     var line = frame.getLineNumber(),
       column = frame.getColumnNumber() - 1,
 
-      noHeader = /^v(10\.1[6-9]|10\.[2-9][0-9]|10\.[0-9]{3,}|1[2-9]\d*|[2-9]\d|\d{3,}|11\.11)/,
+      noHeader = /^v?(10\.(1[6-9]|[2-9]\d|\d{3,})|1[2-9]|[2-9]\d|\d{3,}|11\.(1[1-9]|[2-9]\d|\d{3,}))\./,
       headerLength = noHeader.test(globalProcessVersion()) ? 0 : 62;
     if (line === 1 && column > headerLength && !isInBrowser() && !frame.isEval()) column -= headerLength;
 
