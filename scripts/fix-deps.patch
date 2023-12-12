@@ -12,7 +12,7 @@
 +  var arrays = Array.prototype.slice.call(arguments);
 --- a/node_modules/@webassemblyjs/helper-wasm-bytecode/esm/index.js
 +++ b/node_modules/@webassemblyjs/helper-wasm-bytecode/esm/index.js
-@@ -307,16 +307,16 @@ var symbolsByName = invertMap(symbolsByByte, function (obj) {
+@@ -307,16 +307,2 @@ var symbolsByName = invertMap(symbolsByByte, function (obj) {
 -export default {
 -  symbolsByByte: symbolsByByte,
 -  sections: sections,
@@ -29,22 +29,8 @@
 -  globalTypesByString: globalTypesByString,
 -  exportTypesByName: exportTypesByName,
 -  symbolsByName: symbolsByName
-+export {
-+  symbolsByByte,
-+  sections,
-+  magicModuleHeader,
-+  moduleVersion,
-+  types,
-+  valtypes,
-+  exportTypes,
-+  blockTypes,
-+  tableTypes,
-+  globalTypes,
-+  importTypes,
-+  valtypesByString,
-+  globalTypesByString,
-+  exportTypesByName,
-+  symbolsByName
++export { symbolsByByte, sections, magicModuleHeader, moduleVersion, types, valtypes, exportTypes, blockTypes, tableTypes,
++  globalTypes, importTypes, valtypesByString, globalTypesByString, exportTypesByName, symbolsByName
 --- a/node_modules/@webassemblyjs/helper-wasm-section/esm/create.js
 +++ b/node_modules/@webassemblyjs/helper-wasm-section/esm/create.js
 @@ -5 +5 @@ import { overrideBytesInBuffer } from "@webassemblyjs/helper-buffer";
@@ -65,7 +51,7 @@
 +}*/
 --- a/node_modules/@webassemblyjs/leb128/esm/leb.js
 +++ b/node_modules/@webassemblyjs/leb128/esm/leb.js
-@@ -303,13 +303,13 @@ function decodeUInt64(encodedBuffer, index) {
+@@ -303,13 +303,2 @@ function decodeUInt64(encodedBuffer, index) {
 -export default {
 -  decodeInt32: decodeInt32,
 -  decodeInt64: decodeInt64,
@@ -79,19 +65,8 @@
 -  encodeUInt32: encodeUInt32,
 -  encodeUInt64: encodeUInt64,
 -  encodeUIntBuffer: encodeUIntBuffer
-+export {
-+  decodeInt32,
-+  decodeInt64,
-+  decodeIntBuffer,
-+  decodeUInt32,
-+  decodeUInt64,
-+  decodeUIntBuffer,
-+  encodeInt32,
-+  encodeInt64,
-+  encodeIntBuffer,
-+  encodeUInt32,
-+  encodeUInt64,
-+  encodeUIntBuffer,
++export { decodeInt32, decodeInt64, decodeIntBuffer, decodeUInt32, decodeUInt64, decodeUIntBuffer, encodeInt32,
++  encodeInt64, encodeIntBuffer, encodeUInt32, encodeUInt64, encodeUIntBuffer
 --- a/node_modules/@webassemblyjs/wasm-edit/esm/apply.js
 +++ b/node_modules/@webassemblyjs/wasm-edit/esm/apply.js
 @@ -6 +6 @@ import { encodeNode } from "@webassemblyjs/wasm-gen";
@@ -129,6 +104,15 @@
 @@ -6 +6 @@ import * as utf8 from "@webassemblyjs/utf8";
 -import constants from "@webassemblyjs/helper-wasm-bytecode";
 +import * as constants from "@webassemblyjs/helper-wasm-bytecode";
+@@ -26 +26 @@ export function encodeU32(v) {
+-  var array = _toConsumableArray(uint8view);
++  var array = Array.from(uint8view);
+@@ -33 +33 @@ export function encodeI32(v) {
+-  var array = _toConsumableArray(uint8view);
++  var array = Array.from(uint8view);
+@@ -40 +40 @@ export function encodeI64(v) {
+-  var array = _toConsumableArray(uint8view);
++  var array = Array.from(uint8view);
 --- a/node_modules/@webassemblyjs/wasm-opt/esm/leb128.js
 +++ b/node_modules/@webassemblyjs/wasm-opt/esm/leb128.js
 @@ -2 +2 @@ import { traverse, shiftSection } from "@webassemblyjs/ast";
@@ -143,7 +127,7 @@
 +++ b/node_modules/@webassemblyjs/wast-parser/esm/tokenizer.js
 @@ -89 +89 @@ var NUMERIC_SEPARATOR = "_";
 -var numberLiteralFSM = new FSM({
-+var _numberLiteralFSM, numberLiteralFSM = () => _numberLiteralFSM || (_numberLiteralFSM = new FSM({
++var numberLiteralFSM_, numberLiteralFSM = () => numberLiteralFSM_ || (numberLiteralFSM_ = new FSM({
 @@ -128 +128 @@ var numberLiteralFSM = new FSM({
 -}, "START", "STOP");
 +}, "START", "STOP"));
@@ -178,6 +162,19 @@
    Object.defineProperty(exports, '__esModule', { value: true });
  
 -})));
+--- a/node_modules/big.js/big.js
++++ b/node_modules/big.js/big.js
+@@ -7,2 +7 @@
+-;(function (GLOBAL) {
+   'use strict';
+@@ -929,2 +928,2 @@
+   //AMD.
+-  if (typeof define === 'function' && define.amd) {
++  module.exports = Big; /*if (typeof define === 'function' && define.amd) {
+@@ -940,2 +939,2 @@
+   }
+-})(this);
++})(this);*/
 --- a/node_modules/source-map/dist/source-map.js
 +++ b/node_modules/source-map/dist/source-map.js
 @@ -1 +1 @@
@@ -268,6 +265,11 @@
 @@ -189 +189 @@ module.exports = class MainTemplate extends Tapable {
 -				"var module = installedModules[moduleId] = {",
 +				"installedModules[moduleId] = module = {",
+--- a/node_modules/webpack/lib/SetVarMainTemplatePlugin.js
++++ b/node_modules/webpack/lib/SetVarMainTemplatePlugin.js
+@@ -37 +37 @@ class SetVarMainTemplatePlugin {
+-					`(function(e, a) { for(var i in a) e[i] = a[i]; }(${varExpression}, `,
++					`(function(e, a) { for(var i in a) e[i] = a[i]; if(a.__esModule) Object.defineProperty(e, '__esModule', {value: true}); }(${varExpression},\n`,
 --- a/node_modules/webpack/lib/webpack.js
 +++ b/node_modules/webpack/lib/webpack.js
 @@ -140 +140,5 @@ exportPlugins(exports, {

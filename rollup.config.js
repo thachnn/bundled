@@ -46,7 +46,7 @@ const nodeResolve = () => ({
 
     return import((source += '/package.json')).then(
       (pkg) => resolve(dirname(require.resolve(source)), (pkg = pkg.default || pkg).module || pkg.main),
-      (err) => (console.warn(String(err)), null)
+      (err) => console.warn(String(err)) || null
     );
   },
 });

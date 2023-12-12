@@ -125,7 +125,16 @@ module.exports = [
     ],
   }),
   //
-  // TODO: /ajv
+  webpackConfig('/ajv', {
+    entry: { 'vendor/ajv': './node_modules/ajv/lib/ajv' },
+    output: { libraryTarget: 'commonjs2' },
+    externals: { 'uri-js': 'commonjs2 ./uri-js' },
+    plugins: [
+      newCopyPlugin([
+        { from: 'node_modules/uri-js/dist/es5/uri.all.js', to: 'vendor/uri-js.js', transform: minifyContent },
+      ]),
+    ],
+  }),
   webpackConfig('/ajv-keywords', {
     entry: { 'vendor/ajv-keywords': './node_modules/ajv-keywords/index' },
     output: { libraryTarget: 'commonjs2' },
