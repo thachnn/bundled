@@ -92,7 +92,7 @@ const transformCode = (opts = {}) => ({
 
 const wasmBuildPlugins = [
   transformCode({
-    test: /\bnode_modules[\\/]@webassemblyjs\b.[\w-]+\b.esm\b.*\.js$/i,
+    test: /\bnode_modules[\\/]@webassemblyjs\b.*\.js$/i,
     patterns: [
       { search: /(?<!\bfunction )\b_(typeof\()/g, replace: '$1' },
       { search: /\b_extends(\([^)])/g, replace: 'Object.assign$1' },

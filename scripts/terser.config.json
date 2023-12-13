@@ -2,7 +2,7 @@
   "mangle": false,
   "compress": {
     "toplevel": 0,
-    "passes": 1,
+    "passes": 2,
     "keep_infinity": true,
     "reduce_vars": false,
     "inline": 0,
@@ -15,7 +15,6 @@
     "lhs_constants": false
   },
   "output": {
-    "comments": false,
     "keep_numbers": true,
     "quote_style": 3,
     "beautify": true,

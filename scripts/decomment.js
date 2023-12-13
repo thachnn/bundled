@@ -27,7 +27,9 @@ function decomment(code, options = {}) {
     s2 = code.substring(cmt[1]);
 
     if (!(m2 = /^([^\S\r\n]*)(\r?\n|\r|$)/.exec(s2))) {
-      s2 = s2.replace(/^[^\S\r\n]+/, '');
+      !(m2 = /^[^\S\r\n]+/.exec(s2)) // trim to right
+        ? (s1 = s1.replace(/(\S)[^\S\r\n]+$/, '$1'))
+        : (s2 = s2.substring(m2[0].length));
     } else if (!(m1 = /(^|\r?\n|\r)([^\S\r\n]*)$/.exec(s1))) {
       s1 = s1.replace(/[^\S\r\n]+$/, ''); // trailing spaces
       !m2[1].length || (s2 = s2.substring(m2[1].length));

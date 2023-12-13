@@ -52,8 +52,8 @@ const newTerserPlugin = (opt) =>
 const minifyContent = (content, opts = null) =>
   minify(String(content), Object.assign({}, baseTerserOpts, typeof opts === 'object' ? opts : null)).code;
 
-/** @param {Array.<(ObjectPattern|string)>} patterns */
-const newCopyPlugin = (patterns) => new CopyPlugin(patterns);
+/** @param {(Array.<(ObjectPattern|string)>|ObjectPattern)} patterns */
+const newCopyPlugin = (patterns) => new CopyPlugin(Array.isArray(patterns) ? patterns : [patterns]);
 
 // Helpers
 
@@ -128,15 +128,27 @@ module.exports = [
   webpackConfig('/ajv', {
     entry: { 'vendor/ajv': './node_modules/ajv/lib/ajv' },
     output: { libraryTarget: 'commonjs2' },
-    externals: { 'uri-js': 'commonjs2 ./uri-js' },
+    externals: { 'uri-js': 'commonjs ./uri-js' },
     plugins: [
-      newCopyPlugin([
-        { from: 'node_modules/uri-js/dist/es5/uri.all.js', to: 'vendor/uri-js.js', transform: minifyContent },
-      ]),
+      // prettier-ignore
+      newCopyPlugin({
+        from: 'node_modules/uri-js/dist/es5/uri.all.js', to: 'vendor/uri-js.js',
+        transform: (s) => minifyContent(
+          String(s).replaceBulk([/\bpunycode\.(\w+\()/g, '$1'], [/^var (\w+) *= *(function \1\()/gm, '$2'])
+        ),
+      }),
     ],
   }),
   webpackConfig('/ajv-keywords', {
     entry: { 'vendor/ajv-keywords': './node_modules/ajv-keywords/index' },
     output: { libraryTarget: 'commonjs2' },
   }),
+  //
+  /* TODO: /*-webpack-plugin\b.dist\b.*\.js$/i
+    /\b_interopRequire\w+\(/g, '('
+    /\brequire\(['"]\.[\/\w-]+\)/g, '$&.default'
+    /\(0, (_[\w.$]+)\)/g, '$1'
+    /\b(_[\w$]+)\.default([.(])/g, '$1$2'
+    /\b_objectSpread\(/g, 'Object.assign('
+  */
 ];
