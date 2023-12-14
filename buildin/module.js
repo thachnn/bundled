@@ -1,14 +1,22 @@
 module.exports = function(module) {
-  return module.webpackPolyfill || (module.deprecate = function() {}, module.paths = [], 
-  module.children || (module.children = []), Object.defineProperty(module, "loaded", {
-    enumerable: !0,
+  if (module.webpackPolyfill) return module;
+
+  module.deprecate = function() {};
+  module.paths = [];
+  module.children || (module.children = []);
+  Object.defineProperty(module, "loaded", {
+    enumerable: true,
     get: function() {
       return module.l;
     }
-  }), Object.defineProperty(module, "id", {
-    enumerable: !0,
+  });
+  Object.defineProperty(module, "id", {
+    enumerable: true,
     get: function() {
       return module.i;
     }
-  }), module.webpackPolyfill = 1), module;
+  });
+  module.webpackPolyfill = 1;
+
+  return module;
 };

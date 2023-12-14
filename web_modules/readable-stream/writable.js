@@ -1,1 +1,1 @@
-module.exports = require("./readable").Writable;
+module.exports = require('./readable').Writable;

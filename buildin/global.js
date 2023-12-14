@@ -1,13 +1,11 @@
-var g;
-
-g = function() {
+var g = (function() {
   return this;
-}();
+})();
 
 try {
   g = g || new Function("return this")();
 } catch (e) {
-  "object" == typeof window && (g = window);
+  if (typeof window == "object") g = window;
 }
 
 module.exports = g;
