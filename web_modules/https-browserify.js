@@ -1,15 +1,27 @@
-var http = require("http"), url = require("url"), https = module.exports;
+var http = require('http'),
+  url = require('url'),
 
-for (var key in http) http.hasOwnProperty(key) && (https[key] = http[key]);
+  https = module.exports
 
-function validateParams(params) {
-  if ("string" == typeof params && (params = url.parse(params)), params.protocol || (params.protocol = "https:"), 
-  "https:" !== params.protocol) throw new Error('Protocol "' + params.protocol + '" not supported. Expected "https:"');
-  return params;
+for (var key in http) if (http.hasOwnProperty(key)) https[key] = http[key]
+
+https.request = function (params, cb) {
+  params = validateParams(params)
+  return http.request.call(this, params, cb)
 }
 
-https.request = function(params, cb) {
-  return params = validateParams(params), http.request.call(this, params, cb);
-}, https.get = function(params, cb) {
-  return params = validateParams(params), http.get.call(this, params, cb);
-};
+https.get = function (params, cb) {
+  params = validateParams(params)
+  return http.get.call(this, params, cb)
+}
+
+function validateParams(params) {
+  if (typeof params == 'string') params = url.parse(params)
+
+  params.protocol || (params.protocol = 'https:')
+
+  if (params.protocol !== 'https:')
+    throw new Error('Protocol "' + params.protocol + '" not supported. Expected "https:"')
+
+  return params
+}

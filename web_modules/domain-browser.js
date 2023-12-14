@@ -1,46 +1,62 @@
-"use strict";
+'use strict'
 
-var events = require("events"), domain = {};
+module.exports = function () {
+var events = require('events'),
 
-domain.createDomain = domain.create = function() {
-  var d = new events.EventEmitter;
+  domain = {}
+domain.createDomain = domain.create = function () {
+  var d = new events.EventEmitter()
+
   function emitError(e) {
-    d.emit("error", e);
+    d.emit('error', e)
   }
-  return d.add = function(emitter) {
-    emitter.on("error", emitError);
-  }, d.remove = function(emitter) {
-    emitter.removeListener("error", emitError);
-  }, d.bind = function(fn) {
-    return function() {
-      var args = Array.prototype.slice.call(arguments);
+
+  d.add = function (emitter) {
+    emitter.on('error', emitError)
+  }
+  d.remove = function (emitter) {
+    emitter.removeListener('error', emitError)
+  }
+  d.bind = function (fn) {
+    return function () {
+      var args = Array.prototype.slice.call(arguments)
       try {
-        fn.apply(null, args);
+        fn.apply(null, args)
       } catch (err) {
-        emitError(err);
+        emitError(err)
       }
-    };
-  }, d.intercept = function(fn) {
-    return function(err) {
-      if (err) emitError(err); else {
-        var args = Array.prototype.slice.call(arguments, 1);
+    }
+  }
+  d.intercept = function (fn) {
+    return function (err) {
+      if (err) emitError(err)
+      else {
+        var args = Array.prototype.slice.call(arguments, 1)
         try {
-          fn.apply(null, args);
+          fn.apply(null, args)
         } catch (err) {
-          emitError(err);
+          emitError(err)
         }
       }
-    };
-  }, d.run = function(fn) {
-    try {
-      fn();
-    } catch (err) {
-      emitError(err);
     }
-    return this;
-  }, d.dispose = function() {
-    return this.removeAllListeners(), this;
-  }, d.enter = d.exit = function() {
-    return this;
-  }, d;
-}, module.exports = domain;
+  }
+  d.run = function (fn) {
+    try {
+      fn()
+    } catch (err) {
+      emitError(err)
+    }
+    return this
+  }
+  d.dispose = function () {
+    this.removeAllListeners()
+    return this
+  }
+  d.enter = d.exit = function () {
+    return this
+  }
+  return d
+}
+
+return domain
+}.call(this)
