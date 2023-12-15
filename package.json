@@ -50,6 +50,7 @@
   },
   "homepage": "https://github.com/webpack/webpack",
   "main": "lib/webpack.js",
+  "types": "declarations/index.d.ts",
   "files": [
     "lib/",
     "bin/",
