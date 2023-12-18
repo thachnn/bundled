@@ -268,7 +268,7 @@ decomment --allowHashBang --keep "(^\s*[@#]__PURE__\s*$|^[*\s]*!\s*\S|(^|\n|\r)[
   │ └── @webassemblyjs/utf8@1.9.0
   │
   ├── acorn@6.4.2           x
-  ├─┬ ajv-keywords@3.5.2    x   /([')] \+ )\(((?:[\w.$\[\]]|\([\w.$\[\]]*\))+)\)( \+ ['$]|;$)/
+  ├─┬ ajv-keywords@3.5.2    x   /([')] \+ )\(((?:[\w.$\[\]]|\([\w.$\[\], ]*\))+)\)( \+ ['$]|;$)/
   │
   ├─┬ ajv@6.12.6                          x
   │ ├── fast-deep-equal@3.1.3             x
@@ -660,4 +660,18 @@ decomment --allowHashBang --keep "(^\s*[@#]__PURE__\s*$|^[*\s]*!\s*\S|(^|\n|\r)[
       └─┬ randomfill@1.0.4            x
         ├── randombytes@2.1.0         deduped
         └── safe-buffer@5.1.2         deduped
+
+
+6:55 PM 12/20/2023
+---
+
+^(// \d+)(\nfunction \(module), exports, __webpack_require__(\)[\s\S]*?\n\n\},)$
+$1$2$3$1
+
+(?<!\bmodule\.)\bexports\b
+
+^(// \d+)(\nfunction \(module)(\)[\s\S]*?\b__webpack_require__\b[\s\S]*?\n\n\},)\1$
+$1$2, exports, __webpack_require__$3
+
+(\n\n\},)// \d+$
 

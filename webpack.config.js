@@ -12,6 +12,7 @@ const { TerserPlugin, CopyPlugin, BannerPlugin, ReplaceCodePlugin } = require('w
 
 /** @type {import('terser').MinifyOptions} */
 const baseTerserOpts = require('./scripts/terser.config.json');
+const commentsCond = /(^\**\s*!(?!\s*\**$)|(^|\n|\r)\s*@(preserve|lic(ense)?|cc_on)\b)/i;
 
 /**
  * @param {string} name
@@ -43,9 +44,11 @@ const webpackConfig = (name, config, clean = name.charAt(0) !== '/') =>
 
 const newTerserPlugin = (opt) =>
   new TerserPlugin(
-    Object.assign({ extractComments: { condition: 'some', banner: false }, cache: true }, opt, {
+    Object.assign({ extractComments: { condition: commentsCond, banner: false }, cache: true }, opt, {
       // parallel: true,
-      terserOptions: Object.assign({}, baseTerserOpts, (opt || {}).terserOptions),
+      terserOptions: Object.assign({}, baseTerserOpts, (opt = opt || {}).terserOptions, {
+        output: Object.assign({ comments: /^\s*\d+\s*$/ }, baseTerserOpts.output, (opt.terserOptions || {}).output),
+      }),
     })
   );
 
