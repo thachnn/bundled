@@ -1,10 +1,13 @@
 'use strict';
 
-const { existsSync } = require('fs');
-const { dirname, resolve } = require('path');
+const { statSync } = require('fs');
+const { dirname, resolve, sep } = require('path');
 
-const noTerser = ((r) => !existsSync(resolve(r)) && r)('node_modules/terser/' + require('terser/package.json').main);
+const noTerser = ((r) => !fileExists(resolve(r)) && r)('node_modules/terser/' + require('terser/package.json').main);
 let minify = !noTerser ? require('terser').minify : require('./scripts/decomment');
+
+// prettier-ignore
+function fileExists(p) { try { return statSync(p).isFile(); } catch (_) {} }
 
 /**
  * @typedef {import('terser').MinifyOptions} MinifyOptions
@@ -39,15 +42,14 @@ const terserPlugin = (options = {}) => ({
 const nodeResolve = () => ({
   name: 'node-resolve',
   resolveId(source, importer) {
-    if (!source || /\bnode_modules[\\/]/i.test(source)) return null;
+    if (/\0/.test(source) || !importer) return null;
 
-    if (source[0] === '.')
-      return importer && existsSync((source = resolve(dirname(importer), source, 'index.js'))) ? source : null;
-
-    return import((source += '/package.json')).then(
-      (pkg) => resolve(dirname(require.resolve(source)), (pkg = pkg.default || pkg).module || pkg.main),
-      (err) => console.warn(String(err)) || null
-    );
+    let p;
+    return source[0] === '.'
+      ? [(p = resolve(dirname(importer), source)), p + '.js', p + sep + 'index.js'].find(fileExists) || null
+      : (p = source.match(/[\\/]/g)) && (source[0] !== '@' || p.length > 1)
+      ? require.resolve(source)
+      : resolve(dirname(require.resolve((source += '/package.json'))), (p = require(source)).module || p.main);
   },
 });
 
@@ -82,18 +84,41 @@ function replaceBulk(str, arr) {
 }
 
 /**
- * @param {{test: RegExp, patterns?: TransformPatterns}} [opts]
+ * @param {{name?: string, test: RegExp, patterns?: TransformPatterns}} [opts]
  * @returns {RollupPlugin}
  */
 const transformCode = (opts = {}) => ({
-  name: 'transform-code',
+  name: opts.name || 'transform-code',
   transform: (code, id) => (opts.patterns && opts.test.test(id) ? replaceBulk(code, opts.patterns) : null),
 });
+
+/**
+ * @param {{test?: RegExp, transform?: TransformPatterns}} [opts]
+ * @returns {RollupPlugin}
+ */
+const commonJS = (opts = {}) =>
+  transformCode({
+    name: 'commonjs',
+    test: opts.test || /\.js$/i,
+    patterns: [].concat(opts.transform || [], [
+      { search: /^[^\S\r\n]*(module\.exports|exports\[['"]default['"]\])\s*=/m, replace: 'export default ' },
+      {
+        search: /\b(?:module\.)?exports\.([\w$]+)\s*=\s*(([\w$]+)\s*;?$|function\s+([\w$]+)\s*\()/gm,
+        replace: (_, p1, p2, p3, p4) => `export { ${p3 || p4} as ${p1} }; ${p4 ? p2 : ''}`,
+      },
+      {
+        search: /\b(?:const|let|var)\s+([\w$]+|\{[^{}]+\})\s*=\s*require\s*\(\s*(['"][^'"]+['"])\s*\)/g,
+        replace: (_, p1, p2) => `import ${p1.replace(/\s*:\s*/g, ' as ')} from ${p2}`,
+      },
+      { search: /^[^\S\r\n]*require\s*\(\s*(['"][^'"]+['"])\s*\)/gm, replace: 'import $1' },
+    ]),
+  });
 
 const wasmBuildPlugins = [
   transformCode({
     test: /\bnode_modules[\\/]@webassemblyjs\b.*\.js$/i,
     patterns: [
+      { search: /^(import )(\w+ from ['"]@\w+\/helper-wasm-bytecode)\b/m, replace: '$1* as $2' },
       { search: /(?<!\bfunction )\b_(typeof\()/g, replace: '$1' },
       { search: /\b_extends(\([^)])/g, replace: 'Object.assign$1' },
       { search: /\b_slicedToArray\(([^,]+), \d+\)/g, replace: '$1' },
@@ -126,6 +151,7 @@ const configSet = [
   buildConfig('long', {
     input: 'node_modules/@xtuc/long/src/long.js',
     output: { file: 'dist/vendor/long.js', strict: false },
+    plugins: [commonJS()],
   }),
   buildConfig('wasm-ast', {
     input: 'node_modules/@webassemblyjs/ast/esm/index.js',
@@ -144,5 +170,24 @@ const configSet = [
     output: { file: 'dist/vendor/wasm-edit.js' },
     external: ['@xtuc/long', '@webassemblyjs/ast', '@webassemblyjs/wasm-parser'],
     plugins: wasmBuildPlugins,
+  }),
+  //
+  buildConfig('schema-utils', {
+    input: 'node_modules/schema-utils/src/validateOptions.js',
+    output: { file: 'dist/lib/schema-utils.js' },
+    external: ['fs', 'path', 'ajv', 'ajv-keywords'],
+    plugins: [
+      commonJS(),
+      terserPlugin({ transform: { search: /\b(require\(['"])(ajv)\b/g, replace: '$1../vendor/$2' } }),
+    ],
+  }),
+  buildConfig('replace-loader', {
+    input: 'node_modules/string-replace-loader/lib/processChunk.js',
+    output: { file: 'dist/lib/replace-loader.js', strict: false },
+    external: ['loader-utils', 'schema-utils'],
+    plugins: [
+      commonJS(),
+      terserPlugin({ transform: { search: /\b(require\(['"])(loader|schema)-/g, replace: '$1./$2-' } }),
+    ],
   }),
 ];

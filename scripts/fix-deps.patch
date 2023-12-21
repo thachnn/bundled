@@ -1,8 +1,3 @@
---- a/node_modules/@webassemblyjs/ast/esm/utils.js
-+++ b/node_modules/@webassemblyjs/ast/esm/utils.js
-@@ -9 +9 @@ import { traverse } from "./traverse";
--import constants from "@webassemblyjs/helper-wasm-bytecode";
-+import * as constants from "@webassemblyjs/helper-wasm-bytecode";
 --- a/node_modules/@webassemblyjs/helper-buffer/esm/index.js
 +++ b/node_modules/@webassemblyjs/helper-buffer/esm/index.js
 @@ -4,3 +4 @@ function concatUint8Arrays() {
@@ -31,11 +26,6 @@
 -  symbolsByName: symbolsByName
 +export { symbolsByByte, sections, magicModuleHeader, moduleVersion, types, valtypes, exportTypes, blockTypes, tableTypes,
 +  globalTypes, importTypes, valtypesByString, globalTypesByString, exportTypesByName, symbolsByName
---- a/node_modules/@webassemblyjs/helper-wasm-section/esm/create.js
-+++ b/node_modules/@webassemblyjs/helper-wasm-section/esm/create.js
-@@ -5 +5 @@ import { overrideBytesInBuffer } from "@webassemblyjs/helper-buffer";
--import constants from "@webassemblyjs/helper-wasm-bytecode";
-+import * as constants from "@webassemblyjs/helper-wasm-bytecode";
 --- a/node_modules/@webassemblyjs/leb128/esm/index.js
 +++ b/node_modules/@webassemblyjs/leb128/esm/index.js
 @@ -1 +1 @@
@@ -80,9 +70,6 @@
 @@ -3 +3 @@ import { traverse } from "@webassemblyjs/ast";
 -import { cloneNode } from "@webassemblyjs/ast/lib/clone";
 +import { cloneNode } from "@webassemblyjs/ast";
-@@ -6 +6 @@ import { getSectionForNode } from "@webassemblyjs/helper-wasm-bytecode";
--import constants from "@webassemblyjs/helper-wasm-bytecode";
-+import * as constants from "@webassemblyjs/helper-wasm-bytecode";
 @@ -20 +20 @@ function sortBySectionOrder(nodes) {
 -  var _iteratorNormalCompletion = true;
 +  /*var _iteratorNormalCompletion = true;
@@ -101,9 +88,6 @@
 +  }*/
 --- a/node_modules/@webassemblyjs/wasm-gen/esm/encoder/index.js
 +++ b/node_modules/@webassemblyjs/wasm-gen/esm/encoder/index.js
-@@ -6 +6 @@ import * as utf8 from "@webassemblyjs/utf8";
--import constants from "@webassemblyjs/helper-wasm-bytecode";
-+import * as constants from "@webassemblyjs/helper-wasm-bytecode";
 @@ -26 +26 @@ export function encodeU32(v) {
 -  var array = _toConsumableArray(uint8view);
 +  var array = Array.from(uint8view);
@@ -118,11 +102,6 @@
 @@ -2 +2 @@ import { traverse, shiftSection } from "@webassemblyjs/ast";
 -import { encodeU32 } from "@webassemblyjs/wasm-gen/lib/encoder";
 +import { encodeU32 } from "@webassemblyjs/wasm-gen";
---- a/node_modules/@webassemblyjs/wasm-parser/esm/decoder.js
-+++ b/node_modules/@webassemblyjs/wasm-parser/esm/decoder.js
-@@ -8 +8 @@ import { decodeInt32, decodeUInt32, MAX_NUMBER_OF_BYTE_U32, decodeInt64, decodeU
--import constants from "@webassemblyjs/helper-wasm-bytecode";
-+import * as constants from "@webassemblyjs/helper-wasm-bytecode";
 --- a/node_modules/@webassemblyjs/wast-parser/esm/tokenizer.js
 +++ b/node_modules/@webassemblyjs/wast-parser/esm/tokenizer.js
 @@ -89 +89 @@ var NUMERIC_SEPARATOR = "_";
@@ -162,6 +141,14 @@
    Object.defineProperty(exports, '__esModule', { value: true });
  
 -})));
+--- a/node_modules/ajv-errors/index.js
++++ b/node_modules/ajv-errors/index.js
+@@ -1 +1,2 @@
+ 'use strict';
++var generate_errorMessage = require('./lib/dotjs/errorMessage');
+@@ -11 +12 @@ module.exports = function (ajv, options) {
+-    inline: require('./lib/dotjs/errorMessage'),
++    inline: generate_errorMessage,
 --- a/node_modules/big.js/big.js
 +++ b/node_modules/big.js/big.js
 @@ -7,2 +7 @@

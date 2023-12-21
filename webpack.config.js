@@ -146,6 +146,22 @@ module.exports = [
     entry: { 'vendor/ajv-keywords': './node_modules/ajv-keywords/index' },
     output: { libraryTarget: 'commonjs2' },
   }),
+  webpackConfig('/loader-utils', {
+    entry: { 'lib/loader-utils': './node_modules/loader-utils/lib/index' },
+    output: { libraryTarget: 'commonjs2' },
+    module: {
+      rules: [
+        {
+          test: /\bnode_modules[\\/]json5\b.*\.js$/i,
+          loader: 'string-replace-loader',
+          options: { search: /(?<== *)_interopRequire\w+|\b_(?=typeof\()/g, replace: '' },
+        },
+      ],
+    },
+    resolve: {
+      alias: { 'big.js$': path.resolve(__dirname, 'node_modules/big.js/big.js') },
+    },
+  }),
   //
   /* TODO: /*-webpack-plugin\b.dist\b.*\.js$/i
     /\b_interopRequire\w+\(/g, '('
