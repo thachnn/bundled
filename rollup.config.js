@@ -107,10 +107,10 @@ const commonJS = (opts = {}) =>
         replace: (_, p1, p2, p3, p4) => `export { ${p3 || p4} as ${p1} }; ${p4 ? p2 : ''}`,
       },
       {
-        search: /\b(?:const|let|var)\s+([\w$]+|\{[^{}]+\})\s*=\s*require\s*\(\s*(['"][^'"]+['"])\s*\)/g,
+        search: /\b(?:const|let|var)\s+([\w$]+|\{[^{}]+\})\s*=\s*require\s*\(\s*(['"][^'"]+['"])\s*\)\s*;?$/gm,
         replace: (_, p1, p2) => `import ${p1.replace(/\s*:\s*/g, ' as ')} from ${p2}`,
       },
-      { search: /^[^\S\r\n]*require\s*\(\s*(['"][^'"]+['"])\s*\)/gm, replace: 'import $1' },
+      { search: /^[^\S\r\n]*require\s*\(\s*(['"][^'"]+['"])\s*\)\s*;?$/gm, replace: 'import $1' },
     ]),
   });
 
@@ -188,6 +188,14 @@ const configSet = [
     plugins: [
       commonJS(),
       terserPlugin({ transform: { search: /\b(require\(['"])(loader|schema)-/g, replace: '$1./$2-' } }),
+    ],
+  }),
+  buildConfig('graceful-fs', {
+    input: 'node_modules/graceful-fs/graceful-fs.js',
+    output: { file: 'dist/vendor/graceful-fs.js' },
+    external: ['fs', 'constants', 'stream', 'util', 'assert'],
+    plugins: [
+      commonJS({ transform: { search: /\b(exports *= *)(patch);?\n+(function) +\2\b/, replace: '$1$3 polyfills' } }),
     ],
   }),
 ];

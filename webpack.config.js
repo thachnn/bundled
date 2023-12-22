@@ -163,6 +163,20 @@ module.exports = [
     },
   }),
   //
+  webpackConfig('/minimatch', {
+    entry: { 'vendor/minimatch': './node_modules/minimatch/minimatch' },
+    output: { libraryTarget: 'commonjs2' },
+  }),
+  webpackConfig('/glob', {
+    entry: { 'vendor/glob': './node_modules/glob/glob' },
+    output: { libraryTarget: 'commonjs2' },
+    externals: { minimatch: 'commonjs2 ./minimatch' },
+  }),
+  webpackConfig('/find-cache-dir', {
+    entry: { 'vendor/find-cache-dir': './node_modules/find-cache-dir/index' },
+    output: { libraryTarget: 'commonjs2' },
+  }),
+  //
   /* TODO: /*-webpack-plugin\b.dist\b.*\.js$/i
     /\b_interopRequire\w+\(/g, '('
     /\brequire\(['"]\.[\/\w-]+\)/g, '$&.default'

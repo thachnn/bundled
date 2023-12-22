@@ -9,6 +9,9 @@ Array.isArray(configSet) || (configSet = [configSet]);
 // Parse arguments
 const names = new Set(process.argv.slice(2));
 
+if (names.delete('--noMinify'))
+  configSet.forEach((cfg) => (cfg.optimization = Object.assign({}, cfg.optimization, { minimize: false })));
+
 if (names.size > 0) {
   configSet = configSet.filter((cfg) => cfg.name && names.has(cfg.name));
 }
