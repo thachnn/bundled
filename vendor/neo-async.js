@@ -202,8 +202,8 @@ function createImmediate(safeMode) {
   };
   asyncSetImmediate = typeof setImmediate === func ? setImmediate : delay;
   if (typeof process === obj && typeof process.nextTick === func) {
-    nextTick = /^v0.10/.test(process.version) ? asyncSetImmediate : process.nextTick;
-    asyncNextTick = /^v0/.test(process.version) ? asyncSetImmediate : process.nextTick;
+    nextTick = /^v?0\.10\b/.test(process.version) ? asyncSetImmediate : process.nextTick;
+    asyncNextTick = /^v?0\./.test(process.version) ? asyncSetImmediate : process.nextTick;
   } else asyncNextTick = nextTick = asyncSetImmediate;
 
   if (safeMode === false)

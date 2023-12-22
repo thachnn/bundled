@@ -3,6 +3,9 @@
 var fs = require('fs'),
 
   constants = require('constants'),
+  Stream = require('stream').Stream,
+
+  util = require('util'),
 
   origCwd = process.cwd,
   cwd = null,
@@ -27,7 +30,7 @@ if (typeof process.chdir == 'function') {
 }
 
 function polyfills(fs) {
-  if (constants.hasOwnProperty('O_SYMLINK') && /^v?0\.(6\.[0-2]|5)\./.test(process.version))
+  if (constants.hasOwnProperty('O_SYMLINK') && /^v?0\.(6\.[0-2]\b|5\.)/.test(process.version))
     patchLchmod(fs)
 
   fs.lutimes || patchLutimes(fs)
@@ -280,8 +283,6 @@ function polyfills(fs) {
   }
 }
 
-var Stream = require('stream').Stream
-
 function legacy(fs) {
   return { ReadStream: ReadStream, WriteStream: WriteStream }
 
@@ -399,8 +400,6 @@ function clone(obj) {
   return copy
 }
 
-var util = require('util')
-
 var gracefulQueue, previousSymbol
 
 if (typeof Symbol == 'function' && typeof Symbol.for == 'function') {
@@ -467,10 +466,9 @@ if (!fs[gracefulQueue]) {
 
 global[gracefulQueue] || publishQueue(global, fs[gracefulQueue])
 
-if (process.env.TEST_GRACEFUL_FS_GLOBAL_PATCH && !fs.__patched) {
-  module.exports = patch(fs)
-  fs.__patched = true
-} else module.exports = patch(clone(fs))
+module.exports = !process.env.TEST_GRACEFUL_FS_GLOBAL_PATCH
+  ? patch(clone(fs))
+  : fs.__patched ? fs : (patch(fs), (fs.__patched = true), fs)
 
 function patch(fs) {
   polyfills(fs)
@@ -579,7 +577,7 @@ function patch(fs) {
     }
   }
 
-  if (/^v?0\.8\./.test(process.version)) {
+  if (/^v?0\.8\b/.test(process.version)) {
     var legStreams = legacy(fs)
     ReadStream = legStreams.ReadStream
     WriteStream = legStreams.WriteStream
