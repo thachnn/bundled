@@ -56,13 +56,25 @@ const minifyContent = (content, opts = null) =>
   minify(String(content), Object.assign({}, baseTerserOpts, typeof opts === 'object' ? opts : null)).code;
 
 /** @param {(Array.<(ObjectPattern|string)>|ObjectPattern)} patterns */
-const newCopyPlugin = (patterns) => new CopyPlugin(Array.isArray(patterns) ? patterns : [patterns]);
+const newCopyPlugin = (patterns) => new CopyPlugin([].concat(patterns));
 
 // Helpers
 
 /** @param {...Array.<(string|RegExp)>} _args */
 String.prototype.replaceBulk = function (_args) {
   return Array.prototype.reduce.call(arguments, (s, i) => s.replace(i[0], i[1]), this);
+};
+
+const replaceModExport = (s, p1) => s.replace(/^\s*module\.exports *=/gm, p1);
+
+/**
+ * @param {RegExp} re
+ * @param {(string|Function)} [p]
+ * @param {Function} [cb]
+ */
+String.prototype.replaceWithFile = function (re, p = null, cb = replaceModExport) {
+  if (typeof p == 'function') (cb = p), (p = null);
+  return this.replace(re, (_, p1, p2) => cb(fs.readFileSync(require.resolve(p || p2), 'utf8'), p1));
 };
 
 //
@@ -184,4 +196,82 @@ module.exports = [
     /\b(_[\w$]+)\.default([.(])/g, '$1$2'
     /\b_objectSpread\(/g, 'Object.assign('
   */
+  //
+  webpackConfig('/browser-libs', {
+    entry: {
+      'crypto-browserify': './node_modules/crypto-browserify/index',
+      buffer: './node_modules/buffer/index',
+      'stream-http': './node_modules/stream-http/index',
+      'readable-stream/readable': './node_modules/readable-stream/readable',
+      'browserify-zlib': './node_modules/browserify-zlib/lib/index',
+    },
+    output: { path: path.join(__dirname, 'dist', 'web_modules'), libraryTarget: 'commonjs2' },
+    externals: {
+      'string_decoder/': 'commonjs2 ../string_decoder',
+      'util/util': 'commonjs2 ../util',
+      'readable-stream': 'commonjs2 ./readable-stream/readable',
+      string_decoder: 'commonjs2 ./string_decoder',
+    },
+    module: {
+      rules: [
+        {
+          test: /\bnode_modules[\\/]readable-stream\b.lib\b.*\.js$/i,
+          loader: 'string-replace-loader',
+          options: { search: /\b(require\(['"])(util-)?(deprecate|inherits)(['"]\))/g, replace: '$1util/util$4.$3' },
+        },
+        {
+          test: /\bnode_modules[\\/]elliptic\b.package\.json$/i,
+          loader: 'string-replace-loader',
+          options: { search: /,\s*"description":[\s\S]*/, replace: '\n}' },
+        },
+      ],
+    },
+    resolve: {
+      // aliasFields: ['browser'],
+      alias: [
+        ...['create-hash', 'create-hmac', 'browserify-aes', 'browserify-cipher', 'browserify-sign'],
+        ...['builtin-status-codes', 'randombytes', 'diffie-hellman'],
+      ].reduce((o, v) => ((o[v + '$'] = require.resolve(v + '/browser')), o), {
+        './internal/streams/stream': require.resolve('readable-stream/lib/internal/streams/stream-browser'),
+        'browserify-sign/algos$': path.resolve(__dirname, 'node_modules/browserify-sign/browser/algorithms.json'),
+      }),
+    },
+    plugins: [
+      newCopyPlugin([
+        { from: 'node_modules/node-libs-browser/mock/', to: 'mock/', transform: minifyContent },
+        { from: 'node_modules/constants-browserify/constants.json', to: 'constants-browserify.json' },
+        {
+          from: 'node_modules/{string_decoder/lib/*,events/events,punycode/punycode,{domain-browser/source,{console,https,path,tty,vm}-browserify}/index,{os-browserify,process}/browser}.js',
+          transform: minifyContent, // replace(/\b(require\(['"])((assert|util|events|url)['"])/g, '$1./$2')
+          transformPath: (_, p) => `${p.replace(/^.*\bnode_modules[\\/]|[\\/].*$/g, '')}.js`,
+        },
+        { from: 'readable-stream/{pass*,duplex,transform}.js', context: 'node_modules', transform: minifyContent },
+        {
+          from: 'node_modules/readable-stream/duplex.js',
+          to: 'readable-stream/writable.js',
+          transform: (s) => minifyContent(String(s).replace(/\.Duplex;?$/m, '.Writable;')),
+        },
+        {
+          from: 'node_modules/timers-browserify/main.js',
+          to: 'timers-browserify.js',
+          transform: (s) => minifyContent(String(s).replaceWithFile(/^(\s*)require\(['"](setimmediate)\b.*/m)),
+        },
+        {
+          from: 'node_modules/stream-browserify/index.js',
+          to: 'stream-browserify.js',
+          transform: (s) =>
+            minifyContent(String(s).replaceBulk([/\('(inherits)'\)/, "('./util').$1"], [/\('(readable-)/g, "('./$1"])),
+        },
+        // prettier-ignore
+        {
+          from: 'node_modules/util/util.js', to: 'util.js',
+          transform: (content) => minifyContent(String(content)
+            .replaceWithFile(/^(exports\.isBuffer *=) *require\(.*/m, 'util/support/isBufferBrowser')
+            .replaceWithFile(/^(exports\.(inherits) *=) *require\(.*/m, (s, p1) =>
+              replaceModExport(s.replaceWithFile(/^(.*\.exports *=) *require\(.*_.*/m, 'inherits/inherits_browser'), p1))
+          ),
+        },
+      ]),
+    ],
+  }),
 ];

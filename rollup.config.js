@@ -49,7 +49,8 @@ const nodeResolve = () => ({
       ? [(p = resolve(dirname(importer), source)), p + '.js', p + sep + 'index.js'].find(fileExists) || null
       : (p = source.match(/[\\/]/g)) && (source[0] !== '@' || p.length > 1)
       ? require.resolve(source)
-      : resolve(dirname(require.resolve((source += '/package.json'))), (p = require(source)).module || p.main);
+      : // prettier-ignore
+        resolve(dirname(require.resolve((source += '/package.json'))), (p = require(source)).module || p.main || 'index.js');
   },
 });
 
@@ -80,7 +81,7 @@ module.exports = (args = {}) => {
 
 // Execute replacement
 function replaceBulk(str, arr) {
-  return (Array.isArray(arr) ? arr : [arr]).reduce((s, o) => s.replace(o.search, o.replace), str);
+  return [].concat(arr).reduce((s, o) => s.replace(o.search, o.replace), str);
 }
 
 /**
@@ -101,16 +102,25 @@ const commonJS = (opts = {}) =>
     name: 'commonjs',
     test: opts.test || /\.js$/i,
     patterns: [].concat(opts.transform || [], [
-      { search: /^[^\S\r\n]*(module\.exports|exports\[['"]default['"]\])\s*=/m, replace: 'export default ' },
+      { search: /^[^\S\r\n]*(module\.exports|exports\[['"]default['"]])\s*=/m, replace: 'export default ' },
       {
-        search: /\b(?:module\.)?exports\.([\w$]+)\s*=\s*(([\w$]+)\s*;?$|function\s+([\w$]+)\s*\()/gm,
-        replace: (_, p1, p2, p3, p4) => `export { ${p3 || p4} as ${p1} }; ${p4 ? p2 : ''}`,
+        search: /\b((?:(?:module\.)?exports\.[\w$]+\s*=\s*)+)(([\w$]+) *;?$|function +([\w$]+) *\()/gm,
+        // prettier-ignore
+        replace: (_, p1, p2, p3, p4) =>
+          `export { ${p1.match(/(?<=\.)[\w$]+(?=\s*=)/g).map((k) => `${p3 || p4} as ${k}`).join(', ')} };\n${p4 ? p2 : ''}`,
       },
       {
-        search: /\b(?:const|let|var)\s+([\w$]+|\{[^{}]+\})\s*=\s*require\s*\(\s*(['"][^'"]+['"])\s*\)\s*;?$/gm,
-        replace: (_, p1, p2) => `import ${p1.replace(/\s*:\s*/g, ' as ')} from ${p2}`,
+        search: /\b((?:(?:module\.)?exports\.[\w$]+\s*=\s*)+)require *\( *(['"][^'"]+['"]) *\)(\s*\.([\w$]+))? *;?$/gm,
+        // prettier-ignore
+        replace: (_, p1, p2, p3, p4) =>
+          `export { ${p1.match(/(?<=\.)[\w$]+(?=\s*=)/g).map((k) => `${p4 || 'default'} as ${k}`).join(', ')} } from ${p2}`,
       },
-      { search: /^[^\S\r\n]*require\s*\(\s*(['"][^'"]+['"])\s*\)\s*;?$/gm, replace: 'import $1' },
+      {
+        search:
+          /(?<!{\s*)\b(?:const|let|var)\s+([\w$]+|{(?:[^{}]|{[^{}]+})+})\s*=\s*require *\( *(['"][^'"]+['"]) *\)(\s*\.([\w$]+))? *;?$/gm,
+        replace: (_, p1, p2, p3, p4) => `import ${(p3 ? `{${p4}: ${p1}}` : p1).replace(/\s*:\s*/g, ' as ')} from ${p2}`,
+      },
+      { search: /^[^\S\r\n]*require *\( *(['"][^'"]+['"]) *\) *;?$/gm, replace: 'import $1' },
     ]),
   });
 
@@ -195,7 +205,51 @@ const configSet = [
     output: { file: 'dist/vendor/graceful-fs.js' },
     external: ['fs', 'constants', 'stream', 'util', 'assert'],
     plugins: [
-      commonJS({ transform: { search: /\b(exports *= *)(patch);?\n+(function) +\2\b/, replace: '$1$3 polyfills' } }),
+      commonJS({ transform: { search: /(\.exports *= *)(patch);?\n+(function) +\2\b/, replace: '$1$3 polyfills' } }),
+    ],
+  }),
+  //
+  buildConfig('assert', {
+    input: 'node_modules/assert/assert.js',
+    output: { file: 'dist/web_modules/assert.js' },
+    external: 'util/',
+    plugins: [commonJS(), terserPlugin({ transform: { search: /\b(require\(['"])(util)\//, replace: '$1./$2' } })],
+  }),
+  buildConfig('querystring', {
+    input: 'node_modules/querystring-es3/index.js',
+    output: { file: 'dist/web_modules/querystring-es3.js', esModule: false },
+    plugins: [commonJS()],
+  }),
+  /*
+  buildConfig('util', {
+    input: 'node_modules/util/util.js',
+    output: { file: 'dist/web_modules/util.js', esModule: false, strict: false },
+    plugins: [
+      commonJS({
+        transform: [
+          { search: /\brequire\(['"]\.\/support\/isBuffer\b/, replace: '$&Browser' },
+          {
+            search: /^([ \t]+module\.exports) *= *(function (inherits))\b([\s\S]*?\n)\1 *= *\2\b([\s\S]*?\n})$/m,
+            replace: ' $3B = $2$4 $3B = $2$5\n var $3B;\n$1 = $3B;',
+          },
+          {
+            search: /^([ \t]+module\.exports) *= *(util\.(inherits)\b.*)(\n\}.*\{\n)\1 *= *(require\b.*)(\n})$/m,
+            replace: '$4 util = { $3: $3B };$6\n var $3B = $5\n$1 = $2',
+          },
+        ],
+      }),
+    ],
+  }),
+  */
+  buildConfig('url', {
+    input: 'node_modules/url/url.js',
+    output: { file: 'dist/web_modules/url.js', esModule: false },
+    external: ['punycode', 'querystring'],
+    plugins: [
+      commonJS({ transform: { search: /,(\s*)(\w+ *= *require\(['"].*;)$/gm, replace: ';\n$1var $2' } }),
+      terserPlugin({
+        transform: { search: /\b(require\(['"])((p)|q\w+)/g, replace: (_, r, q, p) => `${r}./${p || q + '-es3'}` },
+      }),
     ],
   }),
 ];
