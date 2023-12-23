@@ -174,7 +174,7 @@ exports._unrefActive = exports.active = function(item) {
   }
 
   var attachTo = Object.getPrototypeOf && Object.getPrototypeOf(global);
-  if (!attachTo || !attachTo.setTimeout) attachTo = global;
+  (attachTo && attachTo.setTimeout) || (attachTo = global);
 
   ({}).toString.call(global.process) === "[object process]"
     ? installNextTickImplementation()

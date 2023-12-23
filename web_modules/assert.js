@@ -1,7 +1,9 @@
 'use strict';
 
-var getOwnPropertySymbols = Object.getOwnPropertySymbols,
-  hasOwn = Object.prototype.hasOwnProperty,
+var util = require('./util'),
+
+  getOwnPropertySymbols = Object.getOwnPropertySymbols,
+  hasOwnProperty = Object.prototype.hasOwnProperty,
   propIsEnumerable = Object.prototype.propertyIsEnumerable;
 
 function toObject(val) {
@@ -43,7 +45,7 @@ var objectAssign = shouldUseNative() ? Object.assign : function (target, source)
   for (var from, symbols, s = 1; s < arguments.length; s++) {
     from = Object(arguments[s]);
 
-    for (var key in from) if (hasOwn.call(from, key)) to[key] = from[key];
+    for (var key in from) if (hasOwnProperty.call(from, key)) to[key] = from[key];
 
     if (getOwnPropertySymbols) {
       symbols = getOwnPropertySymbols(from);
@@ -77,8 +79,7 @@ function isBuffer(b) {
     : b != null && !!b._isBuffer;
 }
 
-var util = require('./util'),
-
+var hasOwn = Object.prototype.hasOwnProperty,
   pSlice = Array.prototype.slice;
 var functionsHaveNames = (function () {
   return function foo() {}.name === 'foo';

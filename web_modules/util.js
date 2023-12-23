@@ -9,12 +9,11 @@ var getOwnPropertyDescriptors = Object.getOwnPropertyDescriptors || function(obj
 
 var formatRegExp = /%[sdj%]/g;
 exports.format = function(f) {
-  var i,
-    args = arguments,
+  var args = arguments,
     len = args.length;
   if (!isString(f)) {
     var objects = [];
-    for (i = 0; i < len; i++) objects.push(inspect(args[i]));
+    for (var i = 0; i < len; i++) objects.push(inspect(args[i]));
 
     return objects.join(' ');
   }
@@ -301,7 +300,7 @@ function formatProperty(ctx, value, recurseTimes, visibleKeys, key, array) {
 }
 
 function reduceToSingleString(output, base, braces) {
-  var numLinesEst = 0;
+  var numLinesEst = 0; // unused
   var length = output.reduce(function(prev, cur) {
     numLinesEst++;
     cur.indexOf('\n') < 0 || numLinesEst++;
@@ -425,26 +424,23 @@ try {
   exports.inherits = require('util').inherits;
   if (typeof exports.inherits != 'function') throw '';
 } catch (_) {
-  if (typeof Object.create == 'function')
-    exports.inherits = function(ctor, superCtor) {
-      ctor.super_ = superCtor;
-      ctor.prototype = Object.create(superCtor.prototype, {
-        constructor: {
-          value: ctor,
-          enumerable: false,
-          writable: true,
-          configurable: true
-        }
-      });
-    };
-  else
-    exports.inherits = function(ctor, superCtor) {
-      ctor.super_ = superCtor;
-      var TempCtor = function() {};
-      TempCtor.prototype = superCtor.prototype;
-      ctor.prototype = new TempCtor();
-      ctor.prototype.constructor = ctor;
-    };
+  exports.inherits = typeof Object.create == 'function' ? function(ctor, superCtor) {
+    ctor.super_ = superCtor;
+    ctor.prototype = Object.create(superCtor.prototype, {
+      constructor: {
+        value: ctor,
+        enumerable: false,
+        writable: true,
+        configurable: true
+      }
+    });
+  } : function(ctor, superCtor) {
+    ctor.super_ = superCtor;
+    var TempCtor = function() {};
+    TempCtor.prototype = superCtor.prototype;
+    ctor.prototype = new TempCtor();
+    ctor.prototype.constructor = ctor;
+  };
 }
 
 exports._extend = function(origin, add) {

@@ -107,8 +107,7 @@ Url.prototype.parse = function(url, parseQueryString, slashesDenoteHost) {
     }
   }
 
-  var i, l,
-    proto = protocolPattern.exec(rest);
+  var proto = protocolPattern.exec(rest);
   if (proto) {
     var lowerProto = (proto = proto[0]).toLowerCase();
     this.protocol = lowerProto;
@@ -124,9 +123,9 @@ Url.prototype.parse = function(url, parseQueryString, slashesDenoteHost) {
   }
 
   if (!hostlessProtocol[proto] && (slashes || (proto && !slashedProtocol[proto]))) {
-    var hec, auth, atSign,
+    var auth, atSign,
       hostEnd = -1;
-    for (i = 0; i < hostEndingChars.length; i++) {
+    for (var i = 0; i < hostEndingChars.length; i++) {
       hec = rest.indexOf(hostEndingChars[i]);
       if (hec !== -1 && (hostEnd === -1 || hec < hostEnd)) hostEnd = hec;
     }
@@ -141,7 +140,7 @@ Url.prototype.parse = function(url, parseQueryString, slashesDenoteHost) {
 
     hostEnd = -1;
     for (i = 0; i < nonHostChars.length; i++) {
-      hec = rest.indexOf(nonHostChars[i]);
+      var hec = rest.indexOf(nonHostChars[i]);
       if (hec !== -1 && (hostEnd === -1 || hec < hostEnd)) hostEnd = hec;
     }
     if (hostEnd === -1) hostEnd = rest.length;
@@ -158,7 +157,7 @@ Url.prototype.parse = function(url, parseQueryString, slashesDenoteHost) {
 
     if (!ipv6Hostname) {
       var hostparts = this.hostname.split(/\./);
-      for (i = 0, l = hostparts.length; i < l; i++) {
+      for (var l = ((i = 0), hostparts.length); i < l; i++) {
         var part = hostparts[i];
         if (!part || part.match(hostnamePartPattern)) continue;
         var newpart = '';
@@ -227,9 +226,9 @@ Url.prototype.parse = function(url, parseQueryString, slashesDenoteHost) {
     this.pathname = '/';
 
   if (this.pathname || this.search) {
-    var pn = this.pathname || '',
-      s = this.search || '';
-    this.path = pn + s;
+    p = this.pathname || '';
+    var s = this.search || '';
+    this.path = p + s;
   }
 
   this.href = this.format();
@@ -340,7 +339,7 @@ Url.prototype.resolveObject = function(relative) {
 
     result.protocol = relative.protocol;
     if (!relative.host && !hostlessProtocol[relative.protocol]) {
-      const relPath = (relative.pathname || '').split('/');
+      var relPath = (relative.pathname || '').split('/');
       while (relPath.length && !(relative.host = relPath.shift()));
       relative.host || (relative.host = '');
       relative.hostname || (relative.hostname = '');
@@ -365,15 +364,14 @@ Url.prototype.resolveObject = function(relative) {
     return result;
   }
 
-  var authInHost,
-    isSourceAbs = result.pathname && result.pathname.charAt(0) === '/',
+  var isSourceAbs = result.pathname && result.pathname.charAt(0) === '/',
     isRelAbs =
       relative.host || (relative.pathname && relative.pathname.charAt(0) === '/'),
     mustEndAbs = isRelAbs || isSourceAbs || (result.host && relative.pathname),
     removeAllDots = mustEndAbs,
-    srcPath = (result.pathname && result.pathname.split('/')) || [],
-    relPath = (relative.pathname && relative.pathname.split('/')) || [],
-    psychotic = result.protocol && !slashedProtocol[result.protocol];
+    srcPath = (result.pathname && result.pathname.split('/')) || [];
+  relPath = (relative.pathname && relative.pathname.split('/')) || [];
+  var psychotic = result.protocol && !slashedProtocol[result.protocol];
 
   if (psychotic) {
     result.hostname = '';
@@ -461,7 +459,7 @@ Url.prototype.resolveObject = function(relative) {
   if (psychotic) {
     result.hostname = result.host = isAbsolute ? ''
       : srcPath.length ? srcPath.shift() : '';
-    authInHost =
+    var authInHost =
       !!result.host && result.host.indexOf('@') > 0 && result.host.split('@');
     if (authInHost) {
       result.auth = authInHost.shift();
