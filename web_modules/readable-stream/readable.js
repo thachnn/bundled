@@ -290,6 +290,7 @@ var pna = __webpack_require__(3);
 module.exports = Readable;
 
 var Duplex,
+
   isArray = __webpack_require__(16);
 
 Readable.ReadableState = ReadableState;
@@ -900,6 +901,7 @@ Readable.prototype.wrap = function (stream) {
 
     if ((!state.objectMode || (chunk !== null && chunk !== void 0)) &&
         (state.objectMode || (chunk && chunk.length)) &&
+
         !_this.push(chunk)) {
       paused = true;
       stream.pause();
@@ -1140,6 +1142,7 @@ function CorkedRequest(state) {
 }
 
 var Duplex,
+
   asyncWrite = process.browser || /^v?0\.[0-8]\b/.test(process.version) ? pna.nextTick : setImmediate;
 
 Writable.WritableState = WritableState;
@@ -1301,12 +1304,13 @@ function writeAfterEnd(stream, cb) {
 }
 
 function validChunk(stream, state, chunk, cb) {
-  var valid = true,
-    er = false;
-
-  if (chunk === null) er = new TypeError('May not write null values to stream');
-  else if (typeof chunk != 'string' && chunk !== void 0 && !state.objectMode)
-    er = new TypeError('Invalid non-string/buffer chunk');
+  var valid = true;
+  var er =
+    chunk === null
+    ? new TypeError('May not write null values to stream')
+    : typeof chunk != 'string' && chunk !== void 0 && !state.objectMode
+    ? new TypeError('Invalid non-string/buffer chunk')
+    : false;
 
   if (er) {
     stream.emit('error', er);

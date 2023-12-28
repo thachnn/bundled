@@ -10603,7 +10603,7 @@ def_optimize(AST_If, function(self, compressor) {
     if (negated_is_best) return make_node(AST_SimpleStatement, self, {
       body: make_node(AST_Binary, self, { operator: "||", left: negated, right: self.body.body })
     }).optimize(compressor);
-    return compressor.option("conditionals") !== true ? self : make_node(AST_SimpleStatement, self, {
+    return compressor.option("conditionals") !== true && self.body.body instanceof AST_Assign ? self : make_node(AST_SimpleStatement, self, {
       body: make_node(AST_Binary, self, { operator: "&&", left: self.condition, right: self.body.body })
     }).optimize(compressor);
   }
