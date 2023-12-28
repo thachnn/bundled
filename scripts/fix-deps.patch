@@ -281,6 +281,10 @@
 -})
 \ No newline at end of file
 +  module.exports = prr
+--- a/node_modules/readable-stream/lib/_stream_readable.js
++++ b/node_modules/readable-stream/lib/_stream_readable.js
+@@ -42 +42,0 @@ Readable.ReadableState = ReadableState;
+-var EE = require('events').EventEmitter;
 --- a/node_modules/source-map-url/source-map-url.js
 +++ b/node_modules/source-map-url/source-map-url.js
 @@ -5,2 +5 @@ void (function(root, factory) {
@@ -305,6 +309,16 @@
 +  this.lastChar = (Buffer.allocUnsafe || Buffer)(nb);
 --- a/node_modules/terser-webpack-plugin/dist/index.js
 +++ b/node_modules/terser-webpack-plugin/dist/index.js
+@@ -69,5 +69,5 @@ class TerserPlugin {
+-      terserOptions: _objectSpread({
+-        output: {
++      terserOptions: _objectSpread({}, terserOptions, {
++        output: _objectSpread({
+           comments: extractComments ? false : /^\**!|@preserve|@license|@cc_on/i
+-        }
+-      }, terserOptions)
++        }, terserOptions.output)
++      })
 @@ -356 +356 @@ var _default = TerserPlugin;
 -exports.default = _default;
 \ No newline at end of file
@@ -330,7 +344,7 @@
 +    if (compressor.option("loops") === false) return self;
 @@ -4720,3 +4721,3 @@ def_optimize(AST_If, function(self, compressor) {
 -        return make_node(AST_SimpleStatement, self, {
-+        return compressor.option("conditionals") !== true ? self : make_node(AST_SimpleStatement, self, {
++        return compressor.option("conditionals") !== true && self.body.body instanceof AST_Assign ? self : make_node(AST_SimpleStatement, self, {
              body: make_node(AST_Binary, self, {
                  operator : "&&",
 @@ -5823,2 +5824,2 @@ def_optimize(AST_Binary, function(self, compressor) {
@@ -488,6 +502,14 @@
 @@ -37 +37 @@ class SetVarMainTemplatePlugin {
 -					`(function(e, a) { for(var i in a) e[i] = a[i]; }(${varExpression}, `,
 +					`(function(e, a) { for(var i in a) e[i] = a[i]; if(a.__esModule) Object.defineProperty(e, '__esModule', {value: true}); }(${varExpression},\n`,
+--- a/node_modules/webpack/lib/Template.js
++++ b/node_modules/webpack/lib/Template.js
+@@ -232 +232 @@ class Template {
+-				id: module.id,
++				id: module.id, index: module.index,
+@@ -278 +278 @@ class Template {
+-			allModules.sort(stringifyIdSortPredicate).forEach((module, idx) => {
++			allModules.sort(removedModules && removedModules.length ? stringifyIdSortPredicate : (a, b) => a.index - b.index).forEach((module, idx) => {
 --- a/node_modules/webpack/lib/webpack.js
 +++ b/node_modules/webpack/lib/webpack.js
 @@ -140 +140,5 @@ exportPlugins(exports, {

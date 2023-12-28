@@ -25,11 +25,11 @@ const webpackConfig = (name, config, clean = name.charAt(0) !== '/') =>
     mode: 'production',
     name: clean ? name : name.substring(1),
     output: Object.assign({ path: path.join(__dirname, 'dist', clean ? name : '') }, config.output),
-    context: __dirname,
+    context: config.context || __dirname,
     target: config.target || 'node',
     node: { __filename: false, __dirname: false },
     cache: true,
-    stats: { modules: true, maxModules: Infinity, children: true },
+    stats: Object.assign({ modules: true, maxModules: Infinity, children: true }, config.stats),
     optimization: Object.assign({ nodeEnv: false }, config.optimization, {
       // minimize: false,
       minimizer: ((config.optimization || {}).minimizer || [null]).map(newTerserPlugin),
@@ -76,6 +76,17 @@ String.prototype.replaceWithFile = function (re, p = null, cb = replaceModExport
   if (typeof p == 'function') (cb = p), (p = null);
   return this.replace(re, (_, p1, p2) => cb(fs.readFileSync(require.resolve(p || p2), 'utf8'), p1));
 };
+
+const commonjs1Patches = [
+  { search: /(?<!\bfunction )\b_interopRequire\w+\(/g, replace: '(' },
+  {
+    search: /\b(_[\w$]+) *= *\(?require\(['"]\.+\/((?!\.json['"]).)*?\)(?=[\s\S]*?\b\1\d*\.default\b)/g,
+    replace: '$&.default',
+  },
+  { search: /\(0, *(_[\w.$]+)\)/g, replace: '$1' },
+  { search: /\b(_[\w$]+)\.default([.,()])/g, replace: '$1$2' },
+  { search: /(?<!\bfunction )\b_objectSpread\(/g, replace: 'Object.assign(' },
+];
 
 //
 module.exports = [
@@ -188,14 +199,81 @@ module.exports = [
     entry: { 'vendor/find-cache-dir': './node_modules/find-cache-dir/index' },
     output: { libraryTarget: 'commonjs2' },
   }),
+  webpackConfig('/copy-plugin', {
+    entry: { 'lib/copy-plugin': './node_modules/copy-webpack-plugin/dist/index' },
+    output: { libraryTarget: 'commonjs2' },
+    externals: {
+      cacache: 'commonjs2 ../vendor/cacache',
+      'find-cache-dir': 'commonjs2 ../vendor/find-cache-dir',
+      minimatch: 'commonjs2 ../vendor/minimatch',
+      glob: 'commonjs2 ../vendor/glob',
+      'schema-utils': 'commonjs2 ./schema-utils',
+      'loader-utils': 'commonjs2 ./loader-utils',
+    },
+    module: {
+      rules: [
+        {
+          test: /\bnode_modules[\\/]\w+-webpack-plugin\b.dist\b.*\.js$/i,
+          loader: 'string-replace-loader',
+          options: { multiple: commonjs1Patches },
+        },
+        {
+          test: /\bnode_modules[\\/]copy-webpack-plugin\b.package\.json$/i,
+          loader: 'string-replace-loader',
+          options: { search: /,\s*"license":[\s\S]*/, replace: '\n}' },
+        },
+      ],
+    },
+  }),
   //
-  /* TODO: /*-webpack-plugin\b.dist\b.*\.js$/i
-    /\b_interopRequire\w+\(/g, '('
-    /\brequire\(['"]\.[\/\w-]+\)/g, '$&.default'
-    /\(0, (_[\w.$]+)\)/g, '$1'
-    /\b(_[\w$]+)\.default([.(])/g, '$1$2'
-    /\b_objectSpread\(/g, 'Object.assign('
-  */
+  webpackConfig('/bluebird', {
+    context: path.resolve(__dirname, 'node_modules/bluebird/js/release'),
+    entry: { 'vendor/bluebird': './bluebird' },
+    output: { libraryTarget: 'commonjs2' },
+    // externals: ['async_hooks'],
+    module: {
+      rules: [
+        {
+          test: /\bnode_modules[\\/]bluebird\b.*\b(call_get|join|promisify)\.js$/i,
+          loader: 'string-replace-loader',
+          options: { search: / *(\\n\\\n +)+/g, replace: '\\n\\\n ' },
+        },
+      ],
+    },
+    stats: { modulesSort: 'index' },
+    optimization: { moduleIds: 'named' },
+    plugins: [
+      new ReplaceCodePlugin({ search: /\b__webpack_require__\b/g, replace: '__wpreq__' }), //
+    ],
+  }),
+  webpackConfig('/readable-stream', {
+    entry: { 'vendor/readable-stream': './node_modules/readable-stream/readable' },
+    output: { libraryTarget: 'commonjs2' },
+    externals: {
+      'safe-buffer': 'commonjs2 buffer',
+      'string_decoder/': 'commonjs2 string_decoder',
+      'core-util-is': 'commonjs2 util',
+      './internal/streams/stream': 'commonjs2 stream',
+    },
+    module: {
+      rules: [
+        {
+          test: /\bnode_modules[\\/]readable-stream\b.lib\b.*\.js$/i,
+          loader: 'string-replace-loader',
+          options: {
+            multiple: [
+              { search: /\brequire\(['"](process)-nextick-args\b.*?\)/, replace: '$1' },
+              { search: /\b(internalUtil *= *)\{[^{}]*\brequire\(['"](util)-deprecate\b[^{}]*\}/, replace: '$1$2' },
+              { search: /\brequire\(['"]isarray\b.*?\)/, replace: 'Array.isArray' },
+              { search: /\bObject\.create(\(require)\b/, replace: '$1' },
+              { search: /^ *util\.inherits *= *require\b/m, replace: '//$&' },
+              { search: /\b(Object\.keys) *\|\| *(function)\b/, replace: '$1; 0 && $2' },
+            ],
+          },
+        },
+      ],
+    },
+  }),
   //
   webpackConfig('/browser-libs', {
     entry: {
