@@ -25,9 +25,8 @@ function handle(data) {
     process.send({ owner: 'farm', idx: idx, child: child, args: _args })
   }
 
-  method == null && typeof $module == 'function'
-    ? (exec = $module)
-    : typeof $module[method] != 'function' || (exec = $module[method])
+  if (method == null && typeof $module == 'function') exec = $module
+  else if (typeof $module[method] == 'function') exec = $module[method]
 
   if (!exec) return console.error('NO SUCH METHOD:', method)
 
