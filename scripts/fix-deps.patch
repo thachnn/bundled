@@ -487,6 +487,13 @@
 @@ -9 +9 @@ var async = require("neo-async");
 -var chokidar = require("./chokidar");
 +var chokidar = require("chokidar");
+--- a/node_modules/webpack/lib/FunctionModuleTemplatePlugin.js
++++ b/node_modules/webpack/lib/FunctionModuleTemplatePlugin.js
+@@ -19,2 +19,2 @@ class FunctionModuleTemplatePlugin {
+-					args.push(module.exportsArgument);
+-					if (module.hasDependencies(d => d.requireWebpackRequire !== false)) {
++					if (!module.external) { args.push(module.exportsArgument);
++					if (module.hasDependencies(d => d.requireWebpackRequire !== false))
 --- a/node_modules/webpack/lib/MainTemplate.js
 +++ b/node_modules/webpack/lib/MainTemplate.js
 @@ -185,2 +185,2 @@ module.exports = class MainTemplate extends Tapable {

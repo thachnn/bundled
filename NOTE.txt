@@ -468,7 +468,7 @@ decomment --allowHashBang --keep "(^\s*[@#]__PURE__\s*$|^[*\s]*!\s*\S|(^|\n|\r)[
   ├── tapable@1.1.3             x
   │
   ├─┬ terser-webpack-plugin@1.4.5     v
-  │ ├── cacache@12.0.4              deduped
+  │ ├── cacache@12.0.4              deduped   17, 21, 27, 55
   │ ├── find-cache-dir@2.1.0        deduped
   │ ├── is-wsl@1.1.0                  x
   │ ├── schema-utils@1.0.0          deduped

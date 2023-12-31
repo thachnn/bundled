@@ -274,6 +274,133 @@ module.exports = [
       ],
     },
   }),
+  webpackConfig('/cacache', {
+    entry: { 'vendor/cacache': './node_modules/cacache/locales/en.js' },
+    output: { libraryTarget: 'commonjs2' },
+    externals: {
+      bluebird: 'commonjs2 ./bluebird',
+      glob: 'commonjs2 ./glob',
+      'readable-stream': 'commonjs2 ./readable-stream',
+      'graceful-fs': 'commonjs2 ./graceful-fs',
+      inherits: ['util', 'inherits'],
+    },
+    module: {
+      rules: [
+        {
+          test: /\bnode_modules[\\/]mississippi\b.index\.js$/i,
+          loader: 'string-replace-loader',
+          options: { search: /^.*\bexports\.(each|duplex|parallel) *= *require\b/gm, replace: '//$&' },
+        },
+        {
+          test: /\bnode_modules[\\/]cacache\b.\w+.+\.js$/i,
+          loader: 'string-replace-loader',
+          options: {
+            multiple: [
+              { search: /^(setLocale\(|(const (Y|setLocale)|x\.setLocale) *=)/gm, replace: '//$&' },
+              { search: /(\(\s*)Y`/g, replace: '$1`' },
+            ],
+          },
+        },
+        {
+          test: /\bnode_modules[\\/]cacache\b.package\.json$/i,
+          loader: 'string-replace-loader',
+          options: { search: /,\s*"main":[\s\S]*/, replace: '\n}' },
+        },
+      ],
+    },
+    resolve: {
+      alias: { '../verify.js$': path.resolve(__dirname, 'node_modules/cacache/lib/verify.js') },
+    },
+  }),
+  //
+  webpackConfig('/webpack-sources', {
+    entry: { 'lib/webpack-sources': './node_modules/webpack-sources/lib/index' },
+    output: { libraryTarget: 'commonjs2' },
+    externals: { 'source-map': 'commonjs2 ../vendor/source-map' },
+  }),
+  webpackConfig('/terser-plugin', {
+    entry: { 'lib/terser-plugin': './node_modules/terser-webpack-plugin/dist/index' },
+    output: { libraryTarget: 'commonjs2' },
+    externals: {
+      cacache: 'commonjs2 ../vendor/cacache',
+      'find-cache-dir': 'commonjs2 ../vendor/find-cache-dir',
+      'source-map': 'commonjs2 ../vendor/source-map',
+      terser: 'commonjs2 ../vendor/terser',
+      'worker-farm': 'commonjs2 ../vendor/worker-farm',
+      'schema-utils': 'commonjs2 ./schema-utils',
+      'webpack-sources': 'commonjs2 ./webpack-sources',
+    },
+    module: {
+      rules: [
+        {
+          test: /\bnode_modules[\\/]\w+-webpack-plugin\b.dist\b.*\.js$/i,
+          loader: 'string-replace-loader',
+          options: {
+            multiple: commonjs1Patches.concat({
+              search: /\brequire(\.resolve\(['"])\.\/worker\b/,
+              replace: '__non_webpack_require__$1./terser-worker',
+            }),
+          },
+        },
+        {
+          test: /\bnode_modules[\\/]terser(-webpack-plugin)?\b.package\.json$/i,
+          loader: 'string-replace-loader',
+          options: { search: /,\s*"(repository|engines)":[\s\S]*/, replace: '\n}' },
+        },
+        {
+          test: /\bnode_modules[\\/]webpack\b.lib.ModuleFilenameHelpers\.js$/i,
+          loader: 'string-replace-loader',
+          options: {
+            multiple: [
+              { search: /^const createHash *= *require\b/m, replace: '//$&' },
+              { search: /^ModuleFilenameHelpers\.(?!match)(\w+ *=)/gm, replace: 'const $1' },
+            ],
+          },
+        },
+      ],
+    },
+  }),
+  //
+  webpackConfig('/terser-worker', {
+    entry: { 'lib/terser-worker': './node_modules/terser-webpack-plugin/dist/worker' },
+    output: { libraryTarget: 'commonjs2' },
+    externals: { terser: 'commonjs2 ../vendor/terser' },
+    module: {
+      rules: [
+        {
+          test: /\bnode_modules[\\/]\w+-webpack-plugin\b.dist\b.*\.js$/i,
+          loader: 'string-replace-loader',
+          options: {
+            multiple: commonjs1Patches.concat({
+              search: /(, *['"]require['"],)(.*?,) *require,/m,
+              replace: "$1 '__webpack_require__',$2 __non_webpack_require__, __webpack_require__,",
+            }),
+          },
+        },
+      ],
+    },
+  }),
+  webpackConfig('/worker-farm', {
+    entry: { 'vendor/worker-farm': './node_modules/worker-farm/lib/index' },
+    output: { libraryTarget: 'commonjs2' },
+    module: {
+      rules: [
+        {
+          test: /\bnode_modules[\\/]worker-farm\b.lib.fork\.js$/i,
+          loader: 'string-replace-loader',
+          options: {
+            search: /\brequire(\.resolve\(['"])\.\/child\/index\b/,
+            replace: '__non_webpack_require__$1./worker-child',
+          },
+        },
+      ],
+    },
+    plugins: [
+      newCopyPlugin([
+        { from: 'node_modules/worker-farm/lib/child/index.js', to: 'vendor/worker-child.js', transform: minifyContent },
+      ]),
+    ],
+  }),
   //
   webpackConfig('/browser-libs', {
     entry: {
