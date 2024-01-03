@@ -1097,7 +1097,7 @@ ret.isRecentNode = ret.isNode && (function() {
   var version;
   if (process.versions && process.versions.node)
     version = process.versions.node.split(".").map(Number);
-  else if (process.version) version = process.version.split(".").map(Number);
+  else if (process.version) version = process.version.slice(1).split(".").map(Number);
 
   return version[0] > 0 || (version[0] === 0 && version[1] > 10);
 })();
