@@ -402,6 +402,43 @@ module.exports = [
     ],
   }),
   //
+  webpackConfig('/micromatch', {
+    entry: { 'vendor/micromatch': './node_modules/micromatch/index' },
+    output: { libraryTarget: 'commonjs2' },
+    externals: { 'source-map': 'commonjs2 ./source-map' },
+    module: {
+      rules: [
+        {
+          test: /\bnode_modules[\\/]((micro|nano)match|braces|fill|expand|extglob|(to-)?regex|snapdragon|set-value|split)\b.*\.js$/i,
+          loader: 'string-replace-loader',
+          options: { search: /\brequire\(['"]extend-shallow\b.*?\)/, replace: 'Object.assign' },
+        },
+        {
+          test: /\bnode_modules[\\/](snapdragon-util|object-copy|to-object-path)\b.index\.js$/i,
+          loader: 'string-replace-loader',
+          options: { search: /\b(require\(['"])(kind-of\b.*?\))/, replace: '$1is-number/node_modules/$2' },
+        },
+      ],
+    },
+  }),
+  webpackConfig('/enhanced-resolve', {
+    entry: { 'lib/enhanced-resolve': './node_modules/enhanced-resolve/lib/node' },
+    output: { libraryTarget: 'commonjs2' },
+    externals: { 'graceful-fs': 'commonjs2 ../vendor/graceful-fs' },
+  }),
+  webpackConfig('/picomatch', {
+    entry: { 'vendor/picomatch': './node_modules/picomatch/lib/picomatch' },
+    output: { libraryTarget: 'commonjs2' },
+  }),
+  webpackConfig('/chokidar', {
+    entry: { 'vendor/chokidar': './node_modules/chokidar/index' },
+    output: { libraryTarget: 'commonjs2' },
+    externals: { picomatch: 'commonjs2 ./picomatch', fsevents: 'fsevents' },
+    resolve: {
+      alias: { 'binary-extensions$': require.resolve('binary-extensions/binary-extensions.json') },
+    },
+  }),
+  //
   webpackConfig('/browser-libs', {
     entry: {
       'crypto-browserify': './node_modules/crypto-browserify/index',
