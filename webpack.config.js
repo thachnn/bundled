@@ -425,6 +425,17 @@ module.exports = [
     entry: { 'lib/enhanced-resolve': './node_modules/enhanced-resolve/lib/node' },
     output: { libraryTarget: 'commonjs2' },
     externals: { 'graceful-fs': 'commonjs2 ../vendor/graceful-fs' },
+    module: {
+      rules: [
+        {
+          test: /\bnode_modules[\\/]tapable\b.lib.HookCodeFactory\.js$/i,
+          loader: 'string-replace-loader',
+          options: {
+            multiple: Array(3).fill({ search: /^(([ \t]*)(var |let )?(\w+) \+?= .*);\n\2\4 \+= /gm, replace: '$1 + ' }),
+          },
+        },
+      ],
+    },
   }),
   webpackConfig('/picomatch', {
     entry: { 'vendor/picomatch': './node_modules/picomatch/lib/picomatch' },

@@ -208,6 +208,39 @@ const configSet = [
       commonJS({ transform: { search: /(\.exports *= *)(patch);?\n+(function) +\2\b/, replace: '$1$3 polyfills' } }),
     ],
   }),
+  buildConfig('enhanced-resolve', {
+    input: 'node_modules/enhanced-resolve/lib/node.js',
+    output: { file: 'dist/lib/enhanced-resolve.js', esModule: false },
+    external: ['util', 'path', 'graceful-fs'],
+    plugins: [
+      transformCode({
+        name: 'commonjs2',
+        test: /\bnode_modules[\\/]enhanced-resolve\b.lib.SymlinkPlugin\.js$/i,
+        patterns: {
+          search: /^[ \t]*(const|var) +(\w+)\s*=\s*require *\( *(['"]\.\/forEachBail['"]) *\)(?!\s*\.)/m,
+          replace: 'import * as $2 from $3',
+        },
+      }),
+      commonJS({
+        transform: [
+          { search: /^[ \t]*(module\.)?exports\.([\w$]+)\s*=\s*(function) *\(/gm, replace: 'export $3 $2(' },
+          {
+            search:
+              /^[ \t]*(const|var) +(\w+)\s*=\s*require *\( *(['"]\.\/(ResolverFactory|concord|DescriptionFileUtils)['"]) *\)(?!\s*\.)/gm,
+            replace: 'import * as $2 from $3',
+          },
+          {
+            search: /^[ \t]*(?:module\.)?exports\.(\w+)\.(\w+)\s*=\s*(function +(\w+) *\()/gm,
+            replace: 'export { $4 as $1_$2 };\n$3',
+          },
+        ],
+      }),
+      transformCode({
+        test: /\bnode_modules[\\/]tapable\b.lib.HookCodeFactory\.js$/i,
+        patterns: Array(3).fill({ search: /^(([ \t]*)(var |let )?(\w+) \+?= .*);\n\2\4 \+= /gm, replace: '$1 + ' }),
+      }),
+    ],
+  }),
   //
   buildConfig('assert', {
     input: 'node_modules/assert/assert.js',
