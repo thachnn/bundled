@@ -206,6 +206,11 @@
 @@ -46 +46 @@ var Minimatch = minimatch.Minimatch
 -var inherits = require('inherits')
 +var inherits = require('util').inherits
+--- a/node_modules/has-values/node_modules/kind-of/index.js
++++ b/node_modules/has-values/node_modules/kind-of/index.js
+@@ -48 +48 @@ module.exports = function kindOf(val) {
+-  var type = toString.call(val);
++  var type; type = toString.call(val);
 --- a/node_modules/i18n-webpack-plugin/dist/index.js
 +++ b/node_modules/i18n-webpack-plugin/dist/index.js
 @@ -132 +132,2 @@ var I18nPlugin = function () {

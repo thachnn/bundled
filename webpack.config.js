@@ -414,9 +414,9 @@ module.exports = [
           options: { search: /\brequire\(['"]extend-shallow\b.*?\)/, replace: 'Object.assign' },
         },
         {
-          test: /\bnode_modules[\\/](snapdragon-util|object-copy|to-object-path)\b.index\.js$/i,
+          test: /\bnode_modules[\\/](snapdragon-util|object-copy|to-object-path|is-number)\b.index\.js$/i,
           loader: 'string-replace-loader',
-          options: { search: /\b(require\(['"])(kind-of\b.*?\))/, replace: '$1is-number/node_modules/$2' },
+          options: { search: /\b(require\(['"])(kind-of\b.*?\))/, replace: '$1has-values/node_modules/$2' },
         },
       ],
     },
