@@ -40,7 +40,7 @@ import {
   AsyncSeriesBailHook,
   AsyncSeriesHook,
   AsyncSeriesWaterfallHook,
-} from './tapable';
+} from '../lib/tapable';
 import * as UglifyJS from './uglify-js';
 import * as anymatch from './anymatch';
 import { RawSourceMap } from '../vendor/source-map';

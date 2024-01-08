@@ -56,9 +56,9 @@
     "bin/",
     "buildin/",
     "declarations/",
-    "hot/",
-    "web_modules/",
     "vendor/",
+    "web_modules/",
+    "schemas/",
     "SECURITY.md"
   ],
   "optionalDependencies": {

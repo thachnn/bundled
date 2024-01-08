@@ -721,7 +721,7 @@ module.exports = function (it, $keyword, $ruleType) {
         var arr1 = $coerceToTypes;
         if (arr1)
           for (var $type, $j = -1, l1 = arr1.length - 1; $j < l1; )
-            if (($type = arr1[$j++]) == 'string')
+            if (($type = arr1[++$j]) == 'string')
               out += ' else if (' + $dataType + " == 'number' || " + $dataType + " == 'boolean') " + $coerced + " = '' + " + $data + '; else if (' + $data + ' === null) ' + $coerced + " = ''; ";
             else if ($type == 'number' || $type == 'integer') {
               out += ' else if (' + $dataType + " == 'boolean' || " + $data + ' === null || (' + $dataType + " == 'string' && " + $data + ' && ' + $data + ' == +' + $data + ' ';
@@ -813,7 +813,7 @@ module.exports = function (it, $keyword, $ruleType) {
     var arr2 = it.RULES;
     if (arr2)
       for (var $sch, $passData, i2 = -1, l2 = arr2.length - 1; i2 < l2; ) {
-        if (!$shouldUseGroup(($rulesGroup = arr2[i2++]))) continue;
+        if (!$shouldUseGroup(($rulesGroup = arr2[++i2]))) continue;
 
         if ($rulesGroup.type)
           out += ' if (' + it.util.checkDataType($rulesGroup.type, $data, it.opts.strictNumbers) + ') { ';
@@ -824,7 +824,7 @@ module.exports = function (it, $keyword, $ruleType) {
             var arr3 = Object.keys($schema);
             if (arr3)
               for (var $propertyKey, i3 = -1, l3 = arr3.length - 1; i3 < l3; ) {
-                if (($sch = $schema[($propertyKey = arr3[i3++])]).default === void 0) continue;
+                if (($sch = $schema[($propertyKey = arr3[++i3])]).default === void 0) continue;
 
                 $passData = $data + it.util.getProperty($propertyKey);
                 if (it.compositeRule) {
@@ -850,7 +850,7 @@ module.exports = function (it, $keyword, $ruleType) {
             var arr4 = it.schema.items;
             if (arr4)
               for (var $i = -1, l4 = arr4.length - 1; $i < l4; ) {
-                if (($sch = arr4[$i++]).default === void 0) continue;
+                if (($sch = arr4[++$i]).default === void 0) continue;
 
                 $passData = $data + '[' + $i + ']';
                 if (it.compositeRule) {
@@ -877,7 +877,7 @@ module.exports = function (it, $keyword, $ruleType) {
         var arr5 = $rulesGroup.rules;
         if (arr5)
           for (var $rule, i5 = -1, l5 = arr5.length - 1; i5 < l5; )
-            if ($shouldUseRule(($rule = arr5[i5++]))) {
+            if ($shouldUseRule(($rule = arr5[++i5]))) {
               var $code = $rule.code(it, $rule.keyword, $rulesGroup.type);
               if ($code) {
                 out += ' ' + $code + ' ';
@@ -2458,7 +2458,7 @@ module.exports = function (it, $keyword, $ruleType) {
     arr1 = $schema;
   if (arr1)
     for (var $sch, $i = -1, l1 = arr1.length - 1; $i < l1; ) {
-      $sch = arr1[$i++];
+      $sch = arr1[++$i];
       if (!(it.opts.strictKeywords ? (typeof $sch == 'object' && Object.keys($sch).length > 0) || $sch === false : it.util.schemaHasRules($sch, it.RULES.all)))
         continue;
       $allSchemasEmpty = false;
@@ -2512,7 +2512,7 @@ module.exports = function (it, $keyword, $ruleType) {
   var arr1 = $schema;
   if (arr1)
     for (var $sch, $i = -1, l1 = arr1.length - 1; $i < l1; ) {
-      $sch = arr1[$i++];
+      $sch = arr1[++$i];
       $it.schema = $sch;
       $it.schemaPath = $schemaPath + '[' + $i + ']';
       $it.errSchemaPath = $errSchemaPath + '/' + $i;
@@ -2730,7 +2730,7 @@ module.exports = function (it, $keyword, $ruleType) {
       var arr1 = $deps;
       if (arr1)
         for (var $i = -1, l1 = arr1.length - 1; $i < l1; ) {
-          $propertyKey = arr1[$i++];
+          $propertyKey = arr1[++$i];
           if ($i) out += ' || ';
 
           out += ' ( ( ' + ($useData = $data + ($prop = it.util.getProperty($propertyKey))) + ' === undefined ';
@@ -2777,7 +2777,7 @@ module.exports = function (it, $keyword, $ruleType) {
       var arr2 = $deps;
       if (arr2)
         for (var i2 = -1, l2 = arr2.length - 1; i2 < l2; ) {
-          $propertyKey = arr2[i2++];
+          $propertyKey = arr2[++i2];
           $prop = it.util.getProperty($propertyKey);
           $missingProperty = it.util.escapeQuotes($propertyKey);
           $useData = $data + $prop;
@@ -3179,7 +3179,7 @@ module.exports = function (it, $keyword, $ruleType) {
     var arr1 = $schema;
     if (arr1)
       for (var $sch, $i = -1, l1 = arr1.length - 1; $i < l1; ) {
-        $sch = arr1[$i++];
+        $sch = arr1[++$i];
         if (!(it.opts.strictKeywords ? (typeof $sch == 'object' && Object.keys($sch).length > 0) || $sch === false : it.util.schemaHasRules($sch, it.RULES.all)))
           continue;
         out += ' ' + $nextValid + ' = true; if (' + $data + '.length > ' + $i + ') { ';
@@ -3418,7 +3418,7 @@ module.exports = function (it, $keyword, $ruleType) {
   var arr1 = $schema;
   if (arr1)
     for (var $sch, $i = -1, l1 = arr1.length - 1; $i < l1; ) {
-      $sch = arr1[$i++];
+      $sch = arr1[++$i];
       if (it.opts.strictKeywords ? (typeof $sch == 'object' && Object.keys($sch).length > 0) || $sch === false : it.util.schemaHasRules($sch, it.RULES.all)) {
         $it.schema = $sch;
         $it.schemaPath = $schemaPath + '[' + $i + ']';
@@ -3579,7 +3579,7 @@ module.exports = function (it, $keyword, $ruleType) {
           var arr1 = $schemaKeys;
           if (arr1)
             for (var i1 = -1, l1 = arr1.length - 1; i1 < l1; ) {
-              $propertyKey = arr1[i1++];
+              $propertyKey = arr1[++i1];
               out += ' || ' + $key + ' == ' + it.util.toQuotedString($propertyKey) + ' ';
             }
         }
@@ -3588,7 +3588,7 @@ module.exports = function (it, $keyword, $ruleType) {
         var arr2 = $pPropertyKeys;
         if (arr2)
           for (var $i = -1, l2 = arr2.length - 1; $i < l2; ) {
-            $pProperty = arr2[$i++];
+            $pProperty = arr2[++$i];
             out += ' || ' + it.usePattern($pProperty) + '.test(' + $key + ') ';
           }
       }
@@ -3686,7 +3686,7 @@ module.exports = function (it, $keyword, $ruleType) {
     var arr3 = $schemaKeys;
     if (arr3)
       for (var $propertyKey, i3 = -1, l3 = arr3.length - 1; i3 < l3; ) {
-        var $sch = $schema[($propertyKey = arr3[i3++])];
+        var $sch = $schema[($propertyKey = arr3[++i3])];
         if (it.opts.strictKeywords ? (typeof $sch == 'object' && Object.keys($sch).length > 0) || $sch === false : it.util.schemaHasRules($sch, it.RULES.all)) {
           var $prop = it.util.getProperty($propertyKey),
             $hasDefault = (($passData = $data + $prop), $useDefaults && $sch.default !== void 0);
@@ -3774,7 +3774,7 @@ module.exports = function (it, $keyword, $ruleType) {
     var arr4 = $pPropertyKeys;
     if (arr4)
       for (var $pProperty, i4 = -1, l4 = arr4.length - 1; i4 < l4; ) {
-        $sch = $pProperties[($pProperty = arr4[i4++])];
+        $sch = $pProperties[($pProperty = arr4[++i4])];
         if (!(it.opts.strictKeywords ? (typeof $sch == 'object' && Object.keys($sch).length > 0) || $sch === false : it.util.schemaHasRules($sch, it.RULES.all)))
           continue;
         $it.schema = $sch;
@@ -3911,7 +3911,7 @@ module.exports = function (it, $keyword, $ruleType) {
         arr1 = $schema;
       if (arr1)
         for (var $property, i1 = -1, l1 = arr1.length - 1; i1 < l1; ) {
-          $property = arr1[i1++];
+          $property = arr1[++i1];
           var $propertySch = it.schema.properties[$property];
           if (!($propertySch && (it.opts.strictKeywords ? (typeof $propertySch == 'object' && Object.keys($propertySch).length > 0) || $propertySch === false : it.util.schemaHasRules($propertySch, it.RULES.all))))
             $required[$required.length] = $property;
@@ -3979,10 +3979,9 @@ module.exports = function (it, $keyword, $ruleType) {
     } else {
       out += ' if ( ';
       var arr2 = $required;
-      if (arr2) {
-        $i = -1;
-        for (var l2 = arr2.length - 1; $i < l2; ) {
-          $propertyKey = arr2[$i++];
+      if (arr2)
+        for (var l2 = (($i = -1), arr2.length - 1); $i < l2; ) {
+          $propertyKey = arr2[++$i];
           if ($i) out += ' || ';
 
           out += ' ( ( ' + ($useData = $data + ($prop = it.util.getProperty($propertyKey))) + ' === undefined ';
@@ -3991,7 +3990,7 @@ module.exports = function (it, $keyword, $ruleType) {
 
           out += ') && (missing' + $lvl + ' = ' + it.util.toQuotedString(it.opts.jsonPointers ? $propertyKey : $prop) + ') ) ';
         }
-      }
+
       out += ') {  ';
       $missingProperty = "' + " + ($propertyPath = 'missing' + $lvl) + " + '";
       if (it.opts._errorDataPathProperty)
@@ -4079,7 +4078,7 @@ module.exports = function (it, $keyword, $ruleType) {
     var arr3 = $required;
     if (arr3)
       for (var i3 = -1, l3 = arr3.length - 1; i3 < l3; ) {
-        $propertyKey = arr3[i3++];
+        $propertyKey = arr3[++i3];
         $prop = it.util.getProperty($propertyKey);
         $missingProperty = it.util.escapeQuotes($propertyKey);
         $useData = $data + $prop;

@@ -804,7 +804,7 @@ module.exports = function (it, $keyword, $ruleType) {
   var arr1 = $schema;
   if (arr1)
     for (var $pProperty, i1 = -1, l1 = arr1.length - 1; i1 < l1; ) {
-      $pProperty = arr1[i1++];
+      $pProperty = arr1[++i1];
       out += ' var ' + $matched + ' = false;  ';
       out += $ownProperties
         ? ' ' + $dataProperties + ' = ' + $dataProperties + ' || Object.keys(' + $data + '); for (var ' + $idx + '=0; ' + $idx + '<' + $dataProperties + '.length; ' + $idx + '++) { var ' + $key + ' = ' + $dataProperties + '[' + $idx + ']; '
@@ -894,7 +894,7 @@ module.exports = function (it, $keyword, $ruleType) {
   var arr1 = $schema;
   if (arr1)
     for (var $sch, $caseIndex = -1, l1 = arr1.length - 1; $caseIndex < l1; ) {
-      $sch = arr1[$caseIndex++];
+      $sch = arr1[++$caseIndex];
       if ($caseIndex && !$shouldContinue) {
         out += ' if (!' + $ifPassed + ') { ';
         $closingBraces += '}';
