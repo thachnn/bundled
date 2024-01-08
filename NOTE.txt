@@ -49,12 +49,9 @@ git tag -f xxx-1.0
 10:00 AM 11/25/2023
 ---
 
-prettier --trailing-comma es5 -c . && yarn clean && cls && yarn rollup long
+prettier --ignore-path .gitignore -c . && yarn clean && cls && yarn rollup long
 
-prettier --ignore-path .prettierignore --single-quote --trailing-comma none --print-width 123 --preserve-quote --no-space-after-anon-func -w dist\vendor\long.js
-
-prettier --ignore-path .prettierignore --single-quote false --trailing-comma none --print-width 142 --arrow-parens avoid --preserve-quote --no-space-after-anon-func --dedent-switch-labels -w dist\vendor\terser.js
-
+prettier --single-quote --trailing-comma none --print-width 123 --preserve-quote --no-space-after-anon-func -w dist\vendor\long.js
 
 decomment --allowHashBang --keep "(^\s*[@#]__PURE__\s*$|^[*\s]*!\s*\S|(^|\n|\r)[* \t]*@(preserve|lic(ense)?|cc_on)\b)"
 

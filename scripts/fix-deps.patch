@@ -381,6 +381,10 @@
              operator: "!",
 --- a/node_modules/terser/lib/output.js
 +++ b/node_modules/terser/lib/output.js
+@@ -1568,2 +1568,2 @@ function OutputStream(options) {
+         this.definitions.forEach(function(def, i) {
+-            if (i) output.comma();
++            if (i) output.print(","), output.should_break() && (output.newline(), output.indent()), output.space();
 @@ -1743,2 +1743,2 @@ function OutputStream(options) {
 -                output.comma();
 -                if (output.should_break()) {

@@ -10,9 +10,10 @@ const { TerserPlugin, CopyPlugin, BannerPlugin, ReplaceCodePlugin } = require('w
  * @typedef {{from: string, to?: (string|Function), context?: string, transform?: Function, transformPath?: Function}} ObjectPattern
  */
 
+const mergeDeep = require('./scripts/mergeDeep');
+
 /** @type {import('terser').MinifyOptions} */
 const baseTerserOpts = require('./scripts/terser.config.json');
-const commentsCond = /(^\**\s*!(?!\s*\**$)|(^|\n|\r)\s*@(preserve|lic(ense)?|cc_on)\b)/i;
 
 /**
  * @param {string} name
@@ -20,62 +21,65 @@ const commentsCond = /(^\**\s*!(?!\s*\**$)|(^|\n|\r)\s*@(preserve|lic(ense)?|cc_
  * @param {boolean} [clean]
  * @returns {Configuration}
  */
-const webpackConfig = (name, config, clean = name.charAt(0) !== '/') =>
-  Object.assign(config, {
+const webpackConfig = (name, config, clean = name.charAt(0) !== '/') => {
+  config = {
     mode: 'production',
     name: clean ? name : name.substring(1),
-    output: Object.assign({ path: path.join(__dirname, 'dist', clean ? name : '') }, config.output),
-    context: config.context || __dirname,
-    target: config.target || 'node',
+    output: { path: path.join(__dirname, 'dist', clean ? name : '') },
+    context: __dirname,
+    target: 'node',
     node: { __filename: false, __dirname: false },
     cache: true,
-    stats: Object.assign({ modules: true, maxModules: Infinity, children: true }, config.stats),
-    optimization: Object.assign({ nodeEnv: false }, config.optimization, {
+    stats: { modules: true, maxModules: Infinity, children: true },
+    optimization: {
+      nodeEnv: false,
       // minimize: false,
-      minimizer: ((config.optimization || {}).minimizer || [null]).map(newTerserPlugin),
-    }),
+      minimizer: [newTerserPlugin()],
+    },
     plugins: [
       new ReplaceCodePlugin({
         search: /(\n\/\*{6}\/[ \t]*__webpack_require__)\.d *= *function\b[\s\S]*?\1\.p *= *"";/,
         replace: '',
       }),
-    ].concat(config.plugins || []),
-  });
+    ],
+  }.mergeDeep(config);
 
-const newTerserPlugin = (opt) =>
+  config.optimization.minimizer.length > 1 && config.optimization.minimizer.shift();
+  return config;
+};
+
+const newTerserPlugin = (opts = {}) =>
   new TerserPlugin(
-    Object.assign({ extractComments: { condition: commentsCond, banner: false }, cache: true }, opt, {
+    {
+      cache: true,
+      extractComments: { condition: /(^|\n|\r)\s*@(preserve|lic(ense)?|cc_on)\b|^\**\s*!(?!\s*\**$)/i, banner: false },
       // parallel: true,
-      terserOptions: Object.assign({}, baseTerserOpts, (opt = opt || {}).terserOptions, {
-        output: Object.assign({ comments: /^\s*\d+\s*$/ }, baseTerserOpts.output, (opt.terserOptions || {}).output),
-      }),
-    })
+      terserOptions: { output: { comments: /^\s*\d+\s*$/ } }.mergeDeep(baseTerserOpts),
+    }.mergeDeep(opts)
   );
 
 const minifyContent = (content, opts = null) =>
-  minify(String(content), Object.assign({}, baseTerserOpts, typeof opts === 'object' ? opts : null)).code;
+  minify(String(content), mergeDeep(baseTerserOpts, typeof opts == 'object' ? opts : null)).code;
 
 /** @param {(Array.<(ObjectPattern|string)>|ObjectPattern)} patterns */
 const newCopyPlugin = (patterns) => new CopyPlugin([].concat(patterns));
 
 // Helpers
 
-/** @param {...Array.<(string|RegExp)>} _args */
-String.prototype.replaceBulk = function (_args) {
-  return Array.prototype.reduce.call(arguments, (s, i) => s.replace(i[0], i[1]), this);
-};
+Object.defineProperty(String.prototype, 'replaceBulk', {
+  value: function (/** @type {...Array.<(string|RegExp)>} */ _args) {
+    return Array.prototype.reduce.call(arguments, (s, i) => s.replace(i[0], i[1]), this);
+  },
+});
 
 const replaceModExport = (s, p1) => s.replace(/^\s*module\.exports *=/gm, p1);
 
-/**
- * @param {RegExp} re
- * @param {(string|Function)} [p]
- * @param {Function} [cb]
- */
-String.prototype.replaceWithFile = function (re, p = null, cb = replaceModExport) {
-  if (typeof p == 'function') (cb = p), (p = null);
-  return this.replace(re, (_, p1, p2) => cb(fs.readFileSync(require.resolve(p || p2), 'utf8'), p1));
-};
+Object.defineProperty(String.prototype, 'replaceWithFile', {
+  value: function (/** @type {RegExp} */ re, p = null, cb = replaceModExport) {
+    if (typeof p == 'function') (cb = p), (p = null);
+    return this.replace(re, (_, p1, p2) => cb(fs.readFileSync(require.resolve(p || p2), 'utf8'), p1));
+  },
+});
 
 const commonjs1Patches = [
   { search: /(?<!\bfunction )\b_interopRequire\w+\(/g, replace: '(' },
@@ -118,7 +122,9 @@ module.exports = [
       ],
     },
     optimization: {
-      minimizer: [{ test: /(\.m?js|[\\/][\w-]+)$/i }],
+      minimizer: [
+        newTerserPlugin({ test: /(\.m?js|[\\/][\w-]+)$/i, terserOptions: { output: { ascii_only: false } } }),
+      ],
     },
     plugins: [
       newCopyPlugin([
@@ -127,8 +133,9 @@ module.exports = [
           from: 'node_modules/terser/package.json',
           transform(content) {
             /** @type {Object.<string, *>} */
-            const pkg = JSON.parse(String(content).replaceBulk(['.min.', '.'], [/"dist",$/m, '$&"vendor",']));
-            ['dependencies', 'devDependencies', 'scripts', 'eslintConfig', 'pre-commit'].forEach((k) => delete pkg[k]);
+            const pkg = JSON.parse(String(content).replace(/"dist",$/m, '$& "vendor",'));
+            pkg.devDependencies = Object.assign({ acorn: pkg.devDependencies.acorn }, pkg.dependencies);
+            ['dependencies', 'scripts', 'eslintConfig', 'pre-commit'].forEach((k) => delete pkg[k]);
 
             return (pkg.version += '-0'), (pkg.bin.decomment = 'bin/decomment'), JSON.stringify(pkg, null, 2) + '\n';
           },
@@ -146,6 +153,7 @@ module.exports = [
           ...{ from: 'scripts/decomment.js', to: 'bin/[name]' },
           transform: (s) => minifyContent(String(s).replace(/( require\(['"])(acorn)\b/, '$1../vendor/$2')),
         },
+        { from: 'node_modules/acorn/dist/bin.js', to: '[name]/acorn', transform: minifyContent },
       ]),
       new BannerPlugin({ banner: '#!/usr/bin/env node', raw: true }),
     ],
@@ -421,6 +429,7 @@ module.exports = [
       ],
     },
   }),
+  /*
   webpackConfig('/enhanced-resolve', {
     entry: { 'lib/enhanced-resolve': './node_modules/enhanced-resolve/lib/node' },
     output: { libraryTarget: 'commonjs2' },
@@ -437,6 +446,7 @@ module.exports = [
       ],
     },
   }),
+  */
   webpackConfig('/picomatch', {
     entry: { 'vendor/picomatch': './node_modules/picomatch/lib/picomatch' },
     output: { libraryTarget: 'commonjs2' },
@@ -448,6 +458,129 @@ module.exports = [
     resolve: {
       alias: { 'binary-extensions$': require.resolve('binary-extensions/binary-extensions.json') },
     },
+  }),
+  //
+  webpackConfig('/webpack', {
+    entry: { 'lib/webpack': './node_modules/webpack/lib/webpack' },
+    output: { libraryTarget: 'commonjs2' },
+    externals: {
+      '@webassemblyjs/ast': 'commonjs ../vendor/wasm-ast',
+      '@webassemblyjs/wasm-parser': 'commonjs ../vendor/wasm-parser',
+      '@webassemblyjs/wasm-edit': 'commonjs ../vendor/wasm-edit',
+      acorn: 'commonjs ../vendor/acorn',
+      'ajv-keywords': 'commonjs2 ../vendor/ajv-keywords',
+      ajv: 'commonjs2 ../vendor/ajv',
+      micromatch: 'commonjs2 ../vendor/micromatch',
+      'loader-utils': 'commonjs2 ./loader-utils',
+      'schema-utils': 'commonjs2 ./schema-utils',
+      'terser-webpack-plugin': 'commonjs2 ./terser-plugin',
+      'copy-webpack-plugin': 'commonjs2 ./copy-plugin',
+      chokidar: 'commonjs2 ../vendor/chokidar',
+      'neo-async': 'commonjs2 ../vendor/neo-async',
+      'readable-stream': 'commonjs2 ../vendor/readable-stream',
+      'graceful-fs': 'commonjs2 ../vendor/graceful-fs',
+      tapable: 'commonjs2 ./tapable',
+      'enhanced-resolve': 'commonjs2 ./enhanced-resolve',
+      'webpack-sources': 'commonjs2 ./webpack-sources',
+      // inspector: 'inspector',
+      '../schemas/WebpackOptions.json': '../schemas/WebpackOptions.json',
+    },
+    module: {
+      rules: [
+        {
+          test: /\bnode_modules[\\/]webpack\b.lib\b.node.NodeMainTemplate.*\.runtime\.js$/i,
+          loader: 'string-replace-loader',
+          options: { search: /\brequire(\()/g, replace: '__non_webpack_require__$1' },
+        },
+        {
+          test: /\bnode_modules[\\/]loader-runner\b.lib.loadLoader\.js$/i,
+          loader: 'string-replace-loader',
+          options: {
+            multiple: [
+              // Node.js 6 doesn't support dynamic `import()`
+              { search: /\bSystem\b/g, replace: '__non_webpack_System' },
+              { search: /\brequire(\(\w+)/, replace: '__non_webpack_require__$1' },
+            ],
+          },
+        },
+        {
+          test: /\bnode_modules[\\/]webpack\b.lib\b.(node.NodeSourcePlugin|dependencies.SystemPlugin)\.js$/i,
+          loader: 'string-replace-loader',
+          options: {
+            multiple: [
+              {
+                search: /\brequire(\.resolve\(['"`])node-libs-browser\b/g,
+                replace: '__non_webpack_require__$1../web_modules',
+              },
+              { search: /\brequire(\.resolve\(['"])(\.\.\/){2,}/g, replace: '__non_webpack_require__$1../' },
+            ],
+          },
+        },
+        {
+          test: /\bnode_modules[\\/]node-libs-browser\b.index\.js$/i,
+          loader: 'string-replace-loader',
+          options: {
+            search: /\brequire(\.resolve\(['"])(.*?)(\/|(?:\/browser|\/util)?\.js)?(['"]\))/g,
+            replace: '__non_webpack_require__$1../web_modules/$2$4',
+          },
+        },
+        //
+        {
+          test: /\bnode_modules[\\/]webpack\b.lib\b.(dependencies.AMDPlugin|node.Node(Environment|Source)Plugin|logging.runtime)\.js$/i,
+          loader: 'string-replace-loader',
+          options: {
+            multiple: [
+              { search: /\b(require\(['"](?:enhanced-resolve|tapable))\/lib\/(\w+)(['"]\))/g, replace: '$1$3.$2' },
+              { search: /(\(\s*__dirname)(,\s*['"]\.\.['"]){2,}/g, replace: '$1$2' },
+            ],
+          },
+        },
+        {
+          test: /\bnode_modules[\\/](\w+-webpack-plugin\b.dist|@webassemblyjs\b.helper-module-context)\b.*\.js$/i,
+          loader: 'string-replace-loader',
+          options: { multiple: commonjs1Patches },
+        },
+        {
+          test: /\bnode_modules[\\/]estraverse\b.estraverse\.js$/i,
+          loader: 'string-replace-loader',
+          options: {
+            multiple: [
+              { search: /^[ \t]*exports\.(?!Syntax\b|VisitorKeys)(\w+) *= *\1\b/gm, replace: '//$&' },
+              { search: /^[ \t]*(\w+)\.prototype[.\['"]+(\w+)['"\]]*( *= *function)\b/gm, replace: 'var $1$$$2$3' },
+            ],
+          },
+        },
+        {
+          test: /\bnode_modules[\\/](webpack|estraverse|esrecurse|eslint-scope)\b.package\.json$/i,
+          loader: 'string-replace-loader',
+          options: { search: /,\s*"(engines|dependencies)":[\s\S]*/, replace: '\n}' },
+        },
+      ],
+    },
+    resolve: {
+      alias: {
+        '@webassemblyjs/helper-module-context': require.resolve('@webassemblyjs/helper-module-context/lib'),
+      },
+    },
+    plugins: [
+      newCopyPlugin([
+        { from: '{LICENSE*,*.md,declarations/**,schemas/*.json}', context: 'node_modules/webpack' },
+        {
+          from: 'node_modules/webpack/package.json',
+          transform(content) {
+            const pkg = JSON.parse(String(content).replace('"hot/"', '"vendor/"'));
+            pkg.devDependencies = pkg.dependencies;
+            ['dependencies', 'scripts', 'bin', 'web', 'jest', 'husky', 'lint-staged'].forEach((k) => delete pkg[k]);
+
+            pkg.optionalDependencies = require('chokidar/package.json').optionalDependencies;
+            return (pkg.version += '-0'), JSON.stringify(pkg, null, 2) + '\n';
+          },
+        },
+        { from: 'node_modules/webpack/buildin/', to: 'buildin/', transform: minifyContent },
+        { from: 'node_modules/neo-async/async.js', to: 'vendor/neo-async.js', transform: minifyContent },
+      ]),
+      new ReplaceCodePlugin({ search: /__non_webpack_System\b/g, replace: 'System' }),
+    ],
   }),
   //
   webpackConfig('/browser-libs', {

@@ -1,0 +1,50 @@
+trailingComma: 'es5'
+singleQuote: true
+#
+overrides:
+  - files: 'dist/**'
+    options:
+      trailingComma: 'none'
+      arrowParens: 'avoid'
+  - files: 'dist/**/bin/*'
+    options:
+      parser: 'babel'
+    #
+  - files: 'dist/**/graceful-fs.js'
+    options:
+      semi: false
+  - files:
+      - 'dist/**/{terser,acorn}.js'
+      - 'dist/buildin/*.js'
+      - 'dist/**/bin/{terser,acorn}'
+    options:
+      singleQuote: false
+  - files:
+      - 'dist/**/{terser,acorn,neo-async}.js'
+      - 'dist/buildin/*.js'
+      - 'dist/**/bin/terser'
+    options:
+      spaceAfterAnonFunc: false
+    #
+  - files: 'dist/**/{terser,acorn,source-map}.js'
+    options:
+      printWidth: 142
+      dedentSwitchLabels: true
+  - files: 'dist/**/acorn.js'
+    options:
+      printWidth: 157
+      bracketSpacing: false
+  - files:
+      - 'dist/**/bin/terser'
+      - 'dist/**/source-map.js'
+    options:
+      printWidth: 137
+      preserveQuote: true
+  - files:
+      - 'dist/**/bin/acorn'
+      - 'dist/**/source-map.js'
+    options:
+      printWidth: 105
+  - files: 'dist/**/neo-async.js'
+    options:
+      printWidth: 96

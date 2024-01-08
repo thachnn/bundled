@@ -32,6 +32,10 @@
     "webpack": "^4.43.0"
   },
   "devDependencies": {
+    "@types/node": "6",
+    "@types/tapable": "1",
+    "@types/webpack": "4",
+    "@types/webpack-sources": "1",
     "rollup": "^2.0.6"
   },
   "resolutions": {

@@ -2,6 +2,26 @@
 # yarn lockfile v1
 
 
+"@types/node@6":
+  version "6.14.13"
+  resolved "https://registry.yarnpkg.com/@types/node/-/node-6.14.13.tgz#b6649578fc0b5dac88c4ef48a46cab33c50a6c72"
+  integrity sha512-J1F0XJ/9zxlZel5ZlbeSuHW2OpabrUAqpFuC2sm2I3by8sERQ8+KCjNKUcq8QHuzpGMWiJpo9ZxeHrqrP2KzQw==
+
+"@types/tapable@1":
+  version "1.0.6"
+  resolved "https://registry.yarnpkg.com/@types/tapable/-/tapable-1.0.6.tgz#a9ca4b70a18b270ccb2bc0aaafefd1d486b7ea74"
+  integrity sha512-W+bw9ds02rAQaMvaLYxAbJ6cvguW/iJXNT6lTssS1ps6QdrMKttqEAMEG/b5CR8TZl3/L7/lH0ZV5nNR1LXikA==
+
+"@types/webpack@4":
+  version "4.41.32"
+  resolved "https://registry.npmjs.org/@types/webpack/-/webpack-4.41.32.tgz#a7bab03b72904070162b2f169415492209e94212"
+  integrity sha512-cb+0ioil/7oz5//7tZUSwbrSAN/NWHrQylz5cW8G0dWTcF/g+/dSdMlKVZspBYuMAN1+WnwHrkxiRrLcwd0Heg==
+
+"@types/webpack-sources@1":
+  version "1.4.3"
+  resolved "https://registry.npmjs.org/@types/webpack-sources/-/webpack-sources-1.4.3.tgz#3041a5f20719fe1e95758dd1c45bcaf0f918e13d"
+  integrity sha512-2c/hwwRyGoSd7lrVLaekVQzmvVoG3NVPhJLZ84KvT14PTT1VEXGEbZjhtRKV9w/XQX3i1huYeqA29OECxq0NGA==
+
 "@webassemblyjs/ast@1.9.0":
   version "1.9.0"
   resolved "https://registry.yarnpkg.com/@webassemblyjs/ast/-/ast-1.9.0.tgz#bd850604b4042459a5a41cd7d338cbed695ed964"

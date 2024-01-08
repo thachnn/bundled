@@ -3,11 +3,9 @@
 const { statSync } = require('fs');
 const { dirname, resolve, sep } = require('path');
 
-const noTerser = ((r) => !fileExists(resolve(r)) && r)('node_modules/terser/' + require('terser/package.json').main);
-let minify = !noTerser ? require('terser').minify : require('./scripts/decomment');
-
 // prettier-ignore
-function fileExists(p) { try { return statSync(p).isFile(); } catch (_) {} }
+function _try(cb) { try { return cb(); } catch (_) {} }
+let minify = _try(() => require('terser').minify) || require('./scripts/decomment');
 
 /**
  * @typedef {import('terser').MinifyOptions} MinifyOptions
@@ -17,6 +15,7 @@ function fileExists(p) { try { return statSync(p).isFile(); } catch (_) {} }
  * @typedef {(TransformPattern|TransformPattern[])} TransformPatterns
  */
 
+const mergeDeep = require('./scripts/mergeDeep');
 const baseTerserOpts = require('./scripts/terser.config.json');
 
 /**
@@ -31,12 +30,14 @@ const terserPlugin = (options = {}) => ({
     outputOpts.format !== 'es' || (opts.module = true);
     // outputOpts.format !== 'cjs' || (opts.toplevel = true);
 
-    opts = Object.assign(opts, baseTerserOpts, options);
-    !opts.transform || (code = replaceBulk(code, opts.transform));
+    opts = mergeDeep(baseTerserOpts, opts, options);
+    if (opts.transform) code = replaceBulk(code, opts.transform);
 
     return minify(code, (delete opts.transform, opts));
   },
 });
+
+const fileExists = (p) => _try(() => statSync(p).isFile());
 
 /** @returns {RollupPlugin} */
 const nodeResolve = () => ({
@@ -59,14 +60,16 @@ const nodeResolve = () => ({
  * @param {RollupOptions} config
  * @returns {(RollupOptions|{name?: string})}
  */
-const buildConfig = (name, config) =>
-  Object.assign(config, {
+const buildConfig = (name, config) => {
+  config = {
     name,
-    output: Object.assign({ format: 'cjs', interop: false }, config.output),
-    plugins: Object.values(
-      [nodeResolve(), terserPlugin()].concat(config.plugins || []).reduce((o, p) => ((o[p.name] = p), o), {})
-    ),
-  });
+    output: { format: 'cjs', interop: false },
+    plugins: [nodeResolve(), terserPlugin()],
+  }.mergeDeep(config);
+
+  config.plugins = Object.values(config.plugins.reduce((o, p) => ((o[p.name] = p), o), {}));
+  return config;
+};
 
 /** @param {Object.<string, *>} [args] */
 module.exports = (args = {}) => {
@@ -149,13 +152,8 @@ const wasmBuildPlugins = [
 const configSet = [
   buildConfig('terser', {
     input: 'node_modules/terser/main.js',
-    output: { file: noTerser || 'dist/vendor/terser.js', esModule: false },
+    output: { file: 'dist/vendor/terser.js', esModule: false },
     external: 'source-map',
-    plugins: [
-      terserPlugin({
-        transform: { search: /\b(require\(['"])(source-map)\b/, replace: '$1./$2' },
-      }),
-    ].filter(() => !noTerser),
   }),
   //
   buildConfig('long', {
@@ -208,13 +206,26 @@ const configSet = [
       commonJS({ transform: { search: /(\.exports *= *)(patch);?\n+(function) +\2\b/, replace: '$1$3 polyfills' } }),
     ],
   }),
+  buildConfig('tapable', {
+    input: 'node_modules/tapable/lib/index.js',
+    output: { file: 'dist/lib/tapable.js', esModule: false },
+    external: 'util',
+    plugins: [
+      commonJS({ transform: { search: /^[ \t]*exports\.(__esModule *=)/gm, replace: 'export const $1' } }),
+      transformCode({
+        test: /\bnode_modules[\\/]tapable\b.lib.(HookCodeFactory|\w+(Waterfall|ParallelBail)Hook)\.js$/i,
+        patterns: Array(5).fill(
+          { search: /^(([ \t]*)(?:(var|let) +)?(\w+) *\+?= *(.|\n\2[ \t})])*);\n\2\4 *\+=/gm, replace: '$1 +' } //
+        ),
+      }),
+    ],
+  }),
   buildConfig('enhanced-resolve', {
     input: 'node_modules/enhanced-resolve/lib/node.js',
     output: { file: 'dist/lib/enhanced-resolve.js', esModule: false },
-    external: ['util', 'path', 'graceful-fs'],
+    external: ['util', 'path', 'graceful-fs', 'tapable'],
     plugins: [
       transformCode({
-        name: 'commonjs2',
         test: /\bnode_modules[\\/]enhanced-resolve\b.lib.SymlinkPlugin\.js$/i,
         patterns: {
           search: /^[ \t]*(const|var) +(\w+)\s*=\s*require *\( *(['"]\.\/forEachBail['"]) *\)(?!\s*\.)/m,
@@ -231,13 +242,10 @@ const configSet = [
           },
           {
             search: /^[ \t]*(?:module\.)?exports\.(\w+)\.(\w+)\s*=\s*(function +(\w+) *\()/gm,
-            replace: 'export { $4 as $1_$2 };\n$3',
+            replace: 'export { $4 as $1$$$2 };\n$3',
           },
+          { search: /\b(require\(['"]tapable)\/lib\/(\w+)(['"]\))/g, replace: '$1$3.$2' },
         ],
-      }),
-      transformCode({
-        test: /\bnode_modules[\\/]tapable\b.lib.HookCodeFactory\.js$/i,
-        patterns: Array(3).fill({ search: /^(([ \t]*)(var |let )?(\w+) \+?= .*);\n\2\4 \+= /gm, replace: '$1 + ' }),
       }),
     ],
   }),
