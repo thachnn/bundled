@@ -192,7 +192,9 @@ function has(obj, propName) {
   return hasOwnProperty.call(obj, propName);
 }
 
-var isArray = Array.isArray || ((obj) => toString.call(obj) === "[object Array]");
+var isArray = Array.isArray || function(obj) {
+  return toString.call(obj) === "[object Array]";
+};
 
 function wordsRegexp(words) {
   return new RegExp("^(?:" + words.replace(/ /g, "|") + ")$");
@@ -217,10 +219,10 @@ function getLineInfo(input, offset) {
   for (var line = 1, cur = 0; ; ) {
     lineBreakG.lastIndex = cur;
     var match = lineBreakG.exec(input);
-    if (match && match.index < offset) {
-      ++line;
-      cur = match.index + match[0].length;
-    } else return new Position(line, offset - cur);
+    if (!match || match.index >= offset) return new Position(line, offset - cur);
+
+    ++line;
+    cur = match.index + match[0].length;
   }
 }
 
@@ -255,7 +257,7 @@ function getOptions(opts) {
 
   if (isArray(options.onToken)) {
     var tokens = options.onToken;
-    options.onToken = (token) => tokens.push(token);
+    options.onToken = function(token) { return tokens.push(token); };
   }
   if (isArray(options.onComment)) options.onComment = pushComment(options, options.onComment);
 
@@ -371,8 +373,8 @@ prototypeAccessors.treatFunctionsAsVar.get = function() { return this.treatFunct
 Parser.prototype.inNonArrowFunction = function() { return (this.currentThisScope().flags & SCOPE_FUNCTION) > 0; };
 
 Parser.extend = function() {
-  var plugins = [], len = arguments.length;
-  while (len--) plugins[len] = arguments[len];
+  var plugins = [];
+  for (var len = arguments.length; len--; ) plugins[len] = arguments[len];
 
   var cls = this;
   for (var i = 0; i < plugins.length; i++) cls = plugins[i](cls);
@@ -817,13 +819,13 @@ pp.parseLabeledStatement = function(node, maybeName, expr, context) {
   var kind = this.type.isLoop ? "loop" : this.type === types._switch ? "switch" : null;
   for (var i = this.labels.length - 1; i >= 0; i--) {
     var label$1 = this.labels[i];
-    if (label$1.statementStart === node.start) {
-      label$1.statementStart = this.start;
-      label$1.kind = kind;
-    } else break;
+    if (label$1.statementStart !== node.start) break;
+
+    label$1.statementStart = this.start;
+    label$1.kind = kind;
   }
   this.labels.push({name: maybeName, kind: kind, statementStart: this.start});
-  node.body = this.parseStatement(context ? (context.indexOf("label") === -1 ? context + "label" : context) : "label");
+  node.body = this.parseStatement(context ? (context.indexOf("label") < 0 ? context + "label" : context) : "label");
   this.labels.pop();
   node.label = expr;
   return this.finishNode(node, "LabeledStatement");
@@ -1298,7 +1300,7 @@ pp.toAssignableList = function(exprList, isBinding) {
   }
   if (end) {
     var last = exprList[end - 1];
-    if (this.options.ecmaVersion === 6 && isBinding && last && last.type === "RestElement" && last.argument.type !== "Identifier")
+    this.options.ecmaVersion === 6 && isBinding && last && last.type === "RestElement" && last.argument.type !== "Identifier" &&
       this.unexpected(last.argument.start);
   }
   return exprList;
@@ -1378,7 +1380,7 @@ pp.checkLVal = function(expr, bindingType, checkClashes) {
   switch (expr.type) {
   case "Identifier":
     bindingType !== BIND_LEXICAL || expr.name !== "let" || this.raiseRecoverable(expr.start, "let is disallowed as a lexically bound name");
-    if (this.strict && this.reservedWordsStrictBind.test(expr.name))
+    this.strict && this.reservedWordsStrictBind.test(expr.name) &&
       this.raiseRecoverable(expr.start, (bindingType ? "Binding " : "Assigning to ") + expr.name + " in strict mode");
     if (checkClashes) {
       has(checkClashes, expr.name) && this.raiseRecoverable(expr.start, "Argument name clash");
@@ -1450,10 +1452,10 @@ pp.checkPropClash = function(prop, propHash, refDestructuringErrors) {
     return;
   }
   var other = propHash[(name = "$" + name)];
-  if (other) {
-    if (kind === "init" ? (this.strict && other.init) || other.get || other.set : other.init || other[kind])
-      this.raiseRecoverable(key.start, "Redefinition of property");
-  } else other = propHash[name] = {init: false, get: false, set: false};
+  other
+    ? (kind === "init" ? (this.strict && other.init) || other.get || other.set : other.init || other[kind]) &&
+      this.raiseRecoverable(key.start, "Redefinition of property")
+    : (other = propHash[name] = {init: false, get: false, set: false});
 
   other[kind] = true;
 };
@@ -1603,7 +1605,7 @@ pp.parseExprSubscripts = function(refDestructuringErrors) {
 
 pp.parseSubscripts = function(base, startPos, startLoc, noCalls) {
   var maybeAsyncArrow = this.options.ecmaVersion >= 8 && base.type === "Identifier" && base.name === "async" &&
-      this.lastTokEnd === base.end && !this.canInsertSemicolon() && this.input.slice(base.start, base.end) === "async";
+    this.lastTokEnd === base.end && !this.canInsertSemicolon() && this.input.slice(base.start, base.end) === "async";
   while (1) {
     var element = this.parseSubscript(base, startPos, startLoc, noCalls, maybeAsyncArrow);
     if (element === base || element.type === "ArrowFunctionExpression") return element;
@@ -2066,7 +2068,7 @@ pp.parseFunctionBody = function(node, isArrowFunction, isMethod) {
     this.checkParams(node, false);
   } else {
     var nonSimple = this.options.ecmaVersion >= 7 && !this.isSimpleParamList(node.params);
-    if ((!oldStrict || nonSimple) && (useStrict = this.strictDirective(this.end)) && nonSimple)
+    (!oldStrict || nonSimple) && (useStrict = this.strictDirective(this.end)) && nonSimple &&
       this.raiseRecoverable(node.start, "Illegal 'use strict' directive in function with non-simple parameter list");
 
     var oldLabels = this.labels;
@@ -2129,8 +2131,8 @@ pp.checkUnreserved = function(ref) {
   this.inGenerator && name === "yield" && this.raiseRecoverable(start, "Cannot use 'yield' as identifier inside a generator");
   this.inAsync && name === "await" && this.raiseRecoverable(start, "Cannot use 'await' as identifier inside an async function");
   this.keywords.test(name) && this.raise(start, "Unexpected keyword '" + name + "'");
-  if (this.options.ecmaVersion < 6 && this.input.slice(start, end).indexOf("\\") !== -1) return;
-  if ((this.strict ? this.reservedWordsStrict : this.reservedWords).test(name)) {
+  if ((this.options.ecmaVersion >= 6 || this.input.slice(start, end).indexOf("\\") < 0) &&
+      (this.strict ? this.reservedWordsStrict : this.reservedWords).test(name)) {
     this.inAsync || name !== "await" || this.raiseRecoverable(start, "Cannot use keyword 'await' outside an async function");
     this.raiseRecoverable(start, "The keyword '" + name + "' is reserved");
   }
@@ -2242,7 +2244,7 @@ pp.declareName = function(name, bindingType, pos) {
 };
 
 pp.checkLocalExport = function(id) {
-  if (this.scopeStack[0].lexical.indexOf(id.name) === -1 && this.scopeStack[0].var.indexOf(id.name) === -1) this.undefinedExports[id.name] = id;
+  if (this.scopeStack[0].lexical.indexOf(id.name) < 0 && this.scopeStack[0].var.indexOf(id.name) < 0) this.undefinedExports[id.name] = id;
 };
 
 pp.currentScope = function() {
@@ -2310,7 +2312,7 @@ var types$1 = {
   b_tmpl: new TokContext("${", false),
   p_stat: new TokContext("(", false),
   p_expr: new TokContext("(", true),
-  q_tmpl: new TokContext("`", true, true, (p) => p.tryReadTemplateToken()),
+  q_tmpl: new TokContext("`", true, true, function(p) { return p.tryReadTemplateToken(); }),
   f_stat: new TokContext("function", false),
   f_expr: new TokContext("function", true),
   f_expr_gen: new TokContext("function", true, false, null, true),
@@ -2458,7 +2460,7 @@ function RegExpValidationState(parser) {
 }
 
 RegExpValidationState.prototype.reset = function(start, pattern, flags) {
-  var unicode = flags.indexOf("u") !== -1;
+  var unicode = flags.indexOf("u") > -1;
   this.start = start | 0;
   this.source = pattern + "";
   this.flags = flags;
@@ -2520,7 +2522,7 @@ function codePointToString(ch) {
 pp.validateRegExpFlags = function(state) {
   for (var validFlags = state.validFlags, flags = state.flags, i = 0; i < flags.length; i++) {
     var flag = flags.charAt(i);
-    validFlags.indexOf(flag) !== -1 || this.raise(state.start, "Invalid regular expression flag");
+    validFlags.indexOf(flag) > -1 || this.raise(state.start, "Invalid regular expression flag");
 
     flags.indexOf(flag, i + 1) < 0 || this.raise(state.start, "Duplicate regular expression flag");
   }
@@ -2557,7 +2559,7 @@ pp.regexp_pattern = function(state) {
   for (var i = 0, list = state.backReferenceNames; i < list.length; i += 1) {
     var name = list[i];
 
-    state.groupNames.indexOf(name) !== -1 || state.raise("Invalid named capture referenced");
+    state.groupNames.indexOf(name) > -1 || state.raise("Invalid named capture referenced");
   }
 };
 
@@ -2730,9 +2732,8 @@ function isSyntaxCharacter(ch) {
 }
 
 pp.regexp_eatPatternCharacters = function(state) {
-  var start = state.pos,
-    ch = 0;
-  while ((ch = state.current()) !== -1 && !isSyntaxCharacter(ch)) state.advance();
+  var start = state.pos;
+  for (var ch = 0; (ch = state.current()) !== -1 && !isSyntaxCharacter(ch); ) state.advance();
 
   return state.pos !== start;
 };
@@ -2749,7 +2750,7 @@ pp.regexp_eatExtendedPatternCharacter = function(state) {
 pp.regexp_groupSpecifier = function(state) {
   if (state.eat(0x3f)) {
     if (this.regexp_eatGroupName(state)) {
-      state.groupNames.indexOf(state.lastStringValue) === -1 || state.raise("Duplicate capture group name");
+      state.groupNames.indexOf(state.lastStringValue) < 0 || state.raise("Duplicate capture group name");
 
       state.groupNames.push(state.lastStringValue);
       return;
@@ -3096,7 +3097,7 @@ pp.regexp_classRanges = function(state) {
       var right = state.lastIntValue;
       !state.switchU || (left !== -1 && right !== -1) || state.raise("Invalid character class");
 
-      if (left !== -1 && right !== -1 && left > right) state.raise("Range out of order in character class");
+      left !== -1 && right !== -1 && left > right && state.raise("Range out of order in character class");
     }
   }
 };
@@ -3306,7 +3307,7 @@ pp.fullCharCodeAtPos = function() {
 pp.skipBlockComment = function() {
   var startLoc = this.options.onComment && this.curPosition(),
     start = this.pos, end = this.input.indexOf("*/", (this.pos += 2));
-  end !== -1 || this.raise(this.pos - 2, "Unterminated comment");
+  end > -1 || this.raise(this.pos - 2, "Unterminated comment");
   this.pos = end + 2;
   if (this.options.locations) {
     lineBreakG.lastIndex = start;
@@ -3357,8 +3358,8 @@ pp.skipSpace = function() {
       }
       break;
     default:
-      if ((ch > 8 && ch < 14) || (ch >= 5760 && nonASCIIwhitespace.test(String.fromCharCode(ch)))) ++this.pos;
-      else break loop;
+      if (!((ch > 8 && ch < 14) || (ch >= 5760 && nonASCIIwhitespace.test(String.fromCharCode(ch))))) break loop;
+      ++this.pos;
     }
   }
 };
@@ -3562,8 +3563,7 @@ pp.readInt = function(radix, len) {
   var start = this.pos, total = 0;
   for (var i = 0, e = len == null ? Infinity : len; i < e; ++i) {
     var code = this.input.charCodeAt(this.pos), val = void 0;
-    val = code >= 97 ? code - 97 + 10 : code >= 65 ? code - 65 + 10 : code >= 48 && code <= 57 ? code - 48 : Infinity;
-    if (val >= radix) break;
+    if ((val = code >= 97 ? code - 97 + 10 : code >= 65 ? code - 65 + 10 : code >= 48 && code <= 57 ? code - 48 : Infinity) >= radix) break;
     ++this.pos;
     total = total * radix + val;
   }
@@ -3659,8 +3659,8 @@ pp.tryReadTemplateToken = function() {
   try {
     this.readTmplToken();
   } catch (err) {
-    if (err === INVALID_TEMPLATE_ESCAPE_ERROR) this.readInvalidTemplateToken();
-    else throw err;
+    if (err !== INVALID_TEMPLATE_ESCAPE_ERROR) throw err;
+    this.readInvalidTemplateToken();
   }
 
   this.inTemplateElement = false;
@@ -3775,9 +3775,8 @@ pp.readHexChar = function(len) {
 
 pp.readWord1 = function() {
   this.containsEsc = false;
-  var word = "", first = true, chunkStart = this.pos,
-    astral = this.options.ecmaVersion >= 6;
-  while (this.pos < this.input.length) {
+  var word = "", first = true, chunkStart = this.pos;
+  for (var astral = this.options.ecmaVersion >= 6; this.pos < this.input.length; ) {
     var ch = this.fullCharCodeAtPos();
     if (isIdentifierChar(ch, astral)) this.pos += ch <= 0xffff ? 1 : 2;
     else if (ch === 92) {

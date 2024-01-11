@@ -5,7 +5,7 @@ var fs = require("fs"),
   acorn = require("../vendor/acorn.js");
 
 function help(status) {
-  (status ? console.error : console.log)(
+  (!status ? console.log : console.error)(
     "Usage: acorn [--ecma3|--ecma5|--ecma6|--ecma7|--ecma8|--ecma9|...|--ecma2015|--ecma2016|--ecma2017|--ecma2018|...]\n        [--tokenize] [--locations] [--allow-hash-bang] [--compact] [--silent] [--module] [--help] [--] [infile]"
   );
 
@@ -27,8 +27,7 @@ function parseOpts(args) {
     else if (arg === "--help") help(0);
     else if (arg === "--tokenize") cmd.tokenize = true;
     else if (arg === "--module") cmd.opts.sourceType = "module";
-    else if ((m = arg.match(/^--ecma(\d+)$/))) cmd.opts.ecmaVersion = +m[1];
-    else help(1);
+    else (m = arg.match(/^--ecma(\d+)$/)) ? (cmd.opts.ecmaVersion = +m[1]) : help(1);
   }
 
   return cmd;
@@ -43,7 +42,8 @@ function run(code, cmd) {
     var token,
       tokenizer = acorn.tokenizer(code, cmd.opts);
     do {
-      result.push((token = tokenizer.getToken()));
+      token = tokenizer.getToken();
+      result.push(token);
     } while (token.type !== acorn.tokTypes.eof);
   }
 
@@ -53,9 +53,8 @@ function run(code, cmd) {
 function main() {
   var cmd = parseOpts(process.argv.slice(2));
 
-  if (cmd.forceFile || (cmd.infile && cmd.infile !== "-")) {
-    run(fs.readFileSync(cmd.infile, "utf8"), cmd);
-  } else {
+  if (cmd.forceFile || (cmd.infile && cmd.infile !== "-")) run(fs.readFileSync(cmd.infile, "utf8"), cmd);
+  else {
     var code = "";
     process.stdin.resume();
     process.stdin.on("data", (chunk) => (code += chunk));
