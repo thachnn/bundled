@@ -114,9 +114,9 @@ Url.prototype.parse = function(url, parseQueryString, slashesDenoteHost) {
     rest = rest.substr(proto.length);
   }
 
-  if (slashesDenoteHost || proto || /^\/\/[^@\/]+@[^@\/]+/.test(rest)) {
+  if (slashesDenoteHost || proto || rest.match(/^\/\/[^@\/]+@[^@\/]+/)) {
     var slashes = rest.substr(0, 2) === '//';
-    if (slashes && !(proto && hostlessProtocol[proto])) {
+    if (slashes && (!proto || !hostlessProtocol[proto])) {
       rest = rest.substr(2);
       this.slashes = true;
     }
@@ -467,9 +467,8 @@ Url.prototype.resolveObject = function(relative) {
     }
   }
 
-  mustEndAbs = mustEndAbs || (result.host && srcPath.length);
-
-  !mustEndAbs || isAbsolute || srcPath.unshift('');
+  !(mustEndAbs = mustEndAbs || (result.host && srcPath.length)) || isAbsolute ||
+    srcPath.unshift('');
 
   if (!srcPath.length) {
     result.pathname = null;

@@ -30,7 +30,7 @@ if (typeof process.chdir == 'function') {
 }
 
 function polyfills(fs) {
-  if (constants.hasOwnProperty('O_SYMLINK') && /^v?0\.(6\.[0-2]\b|5\.)/.test(process.version))
+  constants.hasOwnProperty('O_SYMLINK') && /^v?0\.(6\.[0-2]\b|5\.)/.test(process.version) &&
     patchLchmod(fs)
 
   fs.lutimes || patchLutimes(fs)
@@ -202,8 +202,7 @@ function polyfills(fs) {
   }
 
   function chmodFix(orig) {
-    if (!orig) return orig
-    return function (target, mode, cb) {
+    return !orig ? orig : function (target, mode, cb) {
       return orig.call(fs, target, mode, function (er) {
         if (chownErOk(er)) er = null
         cb && cb.apply(this, arguments)
@@ -212,8 +211,7 @@ function polyfills(fs) {
   }
 
   function chmodFixSync(orig) {
-    if (!orig) return orig
-    return function (target, mode) {
+    return !orig ? orig : function (target, mode) {
       try {
         return orig.call(fs, target, mode)
       } catch (er) {
@@ -223,8 +221,7 @@ function polyfills(fs) {
   }
 
   function chownFix(orig) {
-    if (!orig) return orig
-    return function (target, uid, gid, cb) {
+    return !orig ? orig : function (target, uid, gid, cb) {
       return orig.call(fs, target, uid, gid, function (er) {
         if (chownErOk(er)) er = null
         cb && cb.apply(this, arguments)
@@ -233,8 +230,7 @@ function polyfills(fs) {
   }
 
   function chownFixSync(orig) {
-    if (!orig) return orig
-    return function (target, uid, gid) {
+    return !orig ? orig : function (target, uid, gid) {
       try {
         return orig.call(fs, target, uid, gid)
       } catch (er) {
@@ -244,8 +240,7 @@ function polyfills(fs) {
   }
 
   function statFix(orig) {
-    if (!orig) return orig
-    return function (target, options, cb) {
+    return !orig ? orig : function (target, options, cb) {
       if (typeof options == 'function') {
         cb = options
         options = null
@@ -263,8 +258,7 @@ function polyfills(fs) {
   }
 
   function statFixSync(orig) {
-    if (!orig) return orig
-    return function (target, options) {
+    return !orig ? orig : function (target, options) {
       var stats = options ? orig.call(fs, target, options) : orig.call(fs, target)
       if (stats) {
         if (stats.uid < 0) stats.uid += 0x100000000
@@ -468,7 +462,7 @@ global[gracefulQueue] || publishQueue(global, fs[gracefulQueue])
 
 module.exports = !process.env.TEST_GRACEFUL_FS_GLOBAL_PATCH
   ? patch(clone(fs))
-  : fs.__patched ? fs : (patch(fs), (fs.__patched = true), fs)
+  : (fs.__patched || ((fs = patch(fs)).__patched = true), fs)
 
 function patch(fs) {
   polyfills(fs)
@@ -485,9 +479,9 @@ function patch(fs) {
 
     function go$readFile(path, options, cb, startTime) {
       return fs$readFile(path, options, function (err) {
-        if (err && (err.code === 'EMFILE' || err.code === 'ENFILE'))
-          enqueue([go$readFile, [path, options, cb], err, startTime || Date.now(), Date.now()])
-        else typeof cb != 'function' || cb.apply(this, arguments)
+        err && (err.code === 'EMFILE' || err.code === 'ENFILE')
+          ? enqueue([go$readFile, [path, options, cb], err, startTime || Date.now(), Date.now()])
+          : typeof cb != 'function' || cb.apply(this, arguments)
       })
     }
   }
@@ -501,11 +495,9 @@ function patch(fs) {
 
     function go$writeFile(path, data, options, cb, startTime) {
       return fs$writeFile(path, data, options, function (err) {
-        if (err && (err.code === 'EMFILE' || err.code === 'ENFILE'))
-          enqueue([
-            go$writeFile, [path, data, options, cb], err, startTime || Date.now(), Date.now()
-          ])
-        else typeof cb != 'function' || cb.apply(this, arguments)
+        err && (err.code === 'EMFILE' || err.code === 'ENFILE')
+          ? enqueue([go$writeFile, [path, data, options, cb], err, startTime || Date.now(), Date.now()])
+          : typeof cb != 'function' || cb.apply(this, arguments)
       })
     }
   }
@@ -519,11 +511,9 @@ function patch(fs) {
 
     function go$appendFile(path, data, options, cb, startTime) {
       return fs$appendFile(path, data, options, function (err) {
-        if (err && (err.code === 'EMFILE' || err.code === 'ENFILE'))
-          enqueue([
-            go$appendFile, [path, data, options, cb], err, startTime || Date.now(), Date.now()
-          ])
-        else typeof cb != 'function' || cb.apply(this, arguments)
+        err && (err.code === 'EMFILE' || err.code === 'ENFILE')
+          ? enqueue([go$appendFile, [path, data, options, cb], err, startTime || Date.now(), Date.now()])
+          : typeof cb != 'function' || cb.apply(this, arguments)
       })
     }
   }
@@ -539,11 +529,9 @@ function patch(fs) {
 
     function go$copyFile(src, dest, flags, cb, startTime) {
       return fs$copyFile(src, dest, flags, function (err) {
-        if (err && (err.code === 'EMFILE' || err.code === 'ENFILE'))
-          enqueue([
-            go$copyFile, [src, dest, flags, cb], err, startTime || Date.now(), Date.now()
-          ])
-        else typeof cb != 'function' || cb.apply(this, arguments)
+        err && (err.code === 'EMFILE' || err.code === 'ENFILE')
+          ? enqueue([go$copyFile, [src, dest, flags, cb], err, startTime || Date.now(), Date.now()])
+          : typeof cb != 'function' || cb.apply(this, arguments)
       })
     }
   }
@@ -696,9 +684,9 @@ function patch(fs) {
 
     function go$open(path, flags, mode, cb, startTime) {
       return fs$open(path, flags, mode, function (err, fd) {
-        if (err && (err.code === 'EMFILE' || err.code === 'ENFILE'))
-          enqueue([go$open, [path, flags, mode, cb], err, startTime || Date.now(), Date.now()])
-        else typeof cb != 'function' || cb.apply(this, arguments)
+        err && (err.code === 'EMFILE' || err.code === 'ENFILE')
+          ? enqueue([go$open, [path, flags, mode, cb], err, startTime || Date.now(), Date.now()])
+          : typeof cb != 'function' || cb.apply(this, arguments)
       })
     }
   }

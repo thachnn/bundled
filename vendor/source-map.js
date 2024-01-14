@@ -16,6 +16,7 @@ module.exports = (function (modules) {
   __webpack_require__.c = installedModules;
   return __webpack_require__(0);
 })([
+// 0
 function (module, exports, __webpack_require__) {
 
 exports.SourceMapGenerator = __webpack_require__(1).SourceMapGenerator;
@@ -23,6 +24,7 @@ exports.SourceMapConsumer = __webpack_require__(7).SourceMapConsumer;
 exports.SourceNode = __webpack_require__(10).SourceNode;
 
 },
+// 1
 function (module, exports, __webpack_require__) {
 
 var base64VLQ = __webpack_require__(2),
@@ -209,10 +211,9 @@ SourceMapGenerator.prototype._serializeMappings = function () {
     previousOriginalLine = 0,
     previousName = 0,
     previousSource = 0,
-    result = '',
+    result = '';
 
-    mappings = this._mappings.toArray();
-  for (var i = 0, len = mappings.length; i < len; i++) {
+  for (var mappings = this._mappings.toArray(), i = 0, len = mappings.length; i < len; i++) {
     next = '';
 
     if ((mapping = mappings[i]).generatedLine !== previousGeneratedLine) {
@@ -291,6 +292,7 @@ SourceMapGenerator.prototype.toString = function () {
 exports.SourceMapGenerator = SourceMapGenerator;
 
 },
+// 2
 function (module, exports, __webpack_require__) {
 
 var base64 = __webpack_require__(3),
@@ -347,6 +349,7 @@ exports.decode = function (aStr, aIndex, aOutParam) {
 };
 
 },
+// 3
 function (module, exports) {
 
 var intToCharMap = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/'.split('');
@@ -377,6 +380,7 @@ exports.decode = function (charCode) {
 };
 
 },
+// 4
 function (module, exports) {
 
 function getArg(aArgs, aName, aDefaultValue) {
@@ -544,10 +548,10 @@ function isProtoString(s) {
 function compareByOriginalPositions(mappingA, mappingB, onlyCompareOriginal) {
   var cmp = strcmp(mappingA.source, mappingB.source);
   return cmp !== 0 ||
-    (cmp = mappingA.originalLine - mappingB.originalLine) !== 0 ||
-    (cmp = mappingA.originalColumn - mappingB.originalColumn) !== 0 || onlyCompareOriginal ||
-    (cmp = mappingA.generatedColumn - mappingB.generatedColumn) !== 0 ||
-    (cmp = mappingA.generatedLine - mappingB.generatedLine) !== 0
+    (cmp = mappingA.originalLine - mappingB.originalLine) != 0 ||
+    (cmp = mappingA.originalColumn - mappingB.originalColumn) != 0 || onlyCompareOriginal ||
+    (cmp = mappingA.generatedColumn - mappingB.generatedColumn) != 0 ||
+    (cmp = mappingA.generatedLine - mappingB.generatedLine) != 0
     ? cmp
     : strcmp(mappingA.name, mappingB.name);
 }
@@ -556,10 +560,10 @@ exports.compareByOriginalPositions = compareByOriginalPositions;
 function compareByGeneratedPositionsDeflated(mappingA, mappingB, onlyCompareGenerated) {
   var cmp = mappingA.generatedLine - mappingB.generatedLine;
   return cmp !== 0 ||
-    (cmp = mappingA.generatedColumn - mappingB.generatedColumn) !== 0 || onlyCompareGenerated ||
+    (cmp = mappingA.generatedColumn - mappingB.generatedColumn) != 0 || onlyCompareGenerated ||
     (cmp = strcmp(mappingA.source, mappingB.source)) !== 0 ||
-    (cmp = mappingA.originalLine - mappingB.originalLine) !== 0 ||
-    (cmp = mappingA.originalColumn - mappingB.originalColumn) !== 0
+    (cmp = mappingA.originalLine - mappingB.originalLine) != 0 ||
+    (cmp = mappingA.originalColumn - mappingB.originalColumn) != 0
     ? cmp
     : strcmp(mappingA.name, mappingB.name);
 }
@@ -572,10 +576,10 @@ function strcmp(aStr1, aStr2) {
 function compareByGeneratedPositionsInflated(mappingA, mappingB) {
   var cmp = mappingA.generatedLine - mappingB.generatedLine;
   return cmp !== 0 ||
-    (cmp = mappingA.generatedColumn - mappingB.generatedColumn) !== 0 ||
+    (cmp = mappingA.generatedColumn - mappingB.generatedColumn) != 0 ||
     (cmp = strcmp(mappingA.source, mappingB.source)) !== 0 ||
-    (cmp = mappingA.originalLine - mappingB.originalLine) !== 0 ||
-    (cmp = mappingA.originalColumn - mappingB.originalColumn) !== 0
+    (cmp = mappingA.originalLine - mappingB.originalLine) != 0 ||
+    (cmp = mappingA.originalColumn - mappingB.originalColumn) != 0
     ? cmp
     : strcmp(mappingA.name, mappingB.name);
 }
@@ -611,6 +615,7 @@ function computeSourceURL(sourceRoot, sourceURL, sourceMapURL) {
 exports.computeSourceURL = computeSourceURL;
 
 },
+// 5
 function (module, exports, __webpack_require__) {
 
 var util = __webpack_require__(4),
@@ -637,7 +642,7 @@ ArraySet.prototype.add = function (aStr, aAllowDuplicates) {
   var sStr = hasNativeMap ? aStr : util.toSetString(aStr),
     isDuplicate = hasNativeMap ? this.has(aStr) : has.call(this._set, sStr),
     idx = this._array.length;
-  if (!isDuplicate || aAllowDuplicates) this._array.push(aStr);
+  (isDuplicate && !aAllowDuplicates) || this._array.push(aStr);
 
   isDuplicate || (hasNativeMap ? this._set.set(aStr, idx) : (this._set[sStr] = idx));
 };
@@ -674,6 +679,7 @@ ArraySet.prototype.toArray = function () {
 exports.ArraySet = ArraySet;
 
 },
+// 6
 function (module, exports, __webpack_require__) {
 
 var util = __webpack_require__(4);
@@ -684,7 +690,7 @@ function generatedPositionAfter(mappingA, mappingB) {
     columnA = mappingA.generatedColumn,
     columnB = mappingB.generatedColumn;
   return lineB > lineA || (lineB == lineA && columnB >= columnA) ||
-      util.compareByGeneratedPositionsInflated(mappingA, mappingB) <= 0;
+    util.compareByGeneratedPositionsInflated(mappingA, mappingB) <= 0;
 }
 
 function MappingList() {
@@ -718,6 +724,7 @@ MappingList.prototype.toArray = function () {
 exports.MappingList = MappingList;
 
 },
+// 7
 function (module, exports, __webpack_require__) {
 
 var util = __webpack_require__(4),
@@ -1249,21 +1256,19 @@ IndexedSourceMapConsumer.prototype.originalPositionFor = function (aArgs) {
   };
 
   var sectionIndex = binarySearch.search(needle, this._sections, function (needle, section) {
-    var cmp = needle.generatedLine - section.generatedOffset.generatedLine;
-    return cmp || needle.generatedColumn - section.generatedOffset.generatedColumn;
+    return needle.generatedLine - section.generatedOffset.generatedLine ||
+      needle.generatedColumn - section.generatedOffset.generatedColumn;
   });
   var section = this._sections[sectionIndex];
 
-  if (!section) return { source: null, line: null, column: null, name: null };
-
-  return section.consumer.originalPositionFor({
+  return section ? section.consumer.originalPositionFor({
     line: needle.generatedLine - (section.generatedOffset.generatedLine - 1),
     column: needle.generatedColumn -
       (section.generatedOffset.generatedLine === needle.generatedLine
         ? section.generatedOffset.generatedColumn - 1
         : 0),
     bias: aArgs.bias
-  });
+  }) : { source: null, line: null, column: null, name: null };
 };
 
 IndexedSourceMapConsumer.prototype.hasContentsOfAllSources = function () {
@@ -1349,6 +1354,7 @@ IndexedSourceMapConsumer.prototype._parseMappings = function (aStr, aSourceRoot)
 exports.IndexedSourceMapConsumer = IndexedSourceMapConsumer;
 
 },
+// 8
 function (module, exports) {
 
 exports.GREATEST_LOWER_BOUND = 1;
@@ -1388,6 +1394,7 @@ exports.search = function (aNeedle, aHaystack, aCompare, aBias) {
 };
 
 },
+// 9
 function (module, exports) {
 
 function swap(ary, x, y) {
@@ -1422,6 +1429,7 @@ exports.quickSort = function (ary, comparator) {
 };
 
 },
+// 10
 function (module, exports, __webpack_require__) {
 
 var SourceMapGenerator = __webpack_require__(1).SourceMapGenerator,
@@ -1462,15 +1470,10 @@ SourceNode.fromStringWithSourceMap = function (aGeneratedCode, aSourceMapConsume
     lastMapping = null;
 
   aSourceMapConsumer.eachMapping(function (mapping) {
-    var nextLine;
     if (lastMapping !== null) {
-      if (lastGeneratedLine < mapping.generatedLine) {
-        addMappingWithCode(lastMapping, shiftNextLine());
-        lastGeneratedLine++;
-        lastGeneratedColumn = 0;
-      } else {
-        nextLine = remainingLines[remainingLinesIndex] || '';
-        var code = nextLine.substr(0, mapping.generatedColumn - lastGeneratedColumn);
+      if (lastGeneratedLine >= mapping.generatedLine) {
+        var nextLine = remainingLines[remainingLinesIndex] || '',
+          code = nextLine.substr(0, mapping.generatedColumn - lastGeneratedColumn);
         remainingLines[remainingLinesIndex] = nextLine.substr(
           mapping.generatedColumn - lastGeneratedColumn
         );
@@ -1479,6 +1482,9 @@ SourceNode.fromStringWithSourceMap = function (aGeneratedCode, aSourceMapConsume
         lastMapping = mapping;
         return;
       }
+      addMappingWithCode(lastMapping, shiftNextLine());
+      lastGeneratedLine++;
+      lastGeneratedColumn = 0;
     }
     while (lastGeneratedLine < mapping.generatedLine) {
       node.add(shiftNextLine());
@@ -1547,9 +1553,10 @@ SourceNode.prototype.prepend = function (aChunk) {
 
 SourceNode.prototype.walk = function (aFn) {
   for (var chunk, i = 0, len = this.children.length; i < len; i++)
-    if ((chunk = this.children[i])[isSourceNode]) chunk.walk(aFn);
-    else if (chunk !== '')
-      aFn(chunk, { source: this.source, line: this.line, column: this.column, name: this.name });
+    (chunk = this.children[i])[isSourceNode]
+      ? chunk.walk(aFn)
+      : chunk === '' ||
+        aFn(chunk, { source: this.source, line: this.line, column: this.column, name: this.name });
 };
 
 SourceNode.prototype.join = function (aSep) {

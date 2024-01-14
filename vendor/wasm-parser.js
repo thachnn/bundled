@@ -96,31 +96,37 @@ function code(min, n) {
 }
 
 function decode(bytes) {
-  return _decode(bytes).map((x) => String.fromCharCode(x)).join("");
+  return _decode(bytes).map(function (x) {
+    return String.fromCharCode(x);
+  }).join("");
 }
 
 function _decode(bytes) {
   if (bytes.length === 0) return [];
 
   var _bytes = _toArray(bytes),
-    b1 = _bytes[0];
+    b1 = _bytes[0],
+    bs = _bytes.slice(1);
 
-  if (b1 < 0x80) return [code(0x0, b1)].concat(_decode(_bytes.slice(1)));
+  if (b1 < 0x80) return [code(0x0, b1)].concat(_decode(bs));
 
   if (b1 < 0xc0) throw new Error("invalid UTF-8 encoding");
 
   var b2 = _bytes[1];
+  bs = _bytes.slice(2);
 
-  if (b1 < 0xe0) return [code(0x80, ((b1 & 0x1f) << 6) + con(b2))].concat(_decode(_bytes.slice(2)));
+  if (b1 < 0xe0) return [code(0x80, ((b1 & 0x1f) << 6) + con(b2))].concat(_decode(bs));
 
   var b3 = _bytes[2];
+  bs = _bytes.slice(3);
 
-  if (b1 < 0xf0) return [code(0x800, ((b1 & 0x0f) << 12) + (con(b2) << 6) + con(b3))].concat(_decode(_bytes.slice(3)));
+  if (b1 < 0xf0) return [code(0x800, ((b1 & 0x0f) << 12) + (con(b2) << 6) + con(b3))].concat(_decode(bs));
 
   var b4 = _bytes[3];
+  bs = _bytes.slice(4);
 
   if (b1 < 0xf8)
-    return [code(0x10000, ((((b1 & 0x07) << 18) + con(b2)) << 12) + (con(b3) << 6) + con(b4))].concat(_decode(_bytes.slice(4)));
+    return [code(0x10000, ((((b1 & 0x07) << 18) + con(b2)) << 12) + (con(b3) << 6) + con(b4))].concat(_decode(bs));
 
   throw new Error("invalid UTF-8 encoding");
 }
@@ -138,7 +144,7 @@ function inject(buffer, bitIndex, bitLength, value) {
     value >>= 1;
     bitLength--;
 
-    (atBit = (atBit + 1) % 8) !== 0 || atByte++;
+    (atBit = (atBit + 1) % 8) != 0 || atByte++;
   }
 }
 
@@ -260,7 +266,7 @@ function decodeBufferCommon(encodedBuffer, index, signed) {
       lastByte = result[byteLength - 1] = ((lastByte << shift) >> shift) & 0xff;
     }
 
-    signByte = (signBit = lastByte >> 7) * 0xff;
+    signByte = 0xff * (signBit = lastByte >> 7);
   } else {
     signBit = 0;
     signByte = 0;
@@ -322,13 +328,11 @@ var illegalop = "illegal",
   moduleVersion = [1, 0, 0, 0];
 
 function createSymbolObject(name, object) {
-  var numberOfArgs = arguments.length > 2 && arguments[2] !== void 0 ? arguments[2] : 0;
-  return { name: name, object: object, numberOfArgs: numberOfArgs };
+  return { name: name, object: object, numberOfArgs: arguments.length > 2 && arguments[2] !== void 0 ? arguments[2] : 0 };
 }
 
 function createSymbol(name) {
-  var numberOfArgs = arguments.length > 1 && arguments[1] !== void 0 ? arguments[1] : 0;
-  return { name: name, numberOfArgs: numberOfArgs };
+  return { name: name, numberOfArgs: arguments.length > 1 && arguments[1] !== void 0 ? arguments[1] : 0 };
 }
 
 var types = { func: 0x60, result: 0x40 },
@@ -755,8 +759,14 @@ function decode$1(ab, opts) {
       if (type != types.func) throw new Error("Unsupported type: " + toHex(type));
 
       dump([type], "func");
-      var params = parseVec((b) => valtypes[b]).map((v) => t.funcParam(v)),
-        result = parseVec((b) => valtypes[b]);
+      var params = parseVec(function (b) {
+        return valtypes[b];
+      }).map(function (v) {
+        return t.funcParam(v);
+      });
+      var result = parseVec(function (b) {
+        return valtypes[b];
+      });
       typeInstructionNodes.push((function () {
         var endLoc = getPosition();
         return t.withLoc(t.typeInstruction(void 0, t.signature(params, result)), endLoc, _startLoc);
@@ -1496,10 +1506,12 @@ function decode$1(ab, opts) {
       var instrs = [];
       parseInstructionBlock(instrs);
 
-      if (instrs.filter((i) => i.id !== "end").length !== 1)
+      if (instrs.filter(function (i) { return i.id !== "end"; }).length !== 1)
         throw new CompileError("data section offset must be a single instruction");
 
-      var bytes = parseVec((b) => b);
+      var bytes = parseVec(function (b) {
+        return b;
+      });
       dump([], "init");
       dataEntries.push(t.data(t.memIndexLiteral(memoryIndex), instrs[0], t.byteArray(bytes)));
     }
@@ -1877,7 +1889,9 @@ function restoreFunctionNames(ast) {
       var nodeName = _ref2.node.name,
         indexBasedFunctionName = nodeName.value,
         index = Number(indexBasedFunctionName.replace("func_", "")),
-        functionName = functionNames.find((f) => f.index === index);
+        functionName = functionNames.find(function (f) {
+          return f.index === index;
+        });
 
       if (functionName) {
         var oldValue = nodeName.value;
@@ -1902,7 +1916,9 @@ function restoreFunctionNames(ast) {
 
       if (node.descr.exportType === "Func") {
         var index = node.descr.id.value,
-          functionName = functionNames.find((f) => f.index === index);
+          functionName = functionNames.find(function (f) {
+            return f.index === index;
+          });
 
         if (functionName) node.descr.id = t.identifier(functionName.name);
       }
@@ -1923,7 +1939,9 @@ function restoreFunctionNames(ast) {
       if (node.descr.type === "FuncImportDescr") {
         var indexBasedFunctionName = node.descr.id,
           index = Number(indexBasedFunctionName.replace("func_", "")),
-          functionName = functionNames.find((f) => f.index === index);
+          functionName = functionNames.find(function (f) {
+            return f.index === index;
+          });
 
         if (functionName) node.descr.id = t.identifier(functionName.name);
       }
@@ -1941,7 +1959,9 @@ function restoreFunctionNames(ast) {
     })(function (nodePath) {
       var node = nodePath.node,
         index = node.index.value,
-        functionName = functionNames.find((f) => f.index === index);
+        functionName = functionNames.find(function (f) {
+          return f.index === index;
+        });
 
       if (functionName) {
         var oldValue = node.index;

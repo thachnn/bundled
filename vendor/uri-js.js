@@ -1,5 +1,5 @@
 /** @license URI.js v4.4.1 (c) 2011 Gary Court. License: http://github.com/garycourt/uri-js */
-"use strict";
+'use strict';
 
 function merge() {
   var sets = Array.prototype.slice.call(arguments);
@@ -120,8 +120,7 @@ function mapDomain(string, fn) {
     result = parts[0] + '@';
     string = parts[1];
   }
-  string = string.replace(regexSeparators, '.');
-  return result + map(string.split('.'), fn).join('.');
+  return result + map(string.replace(regexSeparators, '.').split('.'), fn).join('.');
 }
 
 function ucs2decode(string) {
@@ -174,7 +173,7 @@ function decode(input) {
   if (basic < 0) basic = 0;
 
   for (var j = 0; j < basic; ++j) {
-    if (input.charCodeAt(j) >= 0x80) error$1('not-basic');
+    input.charCodeAt(j) < 0x80 || error$1('not-basic');
 
     output.push(input.charCodeAt(j));
   }
@@ -182,7 +181,7 @@ function decode(input) {
   for (var index = basic > 0 ? basic + 1 : 0; index < inputLength; ) {
     var oldi = i;
     for (var w = 1, k = base; ; k += base) {
-      if (index >= inputLength) error$1('invalid-input');
+      index < inputLength || error$1('invalid-input');
 
       var digit = basicToDigit(input.charCodeAt(index++));
 
@@ -194,7 +193,7 @@ function decode(input) {
       if (digit < t) break;
 
       var baseMinusT = base - t;
-      if (w > floor(maxInt / baseMinusT)) error$1('overflow');
+      w > floor(maxInt / baseMinusT) && error$1('overflow');
 
       w *= baseMinusT;
     }
@@ -202,7 +201,7 @@ function decode(input) {
     var out = output.length + 1;
     bias = adapt(i - oldi, out, oldi == 0);
 
-    if (floor(i / out) > maxInt - n) error$1('overflow');
+    floor(i / out) > maxInt - n && error$1('overflow');
 
     n += floor(i / out);
     i %= out;
@@ -234,13 +233,13 @@ function encode(input) {
     for (var currentValue of input) if (currentValue >= n && currentValue < m) m = currentValue;
 
     var handledCPCountPlusOne = handledCPCount + 1;
-    if (m - n > floor((maxInt - delta) / handledCPCountPlusOne)) error$1('overflow');
+    m - n > floor((maxInt - delta) / handledCPCountPlusOne) && error$1('overflow');
 
     delta += (m - n) * handledCPCountPlusOne;
     n = m;
 
     for (var _currentValue of input) {
-      if (_currentValue < n && ++delta > maxInt) error$1('overflow');
+      _currentValue < n && ++delta > maxInt && error$1('overflow');
 
       if (_currentValue != n) continue;
       var q = delta;
@@ -362,15 +361,16 @@ function _normalizeIPv6(host, protocol) {
 
   if (isLastFieldIPv4Address) fields[fieldCount - 1] = _normalizeIPv4(fields[fieldCount - 1], protocol);
 
-  var allZeroFields = fields.reduce(function (acc, field, index) {
+  var longestZeroFields = fields.reduce(function (acc, field, index) {
     if (!field || field === "0") {
       var lastLongest = acc[acc.length - 1];
       lastLongest && lastLongest.index + lastLongest.length === index ? lastLongest.length++ : acc.push({ index: index, length: 1 });
     }
     return acc;
-  }, []);
-  var longestZeroFields = allZeroFields.sort((a, b) => b.length - a.length)[0],
-    newHost = void 0;
+  }, []).sort(function (a, b) {
+    return b.length - a.length;
+  })[0];
+  var newHost = void 0;
   if (longestZeroFields && longestZeroFields.length > 1) {
     var newFirst = fields.slice(0, longestZeroFields.index),
       newLast = fields.slice(longestZeroFields.index + longestZeroFields.length);
@@ -576,20 +576,18 @@ function resolve(baseURI, relativeURI, options) {
 }
 
 function normalize(uri, options) {
-  typeof uri == "string" ? (uri = serialize(parse(uri, options), options))
-    : typeOf(uri) !== "object" || (uri = parse(serialize(uri, options), options));
+  if (typeof uri == "string") uri = serialize(parse(uri, options), options);
+  else if (typeOf(uri) === "object") uri = parse(serialize(uri, options), options);
 
   return uri;
 }
 
 function equal(uriA, uriB, options) {
-  typeof uriA == "string"
-    ? (uriA = serialize(parse(uriA, options), options))
-    : typeOf(uriA) !== "object" || (uriA = serialize(uriA, options));
+  if (typeof uriA == "string") uriA = serialize(parse(uriA, options), options);
+  else if (typeOf(uriA) === "object") uriA = serialize(uriA, options);
 
-  typeof uriB == "string"
-    ? (uriB = serialize(parse(uriB, options), options))
-    : typeOf(uriB) !== "object" || (uriB = serialize(uriB, options));
+  if (typeof uriB == "string") uriB = serialize(parse(uriB, options), options);
+  else if (typeOf(uriB) === "object") uriB = serialize(uriB, options);
 
   return uriA === uriB;
 }
@@ -838,4 +836,4 @@ exports.equal = equal;
 exports.escapeComponent = escapeComponent;
 exports.unescapeComponent = unescapeComponent;
 
-Object.defineProperty(exports, "__esModule", { value: true });
+Object.defineProperty(exports, '__esModule', { value: true });

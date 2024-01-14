@@ -848,18 +848,25 @@ function numberLiteralFromRaw(rawValue) {
   }
 }
 function instruction(id) {
-  var args = arguments.length > 1 && arguments[1] !== void 0 ? arguments[1] : [],
-    namedArgs = arguments.length > 2 && arguments[2] !== void 0 ? arguments[2] : {};
-  return instr(id, void 0, args, namedArgs);
+  return instr(
+    id,
+    void 0,
+    arguments.length > 1 && arguments[1] !== void 0 ? arguments[1] : [],
+    arguments.length > 2 && arguments[2] !== void 0 ? arguments[2] : {}
+  );
 }
 function objectInstruction(id, object) {
-  var args = arguments.length > 2 && arguments[2] !== void 0 ? arguments[2] : [],
-    namedArgs = arguments.length > 3 && arguments[3] !== void 0 ? arguments[3] : {};
-  return instr(id, object, args, namedArgs);
+  return instr(
+    id,
+    object,
+    arguments.length > 2 && arguments[2] !== void 0 ? arguments[2] : [],
+    arguments.length > 3 && arguments[3] !== void 0 ? arguments[3] : {}
+  );
 }
 
 function withLoc(n, end, start) {
-  n.loc = { start: start, end: end };
+  var loc = { start: start, end: end };
+  n.loc = loc;
   return n;
 }
 function withRaw(n, raw) {
@@ -912,7 +919,9 @@ function insert(_ref2, newNode) {
   if (parentPath == null) throw new Error("parentPath != null error: Can not remove root node");
 
   var parentList = parentPath.node[parentKey],
-    indexInList = parentList.findIndex((n) => n === node);
+    indexInList = parentList.findIndex(function (n) {
+      return n === node;
+    });
   parentList.splice(indexInList + indexOffset, 0, newNode);
 }
 
@@ -928,7 +937,9 @@ function remove(_ref3) {
     parentProperty = parentNode[parentKey];
 
   Array.isArray(parentProperty)
-    ? (parentNode[parentKey] = parentProperty.filter((n) => n !== node))
+    ? (parentNode[parentKey] = parentProperty.filter(function (n) {
+        return n !== node;
+      }))
     : delete parentNode[parentKey];
 
   node._deleted = true;
@@ -944,7 +955,9 @@ function replaceWith(context, newNode) {
     parentProperty = parentNode[context.parentKey];
 
   if (Array.isArray(parentProperty)) {
-    var indexInList = parentProperty.findIndex((n) => n === context.node);
+    var indexInList = parentProperty.findIndex(function (n) {
+      return n === context.node;
+    });
     parentProperty.splice(indexInList, 1, newNode);
   } else parentNode[context.parentKey] = newNode;
 
@@ -1009,9 +1022,11 @@ function walk(context, callback) {
       if (value === null || value === void 0) return;
 
       (Array.isArray(value) ? value : [value]).forEach(function (childNode) {
-        if (typeof childNode.type != "string") return;
-        var childContext = { node: childNode, parentKey: prop, parentPath: path, shouldStop: false, inList: Array.isArray(value) };
-        innerWalk(childContext, callback);
+        typeof childNode.type != "string" ||
+          innerWalk(
+            { node: childNode, parentKey: prop, parentPath: path, shouldStop: false, inList: Array.isArray(value) },
+            callback
+          );
       });
     });
   }
@@ -1027,8 +1042,7 @@ function traverse(node, visitors) {
   Object.keys(visitors).forEach(function (visitor) {
     if (!nodeAndUnionTypes.includes(visitor)) throw new Error("Unexpected visitor " + visitor);
   });
-  var context = { node: node, inList: false, shouldStop: false, parentPath: null, parentKey: null };
-  walk(context, function (type, path) {
+  walk({ node: node, inList: false, shouldStop: false, parentPath: null, parentKey: null }, function (type, path) {
     if (typeof visitors[type] == "function") {
       before(type, path);
       visitors[type](path);

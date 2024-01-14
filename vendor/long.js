@@ -66,7 +66,7 @@ var pow_dbl = Math.pow;
 function fromString(str, unsigned, radix) {
   if (str.length === 0) throw Error('empty string');
   if (str === "NaN" || str === "Infinity" || str === "+Infinity" || str === "-Infinity") return ZERO;
-  unsigned = typeof unsigned == 'number' ? ((radix = unsigned), false) : !!unsigned;
+  typeof unsigned == 'number' ? ((radix = unsigned), (unsigned = false)) : (unsigned = !!unsigned);
 
   if ((radix = radix || 10) < 2 || 36 < radix) throw RangeError('radix');
 
@@ -269,10 +269,9 @@ LongPrototype.add = function(addend) {
     b48 = addend.high >>> 16,
     b32 = addend.high & 0xFFFF,
     b16 = addend.low >>> 16,
-    b00 = addend.low & 0xFFFF,
 
     c48 = 0, c32 = 0, c16 = 0, c00 = 0;
-  c16 += (c00 += a00 + b00) >>> 16;
+  c16 += (c00 += a00 + (addend.low & 0xFFFF)) >>> 16;
   c00 &= 0xFFFF;
   c32 += (c16 += a16 + b16) >>> 16;
   c16 &= 0xFFFF;
@@ -293,10 +292,8 @@ LongPrototype.multiply = function(multiplier) {
   if (this.isZero()) return ZERO;
   isLong(multiplier) || (multiplier = fromValue(multiplier));
 
-  if (wasm) {
-    var low = wasm.mul(this.low, this.high, multiplier.low, multiplier.high);
-    return fromBits(low, wasm.get_high(), this.unsigned);
-  }
+  if (wasm)
+    return fromBits(wasm.mul(this.low, this.high, multiplier.low, multiplier.high), wasm.get_high(), this.unsigned);
 
   if (multiplier.isZero()) return ZERO;
   if (this.eq(MIN_VALUE)) return multiplier.isOdd() ? MIN_VALUE : ZERO;
@@ -342,12 +339,13 @@ LongPrototype.divide = function(divisor) {
   isLong(divisor) || (divisor = fromValue(divisor));
   if (divisor.isZero()) throw Error('division by zero');
 
-  if (wasm) {
-    if (!this.unsigned && this.high === -0x80000000 && divisor.low === -1 && divisor.high === -1) return this;
-
-    var low = (this.unsigned ? wasm.div_u : wasm.div_s)(this.low, this.high, divisor.low, divisor.high);
-    return fromBits(low, wasm.get_high(), this.unsigned);
-  }
+  if (wasm)
+    return !this.unsigned && this.high === -0x80000000 && divisor.low === -1 && divisor.high === -1
+      ? this
+      : fromBits(
+          (this.unsigned ? wasm.div_u : wasm.div_s)(this.low, this.high, divisor.low, divisor.high),
+          wasm.get_high(), this.unsigned
+        );
 
   if (this.isZero()) return this.unsigned ? UZERO : ZERO;
   var approx, rem, res;
@@ -396,12 +394,12 @@ LongPrototype.div = LongPrototype.divide;
 LongPrototype.modulo = function(divisor) {
   isLong(divisor) || (divisor = fromValue(divisor));
 
-  if (wasm) {
-    var low = (this.unsigned ? wasm.rem_u : wasm.rem_s)(this.low, this.high, divisor.low, divisor.high);
-    return fromBits(low, wasm.get_high(), this.unsigned);
-  }
-
-  return this.sub(this.div(divisor).mul(divisor));
+  return wasm
+    ? fromBits(
+        (this.unsigned ? wasm.rem_u : wasm.rem_s)(this.low, this.high, divisor.low, divisor.high),
+        wasm.get_high(), this.unsigned
+      )
+    : this.sub(this.div(divisor).mul(divisor));
 };
 LongPrototype.mod = LongPrototype.modulo;
 LongPrototype.rem = LongPrototype.modulo;

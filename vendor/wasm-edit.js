@@ -98,8 +98,7 @@ function signedBitCount(buffer) {
 }
 
 function unsignedBitCount(buffer) {
-  var result = highOrder(1, buffer) + 1;
-  return result || 1;
+  return highOrder(1, buffer) + 1 || 1;
 }
 
 function encodeBufferCommon(buffer, signed) {
@@ -179,8 +178,7 @@ function write(buffer, value, offset, isLE, mLen, nBytes) {
       c *= 2;
     }
 
-    value += e + eBias >= 1 ? rt / c : rt * Math.pow(2, 1 - eBias);
-    if (value * c >= 2) {
+    if ((value += e + eBias >= 1 ? rt / c : rt * Math.pow(2, 1 - eBias)) * c >= 2) {
       e++;
       c /= 2;
     }
@@ -230,7 +228,9 @@ function con(n) {
 }
 
 function encode(str) {
-  return _encode(str.split("").map((x) => x.charCodeAt(0)));
+  return _encode(str.split("").map(function (x) {
+    return x.charCodeAt(0);
+  }));
 }
 
 function _encode(arr) {
@@ -287,7 +287,7 @@ function getSectionForNode(n) {
 var illegalop = "illegal";
 
 function invertMap(obj) {
-  var keyModifierFn = arguments.length > 1 && arguments[1] !== void 0 ? arguments[1] : (k) => k,
+  var keyModifierFn = arguments.length > 1 && arguments[1] !== void 0 ? arguments[1] : function (k) { return k; },
     result = {},
     keys = Object.keys(obj);
 
@@ -297,13 +297,11 @@ function invertMap(obj) {
 }
 
 function createSymbolObject(name, object) {
-  var numberOfArgs = arguments.length > 2 && arguments[2] !== void 0 ? arguments[2] : 0;
-  return { name: name, object: object, numberOfArgs: numberOfArgs };
+  return { name: name, object: object, numberOfArgs: arguments.length > 2 && arguments[2] !== void 0 ? arguments[2] : 0 };
 }
 
 function createSymbol(name) {
-  var numberOfArgs = arguments.length > 1 && arguments[1] !== void 0 ? arguments[1] : 0;
-  return { name: name, numberOfArgs: numberOfArgs };
+  return { name: name, numberOfArgs: arguments.length > 1 && arguments[1] !== void 0 ? arguments[1] : 0 };
 }
 var exportTypes = { 0: "Func", 1: "Table", 2: "Mem", 3: "Global" },
   exportTypesByName = invertMap(exportTypes),
@@ -662,7 +660,9 @@ function encodeModuleExport(n) {
 }
 function encodeTypeInstruction(n) {
   var out = [0x60],
-    params = n.functype.params.map((x) => x.valtype).map(encodeValtype),
+    params = n.functype.params.map(function (x) {
+      return x.valtype;
+    }).map(encodeValtype),
     results = n.functype.results.map(encodeValtype);
   out.push.apply(out, encodeVec(params));
   out.push.apply(out, encodeVec(results));
@@ -796,7 +796,9 @@ function encodeNode(n) {
 function concatUint8Arrays() {
   var arrays = Array.prototype.slice.call(arguments),
 
-    totalLength = arrays.reduce((a, b) => a + b.length, 0),
+    totalLength = arrays.reduce(function (a, b) {
+      return a + b.length;
+    }, 0),
     result = new Uint8Array(totalLength),
     offset = 0;
 
@@ -1070,7 +1072,7 @@ function applyUpdate(ast, uint8Buffer, _ref) {
       Func: function (_ref3) {
         var node = _ref3.node;
 
-        if (node.body.find((n) => n === newNode) === void 0) return;
+        if (node.body.find(function (n) { return n === newNode; }) === void 0) return;
         t.assertHasLoc(node);
         var oldNodeSize = encodeNode(oldNode).length,
           bodySizeDeltaBytes = replacementByteArray.length - oldNodeSize;
@@ -1102,15 +1104,20 @@ function applyDelete(ast, uint8Buffer, node) {
   if (getSectionForNode(node) === "start") {
     var sectionMetadata = t.getSectionMetadata(ast, "start");
 
-    uint8Buffer = removeSections(ast, uint8Buffer, "start");
-
-    return { uint8Buffer: uint8Buffer, deltaBytes: -(sectionMetadata.size.value + 1), deltaElements: deltaElements };
+    return {
+      uint8Buffer: removeSections(ast, uint8Buffer, "start"),
+      deltaBytes: -(sectionMetadata.size.value + 1),
+      deltaElements: deltaElements
+    };
   }
 
   var replacement = [];
-  uint8Buffer = overrideBytesInBuffer(uint8Buffer, node.loc.start.column, node.loc.end.column, replacement);
 
-  return { uint8Buffer: uint8Buffer, deltaBytes: -(node.loc.end.column - node.loc.start.column), deltaElements: deltaElements };
+  return {
+    uint8Buffer: overrideBytesInBuffer(uint8Buffer, node.loc.start.column, node.loc.end.column, replacement),
+    deltaBytes: -(node.loc.end.column - node.loc.start.column),
+    deltaElements: deltaElements
+  };
 }
 
 function applyAdd(ast, uint8Buffer, node) {
@@ -1259,10 +1266,15 @@ function add(ab, newNodes) {
 }
 function addWithAST(ast, ab, newNodes) {
   sortBySectionOrder(newNodes);
-  var uint8Buffer = new Uint8Array(ab),
+  var uint8Buffer = new Uint8Array(ab);
 
-    operations = newNodes.map((n) => ({ kind: "add", node: n }));
-  return applyOperations(ast, uint8Buffer, operations).buffer;
+  return applyOperations(
+    ast,
+    uint8Buffer,
+    newNodes.map(function (n) {
+      return { kind: "add", node: n };
+    })
+  ).buffer;
 }
 
 exports.add = add;

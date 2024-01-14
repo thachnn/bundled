@@ -91,7 +91,10 @@ function compareDate(d1, d2) {
 }
 
 function compareTime(t1, t2) {
-  if (!(t1 && t2 && (t1 = t1.match(TIME)) && (t2 = t2.match(TIME)))) return;
+  if (!t1 || !t2) return;
+  t1 = t1.match(TIME);
+  t2 = t2.match(TIME);
+  if (!t1 || !t2) return;
   t1 = t1[1] + t1[2] + t1[3] + (t1[4] || '');
   t2 = t2[1] + t2[2] + t2[3] + (t2[4] || '');
   return t1 > t2 ? 1 : t1 < t2 ? -1 : t1 === t2 ? 0 : void 0;
@@ -395,12 +398,12 @@ module.exports = function defFunc(ajv) {
   defFunc.definition = {
     type: 'object',
     macro: function (schema) {
-      if (schema.length == 0) return true;
-      if (schema.length == 1) return {required: schema};
-      var schemas = schema.map(function (prop) {
-        return {required: [prop]};
-      });
-      return {anyOf: schemas};
+      return schema.length == 0 ||
+        (schema.length == 1 ? {required: schema} : {
+          anyOf: schema.map(function (prop) {
+            return {required: [prop]};
+          })
+        });
     },
     metaSchema: {type: 'array', items: {type: 'string'}}
   };
@@ -417,12 +420,12 @@ module.exports = function defFunc(ajv) {
   defFunc.definition = {
     type: 'object',
     macro: function (schema) {
-      if (schema.length == 0) return true;
-      if (schema.length == 1) return {required: schema};
-      var schemas = schema.map(function (prop) {
-        return {required: [prop]};
-      });
-      return {oneOf: schemas};
+      return schema.length == 0 ||
+        (schema.length == 1 ? {required: schema} : {
+          oneOf: schema.map(function (prop) {
+            return {required: [prop]};
+          })
+        });
     },
     metaSchema: {type: 'array', items: {type: 'string'}}
   };
@@ -439,12 +442,14 @@ module.exports = function defFunc(ajv) {
   defFunc.definition = {
     type: 'object',
     macro: function (schema) {
-      if (schema.length == 0) return true;
-      if (schema.length == 1) return {not: {required: schema}};
-      var schemas = schema.map(function (prop) {
-        return {required: [prop]};
-      });
-      return {not: {anyOf: schemas}};
+      return schema.length == 0 ||
+        (schema.length == 1 ? {not: {required: schema}} : {
+          not: {
+            anyOf: schema.map(function (prop) {
+              return {required: [prop]};
+            })
+          }
+        });
     },
     metaSchema: {type: 'array', items: {type: 'string'}}
   };
@@ -616,8 +621,7 @@ module.exports = __webpack_require__(1)('Minimum');
 function (module) {
 
 module.exports = function (it, $keyword, $ruleType) {
-  var $errorKeyword,
-    out = ' ',
+  var out = ' ',
     $lvl = it.level,
     $dataLvl = it.dataLevel,
     $schema = it.schema[$keyword],
@@ -629,21 +633,19 @@ module.exports = function (it, $keyword, $ruleType) {
   out += 'var ' + $valid + ' = undefined;';
   if (it.opts.format === false) return out + ' ' + $valid + ' = true; ';
 
-  var $format, $compare,
+  var $format,
     $schemaFormat = it.schema.format,
     $isDataFormat = it.opts.$data && $schemaFormat.$data,
     $closingBraces = '';
-  if ($isDataFormat) {
-    var $schemaValueFormat = it.util.getData($schemaFormat.$data, $dataLvl, it.dataPathArr);
-    out += ' var ' + ($format = 'format' + $lvl) + ' = formats[' + $schemaValueFormat + '] , ' + ($compare = 'compare' + $lvl) + ' = ' + $format + ' && ' + $format + '.compare;';
-  } else {
+  if ($isDataFormat)
+    out += ' var ' + ($format = 'format' + $lvl) + ' = formats[' + it.util.getData($schemaFormat.$data, $dataLvl, it.dataPathArr) + '] , ' + ($compare = 'compare' + $lvl) + ' = ' + $format + ' && ' + $format + '.compare;';
+  else {
     if (!($format = it.formats[$schemaFormat]) || !$format.compare) return out + '  ' + $valid + ' = true; ';
 
-    $compare = 'formats' + it.util.getProperty($schemaFormat) + '.compare';
+    var $compare = 'formats' + it.util.getProperty($schemaFormat) + '.compare';
   }
   var $schemaValue,
-    $exclusive, $opExpr, $opStr,
-    $$outStack, __err,
+    $$outStack,
     $isMax = $keyword == 'formatMaximum',
     $exclusiveKeyword = 'formatExclusive' + ($isMax ? 'Maximum' : 'Minimum'),
     $schemaExcl = it.schema[$exclusiveKeyword],
@@ -657,12 +659,12 @@ module.exports = function (it, $keyword, $ruleType) {
   } else $schemaValue = $schema;
 
   if ($isDataExcl) {
-    var $schemaValueExcl = it.util.getData($schemaExcl.$data, $dataLvl, it.dataPathArr);
-    $exclusive = 'exclusive' + $lvl;
-    $opStr = "' + " + ($opExpr = 'op' + $lvl) + " + '";
+    var $schemaValueExcl = it.util.getData($schemaExcl.$data, $dataLvl, it.dataPathArr),
+      $exclusive = 'exclusive' + $lvl,
+      $opStr = "' + " + ($opExpr = 'op' + $lvl) + " + '";
     out += ' var schemaExcl' + $lvl + ' = ' + $schemaValueExcl + '; ';
     out += ' if (typeof ' + ($schemaValueExcl = 'schemaExcl' + $lvl) + " != 'boolean' && " + $schemaValueExcl + ' !== undefined) { ' + $valid + ' = false; ';
-    $errorKeyword = $exclusiveKeyword;
+    var $errorKeyword = $exclusiveKeyword;
     ($$outStack = $$outStack || []).push(out);
     out = '';
     if (it.createErrors !== false) {
@@ -675,7 +677,7 @@ module.exports = function (it, $keyword, $ruleType) {
       out += ' } ';
     } else out += ' {} ';
 
-    __err = out;
+    var __err = out;
     out = $$outStack.pop();
     out += it.compositeRule || !$breakOnError
       ? ' var err = ' + __err + ';  if (vErrors === null) vErrors = [err]; else vErrors.push(err); errors++; '
@@ -703,7 +705,7 @@ module.exports = function (it, $keyword, $ruleType) {
   } else {
     $opStr = $op;
     ($exclusive = $schemaExcl === true) || ($opStr += '=');
-    $opExpr = "'" + $opStr + "'";
+    var $opExpr = "'" + $opStr + "'";
     if ($isData) {
       out += ' if (' + $schemaValue + ' === undefined) ' + $valid + ' = true; else if (typeof ' + $schemaValue + " != 'string') " + $valid + ' = false; else { ';
       $closingBraces += '}';
@@ -870,7 +872,7 @@ module.exports = function defFunc(ajv) {
 
 },
 // 22
-function (module, exports, __webpack_require__) {
+function (module) {
 
 module.exports = function (it, $keyword, $ruleType) {
   var out = ' ',
@@ -899,7 +901,7 @@ module.exports = function (it, $keyword, $ruleType) {
         out += ' if (!' + $ifPassed + ') { ';
         $closingBraces += '}';
       }
-      var $$outStack, __err;
+      var $$outStack;
       if ($sch.if && (it.opts.strictKeywords
           ? typeof $sch.if == 'object' && Object.keys($sch.if).length > 0
           : it.util.schemaHasRules($sch.if, it.RULES.all))) {
@@ -929,7 +931,7 @@ module.exports = function (it, $keyword, $ruleType) {
               out += ' } ';
             } else out += ' {} ';
 
-            __err = out;
+            var __err = out;
             out = $$outStack.pop();
             out += it.compositeRule || !$breakOnError
               ? ' var err = ' + __err + ';  if (vErrors === null) vErrors = [err]; else vErrors.push(err); errors++; '

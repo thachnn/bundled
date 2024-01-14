@@ -24,10 +24,12 @@ function shouldUseNative() {
     var test2 = {};
     for (var i = 0; i < 10; i++) test2['_' + String.fromCharCode(i)] = i;
 
-    var order2 = Object.getOwnPropertyNames(test2).map(function (n) {
-      return test2[n];
-    });
-    if (order2.join('') !== '0123456789') return false;
+    if (
+      Object.getOwnPropertyNames(test2).map(function (n) {
+        return test2[n];
+      }).join('') !== '0123456789'
+    )
+      return false;
 
     var test3 = {};
     'abcdefghijklmnopqrst'.split('').forEach(function (letter) {
@@ -88,13 +90,13 @@ function pToString(obj) {
   return Object.prototype.toString.call(obj);
 }
 function isView(arrbuf) {
-  if (isBuffer(arrbuf) || typeof global.ArrayBuffer != 'function') return false;
+  return !isBuffer(arrbuf) && typeof global.ArrayBuffer == 'function' &&
 
-  return typeof ArrayBuffer.isView == 'function'
-    ? ArrayBuffer.isView(arrbuf)
-    : !!arrbuf &&
-      (arrbuf instanceof DataView ||
-      !!(arrbuf.buffer && arrbuf.buffer instanceof ArrayBuffer));
+    (typeof ArrayBuffer.isView == 'function'
+      ? ArrayBuffer.isView(arrbuf)
+      : !!arrbuf &&
+        (arrbuf instanceof DataView ||
+        !!(arrbuf.buffer && arrbuf.buffer instanceof ArrayBuffer)));
 }
 
 var assert = (module.exports = ok),
@@ -218,7 +220,7 @@ function _deepEqual(actual, expected, strict, memos) {
 
   if (isBuffer(actual) !== isBuffer(expected)) return false;
 
-  memos = memos || {actual: [], expected: []};
+  memos || (memos = {actual: [], expected: []});
 
   var actualIndex = memos.actual.indexOf(actual);
   if (actualIndex !== -1 && actualIndex === memos.expected.indexOf(expected))

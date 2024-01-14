@@ -165,15 +165,15 @@ function toQuotedString(str) {
 }
 
 function getPathExpr(currentPath, expr, jsonPointers, isNumber) {
-  var path = jsonPointers
-    ? "'/' + " + expr + (isNumber ? '' : ".replace(/~/g, '~0').replace(/\\//g, '~1')")
-    : isNumber ? "'[' + " + expr + " + ']'" : "'[\\'' + " + expr + " + '\\']'";
-  return joinPaths(currentPath, path);
+  return joinPaths(currentPath,
+    jsonPointers
+      ? "'/' + " + expr + (isNumber ? '' : ".replace(/~/g, '~0').replace(/\\//g, '~1')")
+      : isNumber ? "'[' + " + expr + " + ']'" : "'[\\'' + " + expr + " + '\\']'"
+  );
 }
 
 function getPath(currentPath, prop, jsonPointers) {
-  var path = toQuotedString(jsonPointers ? '/' + escapeJsonPointer(prop) : getProperty(prop));
-  return joinPaths(currentPath, path);
+  return joinPaths(currentPath, toQuotedString(jsonPointers ? '/' + escapeJsonPointer(prop) : getProperty(prop)));
 }
 
 var JSON_POINTER = /^\/(?:[^~]|~0|~1)*$/,
@@ -345,9 +345,8 @@ var SIMPLE_INLINED = util.toHash([
   'required', 'enum'
 ]);
 function inlineRef(schema, limit) {
-  return limit === false ? false
-    : limit === void 0 || limit === true ? checkNoRef(schema)
-    : limit ? countKeys(schema) <= limit : void 0;
+  return limit !== false &&
+    (limit === void 0 || limit === true ? checkNoRef(schema) : limit ? countKeys(schema) <= limit : void 0);
 }
 
 function checkNoRef(schema) {
@@ -587,7 +586,7 @@ function (module) {
 
 module.exports = function (it, $keyword, $ruleType) {
   var $errorKeyword,
-    $$outStack, __err, $defaultMsg,
+    $$outStack,
     out = '',
     $async = it.schema.$async === true,
     $refKeywords = it.util.schemaHasRulesExcept(it.schema, it.RULES.all, '$ref'),
@@ -609,7 +608,7 @@ module.exports = function (it, $keyword, $ruleType) {
     out += "function(data, dataPath, parentData, parentDataProperty, rootData) { 'use strict'; ";
     if ($id && (it.opts.sourceCode || it.opts.processCode)) out += ' /*# sourceURL=' + $id + ' */ ';
   }
-  if (typeof it.schema == 'boolean' || !($refKeywords || it.schema.$ref)) {
+  if (typeof it.schema == 'boolean' || (!$refKeywords && !it.schema.$ref)) {
     $keyword = 'false schema';
     var $lvl = it.level,
       $dataLvl = it.dataLevel,
@@ -634,7 +633,7 @@ module.exports = function (it, $keyword, $ruleType) {
         out += ' } ';
       } else out += ' {} ';
 
-      __err = out;
+      var __err = out;
       out = $$outStack.pop();
       out += it.compositeRule || !$breakOnError
         ? ' var err = ' + __err + ';  if (vErrors === null) vErrors = [err]; else vErrors.push(err); errors++; '
@@ -660,7 +659,7 @@ module.exports = function (it, $keyword, $ruleType) {
     delete it.isTop;
     it.dataPathArr = [''];
     if (it.schema.default !== void 0 && it.opts.useDefaults && it.opts.strictDefaults) {
-      $defaultMsg = 'default is ignored in the schema root';
+      var $defaultMsg = 'default is ignored in the schema root';
       if (it.opts.strictDefaults !== 'log') throw new Error($defaultMsg);
       it.logger.warn($defaultMsg);
     }
@@ -720,8 +719,8 @@ module.exports = function (it, $keyword, $ruleType) {
         out += ' if (' + $coerced + ' !== undefined) ; ';
         var arr1 = $coerceToTypes;
         if (arr1)
-          for (var $type, $j = -1, l1 = arr1.length - 1; $j < l1; )
-            if (($type = arr1[++$j]) == 'string')
+          for (var $type, $i = -1, l1 = arr1.length - 1; $i < l1; )
+            if (($type = arr1[++$i]) == 'string')
               out += ' else if (' + $dataType + " == 'number' || " + $dataType + " == 'boolean') " + $coerced + " = '' + " + $data + '; else if (' + $data + ' === null) ' + $coerced + " = ''; ";
             else if ($type == 'number' || $type == 'integer') {
               out += ' else if (' + $dataType + " == 'boolean' || " + $data + ' === null || (' + $dataType + " == 'string' && " + $data + ' && ' + $data + ' == +' + $data + ' ';
@@ -812,7 +811,7 @@ module.exports = function (it, $keyword, $ruleType) {
   } else {
     var arr2 = it.RULES;
     if (arr2)
-      for (var $sch, $passData, i2 = -1, l2 = arr2.length - 1; i2 < l2; ) {
+      for (var i2 = -1, l2 = arr2.length - 1; i2 < l2; ) {
         if (!$shouldUseGroup(($rulesGroup = arr2[++i2]))) continue;
 
         if ($rulesGroup.type)
@@ -826,7 +825,7 @@ module.exports = function (it, $keyword, $ruleType) {
               for (var $propertyKey, i3 = -1, l3 = arr3.length - 1; i3 < l3; ) {
                 if (($sch = $schema[($propertyKey = arr3[++i3])]).default === void 0) continue;
 
-                $passData = $data + it.util.getProperty($propertyKey);
+                var $passData = $data + it.util.getProperty($propertyKey);
                 if (it.compositeRule) {
                   if (it.opts.strictDefaults) {
                     $defaultMsg = 'default is ignored for: ' + $passData;
@@ -849,7 +848,7 @@ module.exports = function (it, $keyword, $ruleType) {
           } else if ($rulesGroup.type == 'array' && Array.isArray(it.schema.items)) {
             var arr4 = it.schema.items;
             if (arr4)
-              for (var $i = -1, l4 = arr4.length - 1; $i < l4; ) {
+              for (var $sch, l4 = (($i = -1), arr4.length - 1); $i < l4; ) {
                 if (($sch = arr4[++$i]).default === void 0) continue;
 
                 $passData = $data + '[' + $i + ']';
@@ -983,7 +982,7 @@ module.exports = function (it, $keyword, $ruleType) {
     $schemaValue = 'schema' + $lvl;
   } else $schemaValue = $schema;
 
-  var $$outStack, __err,
+  var $$outStack,
     $isMax = $keyword == 'maximum',
     $exclusiveKeyword = $isMax ? 'exclusiveMaximum' : 'exclusiveMinimum',
     $schemaExcl = it.schema[$exclusiveKeyword],
@@ -1002,8 +1001,7 @@ module.exports = function (it, $keyword, $ruleType) {
       $exclusive = 'exclusive' + $lvl,
       $exclType = 'exclType' + $lvl,
       $exclIsNumber = 'exclIsNumber' + $lvl,
-      $opExpr = 'op' + $lvl,
-      $opStr = "' + " + $opExpr + " + '";
+      $opStr = "' + " + ($opExpr = 'op' + $lvl) + " + '";
     out += ' var schemaExcl' + $lvl + ' = ' + $schemaValueExcl + '; ';
     out += ' var ' + $exclusive + '; var ' + $exclType + ' = typeof ' + ($schemaValueExcl = 'schemaExcl' + $lvl) + '; if (' + $exclType + " != 'boolean' && " + $exclType + " != 'undefined' && " + $exclType + " != 'number') { ";
     $errorKeyword = $exclusiveKeyword;
@@ -1019,7 +1017,7 @@ module.exports = function (it, $keyword, $ruleType) {
       out += ' } ';
     } else out += ' {} ';
 
-    __err = out;
+    var __err = out;
     out = $$outStack.pop();
     out += it.compositeRule || !$breakOnError
       ? ' var err = ' + __err + ';  if (vErrors === null) vErrors = [err]; else vErrors.push(err); errors++; '
@@ -1041,7 +1039,7 @@ module.exports = function (it, $keyword, $ruleType) {
   } else {
     $opStr = $op;
     if (($exclIsNumber = typeof $schemaExcl == 'number') && $isData) {
-      $opExpr = "'" + $opStr + "'";
+      var $opExpr = "'" + $opStr + "'";
       out += ' if ( ';
       if ($isData)
         out += ' (' + $schemaValue + ' !== undefined && typeof ' + $schemaValue + " != 'number') || ";
@@ -1802,12 +1800,10 @@ function compile(schema, root, localRefs, baseId) {
 
     if (opts.processCode) sourceCode = opts.processCode(sourceCode, _schema);
     try {
-      var makeValidate = new Function(
+      validate = new Function(
         'self', 'RULES', 'formats', 'root', 'refVal', 'defaults', 'customRules', 'equal', 'ucs2length', 'ValidationError',
         sourceCode
-      );
-
-      validate = makeValidate(
+      )(
         self, RULES, formats, root, refVal, defaults, customRules, equal, ucs2length, ValidationError
       );
 
@@ -2127,15 +2123,15 @@ var util = __webpack_require__(0);
 var DATE = /^(\d\d\d\d)-(\d\d)-(\d\d)$/,
   DAYS = [0, 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31],
   TIME = /^(\d\d):(\d\d):(\d\d)(\.\d+)?(z|[+-]\d\d(?::?\d\d)?)?$/i,
-  HOSTNAME = /^(?=.{1,253}\.?$)[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?(?:\.[a-z0-9](?:[-0-9a-z]{0,61}[0-9a-z])?)*\.?$/i;
-var URI =
-  /^(?:[a-z][a-z0-9+\-.]*:)(?:\/?\/(?:(?:[a-z0-9\-._~!$&'()*+,;=:]|%[0-9a-f]{2})*@)?(?:\[(?:(?:(?:(?:[0-9a-f]{1,4}:){6}|::(?:[0-9a-f]{1,4}:){5}|(?:[0-9a-f]{1,4})?::(?:[0-9a-f]{1,4}:){4}|(?:(?:[0-9a-f]{1,4}:){0,1}[0-9a-f]{1,4})?::(?:[0-9a-f]{1,4}:){3}|(?:(?:[0-9a-f]{1,4}:){0,2}[0-9a-f]{1,4})?::(?:[0-9a-f]{1,4}:){2}|(?:(?:[0-9a-f]{1,4}:){0,3}[0-9a-f]{1,4})?::[0-9a-f]{1,4}:|(?:(?:[0-9a-f]{1,4}:){0,4}[0-9a-f]{1,4})?::)(?:[0-9a-f]{1,4}:[0-9a-f]{1,4}|(?:(?:25[0-5]|2[0-4]\d|[01]?\d\d?)\.){3}(?:25[0-5]|2[0-4]\d|[01]?\d\d?))|(?:(?:[0-9a-f]{1,4}:){0,5}[0-9a-f]{1,4})?::[0-9a-f]{1,4}|(?:(?:[0-9a-f]{1,4}:){0,6}[0-9a-f]{1,4})?::)|[Vv][0-9a-f]+\.[a-z0-9\-._~!$&'()*+,;=:]+)\]|(?:(?:25[0-5]|2[0-4]\d|[01]?\d\d?)\.){3}(?:25[0-5]|2[0-4]\d|[01]?\d\d?)|(?:[a-z0-9\-._~!$&'()*+,;=]|%[0-9a-f]{2})*)(?::\d*)?(?:\/(?:[a-z0-9\-._~!$&'()*+,;=:@]|%[0-9a-f]{2})*)*|\/(?:(?:[a-z0-9\-._~!$&'()*+,;=:@]|%[0-9a-f]{2})+(?:\/(?:[a-z0-9\-._~!$&'()*+,;=:@]|%[0-9a-f]{2})*)*)?|(?:[a-z0-9\-._~!$&'()*+,;=:@]|%[0-9a-f]{2})+(?:\/(?:[a-z0-9\-._~!$&'()*+,;=:@]|%[0-9a-f]{2})*)*)(?:\?(?:[a-z0-9\-._~!$&'()*+,;=:@/?]|%[0-9a-f]{2})*)?(?:#(?:[a-z0-9\-._~!$&'()*+,;=:@/?]|%[0-9a-f]{2})*)?$/i;
-var URIREF =
-  /^(?:[a-z][a-z0-9+\-.]*:)?(?:\/?\/(?:(?:[a-z0-9\-._~!$&'()*+,;=:]|%[0-9a-f]{2})*@)?(?:\[(?:(?:(?:(?:[0-9a-f]{1,4}:){6}|::(?:[0-9a-f]{1,4}:){5}|(?:[0-9a-f]{1,4})?::(?:[0-9a-f]{1,4}:){4}|(?:(?:[0-9a-f]{1,4}:){0,1}[0-9a-f]{1,4})?::(?:[0-9a-f]{1,4}:){3}|(?:(?:[0-9a-f]{1,4}:){0,2}[0-9a-f]{1,4})?::(?:[0-9a-f]{1,4}:){2}|(?:(?:[0-9a-f]{1,4}:){0,3}[0-9a-f]{1,4})?::[0-9a-f]{1,4}:|(?:(?:[0-9a-f]{1,4}:){0,4}[0-9a-f]{1,4})?::)(?:[0-9a-f]{1,4}:[0-9a-f]{1,4}|(?:(?:25[0-5]|2[0-4]\d|[01]?\d\d?)\.){3}(?:25[0-5]|2[0-4]\d|[01]?\d\d?))|(?:(?:[0-9a-f]{1,4}:){0,5}[0-9a-f]{1,4})?::[0-9a-f]{1,4}|(?:(?:[0-9a-f]{1,4}:){0,6}[0-9a-f]{1,4})?::)|[Vv][0-9a-f]+\.[a-z0-9\-._~!$&'()*+,;=:]+)\]|(?:(?:25[0-5]|2[0-4]\d|[01]?\d\d?)\.){3}(?:25[0-5]|2[0-4]\d|[01]?\d\d?)|(?:[a-z0-9\-._~!$&'"()*+,;=]|%[0-9a-f]{2})*)(?::\d*)?(?:\/(?:[a-z0-9\-._~!$&'"()*+,;=:@]|%[0-9a-f]{2})*)*|\/(?:(?:[a-z0-9\-._~!$&'"()*+,;=:@]|%[0-9a-f]{2})+(?:\/(?:[a-z0-9\-._~!$&'"()*+,;=:@]|%[0-9a-f]{2})*)*)?|(?:[a-z0-9\-._~!$&'"()*+,;=:@]|%[0-9a-f]{2})+(?:\/(?:[a-z0-9\-._~!$&'"()*+,;=:@]|%[0-9a-f]{2})*)*)?(?:\?(?:[a-z0-9\-._~!$&'"()*+,;=:@/?]|%[0-9a-f]{2})*)?(?:#(?:[a-z0-9\-._~!$&'"()*+,;=:@/?]|%[0-9a-f]{2})*)?$/i;
-var URITEMPLATE = /^(?:(?:[^\x00-\x20"'<>%\\^`{|}]|%[0-9a-f]{2})|\{[+#./;?&=,!@|]?(?:[a-z0-9_]|%[0-9a-f]{2})+(?::[1-9][0-9]{0,3}|\*)?(?:,(?:[a-z0-9_]|%[0-9a-f]{2})+(?::[1-9][0-9]{0,3}|\*)?)*\})*$/i;
-var URL =
-  /^(?:(?:http[s\u017F]?|ftp):\/\/)(?:(?:[\0-\x08\x0E-\x1F!-\x9F\xA1-\u167F\u1681-\u1FFF\u200B-\u2027\u202A-\u202E\u2030-\u205E\u2060-\u2FFF\u3001-\uD7FF\uE000-\uFEFE\uFF00-\uFFFF]|[\uD800-\uDBFF][\uDC00-\uDFFF]|[\uD800-\uDBFF](?![\uDC00-\uDFFF])|(?:[^\uD800-\uDBFF]|^)[\uDC00-\uDFFF])+(?::(?:[\0-\x08\x0E-\x1F!-\x9F\xA1-\u167F\u1681-\u1FFF\u200B-\u2027\u202A-\u202E\u2030-\u205E\u2060-\u2FFF\u3001-\uD7FF\uE000-\uFEFE\uFF00-\uFFFF]|[\uD800-\uDBFF][\uDC00-\uDFFF]|[\uD800-\uDBFF](?![\uDC00-\uDFFF])|(?:[^\uD800-\uDBFF]|^)[\uDC00-\uDFFF])*)?@)?(?:(?!10(?:\.[0-9]{1,3}){3})(?!127(?:\.[0-9]{1,3}){3})(?!169\.254(?:\.[0-9]{1,3}){2})(?!192\.168(?:\.[0-9]{1,3}){2})(?!172\.(?:1[6-9]|2[0-9]|3[01])(?:\.[0-9]{1,3}){2})(?:[1-9][0-9]?|1[0-9][0-9]|2[01][0-9]|22[0-3])(?:\.(?:1?[0-9]{1,2}|2[0-4][0-9]|25[0-5])){2}(?:\.(?:[1-9][0-9]?|1[0-9][0-9]|2[0-4][0-9]|25[0-4]))|(?:(?:(?:[0-9a-z\xA1-\uD7FF\uE000-\uFFFF]|[\uD800-\uDBFF](?![\uDC00-\uDFFF])|(?:[^\uD800-\uDBFF]|^)[\uDC00-\uDFFF])+-)*(?:[0-9a-z\xA1-\uD7FF\uE000-\uFFFF]|[\uD800-\uDBFF](?![\uDC00-\uDFFF])|(?:[^\uD800-\uDBFF]|^)[\uDC00-\uDFFF])+)(?:\.(?:(?:[0-9a-z\xA1-\uD7FF\uE000-\uFFFF]|[\uD800-\uDBFF](?![\uDC00-\uDFFF])|(?:[^\uD800-\uDBFF]|^)[\uDC00-\uDFFF])+-)*(?:[0-9a-z\xA1-\uD7FF\uE000-\uFFFF]|[\uD800-\uDBFF](?![\uDC00-\uDFFF])|(?:[^\uD800-\uDBFF]|^)[\uDC00-\uDFFF])+)*(?:\.(?:(?:[a-z\xA1-\uD7FF\uE000-\uFFFF]|[\uD800-\uDBFF](?![\uDC00-\uDFFF])|(?:[^\uD800-\uDBFF]|^)[\uDC00-\uDFFF]){2,})))(?::[0-9]{2,5})?(?:\/(?:[\0-\x08\x0E-\x1F!-\x9F\xA1-\u167F\u1681-\u1FFF\u200B-\u2027\u202A-\u202E\u2030-\u205E\u2060-\u2FFF\u3001-\uD7FF\uE000-\uFEFE\uFF00-\uFFFF]|[\uD800-\uDBFF][\uDC00-\uDFFF]|[\uD800-\uDBFF](?![\uDC00-\uDFFF])|(?:[^\uD800-\uDBFF]|^)[\uDC00-\uDFFF])*)?$/i;
-var UUID = /^(?:urn:uuid:)?[0-9a-f]{8}-(?:[0-9a-f]{4}-){3}[0-9a-f]{12}$/i,
+  HOSTNAME = /^(?=.{1,253}\.?$)[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?(?:\.[a-z0-9](?:[-0-9a-z]{0,61}[0-9a-z])?)*\.?$/i,
+  URI =
+    /^(?:[a-z][a-z0-9+\-.]*:)(?:\/?\/(?:(?:[a-z0-9\-._~!$&'()*+,;=:]|%[0-9a-f]{2})*@)?(?:\[(?:(?:(?:(?:[0-9a-f]{1,4}:){6}|::(?:[0-9a-f]{1,4}:){5}|(?:[0-9a-f]{1,4})?::(?:[0-9a-f]{1,4}:){4}|(?:(?:[0-9a-f]{1,4}:){0,1}[0-9a-f]{1,4})?::(?:[0-9a-f]{1,4}:){3}|(?:(?:[0-9a-f]{1,4}:){0,2}[0-9a-f]{1,4})?::(?:[0-9a-f]{1,4}:){2}|(?:(?:[0-9a-f]{1,4}:){0,3}[0-9a-f]{1,4})?::[0-9a-f]{1,4}:|(?:(?:[0-9a-f]{1,4}:){0,4}[0-9a-f]{1,4})?::)(?:[0-9a-f]{1,4}:[0-9a-f]{1,4}|(?:(?:25[0-5]|2[0-4]\d|[01]?\d\d?)\.){3}(?:25[0-5]|2[0-4]\d|[01]?\d\d?))|(?:(?:[0-9a-f]{1,4}:){0,5}[0-9a-f]{1,4})?::[0-9a-f]{1,4}|(?:(?:[0-9a-f]{1,4}:){0,6}[0-9a-f]{1,4})?::)|[Vv][0-9a-f]+\.[a-z0-9\-._~!$&'()*+,;=:]+)\]|(?:(?:25[0-5]|2[0-4]\d|[01]?\d\d?)\.){3}(?:25[0-5]|2[0-4]\d|[01]?\d\d?)|(?:[a-z0-9\-._~!$&'()*+,;=]|%[0-9a-f]{2})*)(?::\d*)?(?:\/(?:[a-z0-9\-._~!$&'()*+,;=:@]|%[0-9a-f]{2})*)*|\/(?:(?:[a-z0-9\-._~!$&'()*+,;=:@]|%[0-9a-f]{2})+(?:\/(?:[a-z0-9\-._~!$&'()*+,;=:@]|%[0-9a-f]{2})*)*)?|(?:[a-z0-9\-._~!$&'()*+,;=:@]|%[0-9a-f]{2})+(?:\/(?:[a-z0-9\-._~!$&'()*+,;=:@]|%[0-9a-f]{2})*)*)(?:\?(?:[a-z0-9\-._~!$&'()*+,;=:@/?]|%[0-9a-f]{2})*)?(?:#(?:[a-z0-9\-._~!$&'()*+,;=:@/?]|%[0-9a-f]{2})*)?$/i,
+  URIREF =
+    /^(?:[a-z][a-z0-9+\-.]*:)?(?:\/?\/(?:(?:[a-z0-9\-._~!$&'()*+,;=:]|%[0-9a-f]{2})*@)?(?:\[(?:(?:(?:(?:[0-9a-f]{1,4}:){6}|::(?:[0-9a-f]{1,4}:){5}|(?:[0-9a-f]{1,4})?::(?:[0-9a-f]{1,4}:){4}|(?:(?:[0-9a-f]{1,4}:){0,1}[0-9a-f]{1,4})?::(?:[0-9a-f]{1,4}:){3}|(?:(?:[0-9a-f]{1,4}:){0,2}[0-9a-f]{1,4})?::(?:[0-9a-f]{1,4}:){2}|(?:(?:[0-9a-f]{1,4}:){0,3}[0-9a-f]{1,4})?::[0-9a-f]{1,4}:|(?:(?:[0-9a-f]{1,4}:){0,4}[0-9a-f]{1,4})?::)(?:[0-9a-f]{1,4}:[0-9a-f]{1,4}|(?:(?:25[0-5]|2[0-4]\d|[01]?\d\d?)\.){3}(?:25[0-5]|2[0-4]\d|[01]?\d\d?))|(?:(?:[0-9a-f]{1,4}:){0,5}[0-9a-f]{1,4})?::[0-9a-f]{1,4}|(?:(?:[0-9a-f]{1,4}:){0,6}[0-9a-f]{1,4})?::)|[Vv][0-9a-f]+\.[a-z0-9\-._~!$&'()*+,;=:]+)\]|(?:(?:25[0-5]|2[0-4]\d|[01]?\d\d?)\.){3}(?:25[0-5]|2[0-4]\d|[01]?\d\d?)|(?:[a-z0-9\-._~!$&'"()*+,;=]|%[0-9a-f]{2})*)(?::\d*)?(?:\/(?:[a-z0-9\-._~!$&'"()*+,;=:@]|%[0-9a-f]{2})*)*|\/(?:(?:[a-z0-9\-._~!$&'"()*+,;=:@]|%[0-9a-f]{2})+(?:\/(?:[a-z0-9\-._~!$&'"()*+,;=:@]|%[0-9a-f]{2})*)*)?|(?:[a-z0-9\-._~!$&'"()*+,;=:@]|%[0-9a-f]{2})+(?:\/(?:[a-z0-9\-._~!$&'"()*+,;=:@]|%[0-9a-f]{2})*)*)?(?:\?(?:[a-z0-9\-._~!$&'"()*+,;=:@/?]|%[0-9a-f]{2})*)?(?:#(?:[a-z0-9\-._~!$&'"()*+,;=:@/?]|%[0-9a-f]{2})*)?$/i,
+  URITEMPLATE = /^(?:(?:[^\x00-\x20"'<>%\\^`{|}]|%[0-9a-f]{2})|\{[+#./;?&=,!@|]?(?:[a-z0-9_]|%[0-9a-f]{2})+(?::[1-9][0-9]{0,3}|\*)?(?:,(?:[a-z0-9_]|%[0-9a-f]{2})+(?::[1-9][0-9]{0,3}|\*)?)*\})*$/i,
+  URL =
+    /^(?:(?:http[s\u017F]?|ftp):\/\/)(?:(?:[\0-\x08\x0E-\x1F!-\x9F\xA1-\u167F\u1681-\u1FFF\u200B-\u2027\u202A-\u202E\u2030-\u205E\u2060-\u2FFF\u3001-\uD7FF\uE000-\uFEFE\uFF00-\uFFFF]|[\uD800-\uDBFF][\uDC00-\uDFFF]|[\uD800-\uDBFF](?![\uDC00-\uDFFF])|(?:[^\uD800-\uDBFF]|^)[\uDC00-\uDFFF])+(?::(?:[\0-\x08\x0E-\x1F!-\x9F\xA1-\u167F\u1681-\u1FFF\u200B-\u2027\u202A-\u202E\u2030-\u205E\u2060-\u2FFF\u3001-\uD7FF\uE000-\uFEFE\uFF00-\uFFFF]|[\uD800-\uDBFF][\uDC00-\uDFFF]|[\uD800-\uDBFF](?![\uDC00-\uDFFF])|(?:[^\uD800-\uDBFF]|^)[\uDC00-\uDFFF])*)?@)?(?:(?!10(?:\.[0-9]{1,3}){3})(?!127(?:\.[0-9]{1,3}){3})(?!169\.254(?:\.[0-9]{1,3}){2})(?!192\.168(?:\.[0-9]{1,3}){2})(?!172\.(?:1[6-9]|2[0-9]|3[01])(?:\.[0-9]{1,3}){2})(?:[1-9][0-9]?|1[0-9][0-9]|2[01][0-9]|22[0-3])(?:\.(?:1?[0-9]{1,2}|2[0-4][0-9]|25[0-5])){2}(?:\.(?:[1-9][0-9]?|1[0-9][0-9]|2[0-4][0-9]|25[0-4]))|(?:(?:(?:[0-9a-z\xA1-\uD7FF\uE000-\uFFFF]|[\uD800-\uDBFF](?![\uDC00-\uDFFF])|(?:[^\uD800-\uDBFF]|^)[\uDC00-\uDFFF])+-)*(?:[0-9a-z\xA1-\uD7FF\uE000-\uFFFF]|[\uD800-\uDBFF](?![\uDC00-\uDFFF])|(?:[^\uD800-\uDBFF]|^)[\uDC00-\uDFFF])+)(?:\.(?:(?:[0-9a-z\xA1-\uD7FF\uE000-\uFFFF]|[\uD800-\uDBFF](?![\uDC00-\uDFFF])|(?:[^\uD800-\uDBFF]|^)[\uDC00-\uDFFF])+-)*(?:[0-9a-z\xA1-\uD7FF\uE000-\uFFFF]|[\uD800-\uDBFF](?![\uDC00-\uDFFF])|(?:[^\uD800-\uDBFF]|^)[\uDC00-\uDFFF])+)*(?:\.(?:(?:[a-z\xA1-\uD7FF\uE000-\uFFFF]|[\uD800-\uDBFF](?![\uDC00-\uDFFF])|(?:[^\uD800-\uDBFF]|^)[\uDC00-\uDFFF]){2,})))(?::[0-9]{2,5})?(?:\/(?:[\0-\x08\x0E-\x1F!-\x9F\xA1-\u167F\u1681-\u1FFF\u200B-\u2027\u202A-\u202E\u2030-\u205E\u2060-\u2FFF\u3001-\uD7FF\uE000-\uFEFE\uFF00-\uFFFF]|[\uD800-\uDBFF][\uDC00-\uDFFF]|[\uD800-\uDBFF](?![\uDC00-\uDFFF])|(?:[^\uD800-\uDBFF]|^)[\uDC00-\uDFFF])*)?$/i,
+  UUID = /^(?:urn:uuid:)?[0-9a-f]{8}-(?:[0-9a-f]{4}-){3}[0-9a-f]{12}$/i,
   JSON_POINTER = /^(?:\/(?:[^~/]|~0|~1)*)*$/,
   JSON_POINTER_URI_FRAGMENT = /^#(?:\/(?:[a-z0-9_\-.!$&'()*+,;:=@]|%[0-9a-f]{2}|~0|~1)*)*$/i,
   RELATIVE_JSON_POINTER = /^(?:0|[1-9][0-9]*)(?:#|(?:\/(?:[^~/]|~0|~1)*)*)$/;
@@ -2497,10 +2493,9 @@ module.exports = function (it, $keyword, $ruleType) {
     $closingBraces = '';
   $it.level++;
   var $nextValid = 'valid' + $it.level;
-  var $noEmptySchema = $schema.every(function ($sch) {
+  if (!$schema.every(function ($sch) {
     return it.opts.strictKeywords ? (typeof $sch == 'object' && Object.keys($sch).length > 0) || $sch === false : it.util.schemaHasRules($sch, it.RULES.all);
-  });
-  if (!$noEmptySchema) {
+  })) {
     if ($breakOnError) out += ' if (true) { ';
 
     return out;
@@ -2724,7 +2719,6 @@ module.exports = function (it, $keyword, $ruleType) {
     if ($ownProperties)
       out += ' && Object.prototype.hasOwnProperty.call(' + $data + ", '" + it.util.escapeQuotes($property) + "') ";
 
-    var $propertyKey, $prop, $useData;
     if ($breakOnError) {
       out += ' && ( ';
       var arr1 = $deps;
@@ -2776,11 +2770,10 @@ module.exports = function (it, $keyword, $ruleType) {
       out += ' ) { ';
       var arr2 = $deps;
       if (arr2)
-        for (var i2 = -1, l2 = arr2.length - 1; i2 < l2; ) {
+        for (var $propertyKey, i2 = -1, l2 = arr2.length - 1; i2 < l2; ) {
           $propertyKey = arr2[++i2];
-          $prop = it.util.getProperty($propertyKey);
-          $missingProperty = it.util.escapeQuotes($propertyKey);
-          $useData = $data + $prop;
+          var $prop = it.util.getProperty($propertyKey),
+            $useData = (($missingProperty = it.util.escapeQuotes($propertyKey)), $data + $prop);
           if (it.opts._errorDataPathProperty)
             it.errorPath = it.util.getPath($currentErrorPath, $propertyKey, it.opts.jsonPointers);
 
@@ -2923,7 +2916,7 @@ module.exports = function (it, $keyword, $ruleType) {
     $schemaValue = 'schema' + $lvl;
   } else $schemaValue = $schema;
 
-  var $format, $isObject, $formatType,
+  var $format, $isObject,
     $unknownFormats = it.opts.unknownFormats,
     $allowUnknown = Array.isArray($unknownFormats);
   if ($isData) {
@@ -2962,7 +2955,7 @@ module.exports = function (it, $keyword, $ruleType) {
       }
       throw new Error('unknown format "' + $schema + '" is used in schema at path "' + it.errSchemaPath + '"');
     }
-    $formatType = (($isObject = typeof $format == 'object' && !($format instanceof RegExp) && $format.validate) && $format.type) || 'string';
+    var $formatType = (($isObject = typeof $format == 'object' && !($format instanceof RegExp) && $format.validate) && $format.type) || 'string';
     if ($isObject) {
       var $async = $format.async === true;
       $format = $format.validate;
@@ -3133,8 +3126,7 @@ module.exports = function (it, $keyword, $ruleType) {
     $it = it.util.copy(it),
     $closingBraces = '';
   $it.level++;
-  var $passData, $code,
-    $nextValid = 'valid' + $it.level,
+  var $nextValid = 'valid' + $it.level,
     $idx = 'i' + $lvl,
     $dataNxt = ($it.dataLevel = it.dataLevel + 1),
     $nextData = 'data' + $dataNxt,
@@ -3183,13 +3175,13 @@ module.exports = function (it, $keyword, $ruleType) {
         if (!(it.opts.strictKeywords ? (typeof $sch == 'object' && Object.keys($sch).length > 0) || $sch === false : it.util.schemaHasRules($sch, it.RULES.all)))
           continue;
         out += ' ' + $nextValid + ' = true; if (' + $data + '.length > ' + $i + ') { ';
-        $passData = $data + '[' + $i + ']';
+        var $passData = $data + '[' + $i + ']';
         $it.schema = $sch;
         $it.schemaPath = $schemaPath + '[' + $i + ']';
         $it.errSchemaPath = $errSchemaPath + '/' + $i;
         $it.errorPath = it.util.getPathExpr(it.errorPath, $i, it.opts.jsonPointers, true);
         $it.dataPathArr[$dataNxt] = $i;
-        $code = it.validate($it);
+        var $code = it.validate($it);
         $it.baseId = $currentBaseId;
         out += it.util.varOccurences($code, $nextData) < 2
           ? ' ' + it.util.varReplace($code, $nextData, $passData) + ' '
@@ -3555,7 +3547,7 @@ module.exports = function (it, $keyword, $ruleType) {
     $ownProperties = it.opts.ownProperties,
     $currentBaseId = it.baseId,
     $required = it.schema.required;
-  if ($required && !(it.opts.$data && $required.$data) && $required.length < it.opts.loopRequired)
+  if ($required && (!it.opts.$data || !$required.$data) && $required.length < it.opts.loopRequired)
     var $requiredHash = it.util.toHash($required);
 
   function notProto(p) {
@@ -3564,7 +3556,7 @@ module.exports = function (it, $keyword, $ruleType) {
   out += 'var ' + $errs + ' = errors;var ' + $nextValid + ' = true;';
   if ($ownProperties) out += ' var ' + $dataProperties + ' = undefined;';
 
-  var $$outStack, __err, $passData, $code;
+  var $$outStack;
   if ($checkAdditional) {
     out += $ownProperties
       ? ' ' + $dataProperties + ' = ' + $dataProperties + ' || Object.keys(' + $data + '); for (var ' + $idx + '=0; ' + $idx + '<' + $dataProperties + '.length; ' + $idx + '++) { var ' + $key + ' = ' + $dataProperties + '[' + $idx + ']; '
@@ -3625,7 +3617,7 @@ module.exports = function (it, $keyword, $ruleType) {
             out += ' } ';
           } else out += ' {} ';
 
-          __err = out;
+          var __err = out;
           out = $$outStack.pop();
           out += it.compositeRule || !$breakOnError
             ? ' var err = ' + __err + ';  if (vErrors === null) vErrors = [err]; else vErrors.push(err); errors++; '
@@ -3645,9 +3637,9 @@ module.exports = function (it, $keyword, $ruleType) {
           $it.schemaPath = it.schemaPath + '.additionalProperties';
           $it.errSchemaPath = it.errSchemaPath + '/additionalProperties';
           $it.errorPath = it.opts._errorDataPathProperty ? it.errorPath : it.util.getPathExpr(it.errorPath, $key, it.opts.jsonPointers);
-          $passData = $data + '[' + $key + ']';
+          var $passData = $data + '[' + $key + ']';
           $it.dataPathArr[$dataNxt] = $key;
-          $code = it.validate($it);
+          var $code = it.validate($it);
           $it.baseId = $currentBaseId;
           out += it.util.varOccurences($code, $nextData) < 2
             ? ' ' + it.util.varReplace($code, $nextData, $passData) + ' '
@@ -3913,8 +3905,8 @@ module.exports = function (it, $keyword, $ruleType) {
         for (var $property, i1 = -1, l1 = arr1.length - 1; i1 < l1; ) {
           $property = arr1[++i1];
           var $propertySch = it.schema.properties[$property];
-          if (!($propertySch && (it.opts.strictKeywords ? (typeof $propertySch == 'object' && Object.keys($propertySch).length > 0) || $propertySch === false : it.util.schemaHasRules($propertySch, it.RULES.all))))
-            $required[$required.length] = $property;
+          ($propertySch && (it.opts.strictKeywords ? (typeof $propertySch == 'object' && Object.keys($propertySch).length > 0) || $propertySch === false : it.util.schemaHasRules($propertySch, it.RULES.all))) ||
+            ($required[$required.length] = $property);
         }
     } else $required = $schema;
 
@@ -3923,8 +3915,8 @@ module.exports = function (it, $keyword, $ruleType) {
 
     return out;
   }
-  var $i, $propertyPath, $missingProperty, $propertyKey, $prop, $useData,
-    $$outStack, __err,
+  var $propertyPath,
+    $$outStack,
     $currentErrorPath = it.errorPath,
     $loopRequired = $isData || $required.length >= it.opts.loopRequired,
     $ownProperties = it.opts.ownProperties;
@@ -3933,7 +3925,7 @@ module.exports = function (it, $keyword, $ruleType) {
     if ($loopRequired) {
       $isData || (out += ' var ' + $vSchema + ' = validate.schema' + $schemaPath + '; ');
 
-      $missingProperty = "' + " + ($propertyPath = 'schema' + $lvl + '[' + ($i = 'i' + $lvl) + ']') + " + '";
+      var $missingProperty = "' + " + ($propertyPath = 'schema' + $lvl + '[' + ($i = 'i' + $lvl) + ']') + " + '";
       if (it.opts._errorDataPathProperty)
         it.errorPath = it.util.getPathExpr($currentErrorPath, $propertyPath, it.opts.jsonPointers);
 
@@ -3967,7 +3959,7 @@ module.exports = function (it, $keyword, $ruleType) {
         out += ' } ';
       } else out += ' {} ';
 
-      __err = out;
+      var __err = out;
       out = $$outStack.pop();
       out += it.compositeRule || !$breakOnError
         ? ' var err = ' + __err + ';  if (vErrors === null) vErrors = [err]; else vErrors.push(err); errors++; '
@@ -3980,7 +3972,7 @@ module.exports = function (it, $keyword, $ruleType) {
       out += ' if ( ';
       var arr2 = $required;
       if (arr2)
-        for (var l2 = (($i = -1), arr2.length - 1); $i < l2; ) {
+        for (var $i = -1, l2 = arr2.length - 1; $i < l2; ) {
           $propertyKey = arr2[++$i];
           if ($i) out += ' || ';
 
@@ -4077,11 +4069,10 @@ module.exports = function (it, $keyword, $ruleType) {
   } else {
     var arr3 = $required;
     if (arr3)
-      for (var i3 = -1, l3 = arr3.length - 1; i3 < l3; ) {
+      for (var $propertyKey, i3 = -1, l3 = arr3.length - 1; i3 < l3; ) {
         $propertyKey = arr3[++i3];
-        $prop = it.util.getProperty($propertyKey);
-        $missingProperty = it.util.escapeQuotes($propertyKey);
-        $useData = $data + $prop;
+        var $prop = it.util.getProperty($propertyKey),
+          $useData = (($missingProperty = it.util.escapeQuotes($propertyKey)), $data + $prop);
         if (it.opts._errorDataPathProperty)
           it.errorPath = it.util.getPath($currentErrorPath, $propertyKey, it.opts.jsonPointers);
 
@@ -4292,10 +4283,8 @@ function compileAsync(schema, meta, callback) {
         throw new Error('Schema ' + ref + ' is loaded but ' + e.missingRef + ' cannot be resolved');
 
       var schemaPromise = self._loadingSchemas[ref];
-      if (!schemaPromise) {
-        schemaPromise = self._loadingSchemas[ref] = self._opts.loadSchema(ref);
-        schemaPromise.then(removePromise, removePromise);
-      }
+      schemaPromise ||
+        (schemaPromise = self._loadingSchemas[ref] = self._opts.loadSchema(ref)).then(removePromise, removePromise);
 
       return schemaPromise.then(function (sch) {
         if (!added(ref))

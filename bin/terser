@@ -1,5 +1,4 @@
 #!/usr/bin/env node
-"use strict";
 
 !(function(modules) {
   var installedModules = {};
@@ -19,17 +18,22 @@
   __webpack_require__.c = installedModules;
   __webpack_require__(2);
 })([
+// 0
 function(module) {
 
 module.exports = require("fs");
 
 },
+// 1
 function(module) {
 
 module.exports = require("path");
 
 },
+// 2
 function(module, exports, __webpack_require__) {
+
+"use strict";
 
 __webpack_require__(3);
 
@@ -41,7 +45,7 @@ var fs = __webpack_require__(0),
   Terser = __webpack_require__(9);
 try {
   __webpack_require__(10).install();
-} catch (err) {}
+} catch (_) {}
 
 const skip_keys = new Set(["cname", "parent_scope", "scope", "uses_eval", "uses_with", "_var_name_cache"]);
 var files = {},
@@ -289,7 +293,7 @@ function simple_glob(glob) {
     var dir = path.dirname(glob);
     try {
       var entries = fs.readdirSync(dir);
-    } catch (ex) {}
+    } catch (_) {}
     if (entries) {
       var pattern = "^" + path.basename(glob)
         .replace(/[.+^$[\]\\(){}]/g, "\\$&")
@@ -335,7 +339,8 @@ function parse_js(flag) {
           return true;
         }
         if (node instanceof Terser.AST_Symbol || node instanceof Terser.AST_PropAccess) {
-          options[node.print_to_string()] = true;
+          name = node.print_to_string();
+          options[name] = true;
           return true;
         }
         if (!(node instanceof Terser.AST_Sequence)) throw node;
@@ -410,7 +415,7 @@ function describe_ast() {
     if (ctor.SUBCLASSES.length > 0) {
       out.space();
       out.with_block(function() {
-        ctor.SUBCLASSES.forEach(function(ctor) {
+        ctor.SUBCLASSES.forEach(function(ctor, _i) {
           out.indent();
           doitem(ctor);
           out.newline();
@@ -423,6 +428,7 @@ function describe_ast() {
 }
 
 },
+// 3
 function() {
 
 var exit = process.exit;
@@ -437,11 +443,13 @@ process.exit = function() {
 };
 
 },
+// 4
 function(module) {
 
 module.exports = { name: "terser", homepage: "https://terser.org", license: "BSD-2-Clause", version: "4.8.1" };
 
 },
+// 5
 function(module, exports, __webpack_require__) {
 
 var EventEmitter = __webpack_require__(6).EventEmitter,
@@ -717,12 +725,9 @@ Command.prototype.executeSubCommand = function(argv, args, unknown) {
 };
 
 Command.prototype.normalize = function(args) {
-  var arg,
-    lastOpt,
-    index,
-    ret = [];
+  var ret = [];
 
-  for (var i = 0, len = args.length; i < len; ++i) {
+  for (var arg, lastOpt, index, i = 0, len = args.length; i < len; ++i) {
     arg = args[i];
     if (i > 0) lastOpt = this.optionFor(args[i - 1]);
 
@@ -764,15 +769,10 @@ Command.prototype.optionFor = function(arg) {
 };
 
 Command.prototype.parseOptions = function(argv) {
-  var literal,
-    option,
-    arg,
-    args = [],
-    len = argv.length,
-
+  var args = [],
     unknownOptions = [];
 
-  for (var i = 0; i < len; ++i) {
+  for (var literal, option, arg, len = argv.length, i = 0; i < len; ++i) {
     arg = argv[i];
 
     if (literal) args.push(arg);
@@ -797,10 +797,9 @@ Command.prototype.parseOptions = function(argv) {
 };
 
 Command.prototype.opts = function() {
-  var result = {},
-    len = this.options.length;
+  var result = {};
 
-  for (var i = 0; i < len; i++) {
+  for (var len = this.options.length, i = 0; i < len; i++) {
     var key = this.options[i].attributeName();
     result[key] = key === this._versionOptionName ? this._version : this[key];
   }
@@ -1026,26 +1025,31 @@ function exists(file) {
 }
 
 },
+// 6
 function(module) {
 
 module.exports = require("events");
 
 },
+// 7
 function(module) {
 
 module.exports = require("child_process");
 
 },
+// 8
 function(module) {
 
 module.exports = require("util");
 
 },
+// 9
 function(module) {
 
 module.exports = require("../vendor/terser");
 
 },
+// 10
 function(module, exports, __webpack_require__) {
 
 var fs,
@@ -1054,11 +1058,11 @@ var fs,
 
 try {
   if (!(fs = __webpack_require__(0)).existsSync || !fs.readFileSync) fs = null;
-} catch (err) {}
+} catch (_) {}
 
-var bufferFrom = __webpack_require__(12);
+var bufferFrom = __webpack_require__(12),
 
-var errorFormatterInstalled = false,
+  errorFormatterInstalled = false,
   uncaughtShimInstalled = false,
   emptyCacheBetweenOperations = false,
 
@@ -1123,7 +1127,7 @@ retrieveFileHandlers.push(function(path) {
       xhr.send(null);
       if (xhr.readyState === 4 && xhr.status === 200) contents = xhr.responseText;
     } else if (fs.existsSync(path)) contents = fs.readFileSync(path, 'utf8');
-  } catch (er) {}
+  } catch (_) {}
 
   return (fileContentsCache[path] = contents);
 });
@@ -1151,12 +1155,12 @@ function retrieveSourceMapURL(source) {
 
       var sourceMapHeader = xhr.getResponseHeader("SourceMap") || xhr.getResponseHeader("X-SourceMap");
       if (sourceMapHeader) return sourceMapHeader;
-    } catch (e) {}
+    } catch (_) {}
 
   fileData = retrieveFile(source);
-  var lastMatch, match,
+  var lastMatch,
     re = /(?:\/\/[@#][\s]*sourceMappingURL=([^\s'"]+)[\s]*$)|(?:\/\*[@#][\s]*sourceMappingURL=([^\s*'"]+)[\s]*(?:\*\/)[\s]*$)/gm;
-  while ((match = re.exec(fileData))) lastMatch = match;
+  for (var match; (match = re.exec(fileData)); ) lastMatch = match;
   return !lastMatch ? null : lastMatch[1];
 }
 
@@ -1182,18 +1186,17 @@ function mapSourcePosition(position) {
   var sourceMap = sourceMapCache[position.source];
   if (!sourceMap) {
     var urlAndMap = retrieveSourceMap(position.source);
-    if (urlAndMap) {
-      sourceMap = sourceMapCache[position.source] = { url: urlAndMap.url, map: new SourceMapConsumer(urlAndMap.map) };
-
-      if (sourceMap.map.sourcesContent)
+    urlAndMap
+      ? (sourceMap = sourceMapCache[position.source] = { url: urlAndMap.url, map: new SourceMapConsumer(urlAndMap.map) }).map
+          .sourcesContent &&
         sourceMap.map.sources.forEach(function(source, i) {
           var contents = sourceMap.map.sourcesContent[i];
           if (contents) {
             var url = supportRelativeURL(sourceMap.url, source);
             fileContentsCache[url] = contents;
           }
-        });
-    } else sourceMap = sourceMapCache[position.source] = { url: null, map: null };
+        })
+      : (sourceMap = sourceMapCache[position.source] = { url: null, map: null });
   }
 
   if (sourceMap && sourceMap.map && typeof sourceMap.map.originalPositionFor == 'function') {
@@ -1242,7 +1245,7 @@ function CallSiteToString() {
     functionName = this.getFunctionName(),
     addSuffix = true,
     isConstructor = this.isConstructor();
-  if (!(this.isToplevel() || isConstructor)) {
+  if (!this.isToplevel() && !isConstructor) {
     var typeName = this.getTypeName();
     if (typeName === "[object Object]") typeName = "null";
 
@@ -1287,8 +1290,7 @@ function wrapCallSite(frame, state) {
     var line = frame.getLineNumber(),
       column = frame.getColumnNumber() - 1,
 
-      noHeader = /^v?(10\.(1[6-9]|[2-9]\d|\d{3,})|1[2-9]|[2-9]\d|\d{3,}|11\.(1[1-9]|[2-9]\d|\d{3,}))\./,
-      headerLength = noHeader.test(globalProcessVersion()) ? 0 : 62;
+      headerLength = /^v?(10\.(1[6-9]|[2-9]\d|\d{3,})|1[2-9]|[2-9]\d|\d{3,}|11\.1[1-9])\b/.test(globalProcessVersion()) ? 0 : 62;
     if (line === 1 && column > headerLength && !isInBrowser() && !frame.isEval()) column -= headerLength;
 
     var position = mapSourcePosition({ source: source, line: line, column: column });
@@ -1441,7 +1443,7 @@ exports.install = function(options) {
 
     try {
       if (require('worker_threads').isMainThread === false) installHandler = false;
-    } catch (e) {}
+    } catch (_) {}
 
     if (installHandler && hasGlobalProcessEventEmitter()) {
       uncaughtShimInstalled = true;
@@ -1462,11 +1464,13 @@ exports.resetRetrieveHandlers = function() {
 };
 
 },
+// 11
 function(module) {
 
 module.exports = require("../vendor/source-map");
 
 },
+// 12
 function(module) {
 
 var toString = Object.prototype.toString;
@@ -1517,6 +1521,7 @@ function bufferFrom(value, encodingOrOffset, length) {
 module.exports = bufferFrom;
 
 },
+// 13
 function(module) {
 
 module.exports = require("../vendor/acorn");
