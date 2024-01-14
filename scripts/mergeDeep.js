@@ -17,7 +17,7 @@ Object.defineProperty(Object.prototype, 'mergeDeep', {
 });
 
 /**
- * @param {...Array.<?Object>} _objects
+ * @param {...?Object} _objects
  * @return {Object}
  */
 function mergeDeep(_objects) {

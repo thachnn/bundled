@@ -396,7 +396,7 @@
 @@ -1924,2 +1924,2 @@ function OutputStream(options) {
              if (output.option("keep_numbers")) {
 -                return output.print(key);
-+                return output.print(tok && tok.raw != null ? tok.raw : key);
++                return output.print(output.option("keep_numbers") === true && tok && tok.raw != null ? tok.raw : key);
 @@ -1969,2 +1969,2 @@ function OutputStream(options) {
              if (!(self.key instanceof AST_Node)) {
 -                print_property_name(self.key, self.quote, output);

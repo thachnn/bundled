@@ -10,41 +10,74 @@ overrides:
     options:
       parser: 'babel'
     #
-  - files: 'dist/**/graceful-fs.js'
+  - files: 'dist/**/{replace-loader,graceful-fs}.js'
     options:
       semi: false
   - files:
-      - 'dist/**/{terser,acorn}.js'
+      - 'dist/**/{terser,acorn,wasm-*,tapable,enhanced-*}.js'
       - 'dist/buildin/*.js'
       - 'dist/**/bin/{terser,acorn}'
     options:
       singleQuote: false
+  - files: 'dist/**/{tapable,enhanced-*}.js'
+    options:
+      useTabs: true
   - files:
-      - 'dist/**/{terser,acorn,neo-async}.js'
+      - 'dist/**/{terser,acorn,long,tapable,enhanced-*,neo-async}.js'
       - 'dist/buildin/*.js'
       - 'dist/**/bin/terser'
+      - 'dist/web_modules/{querystring*,url}.js'
     options:
       spaceAfterAnonFunc: false
-    #
   - files: 'dist/**/{terser,acorn,source-map}.js'
     options:
-      printWidth: 142
       dedentSwitchLabels: true
-  - files: 'dist/**/acorn.js'
+  - files:
+      - 'dist/**/bin/terser'
+      - 'dist/**/{source-map,long,uri-js}.js'
+    options:
+      preserveQuote: true
+    #
+  - files: 'dist/**/uri-js.js'
+    options:
+      printWidth: 257
+  - files:
+      - 'dist/**/{acorn,schema-utils,ajv-keywords}.js'
+      - 'dist/web_modules/assert.js'
     options:
       printWidth: 157
       bracketSpacing: false
+  - files: 'dist/**/schema-utils.js'
+    options:
+      printWidth: 118
+      arrowParens: 'always'
+  - files: 'dist/**/terser.js'
+    options:
+      printWidth: 142
   - files:
       - 'dist/**/bin/terser'
-      - 'dist/**/source-map.js'
+      - 'dist/**/wasm-ast.js'
     options:
       printWidth: 137
-      preserveQuote: true
+  - files: 'dist/**/{wasm-parser,wasm-edit}.js'
+    options:
+      printWidth: 128
+  - files: 'dist/**/{long,ajv-keywords}.js'
+    options:
+      printWidth: 123
   - files:
       - 'dist/**/bin/acorn'
-      - 'dist/**/source-map.js'
+      - 'dist/**/{source-map,replace-loader,graceful-fs}.js'
     options:
       printWidth: 105
   - files: 'dist/**/neo-async.js'
     options:
       printWidth: 96
+  - files:
+      - 'dist/**/{tapable,enhanced-*}.js'
+      - 'dist/web_modules/url.js'
+    options:
+      printWidth: 89
+  - files: 'dist/web_modules/{assert,querystring*}.js'
+    options:
+      printWidth: 85

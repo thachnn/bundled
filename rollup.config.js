@@ -140,6 +140,7 @@ const wasmBuildPlugins = [
     ],
   }),
   terserPlugin({
+    output: { keep_numbers: 1 },
     transform: [
       { search: /(?<!\bfunction )\b_(createClass|classCallCheck)\$\d+\(/g, replace: '_$1(' },
       { search: /\b(require\(['"])@xtuc\//, replace: '$1./' },
@@ -187,6 +188,10 @@ const configSet = [
     plugins: [
       commonJS(),
       terserPlugin({ transform: { search: /\b(require\(['"])(ajv)\b/g, replace: '$1../vendor/$2' } }),
+      transformCode({
+        test: /\bnode_modules[\\/]ajv-errors\b.lib.dotjs\b.*\.js$/i,
+        patterns: { search: /^([\w$ ]+= *[\w$]+\[([\w$]+)) *\+= *1(\];?)$/gm, replace: '$2++; $1$3' },
+      }),
     ],
   }),
   buildConfig('replace-loader', {
@@ -195,7 +200,10 @@ const configSet = [
     external: ['loader-utils', 'schema-utils'],
     plugins: [
       commonJS(),
-      terserPlugin({ transform: { search: /\b(require\(['"])(loader|schema)-/g, replace: '$1./$2-' } }),
+      terserPlugin({
+        transform: { search: /\b(require\(['"])(loader|schema)-/g, replace: '$1./$2-' },
+        output: { ecma: 2015, ascii_only: false },
+      }),
     ],
   }),
   buildConfig('graceful-fs', {
@@ -214,10 +222,12 @@ const configSet = [
       commonJS({ transform: { search: /^[ \t]*exports\.(__esModule *=)/gm, replace: 'export const $1' } }),
       transformCode({
         test: /\bnode_modules[\\/]tapable\b.lib.(HookCodeFactory|\w+(Waterfall|ParallelBail)Hook)\.js$/i,
-        patterns: Array(5).fill(
-          { search: /^(([ \t]*)(?:(var|let) +)?(\w+) *\+?= *(.|\n\2[ \t})])*);\n\2\4 *\+=/gm, replace: '$1 +' } //
-        ),
+        patterns: Array(5).fill({
+          search: /^(([ \t]*)(?:(var|let) +)?(\w+) *\+?= *(.|\n\2[ \t})])*);\n\2\4 *\+=(?! *[\w.]+\(\{?$)/gm,
+          replace: '$1 +',
+        }),
       }),
+      terserPlugin({ output: { ecma: 2015 } }),
     ],
   }),
   buildConfig('enhanced-resolve', {
@@ -271,11 +281,11 @@ const configSet = [
           { search: /\brequire\(['"]\.\/support\/isBuffer\b/, replace: '$&Browser' },
           {
             search: /^([ \t]+module\.exports) *= *(function (inherits))\b([\s\S]*?\n)\1 *= *\2\b([\s\S]*?\n})$/m,
-            replace: ' $3B = $2$4 $3B = $2$5\n var $3B;\n$1 = $3B;',
+            replace: ' $3$$ = $2$4 $3$$ = $2$5\n var $3$$;\n$1 = $3$$;',
           },
           {
             search: /^([ \t]+module\.exports) *= *(util\.(inherits)\b.*)(\n\}.*\{\n)\1 *= *(require\b.*)(\n})$/m,
-            replace: '$4 util = { $3: $3B };$6\n var $3B = $5\n$1 = $2',
+            replace: '$4 util = { $3: $3$$ };$6\n var $3$$ = $5\n$1 = $2',
           },
         ],
       }),

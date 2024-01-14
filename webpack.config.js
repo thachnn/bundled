@@ -67,7 +67,7 @@ const newCopyPlugin = (patterns) => new CopyPlugin([].concat(patterns));
 // Helpers
 
 Object.defineProperty(String.prototype, 'replaceBulk', {
-  value: function (/** @type {...Array.<(string|RegExp)>} */ _args) {
+  value: /** @param {...Array.<(string|RegExp)>} _args */ function (_args) {
     return Array.prototype.reduce.call(arguments, (s, i) => s.replace(i[0], i[1]), this);
   },
 });
@@ -91,6 +91,12 @@ const commonjs1Patches = [
   { search: /\b(_[\w$]+)\.default([.,()])/g, replace: '$1$2' },
   { search: /(?<!\bfunction )\b_objectSpread\(/g, replace: 'Object.assign(' },
 ];
+
+const ajvDotjsPatches = {
+  test: /\bnode_modules[\\/]ajv\b.*\bdotjs\b.\w+\.js$/i,
+  loader: 'string-replace-loader',
+  options: { search: /^([\w$ ]+= *[\w$]+\[([\w$]+)) *\+= *1(\];?)$/gm, replace: '$2++; $1$3' },
+};
 
 //
 module.exports = [
@@ -163,6 +169,7 @@ module.exports = [
     entry: { 'vendor/ajv': './node_modules/ajv/lib/ajv' },
     output: { libraryTarget: 'commonjs2' },
     externals: { 'uri-js': 'commonjs ./uri-js' },
+    module: { rules: [ajvDotjsPatches] },
     plugins: [
       // prettier-ignore
       newCopyPlugin({
@@ -176,6 +183,7 @@ module.exports = [
   webpackConfig('/ajv-keywords', {
     entry: { 'vendor/ajv-keywords': './node_modules/ajv-keywords/index' },
     output: { libraryTarget: 'commonjs2' },
+    module: { rules: [ajvDotjsPatches] },
   }),
   webpackConfig('/loader-utils', {
     entry: { 'lib/loader-utils': './node_modules/loader-utils/lib/index' },
@@ -271,7 +279,7 @@ module.exports = [
           options: {
             multiple: [
               { search: /\brequire\(['"](process)-nextick-args\b.*?\)/, replace: '$1' },
-              { search: /\b(internalUtil *= *)\{[^{}]*\brequire\(['"](util)-deprecate\b[^{}]*\}/, replace: '$1$2' },
+              { search: /\b(internalUtil *= *){[^{}]*\brequire\(['"](util)-deprecate\b[^{}]*}/, replace: '$1$2' },
               { search: /\brequire\(['"]isarray\b.*?\)/, replace: 'Array.isArray' },
               { search: /\bObject\.create(\(require)\b/, replace: '$1' },
               { search: /^ *util\.inherits *= *require\b/m, replace: '//$&' },
