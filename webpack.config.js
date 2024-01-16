@@ -34,7 +34,7 @@ const webpackConfig = (name, config, clean = name.charAt(0) !== '/') => {
     optimization: {
       nodeEnv: false,
       // minimize: false,
-      minimizer: [newTerserPlugin()],
+      minimizer: [newTerserPlugin({ terserOptions: { output: { ecma: 2015 } } })],
     },
     plugins: [
       new ReplaceCodePlugin({
@@ -52,7 +52,7 @@ const newTerserPlugin = (opts = {}) =>
   new TerserPlugin(
     {
       cache: true,
-      extractComments: { condition: /(^|\n|\r)\s*@(preserve|lic(ense)?|cc_on)\b|^\**\s*!(?!\s*\**$)/i, banner: false },
+      extractComments: { condition: /(^|\n)[\s*]*@(preserve|lic(ense)?|cc_on)\b|^\**\s*!(?!\s*\**$)/i, banner: false },
       // parallel: true,
       terserOptions: { output: { comments: /^\s*\d+\s*$/ } }.mergeDeep(baseTerserOpts),
     }.mergeDeep(opts)
@@ -170,6 +170,8 @@ module.exports = [
     output: { libraryTarget: 'commonjs2' },
     externals: { 'uri-js': 'commonjs ./uri-js' },
     module: { rules: [ajvDotjsPatches] },
+    stats: { modulesSort: 'index' },
+    optimization: { moduleIds: 'named', minimizer: [newTerserPlugin()] },
     plugins: [
       // prettier-ignore
       newCopyPlugin({
@@ -178,12 +180,17 @@ module.exports = [
           String(s).replaceBulk([/\bpunycode\.(\w+\()/g, '$1'], [/^var (\w+) *= *(function \1\()/gm, '$2'])
         ),
       }),
+      new ReplaceCodePlugin({
+        search: /(^\/\*{3}\/ |\b__webpack_require__\(.*?)"\.\/node_modules\/(ajv\/lib\/)?([^\n"]+)/gm,
+        replace: (_, p1, p2, p3) => `${p1}"${p2 ? './' : ''}${p3.replace(/(\/index)?\.js$/, '')}`,
+      }),
     ],
   }),
   webpackConfig('/ajv-keywords', {
     entry: { 'vendor/ajv-keywords': './node_modules/ajv-keywords/index' },
     output: { libraryTarget: 'commonjs2' },
     module: { rules: [ajvDotjsPatches] },
+    optimization: { minimizer: [newTerserPlugin()] },
   }),
   webpackConfig('/loader-utils', {
     entry: { 'lib/loader-utils': './node_modules/loader-utils/lib/index' },
@@ -200,11 +207,15 @@ module.exports = [
     resolve: {
       alias: { 'big.js$': path.resolve(__dirname, 'node_modules/big.js/big.js') },
     },
+    optimization: {
+      minimizer: [newTerserPlugin({ terserOptions: { output: { ascii_only: false } } })],
+    },
   }),
   //
   webpackConfig('/minimatch', {
     entry: { 'vendor/minimatch': './node_modules/minimatch/minimatch' },
     output: { libraryTarget: 'commonjs2' },
+    optimization: { minimizer: [newTerserPlugin()] },
   }),
   webpackConfig('/glob', {
     entry: { 'vendor/glob': './node_modules/glob/glob' },
@@ -240,6 +251,9 @@ module.exports = [
         },
       ],
     },
+    optimization: {
+      minimizer: [newTerserPlugin({ terserOptions: { output: { ecma: 2015, ascii_only: false } } })],
+    },
   }),
   //
   webpackConfig('/bluebird', {
@@ -257,9 +271,10 @@ module.exports = [
       ],
     },
     stats: { modulesSort: 'index' },
-    optimization: { moduleIds: 'named' },
+    optimization: { moduleIds: 'named', minimizer: [newTerserPlugin()] },
     plugins: [
-      new ReplaceCodePlugin({ search: /\b__webpack_require__\b/g, replace: '__wpreq__' }), //
+      // __wpreq__
+      new ReplaceCodePlugin({ search: /((^\/\*{3}\/ |\b__webpack_require__\(.*?)"[^\n"]+?)\.js"/gm, replace: '$1"' }),
     ],
   }),
   webpackConfig('/readable-stream', {
@@ -279,7 +294,7 @@ module.exports = [
           options: {
             multiple: [
               { search: /\brequire\(['"](process)-nextick-args\b.*?\)/, replace: '$1' },
-              { search: /\b(internalUtil *= *){[^{}]*\brequire\(['"](util)-deprecate\b[^{}]*}/, replace: '$1$2' },
+              { search: /\b(internalUtil *= *){\s*deprecate: *require\b.*\s*}/, replace: '$1util' },
               { search: /\brequire\(['"]isarray\b.*?\)/, replace: 'Array.isArray' },
               { search: /\bObject\.create(\(require)\b/, replace: '$1' },
               { search: /^ *util\.inherits *= *require\b/m, replace: '//$&' },
@@ -289,6 +304,7 @@ module.exports = [
         },
       ],
     },
+    optimization: { minimizer: [newTerserPlugin()] },
   }),
   webpackConfig('/cacache', {
     entry: { 'vendor/cacache': './node_modules/cacache/locales/en.js' },
@@ -411,6 +427,7 @@ module.exports = [
         },
       ],
     },
+    optimization: { minimizer: [newTerserPlugin()] },
     plugins: [
       newCopyPlugin([
         { from: 'node_modules/worker-farm/lib/child/index.js', to: 'vendor/worker-child.js', transform: minifyContent },
@@ -436,6 +453,7 @@ module.exports = [
         },
       ],
     },
+    optimization: { minimizer: [newTerserPlugin()] },
   }),
   /*
   webpackConfig('/enhanced-resolve', {
@@ -570,6 +588,7 @@ module.exports = [
         '@webassemblyjs/helper-module-context': require.resolve('@webassemblyjs/helper-module-context/lib'),
       },
     },
+    optimization: { minimizer: [newTerserPlugin()] },
     plugins: [
       newCopyPlugin([
         { from: '{LICENSE*,*.md,declarations/**,schemas/*.json}', context: 'node_modules/webpack' },
@@ -601,6 +620,7 @@ module.exports = [
     },
     output: { path: path.join(__dirname, 'dist', 'web_modules'), libraryTarget: 'commonjs2' },
     externals: {
+      './internal/streams/stream': ['events', 'EventEmitter'],
       'string_decoder/': 'commonjs2 ../string_decoder',
       'util/util': 'commonjs2 ../util',
       'readable-stream': 'commonjs2 ./readable-stream/readable',
@@ -626,10 +646,10 @@ module.exports = [
         ...['create-hash', 'create-hmac', 'browserify-aes', 'browserify-cipher', 'browserify-sign'],
         ...['builtin-status-codes', 'randombytes', 'diffie-hellman'],
       ].reduce((o, v) => ((o[v + '$'] = require.resolve(v + '/browser')), o), {
-        './internal/streams/stream': require.resolve('readable-stream/lib/internal/streams/stream-browser'),
         'browserify-sign/algos$': path.resolve(__dirname, 'node_modules/browserify-sign/browser/algorithms.json'),
       }),
     },
+    optimization: { minimizer: [newTerserPlugin()] },
     plugins: [
       newCopyPlugin([
         { from: 'node_modules/node-libs-browser/mock/', to: 'mock/', transform: minifyContent },

@@ -10,31 +10,37 @@ overrides:
     options:
       parser: 'babel'
     #
-  - files: 'dist/**/{replace-loader,graceful-fs}.js'
+  - files:
+      - 'dist/**/{replace-loader,graceful-fs,glob,cacache,worker-*}.js'
+      - 'dist/web_modules/{console-*,domain-*,https-*,buffer,stream-http,crypto-*}.js'
     options:
       semi: false
   - files:
-      - 'dist/**/{terser,acorn,wasm-*,tapable,enhanced-*}.js'
+      - 'dist/**/{terser,acorn,wasm-*,tapable,enhanced-*,bluebird,webpack-*}.js'
       - 'dist/buildin/*.js'
       - 'dist/**/bin/{terser,acorn}'
+      - 'dist/web_modules/{timers-*,console-*}.js'
     options:
       singleQuote: false
   - files: 'dist/**/{tapable,enhanced-*}.js'
     options:
       useTabs: true
   - files:
-      - 'dist/**/{terser,acorn,long,tapable,enhanced-*,neo-async}.js'
+      - 'dist/**/{terser,acorn,long,tapable,enhanced-*,neo-async,bluebird,webpack-*,terser-*,chokidar,micromatch}.js'
       - 'dist/buildin/*.js'
       - 'dist/**/bin/terser'
-      - 'dist/web_modules/{querystring*,url}.js'
+      - 'dist/web_modules/{querystring*,url,util,timers-*,stream-br*,events,path-*,punycode}.js'
     options:
       spaceAfterAnonFunc: false
-  - files: 'dist/**/{terser,acorn,source-map}.js'
+  - files:
+      - 'dist/**/{terser,acorn,source-map,loader-utils,bluebird}.js'
+      - 'dist/web_modules/timers-*.js'
     options:
       dedentSwitchLabels: true
   - files:
       - 'dist/**/bin/terser'
-      - 'dist/**/{source-map,long,uri-js}.js'
+      - 'dist/**/{source-map,long,uri-js,loader-utils,terser-plugin}.js'
+      - 'dist/web_modules/{mock/*,punycode,string_*,buffer,crypto-*}.js'
     options:
       preserveQuote: true
     #
@@ -42,12 +48,12 @@ overrides:
     options:
       printWidth: 257
   - files:
-      - 'dist/**/{acorn,schema-utils,ajv-keywords}.js'
-      - 'dist/web_modules/assert.js'
+      - 'dist/**/{acorn,schema-utils,ajv-keywords,loader-utils,find-cache*,bluebird}.js'
+      - 'dist/web_modules/{assert,buffer}.js'
     options:
       printWidth: 157
       bracketSpacing: false
-  - files: 'dist/**/schema-utils.js'
+  - files: 'dist/**/{schema-utils,loader-utils}.js'
     options:
       printWidth: 118
       arrowParens: 'always'
@@ -66,18 +72,33 @@ overrides:
     options:
       printWidth: 123
   - files:
+      - 'dist/**/{copy-plugin,terser-*}.js'
+      - 'dist/web_modules/punycode.js'
+    options:
+      printWidth: 110
+  - files:
       - 'dist/**/bin/acorn'
-      - 'dist/**/{source-map,replace-loader,graceful-fs}.js'
+      - 'dist/**/{source-map,replace-loader,graceful-fs,loader-utils,webpack-*,picomatch,chokidar}.js'
+      - 'dist/web_modules/{stream-http,*/readable}.js'
     options:
       printWidth: 105
-  - files: 'dist/**/neo-async.js'
+  - files:
+      - 'dist/**/{glob,find-cache*,bluebird,readable-*,cacache,micromatch}.js'
+      - 'dist/web_modules/buffer.js'
+    options:
+      printWidth: 101
+  - files:
+      - 'dist/**/{neo-async,minimatch}.js'
+      - 'dist/web_modules/{https-*,process,crypto-*}.js'
     options:
       printWidth: 96
   - files:
-      - 'dist/**/{tapable,enhanced-*}.js'
-      - 'dist/web_modules/url.js'
+      - 'dist/**/{tapable,enhanced-*,worker-farm}.js'
+      - 'dist/web_modules/{url,util,string_*}.js'
     options:
       printWidth: 89
-  - files: 'dist/web_modules/{assert,querystring*}.js'
+  - files:
+      - 'dist/web_modules/{assert,querystring*,mock/*,timers-*,stream-br*,console-*,domain-*,os-*,path-*,vm-*}.js'
+      - 'dist/**/worker-child.js'
     options:
       printWidth: 85

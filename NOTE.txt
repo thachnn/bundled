@@ -19,7 +19,8 @@ git tag -f xxx-1.0
 
 [\[,] ,|__webpack_require__\.[a-z]|_WEBPACK_|webpackPoly|\b_(iterator|interop|loop|len|to(Array|Consum)|slice|typeof|extend|createClass|classCall)
 
-,\s*((var|const|let)\s|(for|while)\s*\()
+/^(function\(module,exports),(__webpack_require__)\)(?!.*\b\2\b)/gm   -> $1\)
+/^(function\(module),(exports)\)(?!.*\b\2[.;])/gm
 
 
 8:45 PM 11/23/2023
@@ -53,7 +54,7 @@ prettier --ignore-path .gitignore -c . && yarn clean && cls && yarn rollup long
 
 prettier --single-quote --trailing-comma none --print-width 123 --preserve-quote --no-space-after-anon-func -w dist\vendor\long.js
 
-decomment --allowHashBang --keep "(^\s*[@#]__PURE__\s*$|^[*\s]*!\s*\S|(^|\n|\r)[* \t]*@(preserve|lic(ense)?|cc_on)\b)"
+decomment --allowHashBang --keep "(^\s*[@#]__PURE__\s*$|^[*\s]*!\s*\S|(^|\n)[*\s]*@(preserve|lic(ense)?|cc_on)\b)"
 
 
 2:50 PM 12/12/2023
@@ -552,7 +553,7 @@ decomment --allowHashBang --keep "(^\s*[@#]__PURE__\s*$|^[*\s]*!\s*\S|(^|\n|\r)[
     │ └── inherits@2.0.3            deduped
     ├── vm-browserify@1.1.2         x
     │
-    ├─┬ crypto-browserify@3.12.0      x
+    ├─┬ crypto-browserify@3.12.0      x   0|6|7|9|10|12|16|17|19|20|2[2-5]|27|28|3[4-9]|41|42|45|46|48|49|6[2-5]|6[7-9]|70|71|7[3-7]|8[1-9]|90|91|94|95|114|124|12[6-9]|13[0-4]
       ├─┬ browserify-cipher@1.0.1     x
       │ ├─┬ browserify-aes@1.2.0      v
       │ │ ├── buffer-xor@1.0.3        x
@@ -657,18 +658,4 @@ decomment --allowHashBang --keep "(^\s*[@#]__PURE__\s*$|^[*\s]*!\s*\S|(^|\n|\r)[
       └─┬ randomfill@1.0.4            x
         ├── randombytes@2.1.0         deduped
         └── safe-buffer@5.1.2         deduped
-
-
-6:55 PM 12/20/2023
----
-
-^(// \d+)(\nfunction \(module), exports, __webpack_require__(\)[\s\S]*?\n\n\},)$
-$1$2$3$1
-
-(?<!\bmodule\.)\bexports\b
-
-^(// \d+)(\nfunction \(module)(\)[\s\S]*?\b__webpack_require__\b[\s\S]*?\n\n\},)\1$
-$1$2, exports, __webpack_require__$3
-
-(\n\n\},)// \d+$
 

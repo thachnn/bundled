@@ -157,7 +157,7 @@
 @@ -930,2 +929 @@
 -  if (typeof define === 'function' && define.amd) {
 -    define(function () { return Big; });
-+  if (true) { module.exports = Big;
++  module.exports = Big; if (true) {
 @@ -940,2 +938 @@
    }
 -})(this);
@@ -502,7 +502,7 @@
 -					args.push(module.exportsArgument);
 -					if (module.hasDependencies(d => d.requireWebpackRequire !== false)) {
 +					if (!module.external) { args.push(module.exportsArgument);
-+					if (module.hasDependencies(d => d.requireWebpackRequire !== false))
++						if (module.hasDependencies(d => d.requireWebpackRequire !== false))
 --- a/node_modules/webpack/lib/MainTemplate.js
 +++ b/node_modules/webpack/lib/MainTemplate.js
 @@ -185,2 +185,2 @@ module.exports = class MainTemplate extends Tapable {
