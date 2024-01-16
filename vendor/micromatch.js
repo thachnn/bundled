@@ -38,12 +38,7 @@ module.exports = function(obj, key, val) {
     return obj;
   }
 
-  define(obj, key, {
-    configurable: true,
-    enumerable: false,
-    writable: true,
-    value: val
-  });
+  define(obj, key, { configurable: true, enumerable: false, writable: true, value: val });
 
   return obj;
 };
@@ -1632,10 +1627,8 @@ Emitter.prototype.removeEventListener = function(event, fn) {
 Emitter.prototype.emit = function(event) {
   this._callbacks = this._callbacks || {};
 
-  var args = new Array(arguments.length - 1),
+  var args = [].slice.call(arguments, 1),
     callbacks = this._callbacks['$' + event];
-
-  for (i = 1; i < arguments.length; i++) args[i - 1] = arguments[i];
 
   if (callbacks)
     for (var i = 0, len = (callbacks = callbacks.slice(0)).length; i < len; ++i)
@@ -2595,9 +2588,10 @@ module.exports = function(extglob) {
           return this.emit(capture + '(?:', node);
         default:
           var val = node.val;
-          if (this.options.bash === true) val = '\\' + val;
-          else if (!this.options.capture && val === '(' && node.parent.rest[0] !== '?')
-            val += '?:';
+          this.options.bash === true
+            ? (val = '\\' + val)
+            : this.options.capture || val !== '(' || node.parent.rest[0] === '?' ||
+              (val += '?:');
 
           return this.emit(val, node);
       }
@@ -3239,12 +3233,12 @@ braces.create = function(pattern, options) {
 
     if (utils.isQuotedString(pattern)) return [pattern.slice(1, -1)];
 
-    var proto = new Braces(options);
-    var result = !options || options.expand !== true
-      ? proto.optimize(pattern, options)
-      : proto.expand(pattern, options);
+    var proto = new Braces(options),
+      result = !options || options.expand !== true
+        ? proto.optimize(pattern, options)
+        : proto.expand(pattern, options),
 
-    var arr = result.output;
+      arr = result.output;
 
     if (options && options.noempty === true) arr = arr.filter(Boolean);
 
@@ -3317,20 +3311,19 @@ var util = __webpack_require__(45),
   positions = __webpack_require__(46);
 
 module.exports = function(regexpStr) {
-  var l, c, i = 0,
-    start = { type: types.ROOT, stack: [] },
+  var start = { type: types.ROOT, stack: [] },
 
     lastGroup = start,
     last = start.stack,
-    groupStack = [];
+    groupStack = [],
 
-  var repeatErr = function(i) {
-    util.error(regexpStr, 'Nothing to repeat at column ' + (i - 1));
-  };
+    repeatErr = function(i) {
+      util.error(regexpStr, 'Nothing to repeat at column ' + (i - 1));
+    },
 
-  var str = util.strToChars(regexpStr);
+    str = util.strToChars(regexpStr);
 
-  for (l = str.length; i < l; )
+  for (var c, i = 0, l = str.length; i < l; )
     switch ((c = str[i++])) {
       case '\\':
         switch ((c = str[i++])) {
@@ -3935,10 +3928,11 @@ function rangeToPattern(start, stop, options) {
       startDigit = numbers[0],
       stopDigit = numbers[1];
 
-    if (startDigit === stopDigit) pattern += startDigit;
-    else if (startDigit !== '0' || stopDigit !== '9')
-      pattern += toCharacterClass(startDigit, stopDigit);
-    else digits += 1;
+    startDigit === stopDigit
+      ? (pattern += startDigit)
+      : startDigit !== '0' || stopDigit !== '9'
+      ? (pattern += toCharacterClass(startDigit, stopDigit))
+      : (digits += 1);
   }
 
   if (digits) pattern += options.shorthand ? '\\d' : '[0-9]';
@@ -4294,9 +4288,7 @@ utils.addOpen = function(node, Node, val, filter) {
   if (typeof filter == 'function' && !filter(node)) return;
   var open = new Node({ type: node.type + '.open', val: val }),
     unshift = node.unshift || node.unshiftNode;
-  typeof unshift == 'function'
-    ? unshift.call(node, open)
-    : utils.unshiftNode(node, open);
+  typeof unshift == 'function' ? unshift.call(node, open) : utils.unshiftNode(node, open);
 
   return open;
 };
@@ -4480,7 +4472,7 @@ utils.isInsideType = function(state, type) {
   assert(isObject(state), 'expected state to be an object');
   assert(isString(type), 'expected type to be a string');
 
-  return !(!state.hasOwnProperty('inside') || !state.inside.hasOwnProperty(type)) &&
+  return !!state.hasOwnProperty('inside') && !!state.inside.hasOwnProperty(type) &&
     state.inside[type].length > 0;
 };
 
@@ -4502,8 +4494,7 @@ utils.isInside = function(state, node, type) {
   if (typeOf(type) === 'regexp') {
     if (parent && parent.type && type.test(parent.type)) return true;
 
-    var keys = Object.keys(state.inside);
-    for (var len = keys.length, idx = -1; ++idx < len; ) {
+    for (var keys = Object.keys(state.inside), len = keys.length, idx = -1; ++idx < len; ) {
       var key = keys[idx],
         val = state.inside[key];
 
@@ -5073,12 +5064,12 @@ function(module) {
 function pascalcase(str) {
   if (typeof str != 'string') throw new TypeError('expected a string.');
 
-  if ((str = str.replace(/([A-Z])/g, ' $1')).length === 1) return str.toUpperCase();
-  str = str.replace(/^[\W_]+|[\W_]+$/g, '').toLowerCase();
-  str = str.charAt(0).toUpperCase() + str.slice(1);
-  return str.replace(/[\W_]+(\w|$)/g, function(_, ch) {
-    return ch.toUpperCase();
-  });
+  return (str = str.replace(/([A-Z])/g, ' $1')).length === 1
+    ? str.toUpperCase()
+    : ((str = str.replace(/^[\W_]+|[\W_]+$/g, '').toLowerCase()).charAt(0).toUpperCase() +
+        str.slice(1)).replace(/[\W_]+(\w|$)/g, function(_, ch) {
+        return ch.toUpperCase();
+      });
 }
 
 module.exports = pascalcase;
@@ -6957,8 +6948,7 @@ module.exports = function(nanomatch, options) {
         : '(?!\\.)';
 
       if (isStart(prev) || (isStart(prior) && type === 'not'))
-        prefix +=
-          prefix !== '(?!\\.)' ? '(?!(\\.{2}|\\.[' + slash() + ']))(?=.)' : '(?=.)';
+        prefix += prefix !== '(?!\\.)' ? '(?!(\\.{2}|\\.[' + slash() + ']))(?=.)' : '(?=.)';
       else if (prefix === '(?!\\.)') prefix = '';
 
       if (prev.type === 'not' && prior.type === 'bos' && this.options.dot === true)

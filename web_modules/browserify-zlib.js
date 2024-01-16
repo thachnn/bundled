@@ -759,11 +759,11 @@ Zlib.prototype.close = function () {
   assert(this.init_done, 'close before init');
   assert(this.mode <= exports.UNZIP);
 
-  if (this.mode === exports.DEFLATE || this.mode === exports.GZIP || this.mode === exports.DEFLATERAW)
-    zlib_deflate.deflateEnd(this.strm);
-  else if (this.mode === exports.INFLATE || this.mode === exports.GUNZIP ||
-      this.mode === exports.INFLATERAW || this.mode === exports.UNZIP)
-    zlib_inflate.inflateEnd(this.strm);
+  this.mode === exports.DEFLATE || this.mode === exports.GZIP || this.mode === exports.DEFLATERAW
+    ? zlib_deflate.deflateEnd(this.strm)
+    : (this.mode !== exports.INFLATE && this.mode !== exports.GUNZIP &&
+        this.mode !== exports.INFLATERAW && this.mode !== exports.UNZIP) ||
+      zlib_inflate.inflateEnd(this.strm);
 
   this.mode = exports.NONE;
 
@@ -2403,7 +2403,8 @@ function init_block(s) {
 }
 
 function bi_windup(s) {
-  s.bi_valid > 8 ? put_short(s, s.bi_buf) : s.bi_valid > 0 && (s.pending_buf[s.pending++] = s.bi_buf);
+  s.bi_valid > 8 ? put_short(s, s.bi_buf)
+    : s.bi_valid > 0 && (s.pending_buf[s.pending++] = s.bi_buf);
 
   s.bi_buf = 0;
   s.bi_valid = 0;

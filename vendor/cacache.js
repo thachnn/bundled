@@ -212,7 +212,7 @@ var assert = __webpack_require__(52),
   glob = void 0
 try {
   glob = __webpack_require__(26)
-} catch (_err) {}
+} catch (_) {}
 var _0666 = parseInt('666', 8),
 
   defaultGlobOpts = { nosort: true, silent: true },
@@ -418,7 +418,7 @@ function rimrafSync(p, options) {
     try {
       options.lstatSync(p)
       results = [p]
-    } catch (_) {
+    } catch (_er) {
       results = glob.sync(p, options.glob)
     }
 
@@ -836,9 +836,7 @@ class Integrity {
     return (
       this[algo] &&
       other[algo] &&
-      this[algo].find(hash =>
-        other[algo].find(otherhash => hash.digest === otherhash.digest)
-      )
+      this[algo].find(hash => other[algo].find(otherhash => hash.digest === otherhash.digest))
     ) || false
   }
   pickAlgorithm(opts) {
@@ -940,8 +938,10 @@ function checkData(data, sri, opts) {
     return false
   }
   const algorithm = sri.pickAlgorithm(opts),
-    digest = crypto.createHash(algorithm).update(data).digest('base64'),
-    newSri = parse({ algorithm, digest }),
+    newSri = parse({
+      algorithm,
+      digest: crypto.createHash(algorithm).update(data).digest('base64')
+    }),
     match = newSri.match(sri, opts)
   if (match || !opts.error) return match
   if (typeof opts.size == 'number' && data.length !== opts.size) {
@@ -1123,9 +1123,8 @@ function fixOwner(cache, filepath) {
   if (!process.getuid) return BB.resolve()
 
   getSelf()
-  if (self.uid !== 0) return BB.resolve()
 
-  return BB.resolve(inferOwner(cache)).then(owner => {
+  return self.uid !== 0 ? BB.resolve() : BB.resolve(inferOwner(cache)).then(owner => {
     const { uid, gid } = owner
 
     if (self.uid === uid && self.gid === gid) return
@@ -1270,15 +1269,15 @@ function (module, exports, __webpack_require__) {
 
 var once = __webpack_require__(24),
 
-  noop = function () {},
+  noop = function () {};
 
-  isRequest = function (stream) {
-    return stream.setHeader && typeof stream.abort == 'function';
-  },
+var isRequest = function (stream) {
+  return stream.setHeader && typeof stream.abort == 'function';
+};
 
-  isChildProcess = function (stream) {
-    return stream.stdio && Array.isArray(stream.stdio) && stream.stdio.length === 3;
-  };
+var isChildProcess = function (stream) {
+  return stream.stdio && Array.isArray(stream.stdio) && stream.stdio.length === 3;
+};
 
 var eos = function (stream, opts, callback) {
   if (typeof opts == 'function') return eos(stream, null, opts);
@@ -1290,11 +1289,11 @@ var eos = function (stream, opts, callback) {
     rs = stream._readableState,
     readable = opts.readable || (opts.readable !== false && stream.readable),
     writable = opts.writable || (opts.writable !== false && stream.writable),
-    cancelled = false,
+    cancelled = false;
 
-    onlegacyfinish = function () {
-      stream.writable || onfinish();
-    };
+  var onlegacyfinish = function () {
+    stream.writable || onfinish();
+  };
 
   var onfinish = function () {
     writable = false;
@@ -1311,12 +1310,12 @@ var eos = function (stream, opts, callback) {
   };
 
   var onerror = function (err) {
-      callback.call(stream, err);
-    },
+    callback.call(stream, err);
+  };
 
-    onclose = function () {
-      process.nextTick(onclosenexttick);
-    };
+  var onclose = function () {
+    process.nextTick(onclosenexttick);
+  };
 
   var onclosenexttick = function () {
     if (cancelled) return;
@@ -1466,9 +1465,11 @@ function englishList(list) {
 }
 
 function wrongNumberOfArgs(expected, got) {
-  var english = englishList(expected),
-    args = expected.every(function (ex) { return ex.length === 1 }) ? 'argument' : 'arguments'
-  return newException('EWRONGARGCOUNT', 'Expected ' + english + ' ' + args + ' but got ' + got)
+  return newException('EWRONGARGCOUNT',
+    'Expected ' + englishList(expected) + ' ' +
+    (expected.every(function (ex) { return ex.length === 1 }) ? 'argument' : 'arguments') +
+    ' but got ' + got
+  )
 }
 
 function moreThanOneError(schema) {
@@ -2194,7 +2195,7 @@ const fs = __webpack_require__(3),
   LCHOWN = fs.lchown ? 'lchown' : 'chown',
   LCHOWNSYNC = fs.lchownSync ? 'lchownSync' : 'chownSync',
 
-  needEISDIRHandled = fs.lchown && /^v?(\d|10\.[0-5])\b/.test(process.version)
+  needEISDIRHandled = fs.lchown && /^v?(\d\.|10\.[0-5]\b)/.test(process.version)
 
 const lchownSync = (path, uid, gid) => {
   try {
@@ -2272,8 +2273,7 @@ const chownr = (p, uid, gid, cb) => {
       errState = null
     const then = er => {
       if (errState) return
-      if (er) return cb((errState = er))
-      if (--len == 0) return chown(p, uid, gid, cb)
+      return er ? cb((errState = er)) : --len == 0 ? chown(p, uid, gid, cb) : void 0
     }
 
     children.forEach(child => chownrKid(p, child, uid, gid, then))
@@ -2402,10 +2402,9 @@ function wrappy(fn, cb) {
   return wrapper
 
   function wrapper() {
-    var args = new Array(arguments.length)
-    for (var i = 0; i < args.length; i++) args[i] = arguments[i]
+    var args = Array.prototype.slice.call(arguments),
 
-    var ret = fn.apply(this, args),
+      ret = fn.apply(this, args),
       cb = args[args.length - 1]
     typeof ret != 'function' || ret === cb ||
       Object.keys(cb).forEach(function (k) {
@@ -3621,7 +3620,7 @@ const get = (self, key, doUse) => {
 }
 
 const isStale = (self, hit) => {
-  if (!hit || !(hit.maxAge || self[MAX_AGE])) return false
+  if (!hit || (!hit.maxAge && !self[MAX_AGE])) return false
 
   const diff = Date.now() - hit.now
   return hit.maxAge ? diff > hit.maxAge : self[MAX_AGE] && diff > self[MAX_AGE]
@@ -4488,10 +4487,11 @@ function recurseDir(from, to, opts) {
   var recurseWith = opts.recurseWith || copyItem,
     fs = opts.fs || nodeFs,
     chown = opts.chown || promisify(Promise, fs.chown),
-    readdir = opts.readdir || promisify(Promise, fs.readdir),
-    mkdirpAsync = opts.mkdirpAsync || promisify(Promise, mkdirp)
+    readdir = opts.readdir || promisify(Promise, fs.readdir)
 
-  return mkdirpAsync(to, { fs: fs, mode: opts.mode }).then(function () {
+  return (opts.mkdirpAsync || promisify(Promise, mkdirp))(to, {
+    fs: fs, mode: opts.mode
+  }).then(function () {
     var getuid = opts.getuid || process.getuid
     if (getuid && opts.uid != null && getuid() === 0) return chown(to, opts.uid, opts.gid)
   }).then(function () {
@@ -4515,9 +4515,10 @@ function copySymlink(from, to, opts) {
     var absoluteDest = path.resolve(path.dirname(from), fromDest),
       linkFrom = path.relative(opts.top, absoluteDest).substr(0, 2) === '..'
         ? fromDest : path.relative(path.dirname(from), absoluteDest)
-    if (!opts.isWindows) return symlink(linkFrom, to)
 
-    return stat(absoluteDest).catch(function () { return null }).then(function (destStat) {
+    return !opts.isWindows ? symlink(linkFrom, to) : stat(absoluteDest).catch(function () {
+      return null
+    }).then(function (destStat) {
       var type = destStat && destStat.isDirectory() ? 'dir' : 'file'
       return symlink(linkFrom, to, type).catch(function (err) {
         return type === 'dir' ? symlink(linkFrom, to, 'junction') : Promise.reject(err)
@@ -4985,10 +4986,9 @@ function rebuildIndex(cache, opts) {
         }
       }
 
-    return BB.map(Object.keys(buckets),
-      key => rebuildBucket(cache, buckets[key], stats, opts),
-      { concurrency: opts.concurrency }
-    ).then(() => stats)
+    return BB.map(Object.keys(buckets), key => rebuildBucket(cache, buckets[key], stats, opts), {
+      concurrency: opts.concurrency
+    }).then(() => stats)
   })
 }
 

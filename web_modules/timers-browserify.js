@@ -57,9 +57,10 @@ exports._unrefActive = exports.active = function(item) {
   function setImmediate(callback) {
     if (typeof callback != "function") callback = new Function("" + callback);
 
-    var args = [].slice.call(arguments, 1);
+    var args = [].slice.call(arguments, 1),
 
-    tasksByHandle[nextHandle] = { callback: callback, args: args };
+      task = { callback: callback, args: args };
+    tasksByHandle[nextHandle] = task;
     registerImmediate(nextHandle);
     return nextHandle++;
   }

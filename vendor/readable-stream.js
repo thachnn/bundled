@@ -280,9 +280,9 @@ function readableAddChunk(stream, chunk, encoding, addToFront, skipChunkCheck) {
   skipChunkCheck || (er = chunkInvalid(state, chunk));
   if (er) stream.emit('error', er);
   else if (state.objectMode || (chunk && chunk.length > 0)) {
-    if (typeof chunk != 'string' && !state.objectMode &&
-        Object.getPrototypeOf(chunk) !== Buffer.prototype)
-      chunk = _uint8ArrayToBuffer(chunk);
+    typeof chunk == 'string' || state.objectMode ||
+      Object.getPrototypeOf(chunk) === Buffer.prototype ||
+      (chunk = _uint8ArrayToBuffer(chunk));
 
     if (addToFront)
       state.endEmitted
@@ -318,8 +318,8 @@ function addChunk(stream, state, chunk, addToFront) {
 
 function chunkInvalid(state, chunk) {
   var er;
-  if (!_isUint8Array(chunk) && typeof chunk != 'string' && chunk !== void 0 && !state.objectMode)
-    er = new TypeError('Invalid non-string/buffer chunk');
+  _isUint8Array(chunk) || typeof chunk == 'string' || chunk === void 0 || state.objectMode ||
+    (er = new TypeError('Invalid non-string/buffer chunk'));
 
   return er;
 }
@@ -494,10 +494,9 @@ Readable.prototype.pipe = function (dest, pipeOpts) {
   state.pipesCount += 1;
   debug('pipe count=%d opts=%j', state.pipesCount, pipeOpts);
 
-  var doEnd =
-    (!pipeOpts || pipeOpts.end !== false) && dest !== process.stdout && dest !== process.stderr;
-
-  var endFn = doEnd ? onend : unpipe;
+  var endFn =
+    (!pipeOpts || pipeOpts.end !== false) && dest !== process.stdout && dest !== process.stderr
+      ? onend : unpipe;
   state.endEmitted ? pna.nextTick(endFn) : src.once('end', endFn);
 
   dest.on('unpipe', onunpipe);
@@ -947,10 +946,10 @@ function CorkedRequest(state) {
   };
 }
 
-var Duplex;
+var Duplex,
 
-var asyncWrite =
-  process.browser || /^v?0\.[0-8]\b/.test(process.version) ? pna.nextTick : setImmediate;
+  asyncWrite =
+    process.browser || /^v?0\.[0-8]\b/.test(process.version) ? pna.nextTick : setImmediate;
 
 Writable.WritableState = WritableState;
 
@@ -1114,9 +1113,8 @@ function validChunk(stream, state, chunk, cb) {
   var er =
     chunk === null
     ? new TypeError('May not write null values to stream')
-    : typeof chunk != 'string' && chunk !== void 0 && !state.objectMode
-    ? new TypeError('Invalid non-string/buffer chunk')
-    : false;
+    : typeof chunk != 'string' && chunk !== void 0 && !state.objectMode &&
+      new TypeError('Invalid non-string/buffer chunk');
 
   if (er) {
     stream.emit('error', er);
@@ -1424,8 +1422,9 @@ function onCorkedFinish(corkReq, state, err) {
     cb(err);
     entry = entry.next;
   }
-  if (state.corkedRequestsFree) state.corkedRequestsFree.next = corkReq;
-  else state.corkedRequestsFree = corkReq;
+  state.corkedRequestsFree
+    ? (state.corkedRequestsFree.next = corkReq)
+    : (state.corkedRequestsFree = corkReq);
 }
 
 Object.defineProperty(Writable.prototype, 'destroyed', {

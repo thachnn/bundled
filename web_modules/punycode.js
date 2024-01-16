@@ -52,8 +52,7 @@ function mapDomain(string, fn) {
     result = parts[0] + '@';
     string = parts[1];
   }
-  string = string.replace(regexSeparators, '.');
-  return result + map(string.split('.'), fn).join('.');
+  return result + map(string.replace(regexSeparators, '.').split('.'), fn).join('.');
 }
 
 function ucs2decode(string) {
@@ -117,14 +116,14 @@ function decode(input) {
   if (basic < 0) basic = 0;
 
   for (j = 0; j < basic; ++j) {
-    if (input.charCodeAt(j) >= 0x80) error('not-basic');
+    input.charCodeAt(j) < 0x80 || error('not-basic');
 
     output.push(input.charCodeAt(j));
   }
 
   for (index = basic > 0 ? basic + 1 : 0; index < inputLength; ) {
     for (oldi = i, w = 1, k = base; ; k += base) {
-      if (index >= inputLength) error('invalid-input');
+      index < inputLength || error('invalid-input');
 
       if ((digit = basicToDigit(input.charCodeAt(index++))) >= base || digit > floor((maxInt - i) / w))
         error('overflow');
@@ -133,14 +132,14 @@ function decode(input) {
 
       if (digit < (t = k <= bias ? tMin : k >= bias + tMax ? tMax : k - bias)) break;
 
-      if (w > floor(maxInt / (baseMinusT = base - t))) error('overflow');
+      w > floor(maxInt / (baseMinusT = base - t)) && error('overflow');
 
       w *= baseMinusT;
     }
 
     bias = adapt(i - oldi, (out = output.length + 1), oldi == 0);
 
-    if (floor(i / out) > maxInt - n) error('overflow');
+    floor(i / out) > maxInt - n && error('overflow');
 
     n += floor(i / out);
     i %= out;
@@ -170,13 +169,13 @@ function encode(input) {
     for (m = maxInt, j = 0; j < inputLength; ++j)
       if ((currentValue = input[j]) >= n && currentValue < m) m = currentValue;
 
-    if (m - n > floor((maxInt - delta) / (handledCPCountPlusOne = handledCPCount + 1))) error('overflow');
+    m - n > floor((maxInt - delta) / (handledCPCountPlusOne = handledCPCount + 1)) && error('overflow');
 
     delta += (m - n) * handledCPCountPlusOne;
     n = m;
 
     for (j = 0; j < inputLength; ++j) {
-      if ((currentValue = input[j]) < n && ++delta > maxInt) error('overflow');
+      (currentValue = input[j]) < n && ++delta > maxInt && error('overflow');
 
       if (currentValue != n) continue;
       for (q = delta, k = base; q >= (t = k <= bias ? tMin : k >= bias + tMax ? tMax : k - bias); k += base) {

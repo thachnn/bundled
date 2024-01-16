@@ -193,8 +193,9 @@ var IncomingMessage = (exports.IncomingMessage = function (xhr, response, mode, 
         if (self.headers[key] === void 0) self.headers[key] = []
 
         self.headers[key].push(matches[2])
-      } else if (self.headers[key] !== void 0) self.headers[key] += ', ' + matches[2]
-      else self.headers[key] = matches[2]
+      } else
+        self.headers[key] !== void 0 ? (self.headers[key] += ', ' + matches[2])
+          : (self.headers[key] = matches[2])
 
       self.rawHeaders.push(matches[1], matches[2])
     })
@@ -400,7 +401,8 @@ function decideMode(preferBinary, useFetch) {
 }
 
 var ClientRequest = (module.exports = function (opts) {
-  var self = this
+  var preferBinary,
+    self = this
   stream.Writable.call(self)
 
   self._opts = opts
@@ -411,8 +413,7 @@ var ClientRequest = (module.exports = function (opts) {
     self.setHeader(name, opts.headers[name])
   })
 
-  var preferBinary,
-    useFetch = true
+  var useFetch = true
   if (opts.mode === 'disable-fetch' || ('requestTimeout' in opts && !capability.abortController)) {
     useFetch = false
     preferBinary = true
@@ -691,9 +692,8 @@ module.exports = function (buf) {
 
   if (!Buffer.isBuffer(buf)) throw new Error('Argument must be a Buffer')
 
-  var len = buf.length,
-    arrayCopy = new Uint8Array(len)
-  for (var i = 0; i < len; i++) arrayCopy[i] = buf[i]
+  var arrayCopy = new Uint8Array(buf.length)
+  for (var len = buf.length, i = 0; i < len; i++) arrayCopy[i] = buf[i]
 
   return arrayCopy.buffer
 }

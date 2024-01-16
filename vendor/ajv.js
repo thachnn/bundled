@@ -3,23 +3,20 @@
 module.exports = (function (modules) {
   var installedModules = {};
 
-  function __webpack_require__(moduleId) {
+  function __wpreq__(moduleId) {
     var module = installedModules[moduleId];
     if (module) return module.exports;
 
     installedModules[moduleId] = module = { i: moduleId, l: false, exports: {} };
-    modules[moduleId].call(module.exports, module, module.exports, __webpack_require__);
+    modules[moduleId].call(module.exports, module, module.exports, __wpreq__);
 
-    module.l = true;
-    return module.exports;
+    return (module.l = true), module.exports;
   }
 
-  __webpack_require__.m = modules;
-  __webpack_require__.c = installedModules;
-  return __webpack_require__(12);
-})([
-// 0
-function (module, exports, __webpack_require__) {
+  return (__wpreq__.m = modules), (__wpreq__.c = installedModules), __wpreq__('./ajv');
+})({
+'./compile/util':
+function (module, exports, __wpreq__) {
 
 module.exports = {
   copy: copy,
@@ -29,8 +26,8 @@ module.exports = {
   toHash: toHash,
   getProperty: getProperty,
   escapeQuotes: escapeQuotes,
-  equal: __webpack_require__(2),
-  ucs2length: __webpack_require__(15),
+  equal: __wpreq__('fast-deep-equal'),
+  ucs2length: __wpreq__('./compile/ucs2length'),
   varOccurences: varOccurences,
   varReplace: varReplace,
   schemaHasRules: schemaHasRules,
@@ -227,14 +224,14 @@ function unescapeJsonPointer(str) {
 }
 
 },
-// 1
-function (module, exports, __webpack_require__) {
+'./compile/resolve':
+function (module, exports, __wpreq__) {
 
-var URI = __webpack_require__(14),
-  equal = __webpack_require__(2),
-  util = __webpack_require__(0),
-  SchemaObject = __webpack_require__(4),
-  traverse = __webpack_require__(16);
+var URI = __wpreq__('uri-js'),
+  equal = __wpreq__('fast-deep-equal'),
+  util = __wpreq__('./compile/util'),
+  SchemaObject = __wpreq__('./compile/schema_obj'),
+  traverse = __wpreq__('json-schema-traverse');
 
 module.exports = resolve;
 
@@ -438,7 +435,7 @@ function resolveIds(schema) {
 }
 
 },
-// 2
+'fast-deep-equal':
 function (module) {
 
 module.exports = function equal(a, b) {
@@ -476,10 +473,10 @@ module.exports = function equal(a, b) {
 };
 
 },
-// 3
-function (module, exports, __webpack_require__) {
+'./compile/error_classes':
+function (module, exports, __wpreq__) {
 
-var resolve = __webpack_require__(1);
+var resolve = __wpreq__('./compile/resolve');
 
 module.exports = {
   Validation: errorSubclass(ValidationError),
@@ -509,10 +506,10 @@ function errorSubclass(Subclass) {
 }
 
 },
-// 4
-function (module, exports, __webpack_require__) {
+'./compile/schema_obj':
+function (module, exports, __wpreq__) {
 
-var util = __webpack_require__(0);
+var util = __wpreq__('./compile/util');
 
 module.exports = SchemaObject;
 
@@ -521,7 +518,7 @@ function SchemaObject(obj) {
 }
 
 },
-// 5
+'fast-json-stable-stringify':
 function (module) {
 
 module.exports = function (data, opts) {
@@ -581,7 +578,7 @@ module.exports = function (data, opts) {
 };
 
 },
-// 6
+'./dotjs/validate':
 function (module) {
 
 module.exports = function (it, $keyword, $ruleType) {
@@ -963,7 +960,7 @@ module.exports = function (it, $keyword, $ruleType) {
 };
 
 },
-// 7
+'./dotjs/_limit':
 function (module) {
 
 module.exports = function (it, $keyword, $ruleType) {
@@ -1105,7 +1102,7 @@ module.exports = function (it, $keyword, $ruleType) {
 };
 
 },
-// 8
+'./dotjs/_limitItems':
 function (module) {
 
 module.exports = function (it, $keyword, $ruleType) {
@@ -1170,7 +1167,7 @@ module.exports = function (it, $keyword, $ruleType) {
 };
 
 },
-// 9
+'./dotjs/_limitLength':
 function (module) {
 
 module.exports = function (it, $keyword, $ruleType) {
@@ -1238,7 +1235,7 @@ module.exports = function (it, $keyword, $ruleType) {
 };
 
 },
-// 10
+'./dotjs/_limitProperties':
 function (module) {
 
 module.exports = function (it, $keyword, $ruleType) {
@@ -1303,7 +1300,7 @@ module.exports = function (it, $keyword, $ruleType) {
 };
 
 },
-// 11
+'./refs/json-schema-draft-07.json':
 function (module) {
 
 module.exports = JSON.parse(
@@ -1311,18 +1308,18 @@ module.exports = JSON.parse(
 );
 
 },
-// 12
-function (module, exports, __webpack_require__) {
+'./ajv':
+function (module, exports, __wpreq__) {
 
-var compileSchema = __webpack_require__(13),
-  resolve = __webpack_require__(1),
-  Cache = __webpack_require__(17),
-  SchemaObject = __webpack_require__(4),
-  stableStringify = __webpack_require__(5),
-  formats = __webpack_require__(18),
-  rules = __webpack_require__(19),
-  $dataMetaSchema = __webpack_require__(40),
-  util = __webpack_require__(0);
+var compileSchema = __wpreq__('./compile'),
+  resolve = __wpreq__('./compile/resolve'),
+  Cache = __wpreq__('./cache'),
+  SchemaObject = __wpreq__('./compile/schema_obj'),
+  stableStringify = __wpreq__('fast-json-stable-stringify'),
+  formats = __wpreq__('./compile/formats'),
+  rules = __wpreq__('./compile/rules'),
+  $dataMetaSchema = __wpreq__('./data'),
+  util = __wpreq__('./compile/util');
 
 module.exports = Ajv;
 
@@ -1339,14 +1336,14 @@ Ajv.prototype.errorsText = errorsText;
 Ajv.prototype._addSchema = _addSchema;
 Ajv.prototype._compile = _compile;
 
-Ajv.prototype.compileAsync = __webpack_require__(41);
-var customKeyword = __webpack_require__(42);
+Ajv.prototype.compileAsync = __wpreq__('./compile/async');
+var customKeyword = __wpreq__('./keyword');
 Ajv.prototype.addKeyword = customKeyword.add;
 Ajv.prototype.getKeyword = customKeyword.get;
 Ajv.prototype.removeKeyword = customKeyword.remove;
 Ajv.prototype.validateKeyword = customKeyword.validate;
 
-var errorClasses = __webpack_require__(3);
+var errorClasses = __wpreq__('./compile/error_classes');
 Ajv.ValidationError = errorClasses.Validation;
 Ajv.MissingRefError = errorClasses.MissingRef;
 Ajv.$dataMetaSchema = $dataMetaSchema;
@@ -1646,11 +1643,11 @@ function addFormat(name, format) {
 function addDefaultMetaSchema(self) {
   var $dataSchema;
   if (self._opts.$data) {
-    $dataSchema = __webpack_require__(45);
+    $dataSchema = __wpreq__('./refs/data.json');
     self.addMetaSchema($dataSchema, $dataSchema.$id, true);
   }
   if (self._opts.meta === false) return;
-  var metaSchema = __webpack_require__(11);
+  var metaSchema = __wpreq__('./refs/json-schema-draft-07.json');
   if (self._opts.$data) metaSchema = $dataMetaSchema(metaSchema, META_SUPPORT_DATA);
   self.addMetaSchema(metaSchema, META_SCHEMA_ID, true);
   self._refs['http://json-schema.org/schema'] = META_SCHEMA_ID;
@@ -1702,18 +1699,18 @@ function setLogger(self) {
 function noop() {}
 
 },
-// 13
-function (module, exports, __webpack_require__) {
+'./compile':
+function (module, exports, __wpreq__) {
 
-var resolve = __webpack_require__(1),
-  util = __webpack_require__(0),
-  errorClasses = __webpack_require__(3),
-  stableStringify = __webpack_require__(5),
+var resolve = __wpreq__('./compile/resolve'),
+  util = __wpreq__('./compile/util'),
+  errorClasses = __wpreq__('./compile/error_classes'),
+  stableStringify = __wpreq__('fast-json-stable-stringify'),
 
-  validateGenerator = __webpack_require__(6),
+  validateGenerator = __wpreq__('./dotjs/validate'),
 
   ucs2length = util.ucs2length,
-  equal = __webpack_require__(2),
+  equal = __wpreq__('fast-deep-equal'),
 
   ValidationError = errorClasses.Validation;
 
@@ -1988,13 +1985,13 @@ function vars(arr, statement) {
 }
 
 },
-// 14
+'uri-js':
 function (module) {
 
 module.exports = require('./uri-js');
 
 },
-// 15
+'./compile/ucs2length':
 function (module) {
 
 module.exports = function (str) {
@@ -2008,7 +2005,7 @@ module.exports = function (str) {
 };
 
 },
-// 16
+'json-schema-traverse':
 function (module) {
 
 var traverse = (module.exports = function (schema, opts, cb) {
@@ -2091,7 +2088,7 @@ function escapeJsonPtr(str) {
 }
 
 },
-// 17
+'./cache':
 function (module) {
 
 var Cache = (module.exports = function () {
@@ -2115,10 +2112,10 @@ Cache.prototype.clear = function () {
 };
 
 },
-// 18
-function (module, exports, __webpack_require__) {
+'./compile/formats':
+function (module, exports, __wpreq__) {
 
-var util = __webpack_require__(0);
+var util = __wpreq__('./compile/util');
 
 var DATE = /^(\d\d\d\d)-(\d\d)-(\d\d)$/,
   DAYS = [0, 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31],
@@ -2232,11 +2229,11 @@ function regex(str) {
 }
 
 },
-// 19
-function (module, exports, __webpack_require__) {
+'./compile/rules':
+function (module, exports, __wpreq__) {
 
-var ruleModules = __webpack_require__(20),
-  toHash = __webpack_require__(0).toHash;
+var ruleModules = __wpreq__('./dotjs'),
+  toHash = __wpreq__('./compile/util').toHash;
 
 module.exports = function () {
   var RULES = [
@@ -2302,42 +2299,42 @@ module.exports = function () {
 };
 
 },
-// 20
-function (module, exports, __webpack_require__) {
+'./dotjs':
+function (module, exports, __wpreq__) {
 
 module.exports = {
-  $ref: __webpack_require__(21),
-  allOf: __webpack_require__(22),
-  anyOf: __webpack_require__(23),
-  $comment: __webpack_require__(24),
-  const: __webpack_require__(25),
-  contains: __webpack_require__(26),
-  dependencies: __webpack_require__(27),
-  enum: __webpack_require__(28),
-  format: __webpack_require__(29),
-  if: __webpack_require__(30),
-  items: __webpack_require__(31),
-  maximum: __webpack_require__(7),
-  minimum: __webpack_require__(7),
-  maxItems: __webpack_require__(8),
-  minItems: __webpack_require__(8),
-  maxLength: __webpack_require__(9),
-  minLength: __webpack_require__(9),
-  maxProperties: __webpack_require__(10),
-  minProperties: __webpack_require__(10),
-  multipleOf: __webpack_require__(32),
-  not: __webpack_require__(33),
-  oneOf: __webpack_require__(34),
-  pattern: __webpack_require__(35),
-  properties: __webpack_require__(36),
-  propertyNames: __webpack_require__(37),
-  required: __webpack_require__(38),
-  uniqueItems: __webpack_require__(39),
-  validate: __webpack_require__(6)
+  $ref: __wpreq__('./dotjs/ref'),
+  allOf: __wpreq__('./dotjs/allOf'),
+  anyOf: __wpreq__('./dotjs/anyOf'),
+  $comment: __wpreq__('./dotjs/comment'),
+  const: __wpreq__('./dotjs/const'),
+  contains: __wpreq__('./dotjs/contains'),
+  dependencies: __wpreq__('./dotjs/dependencies'),
+  enum: __wpreq__('./dotjs/enum'),
+  format: __wpreq__('./dotjs/format'),
+  if: __wpreq__('./dotjs/if'),
+  items: __wpreq__('./dotjs/items'),
+  maximum: __wpreq__('./dotjs/_limit'),
+  minimum: __wpreq__('./dotjs/_limit'),
+  maxItems: __wpreq__('./dotjs/_limitItems'),
+  minItems: __wpreq__('./dotjs/_limitItems'),
+  maxLength: __wpreq__('./dotjs/_limitLength'),
+  minLength: __wpreq__('./dotjs/_limitLength'),
+  maxProperties: __wpreq__('./dotjs/_limitProperties'),
+  minProperties: __wpreq__('./dotjs/_limitProperties'),
+  multipleOf: __wpreq__('./dotjs/multipleOf'),
+  not: __wpreq__('./dotjs/not'),
+  oneOf: __wpreq__('./dotjs/oneOf'),
+  pattern: __wpreq__('./dotjs/pattern'),
+  properties: __wpreq__('./dotjs/properties'),
+  propertyNames: __wpreq__('./dotjs/propertyNames'),
+  required: __wpreq__('./dotjs/required'),
+  uniqueItems: __wpreq__('./dotjs/uniqueItems'),
+  validate: __wpreq__('./dotjs/validate')
 };
 
 },
-// 21
+'./dotjs/ref':
 function (module) {
 
 module.exports = function (it, $keyword, $ruleType) {
@@ -2436,7 +2433,7 @@ module.exports = function (it, $keyword, $ruleType) {
 };
 
 },
-// 22
+'./dotjs/allOf':
 function (module) {
 
 module.exports = function (it, $keyword, $ruleType) {
@@ -2475,7 +2472,7 @@ module.exports = function (it, $keyword, $ruleType) {
 };
 
 },
-// 23
+'./dotjs/anyOf':
 function (module) {
 
 module.exports = function (it, $keyword, $ruleType) {
@@ -2542,7 +2539,7 @@ module.exports = function (it, $keyword, $ruleType) {
 };
 
 },
-// 24
+'./dotjs/comment':
 function (module) {
 
 module.exports = function (it, $keyword, $ruleType) {
@@ -2559,7 +2556,7 @@ module.exports = function (it, $keyword, $ruleType) {
 };
 
 },
-// 25
+'./dotjs/const':
 function (module) {
 
 module.exports = function (it, $keyword, $ruleType) {
@@ -2607,7 +2604,7 @@ module.exports = function (it, $keyword, $ruleType) {
 };
 
 },
-// 26
+'./dotjs/contains':
 function (module) {
 
 module.exports = function (it, $keyword, $ruleType) {
@@ -2683,7 +2680,7 @@ module.exports = function (it, $keyword, $ruleType) {
 };
 
 },
-// 27
+'./dotjs/dependencies':
 function (module) {
 
 module.exports = function (it, $keyword, $ruleType) {
@@ -2835,7 +2832,7 @@ module.exports = function (it, $keyword, $ruleType) {
 };
 
 },
-// 28
+'./dotjs/enum':
 function (module) {
 
 module.exports = function (it, $keyword, $ruleType) {
@@ -2892,7 +2889,7 @@ module.exports = function (it, $keyword, $ruleType) {
 };
 
 },
-// 29
+'./dotjs/format':
 function (module) {
 
 module.exports = function (it, $keyword, $ruleType) {
@@ -3017,7 +3014,7 @@ module.exports = function (it, $keyword, $ruleType) {
 };
 
 },
-// 30
+'./dotjs/if':
 function (module) {
 
 module.exports = function (it, $keyword, $ruleType) {
@@ -3109,7 +3106,7 @@ module.exports = function (it, $keyword, $ruleType) {
 };
 
 },
-// 31
+'./dotjs/items':
 function (module) {
 
 module.exports = function (it, $keyword, $ruleType) {
@@ -3240,7 +3237,7 @@ module.exports = function (it, $keyword, $ruleType) {
 };
 
 },
-// 32
+'./dotjs/multipleOf':
 function (module) {
 
 module.exports = function (it, $keyword, $ruleType) {
@@ -3307,7 +3304,7 @@ module.exports = function (it, $keyword, $ruleType) {
 };
 
 },
-// 33
+'./dotjs/not':
 function (module) {
 
 module.exports = function (it, $keyword, $ruleType) {
@@ -3383,7 +3380,7 @@ module.exports = function (it, $keyword, $ruleType) {
 };
 
 },
-// 34
+'./dotjs/oneOf':
 function (module) {
 
 module.exports = function (it, $keyword, $ruleType) {
@@ -3451,7 +3448,7 @@ module.exports = function (it, $keyword, $ruleType) {
 };
 
 },
-// 35
+'./dotjs/pattern':
 function (module) {
 
 module.exports = function (it, $keyword, $ruleType) {
@@ -3513,7 +3510,7 @@ module.exports = function (it, $keyword, $ruleType) {
 };
 
 },
-// 36
+'./dotjs/properties':
 function (module) {
 
 module.exports = function (it, $keyword, $ruleType) {
@@ -3804,7 +3801,7 @@ module.exports = function (it, $keyword, $ruleType) {
 };
 
 },
-// 37
+'./dotjs/propertyNames':
 function (module) {
 
 module.exports = function (it, $keyword, $ruleType) {
@@ -3879,7 +3876,7 @@ module.exports = function (it, $keyword, $ruleType) {
 };
 
 },
-// 38
+'./dotjs/required':
 function (module) {
 
 module.exports = function (it, $keyword, $ruleType) {
@@ -4106,7 +4103,7 @@ module.exports = function (it, $keyword, $ruleType) {
 };
 
 },
-// 39
+'./dotjs/uniqueItems':
 function (module) {
 
 module.exports = function (it, $keyword, $ruleType) {
@@ -4183,7 +4180,7 @@ module.exports = function (it, $keyword, $ruleType) {
 };
 
 },
-// 40
+'./data':
 function (module) {
 
 var KEYWORDS = [
@@ -4233,10 +4230,10 @@ module.exports = function (metaSchema, keywordsJsonPointers) {
 };
 
 },
-// 41
-function (module, exports, __webpack_require__) {
+'./compile/async':
+function (module, exports, __wpreq__) {
 
-var MissingRefError = __webpack_require__(3).MissingRef;
+var MissingRefError = __wpreq__('./compile/error_classes').MissingRef;
 
 module.exports = compileAsync;
 
@@ -4307,12 +4304,12 @@ function compileAsync(schema, meta, callback) {
 }
 
 },
-// 42
-function (module, exports, __webpack_require__) {
+'./keyword':
+function (module, exports, __wpreq__) {
 
 var IDENTIFIER = /^[a-z_$][a-z0-9_$-]*$/i;
-var customRuleCode = __webpack_require__(43),
-  definitionSchema = __webpack_require__(44);
+var customRuleCode = __wpreq__('./dotjs/custom'),
+  definitionSchema = __wpreq__('./definition_schema');
 
 module.exports = {
   add: addKeyword,
@@ -4413,7 +4410,7 @@ function validateKeyword(definition, throwError) {
 }
 
 },
-// 43
+'./dotjs/custom':
 function (module) {
 
 module.exports = function (it, $keyword, $ruleType) {
@@ -4604,10 +4601,10 @@ module.exports = function (it, $keyword, $ruleType) {
 };
 
 },
-// 44
-function (module, exports, __webpack_require__) {
+'./definition_schema':
+function (module, exports, __wpreq__) {
 
-var metaSchema = __webpack_require__(11);
+var metaSchema = __wpreq__('./refs/json-schema-draft-07.json');
 
 module.exports = {
   $id: 'https://github.com/ajv-validator/ajv/blob/master/lib/definition_schema.js',
@@ -4634,7 +4631,7 @@ module.exports = {
 };
 
 },
-// 45
+'./refs/data.json':
 function (module) {
 
 module.exports = JSON.parse(
@@ -4642,4 +4639,4 @@ module.exports = JSON.parse(
 );
 
 }
-]);
+});

@@ -131,10 +131,10 @@ try {
 } catch (_) {}
 
 BN.isBN = function (num) {
-  if (num instanceof BN) return true;
-
-  return num !== null && typeof num == 'object' &&
-    num.constructor.wordSize === BN.wordSize && Array.isArray(num.words);
+  return num instanceof BN || (
+    num !== null && typeof num == 'object' &&
+    num.constructor.wordSize === BN.wordSize && Array.isArray(num.words)
+  );
 };
 
 BN.max = function (left, right) {
@@ -518,12 +518,11 @@ BN.prototype.toArrayLike = function (ArrayType, endian, length) {
   return res;
 };
 
-if (Math.clz32)
-  BN.prototype._countBits = function (w) {
+BN.prototype._countBits = Math.clz32
+  ? function (w) {
     return 32 - Math.clz32(w);
-  };
-else
-  BN.prototype._countBits = function (w) {
+  }
+  : function (w) {
     var t = w,
       r = 0;
     if (t >= 0x1000) {
@@ -733,7 +732,7 @@ BN.prototype.setn = function (bit, val) {
 
   this._expand(off + 1);
 
-  val ? (this.words[off] |= 1 << wbit) : (this.words[off] &= ~(1 << wbit));
+  this.words[off] = val ? this.words[off] | (1 << wbit) : this.words[off] & ~(1 << wbit);
 
   return this.strip();
 };
@@ -2967,9 +2966,9 @@ function toHex(msg) {
 exports.toHex = toHex;
 
 function htonl(w) {
-  var res =
-    (w >>> 24) | ((w >>> 8) & 0xff00) | ((w << 8) & 0xff0000) | ((w & 0xff) << 24);
-  return res >>> 0;
+  return (
+    (w >>> 24) | ((w >>> 8) & 0xff00) | ((w << 8) & 0xff0000) | ((w & 0xff) << 24)
+  ) >>> 0;
 }
 exports.htonl = htonl;
 
@@ -3013,7 +3012,8 @@ function join32(msg, start, end, endian) {
   assert(len % 4 == 0);
   var res = new Array(len / 4);
   for (var i = 0, k = start; i < res.length; i++, k += 4) {
-    var w = endian === 'big'
+    var w =
+      endian === 'big'
       ? (msg[k] << 24) | (msg[k + 1] << 16) | (msg[k + 2] << 8) | msg[k + 3]
       : (msg[k + 3] << 24) | (msg[k + 2] << 16) | (msg[k + 1] << 8) | msg[k];
     res[i] = w >>> 0;
@@ -3156,8 +3156,9 @@ var Buffer = __webpack_require__(0).Buffer,
 function CipherBase(hashMode) {
   Transform.call(this)
   this.hashMode = typeof hashMode == 'string'
-  if (this.hashMode) this[hashMode] = this._finalOrDigest
-  else this.final = this._finalOrDigest
+  this.hashMode
+    ? (this[hashMode] = this._finalOrDigest)
+    : (this.final = this._finalOrDigest)
 
   if (this._final) {
     this.__final = this._final
@@ -3309,7 +3310,7 @@ Hash.prototype.update = function (data, enc) {
 
     offset += remainder
 
-    (accum += remainder) % blockSize != 0 || this._update(block)
+    ;(accum += remainder) % blockSize != 0 || this._update(block)
   }
 
   this._len += length
@@ -4627,9 +4628,11 @@ var bn = __webpack_require__(2),
 module.exports = crt;
 function blind(priv) {
   var r = getr(priv);
-  var blinder =
-    r.toRed(bn.mont(priv.modulus)).redPow(new bn(priv.publicExponent)).fromRed();
-  return { blinder: blinder, unblinder: r.invm(priv.modulus) };
+  return {
+    blinder:
+      r.toRed(bn.mont(priv.modulus)).redPow(new bn(priv.publicExponent)).fromRed(),
+    unblinder: r.invm(priv.modulus)
+  };
 }
 function crt(msg, priv) {
   var blinds = blind(priv),
@@ -5656,11 +5659,12 @@ module.exports = pbkdf2
 function (module, exports) {
 
 exports.readUInt32BE = function (bytes, off) {
-  var res = (bytes[0 + off] << 24) |
+  return (
+    (bytes[0 + off] << 24) |
     (bytes[1 + off] << 16) |
     (bytes[2 + off] << 8) |
-    bytes[3 + off];
-  return res >>> 0;
+    bytes[3 + off]
+  ) >>> 0;
 };
 
 exports.writeUInt32BE = function (bytes, value, off) {
@@ -6096,8 +6100,8 @@ function xorTest(a, b) {
   var out = 0
   a.length === b.length || out++
 
-  var len = Math.min(a.length, b.length)
-  for (var i = 0; i < len; ++i) out += a[i] ^ b[i]
+  for (var len = Math.min(a.length, b.length), i = 0; i < len; ++i)
+    out += a[i] ^ b[i]
 
   return out
 }
@@ -7662,8 +7666,8 @@ module.exports = require('util');
 // 67
 function (module) {
 
-if (typeof Object.create == 'function')
-  module.exports = function (ctor, superCtor) {
+module.exports = typeof Object.create == 'function'
+  ? function (ctor, superCtor) {
     ctor.super_ = superCtor
     ctor.prototype = Object.create(superCtor.prototype, {
       constructor: {
@@ -7674,8 +7678,7 @@ if (typeof Object.create == 'function')
       }
     })
   }
-else
-  module.exports = function (ctor, superCtor) {
+  : function (ctor, superCtor) {
     ctor.super_ = superCtor
     var TempCtor = function () {}
     TempCtor.prototype = superCtor.prototype
@@ -9538,9 +9541,7 @@ Point.prototype._getBeta = function () {
 };
 
 Point.prototype.toJSON = function () {
-  if (!this.precomputed) return [this.x, this.y];
-
-  return [this.x, this.y, this.precomputed && {
+  return !this.precomputed ? [this.x, this.y] : [this.x, this.y, this.precomputed && {
     doubles: this.precomputed.doubles && {
       step: this.precomputed.doubles.step,
       points: this.precomputed.doubles.points.slice(1)
@@ -11731,8 +11732,8 @@ EC.prototype.recoverPubKey = function (msg, signature, j, enc) {
 };
 
 EC.prototype.getKeyRecoveryParam = function (e, signature, Q, enc) {
-  signature = new Signature(signature, enc);
-  if (signature.recoveryParam !== null) return signature.recoveryParam;
+  if ((signature = new Signature(signature, enc)).recoveryParam !== null)
+    return signature.recoveryParam;
 
   for (var i = 0; i < 4; i++) {
     var Qprime;
@@ -12171,8 +12172,9 @@ var utils = __webpack_require__(4),
 function KeyPair(eddsa, params) {
   this.eddsa = eddsa;
   this._secret = parseBytes(params.secret);
-  if (eddsa.isPoint(params.pub)) this._pub = params.pub;
-  else this._pubBytes = parseBytes(params.pub);
+  eddsa.isPoint(params.pub)
+    ? (this._pub = params.pub)
+    : (this._pubBytes = parseBytes(params.pub));
 }
 
 KeyPair.fromPublic = function (eddsa, pub) {
@@ -12432,7 +12434,7 @@ Entity.prototype._createNamed = function (base) {
     named = __webpack_require__(116).runInThisContext(
       '(function ' + this.name + '(entity) {\n  this._initNamed(entity);\n})'
     );
-  } catch (_) {
+  } catch (_e) {
     named = function (entity) {
       this._initNamed(entity);
     };
@@ -12984,7 +12986,7 @@ Node.prototype._decodeChoice = function (input, options) {
 
       result = { type: key, value: value };
       match = true;
-    } catch (_) {
+    } catch (_e) {
       input.restore(save);
       return false;
     }
@@ -13075,10 +13077,10 @@ Node.prototype._encodeValue = function (data, reporter, parent) {
     var tag = state.implicit !== null ? state.implicit : state.tag,
       cls = state.implicit === null ? 'universal' : 'context';
 
-    tag === null
-      ? state.use !== null || reporter.error('Tag could be omitted only for .use()')
-      : state.use !== null ||
-        (result = this._encodeComposite(tag, primitive, cls, content));
+    if (tag === null)
+      state.use !== null || reporter.error('Tag could be omitted only for .use()');
+    else if (state.use === null)
+      result = this._encodeComposite(tag, primitive, cls, content);
   }
 
   if (state.explicit !== null)
@@ -13351,11 +13353,11 @@ module.exports = JSON.parse(
 function (module, exports, __webpack_require__) {
 
 var findProc =
-  /Proc-Type: 4,ENCRYPTED[\n\r]+DEK-Info: AES-((?:128)|(?:192)|(?:256))-CBC,([0-9A-H]+)[\n\r]+([0-9A-z\n\r\+\/\=]+)[\n\r]+/m
-var startRegex = /^-----BEGIN ((?:.*? KEY)|CERTIFICATE)-----/m
-var fullRegex =
-  /^-----BEGIN ((?:.*? KEY)|CERTIFICATE)-----([0-9A-z\n\r\+\/\=]+)-----END \1-----$/m
-var evp = __webpack_require__(17),
+    /Proc-Type: 4,ENCRYPTED[\n\r]+DEK-Info: AES-((?:128)|(?:192)|(?:256))-CBC,([0-9A-H]+)[\n\r]+([0-9A-z\n\r\+\/\=]+)[\n\r]+/m,
+  startRegex = /^-----BEGIN ((?:.*? KEY)|CERTIFICATE)-----/m,
+  fullRegex =
+    /^-----BEGIN ((?:.*? KEY)|CERTIFICATE)-----([0-9A-z\n\r\+\/\=]+)-----END \1-----$/m,
+  evp = __webpack_require__(17),
   ciphers = __webpack_require__(27),
   Buffer = __webpack_require__(0).Buffer
 module.exports = function (okey, password) {
@@ -13404,8 +13406,9 @@ function verify(sig, hash, key, signType, tag) {
 
   hash = Buffer.concat([tag, hash])
   var len = pub.modulus.byteLength(),
-    pad = [1]
-  for (var padNum = 0; hash.length + pad.length + 2 < len; ) {
+    pad = [1],
+    padNum = 0
+  while (hash.length + pad.length + 2 < len) {
     pad.push(0xff)
     padNum++
   }
@@ -13515,9 +13518,11 @@ ECDH.prototype.computeSecret = function (other, inenc, enc) {
   inenc = inenc || 'utf8'
   Buffer.isBuffer(other) || (other = new Buffer(other, inenc))
 
-  var out = this.curve.keyFromPublic(other).getPublic()
-    .mul(this.keys.getPrivate()).getX()
-  return formatReturnValue(out, enc, this.curveType.byteLength)
+  return formatReturnValue(
+    this.curve.keyFromPublic(other).getPublic().mul(this.keys.getPrivate()).getX(),
+    enc,
+    this.curveType.byteLength
+  )
 }
 
 ECDH.prototype.getPublicKey = function (enc, format) {

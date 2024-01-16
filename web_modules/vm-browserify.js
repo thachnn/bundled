@@ -28,7 +28,7 @@ var defineProp = (function () {
         value: value
       });
     };
-  } catch (e) {
+  } catch (_e) {
     return function (obj, name, value) {
       obj[name] = value;
     };

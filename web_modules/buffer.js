@@ -177,8 +177,9 @@ function fromArrayBuffer(that, array, byteOffset, length) {
     ? new Uint8Array(array, byteOffset)
     : new Uint8Array(array, byteOffset, length)
 
-  if (Buffer.TYPED_ARRAY_SUPPORT) (that = array).__proto__ = Buffer.prototype
-  else that = fromArrayLike(that, array)
+  Buffer.TYPED_ARRAY_SUPPORT
+    ? ((that = array).__proto__ = Buffer.prototype)
+    : (that = fromArrayLike(that, array))
 
   return that
 }
@@ -695,33 +696,36 @@ function utf8Slice(buf, start, end) {
 
           break
         case 2:
-          if (((secondByte = buf[i + 1]) & 0xC0) == 0x80) {
-            tempCodePoint = ((firstByte & 0x1F) << 0x6) | (secondByte & 0x3F)
-            if (tempCodePoint > 0x7F) codePoint = tempCodePoint
-          }
+          if (((secondByte = buf[i + 1]) & 0xC0) == 0x80 &&
+              (tempCodePoint = ((firstByte & 0x1F) << 0x6) | (secondByte & 0x3F)) > 0x7F)
+            codePoint = tempCodePoint
+
           break
         case 3:
           secondByte = buf[i + 1]
           thirdByte = buf[i + 2]
-          if ((secondByte & 0xC0) == 0x80 && (thirdByte & 0xC0) == 0x80) {
-            tempCodePoint =
-              ((firstByte & 0xF) << 0xC) | ((secondByte & 0x3F) << 0x6) | (thirdByte & 0x3F)
-            if (tempCodePoint > 0x7FF && (tempCodePoint < 0xD800 || tempCodePoint > 0xDFFF))
-              codePoint = tempCodePoint
-          }
+          if (
+            (secondByte & 0xC0) == 0x80 && (thirdByte & 0xC0) == 0x80 &&
+            (tempCodePoint =
+              ((firstByte & 0xF) << 0xC) | ((secondByte & 0x3F) << 0x6) | (thirdByte & 0x3F)) > 0x7FF &&
+            (tempCodePoint < 0xD800 || tempCodePoint > 0xDFFF)
+          )
+            codePoint = tempCodePoint
+
           break
         case 4:
           secondByte = buf[i + 1]
           thirdByte = buf[i + 2]
           fourthByte = buf[i + 3]
-          if ((secondByte & 0xC0) == 0x80 && (thirdByte & 0xC0) == 0x80 && (fourthByte & 0xC0) == 0x80) {
-            tempCodePoint =
+          if (
+            (secondByte & 0xC0) == 0x80 && (thirdByte & 0xC0) == 0x80 && (fourthByte & 0xC0) == 0x80 &&
+            (tempCodePoint =
               ((firstByte & 0xF) << 0x12) |
               ((secondByte & 0x3F) << 0xC) |
               ((thirdByte & 0x3F) << 0x6) |
-              (fourthByte & 0x3F)
-            if (tempCodePoint > 0xFFFF && tempCodePoint < 0x110000) codePoint = tempCodePoint
-          }
+              (fourthByte & 0x3F)) > 0xFFFF && tempCodePoint < 0x110000
+          )
+            codePoint = tempCodePoint
       }
     }
 
@@ -785,9 +789,8 @@ function hexSlice(buf, start, end) {
 }
 
 function utf16leSlice(buf, start, end) {
-  var bytes = buf.slice(start, end),
-    res = ''
-  for (var i = 0; i < bytes.length; i += 2)
+  var res = ''
+  for (var bytes = buf.slice(start, end), i = 0; i < bytes.length; i += 2)
     res += String.fromCharCode(bytes[i] + bytes[i + 1] * 256)
 
   return res
@@ -907,7 +910,7 @@ Buffer.prototype.readIntBE = function (offset, byteLength, noAssert) {
 
 Buffer.prototype.readInt8 = function (offset, noAssert) {
   noAssert || checkOffset(offset, 1, this.length)
-  return !(this[offset] & 0x80) ? this[offset] : (0xff - this[offset] + 1) * -1
+  return this[offset] & 0x80 ? (0xff - this[offset] + 1) * -1 : this[offset]
 }
 
 Buffer.prototype.readInt16LE = function (offset, noAssert) {
@@ -1482,9 +1485,8 @@ function tripletToBase64(num) {
 }
 
 function encodeChunk(uint8, start, end) {
-  var tmp,
-    output = []
-  for (var i = start; i < end; i += 3) {
+  var output = []
+  for (var tmp, i = start; i < end; i += 3) {
     tmp = ((uint8[i] << 16) & 0xFF0000) + ((uint8[i + 1] << 8) & 0xFF00) + (uint8[i + 2] & 0xFF)
     output.push(tripletToBase64(tmp))
   }

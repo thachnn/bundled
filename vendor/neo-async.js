@@ -194,13 +194,12 @@ baseEachSync(
 );
 
 function createImmediate(safeMode) {
-  var delay = function(fn) {
+  asyncSetImmediate = typeof setImmediate === func ? setImmediate : function(fn) {
     var args = slice(arguments, 1);
     setTimeout(function() {
       fn.apply(null, args);
     });
   };
-  asyncSetImmediate = typeof setImmediate === func ? setImmediate : delay;
   if (typeof process === obj && typeof process.nextTick === func) {
     nextTick = /^v?0\.10\b/.test(process.version) ? asyncSetImmediate : process.nextTick;
     asyncNextTick = /^v?0\./.test(process.version) ? asyncSetImmediate : process.nextTick;
@@ -672,8 +671,8 @@ function createMap(arrayEach, baseEach, symbolEach, useArray) {
     } else if (!collection);
     else if (iteratorSymbol && collection[iteratorSymbol]) {
       result = init(0);
-      size = symbolEach(collection, iterator, createCallback);
-      size && size === completed && callback(null, result);
+      (size = symbolEach(collection, iterator, createCallback)) && size === completed &&
+        callback(null, result);
     } else if (typeof collection === obj) {
       keys = nativeKeys(collection);
       size = keys.length;
@@ -712,8 +711,8 @@ function createFilter(arrayEach, baseEach, symbolEach, bool) {
     } else if (!collection);
     else if (iteratorSymbol && collection[iteratorSymbol]) {
       result = [];
-      size = symbolEach(collection, iterator, createCallback);
-      size && size === completed && callback(null, compact(result));
+      (size = symbolEach(collection, iterator, createCallback)) && size === completed &&
+        callback(null, compact(result));
     } else if (typeof collection === obj) {
       keys = nativeKeys(collection);
       size = keys.length;
@@ -1392,10 +1391,10 @@ function createDetect(arrayEach, baseEach, symbolEach, bool) {
       size = collection.length;
       arrayEach(collection, iterator, createCallback);
     } else if (!collection);
-    else if (iteratorSymbol && collection[iteratorSymbol]) {
-      size = symbolEach(collection, iterator, createCallback);
-      size && size === completed && callback(null);
-    } else if (typeof collection === obj) {
+    else if (iteratorSymbol && collection[iteratorSymbol])
+      (size = symbolEach(collection, iterator, createCallback)) && size === completed &&
+        callback(null);
+    else if (typeof collection === obj) {
       keys = nativeKeys(collection);
       size = keys.length;
       baseEach(collection, iterator, createCallback, keys);
@@ -1603,10 +1602,10 @@ function createPick(arrayEach, baseEach, symbolEach, bool) {
       size = collection.length;
       arrayEach(collection, iterator, createCallback);
     } else if (!collection);
-    else if (iteratorSymbol && collection[iteratorSymbol]) {
-      size = symbolEach(collection, iterator, createCallback);
-      size && size === completed && callback(null, result);
-    } else if (typeof collection === obj) {
+    else if (iteratorSymbol && collection[iteratorSymbol])
+      (size = symbolEach(collection, iterator, createCallback)) && size === completed &&
+        callback(null, result);
+    else if (typeof collection === obj) {
       keys = nativeKeys(collection);
       size = keys.length;
       baseEach(collection, iterator, createCallback, keys);
@@ -1962,8 +1961,8 @@ function createTransform(arrayEach, baseEach, symbolEach) {
     } else if (!collection);
     else if (iteratorSymbol && collection[iteratorSymbol]) {
       result = accumulator !== void 0 ? accumulator : {};
-      size = symbolEach(collection, result, iterator, done);
-      size && size === completed && callback(null, result);
+      (size = symbolEach(collection, result, iterator, done)) && size === completed &&
+        callback(null, result);
     } else if (typeof collection === obj) {
       keys = nativeKeys(collection);
       size = keys.length;
@@ -2159,8 +2158,8 @@ function createSortBy(arrayEach, baseEach, symbolEach) {
     else if (iteratorSymbol && collection[iteratorSymbol]) {
       array = [];
       criteria = [];
-      size = symbolEach(collection, iterator, createCallback);
-      size && size === completed && callback(null, sortByCriteria(array, criteria));
+      (size = symbolEach(collection, iterator, createCallback)) && size === completed &&
+        callback(null, sortByCriteria(array, criteria));
     } else if (typeof collection === obj) {
       var keys = nativeKeys(collection);
       size = keys.length;
@@ -2464,8 +2463,8 @@ function createConcat(arrayEach, baseEach, symbolEach) {
     } else if (!collection);
     else if (iteratorSymbol && collection[iteratorSymbol]) {
       result = [];
-      size = symbolEach(collection, iterator, createCallback);
-      size && size === completed && callback(null, result);
+      (size = symbolEach(collection, iterator, createCallback)) && size === completed &&
+        callback(null, result);
     } else if (typeof collection === obj) {
       var keys = nativeKeys(collection);
       size = keys.length;
@@ -2687,10 +2686,10 @@ function createGroupBy(arrayEach, baseEach, symbolEach) {
       size = collection.length;
       arrayEach(collection, iterator, createCallback);
     } else if (!collection);
-    else if (iteratorSymbol && collection[iteratorSymbol]) {
-      size = symbolEach(collection, iterator, createCallback);
-      size && size === completed && callback(null, result);
-    } else if (typeof collection === obj) {
+    else if (iteratorSymbol && collection[iteratorSymbol])
+      (size = symbolEach(collection, iterator, createCallback)) && size === completed &&
+        callback(null, result);
+    else if (typeof collection === obj) {
       var keys = nativeKeys(collection);
       size = keys.length;
       baseEach(collection, iterator, createCallback, keys);
@@ -3067,7 +3066,7 @@ function tryEach(tasks, callback) {
       ? callback(null, arguments.length <= 2 ? res : slice(arguments, 1))
       : ++completed === size
       ? callback(err)
-      : (sync = true) && iterate();
+      : ((sync = true), iterate());
 
     sync = false;
   }
@@ -3514,9 +3513,8 @@ DLL.prototype.shift = function() {
 };
 
 DLL.prototype.splice = function(end) {
-  var task,
-    tasks = [];
-  while (end-- && (task = this.shift())) tasks.push(task);
+  var tasks = [];
+  for (var task; end-- && (task = this.shift()); ) tasks.push(task);
 
   return tasks;
 };
@@ -3662,10 +3660,9 @@ function baseQueue(isQueue, worker, concurrency, payload) {
   function runCargo() {
     while (!q.paused && workers < q.concurrency && q._tasks.length) {
       var tasks = q._tasks.splice(q.payload || q._tasks.length),
-        index = -1,
         size = tasks.length,
         data = Array(size);
-      while (++index < size) data[index] = tasks[index].data;
+      for (var index = -1; ++index < size; ) data[index] = tasks[index].data;
 
       workers++;
       nativePush.apply(workersList, tasks);
@@ -4308,11 +4305,11 @@ function ensureAsync(fn) {
 
     function done() {
       var innerArgs = createArray(arguments);
-      if (sync)
-        nextTick(function() {
-          callback.apply(null, innerArgs);
-        });
-      else callback.apply(null, innerArgs);
+      sync
+        ? nextTick(function() {
+            callback.apply(null, innerArgs);
+          })
+        : callback.apply(null, innerArgs);
     }
   };
 }

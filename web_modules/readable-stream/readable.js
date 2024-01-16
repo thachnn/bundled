@@ -16,7 +16,7 @@ module.exports = (function (modules) {
 
   __webpack_require__.m = modules;
   __webpack_require__.c = installedModules;
-  return __webpack_require__(14);
+  return __webpack_require__(13);
 })([
 // 0
 function (module) {
@@ -41,7 +41,7 @@ var util = Object.create(__webpack_require__(2));
 util.inherits = __webpack_require__(0).inherits;
 
 var Readable = __webpack_require__(5),
-  Writable = __webpack_require__(11);
+  Writable = __webpack_require__(10);
 
 util.inherits(Duplex, Readable);
 
@@ -182,7 +182,7 @@ function isPrimitive(arg) {
 }
 exports.isPrimitive = isPrimitive;
 
-exports.isBuffer = __webpack_require__(8).Buffer.isBuffer;
+exports.isBuffer = __webpack_require__(7).Buffer.isBuffer;
 
 function objectToString(o) {
   return Object.prototype.toString.call(o);
@@ -231,7 +231,7 @@ function nextTick(fn, arg1, arg2, arg3) {
 // 4
 function (module, exports, __webpack_require__) {
 
-var buffer = __webpack_require__(8),
+var buffer = __webpack_require__(7),
   Buffer = buffer.Buffer
 
 function copyProps(src, dst) {
@@ -291,7 +291,7 @@ module.exports = Readable;
 
 var Duplex,
 
-  isArray = __webpack_require__(16);
+  isArray = __webpack_require__(15);
 
 Readable.ReadableState = ReadableState;
 
@@ -299,7 +299,7 @@ var EElistenerCount = function (emitter, type) {
   return emitter.listeners(type).length;
 };
 
-var Stream = __webpack_require__(7),
+var Stream = __webpack_require__(6),
 
   Buffer = __webpack_require__(4).Buffer,
   OurUint8Array = global.Uint8Array || function () {};
@@ -313,12 +313,12 @@ function _isUint8Array(obj) {
 var util = Object.create(__webpack_require__(2));
 util.inherits = __webpack_require__(0).inherits;
 
-var debugUtil = __webpack_require__(9),
+var debugUtil = __webpack_require__(8),
   debug = debugUtil && debugUtil.debuglog ? debugUtil.debuglog('stream') : function () {};
 
 var StringDecoder,
-  BufferList = __webpack_require__(17),
-  destroyImpl = __webpack_require__(10);
+  BufferList = __webpack_require__(16),
+  destroyImpl = __webpack_require__(9);
 
 util.inherits(Readable, Stream);
 
@@ -378,7 +378,7 @@ function ReadableState(options, stream) {
   this.decoder = null;
   this.encoding = null;
   if (options.encoding) {
-    StringDecoder || (StringDecoder = __webpack_require__(12).StringDecoder);
+    StringDecoder || (StringDecoder = __webpack_require__(11).StringDecoder);
     this.decoder = new StringDecoder(options.encoding);
     this.encoding = options.encoding;
   }
@@ -452,9 +452,9 @@ function readableAddChunk(stream, chunk, encoding, addToFront, skipChunkCheck) {
   skipChunkCheck || (er = chunkInvalid(state, chunk));
   if (er) stream.emit('error', er);
   else if (state.objectMode || (chunk && chunk.length > 0)) {
-    if (typeof chunk != 'string' && !state.objectMode &&
-        Object.getPrototypeOf(chunk) !== Buffer.prototype)
-      chunk = _uint8ArrayToBuffer(chunk);
+    typeof chunk == 'string' || state.objectMode ||
+      Object.getPrototypeOf(chunk) === Buffer.prototype ||
+      (chunk = _uint8ArrayToBuffer(chunk));
 
     if (addToFront)
       state.endEmitted
@@ -490,8 +490,8 @@ function addChunk(stream, state, chunk, addToFront) {
 
 function chunkInvalid(state, chunk) {
   var er;
-  if (!_isUint8Array(chunk) && typeof chunk != 'string' && chunk !== void 0 && !state.objectMode)
-    er = new TypeError('Invalid non-string/buffer chunk');
+  _isUint8Array(chunk) || typeof chunk == 'string' || chunk === void 0 || state.objectMode ||
+    (er = new TypeError('Invalid non-string/buffer chunk'));
 
   return er;
 }
@@ -506,7 +506,7 @@ Readable.prototype.isPaused = function () {
 };
 
 Readable.prototype.setEncoding = function (enc) {
-  StringDecoder || (StringDecoder = __webpack_require__(12).StringDecoder);
+  StringDecoder || (StringDecoder = __webpack_require__(11).StringDecoder);
   this._readableState.decoder = new StringDecoder(enc);
   this._readableState.encoding = enc;
   return this;
@@ -666,10 +666,9 @@ Readable.prototype.pipe = function (dest, pipeOpts) {
   state.pipesCount += 1;
   debug('pipe count=%d opts=%j', state.pipesCount, pipeOpts);
 
-  var doEnd =
-    (!pipeOpts || pipeOpts.end !== false) && dest !== process.stdout && dest !== process.stderr;
-
-  var endFn = doEnd ? onend : unpipe;
+  var endFn =
+    (!pipeOpts || pipeOpts.end !== false) && dest !== process.stdout && dest !== process.stderr
+      ? onend : unpipe;
   state.endEmitted ? pna.nextTick(endFn) : src.once('end', endFn);
 
   dest.on('unpipe', onunpipe);
@@ -1046,28 +1045,22 @@ function indexOf(xs, x) {
 // 6
 function (module) {
 
-module.exports = require('events');
+module.exports = require('events').EventEmitter;
 
 },
 // 7
-function (module, exports, __webpack_require__) {
-
-module.exports = __webpack_require__(6).EventEmitter;
-
-},
-// 8
 function (module) {
 
 module.exports = require('buffer');
 
 },
-// 9
+// 8
 function (module) {
 
 module.exports = require('util');
 
 },
-// 10
+// 9
 function (module, exports, __webpack_require__) {
 
 var pna = __webpack_require__(3);
@@ -1124,7 +1117,7 @@ function emitErrorNT(self, err) {
 module.exports = { destroy: destroy, undestroy: undestroy };
 
 },
-// 11
+// 10
 function (module, exports, __webpack_require__) {
 
 var pna = __webpack_require__(3);
@@ -1152,7 +1145,7 @@ util.inherits = __webpack_require__(0).inherits;
 
 var internalUtil = { deprecate: __webpack_require__(0).deprecate },
 
-  Stream = __webpack_require__(7),
+  Stream = __webpack_require__(6),
 
   Buffer = __webpack_require__(4).Buffer,
   OurUint8Array = global.Uint8Array || function () {};
@@ -1164,7 +1157,7 @@ function _isUint8Array(obj) {
 }
 
 var realHasInstance,
-  destroyImpl = __webpack_require__(10);
+  destroyImpl = __webpack_require__(9);
 
 util.inherits(Writable, Stream);
 
@@ -1308,9 +1301,8 @@ function validChunk(stream, state, chunk, cb) {
   var er =
     chunk === null
     ? new TypeError('May not write null values to stream')
-    : typeof chunk != 'string' && chunk !== void 0 && !state.objectMode
-    ? new TypeError('Invalid non-string/buffer chunk')
-    : false;
+    : typeof chunk != 'string' && chunk !== void 0 && !state.objectMode &&
+      new TypeError('Invalid non-string/buffer chunk');
 
   if (er) {
     stream.emit('error', er);
@@ -1616,8 +1608,9 @@ function onCorkedFinish(corkReq, state, err) {
     cb(err);
     entry = entry.next;
   }
-  if (state.corkedRequestsFree) state.corkedRequestsFree.next = corkReq;
-  else state.corkedRequestsFree = corkReq;
+  state.corkedRequestsFree
+    ? (state.corkedRequestsFree.next = corkReq)
+    : (state.corkedRequestsFree = corkReq);
 }
 
 Object.defineProperty(Writable.prototype, 'destroyed', {
@@ -1639,13 +1632,13 @@ Writable.prototype._destroy = function (err, cb) {
 };
 
 },
-// 12
+// 11
 function (module) {
 
 module.exports = require('../string_decoder');
 
 },
-// 13
+// 12
 function (module, exports, __webpack_require__) {
 
 module.exports = Transform;
@@ -1707,11 +1700,11 @@ function Transform(options) {
 function prefinish() {
   var _this = this;
 
-  if (typeof this._flush == 'function')
-    this._flush(function (er, data) {
-      done(_this, er, data);
-    });
-  else done(this, null, null);
+  typeof this._flush == 'function'
+    ? this._flush(function (er, data) {
+        done(_this, er, data);
+      })
+    : done(this, null, null);
 }
 
 Transform.prototype.push = function (chunk, encoding) {
@@ -1767,10 +1760,10 @@ function done(stream, er, data) {
 }
 
 },
-// 14
+// 13
 function (module, exports, __webpack_require__) {
 
-var Stream = __webpack_require__(15);
+var Stream = __webpack_require__(14);
 if (process.env.READABLE_STREAM === 'disable' && Stream) {
   module.exports = Stream;
   (exports = module.exports = Stream.Readable).Readable = Stream.Readable;
@@ -1782,20 +1775,20 @@ if (process.env.READABLE_STREAM === 'disable' && Stream) {
 } else {
   (exports = module.exports = __webpack_require__(5)).Stream = Stream || exports;
   exports.Readable = exports;
-  exports.Writable = __webpack_require__(11);
+  exports.Writable = __webpack_require__(10);
   exports.Duplex = __webpack_require__(1);
-  exports.Transform = __webpack_require__(13);
-  exports.PassThrough = __webpack_require__(18);
+  exports.Transform = __webpack_require__(12);
+  exports.PassThrough = __webpack_require__(17);
 }
 
 },
-// 15
+// 14
 function (module) {
 
 module.exports = require('stream');
 
 },
-// 16
+// 15
 function (module) {
 
 var toString = {}.toString;
@@ -1805,7 +1798,7 @@ module.exports = Array.isArray || function (arr) {
 };
 
 },
-// 17
+// 16
 function (module, exports, __webpack_require__) {
 
 function _classCallCheck(instance, Constructor) {
@@ -1813,7 +1806,7 @@ function _classCallCheck(instance, Constructor) {
 }
 
 var Buffer = __webpack_require__(4).Buffer,
-  util = __webpack_require__(9);
+  util = __webpack_require__(8);
 
 function copyBuffer(src, target, offset) {
   src.copy(target, offset);
@@ -1885,12 +1878,12 @@ if (util && util.inspect && util.inspect.custom)
   };
 
 },
-// 18
+// 17
 function (module, exports, __webpack_require__) {
 
 module.exports = PassThrough;
 
-var Transform = __webpack_require__(13),
+var Transform = __webpack_require__(12),
 
   util = Object.create(__webpack_require__(2));
 util.inherits = __webpack_require__(0).inherits;

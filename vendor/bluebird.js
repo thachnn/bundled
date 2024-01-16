@@ -15,6 +15,646 @@ module.exports = (function(modules) {
 
   return (__wpreq__.m = modules), (__wpreq__.c = installedModules), __wpreq__("./bluebird");
 })({
+"./util":
+function(module, exports, __wpreq__) {
+
+var tryCatchTarget,
+  es5 = __wpreq__("./es5"),
+  canEvaluate = typeof navigator == "undefined",
+
+  errorObj = {e: {}};
+var globalObject = typeof self != "undefined" ? self
+  : typeof window != "undefined" ? window
+  : typeof global != "undefined" ? global
+  : this !== void 0 ? this : null;
+
+function tryCatcher() {
+  try {
+    var target = tryCatchTarget;
+    tryCatchTarget = null;
+    return target.apply(this, arguments);
+  } catch (e) {
+    errorObj.e = e;
+    return errorObj;
+  }
+}
+function tryCatch(fn) {
+  tryCatchTarget = fn;
+  return tryCatcher;
+}
+
+var inherits = function(Child, Parent) {
+  var hasProp = {}.hasOwnProperty;
+
+  function T() {
+    this.constructor = Child;
+    this.constructor$ = Parent;
+    for (var propertyName in Parent.prototype)
+      hasProp.call(Parent.prototype, propertyName) &&
+        propertyName.charAt(propertyName.length - 1) !== "$" &&
+        (this[propertyName + "$"] = Parent.prototype[propertyName]);
+  }
+  T.prototype = Parent.prototype;
+  Child.prototype = new T();
+  return Child.prototype;
+};
+
+function isPrimitive(val) {
+  return val == null || val === true || val === false ||
+    typeof val == "string" || typeof val == "number";
+}
+
+function isObject(value) {
+  return typeof value == "function" || (typeof value == "object" && value !== null);
+}
+
+function maybeWrapAsError(maybeError) {
+  return !isPrimitive(maybeError) ? maybeError : new Error(safeToString(maybeError));
+}
+
+function withAppended(target, appendee) {
+  var len = target.length,
+    ret = new Array(len + 1);
+  for (var i = 0; i < len; ++i) ret[i] = target[i];
+
+  ret[i] = appendee;
+  return ret;
+}
+
+function getDataPropertyOrDefault(obj, key, defaultValue) {
+  if (!es5.isES5) return {}.hasOwnProperty.call(obj, key) ? obj[key] : void 0;
+
+  var desc = Object.getOwnPropertyDescriptor(obj, key);
+
+  if (desc != null) return desc.get == null && desc.set == null ? desc.value : defaultValue;
+}
+
+function notEnumerableProp(obj, name, value) {
+  if (isPrimitive(obj)) return obj;
+  var descriptor = {value: value, configurable: true, enumerable: false, writable: true};
+  es5.defineProperty(obj, name, descriptor);
+  return obj;
+}
+
+function thrower(r) {
+  throw r;
+}
+
+var inheritedDataKeys = (function() {
+  var excludedPrototypes = [Array.prototype, Object.prototype, Function.prototype];
+
+  var isExcludedProto = function(val) {
+    for (var i = 0; i < excludedPrototypes.length; ++i)
+      if (excludedPrototypes[i] === val) return true;
+
+    return false;
+  };
+
+  if (es5.isES5) {
+    var getKeys = Object.getOwnPropertyNames;
+    return function(obj) {
+      var ret = [];
+      for (var visitedKeys = Object.create(null); obj != null && !isExcludedProto(obj); ) {
+        var keys;
+        try {
+          keys = getKeys(obj);
+        } catch (_) {
+          return ret;
+        }
+        for (var i = 0; i < keys.length; ++i) {
+          var key = keys[i];
+          if (visitedKeys[key]) continue;
+          visitedKeys[key] = true;
+          var desc = Object.getOwnPropertyDescriptor(obj, key);
+          desc == null || desc.get != null || desc.set != null || ret.push(key);
+        }
+        obj = es5.getPrototypeOf(obj);
+      }
+      return ret;
+    };
+  }
+
+  var hasProp = {}.hasOwnProperty;
+  return function(obj) {
+    if (isExcludedProto(obj)) return [];
+    var ret = [];
+
+    enumeration: for (var key in obj)
+      if (hasProp.call(obj, key)) ret.push(key);
+      else {
+        for (var i = 0; i < excludedPrototypes.length; ++i)
+          if (hasProp.call(excludedPrototypes[i], key)) continue enumeration;
+
+        ret.push(key);
+      }
+
+    return ret;
+  };
+})();
+
+var thisAssignmentPattern = /this\s*\.\s*\S+\s*=/;
+function isClass(fn) {
+  try {
+    if (typeof fn != "function") return false;
+
+    var keys = es5.names(fn.prototype),
+
+      hasMethods = es5.isES5 && keys.length > 1,
+      hasMethodsOtherThanConstructor =
+        keys.length > 0 && (keys.length !== 1 || keys[0] !== "constructor"),
+      hasThisAssignmentAndStaticMethods =
+        thisAssignmentPattern.test(fn + "") && es5.names(fn).length > 0;
+
+    return !!(hasMethods || hasMethodsOtherThanConstructor || hasThisAssignmentAndStaticMethods);
+  } catch (_) {
+    return false;
+  }
+}
+
+function toFastProperties(obj) {
+  function FakeConstructor() {}
+  FakeConstructor.prototype = obj;
+  var receiver = new FakeConstructor();
+  function ic() {
+    return typeof receiver.foo;
+  }
+  ic();
+  ic();
+  return obj;
+  eval(obj);
+}
+
+var rident = /^[a-z$_][a-z$_0-9]*$/i;
+function isIdentifier(str) {
+  return rident.test(str);
+}
+
+function filledRange(count, prefix, suffix) {
+  var ret = new Array(count);
+  for (var i = 0; i < count; ++i) ret[i] = prefix + i + suffix;
+
+  return ret;
+}
+
+function safeToString(obj) {
+  try {
+    return obj + "";
+  } catch (_) {
+    return "[no string representation]";
+  }
+}
+
+function isError(obj) {
+  return obj instanceof Error ||
+    (obj !== null &&
+      typeof obj == "object" &&
+      typeof obj.message == "string" &&
+      typeof obj.name == "string");
+}
+
+function markAsOriginatingFromRejection(e) {
+  try {
+    notEnumerableProp(e, "isOperational", true);
+  } catch (_) {}
+}
+
+function originatesFromRejection(e) {
+  return e != null &&
+    (e instanceof Error.__BluebirdErrorTypes__.OperationalError || e.isOperational === true);
+}
+
+function canAttachTrace(obj) {
+  return isError(obj) && es5.propertyIsWritable(obj, "stack");
+}
+
+var ensureErrorObject = (function() {
+  return "stack" in new Error() ? function(value) {
+    return canAttachTrace(value) ? value : new Error(safeToString(value));
+  } : function(value) {
+    if (canAttachTrace(value)) return value;
+    try {
+      throw new Error(safeToString(value));
+    } catch (err) {
+      return err;
+    }
+  };
+})();
+
+function classString(obj) {
+  return {}.toString.call(obj);
+}
+
+function copyDescriptors(from, to, filter) {
+  for (var keys = es5.names(from), i = 0; i < keys.length; ++i) {
+    var key = keys[i];
+    if (filter(key))
+      try {
+        es5.defineProperty(to, key, es5.getDescriptor(from, key));
+      } catch (_) {}
+  }
+}
+
+var asArray = function(v) {
+  return es5.isArray(v) ? v : null;
+};
+
+if (typeof Symbol != "undefined" && Symbol.iterator) {
+  var ArrayFrom = typeof Array.from == "function" ? function(v) {
+    return Array.from(v);
+  } : function(v) {
+    var ret = [];
+    for (var itResult, it = v[Symbol.iterator](); !(itResult = it.next()).done; )
+      ret.push(itResult.value);
+
+    return ret;
+  };
+
+  asArray = function(v) {
+    return es5.isArray(v)
+      ? v
+      : v != null && typeof v[Symbol.iterator] == "function"
+      ? ArrayFrom(v)
+      : null;
+  };
+}
+
+var reflectHandler,
+  isNode =
+    typeof process != "undefined" && classString(process).toLowerCase() === "[object process]",
+
+  hasEnvVariables = typeof process != "undefined" && process.env !== void 0;
+
+function env(key) {
+  return hasEnvVariables ? process.env[key] : void 0;
+}
+
+function getNativePromise() {
+  if (typeof Promise == "function")
+    try {
+      if (classString(new Promise(function() {})) === "[object Promise]") return Promise;
+    } catch (_) {}
+}
+
+function contextBind(ctx, cb) {
+  if (ctx === null || typeof cb != "function" || cb === reflectHandler) return cb;
+
+  if (ctx.domain !== null) cb = ctx.domain.bind(cb);
+
+  var async = ctx.async;
+  if (async !== null) {
+    var old = cb;
+    cb = function() {
+      var args = [].slice.call(arguments);
+      args.unshift(old, this);
+      return async.runInAsyncScope.apply(async, args);
+    };
+  }
+  return cb;
+}
+
+var ret = {
+  setReflectHandler: function(fn) {
+    reflectHandler = fn;
+  },
+  isClass: isClass,
+  isIdentifier: isIdentifier,
+  inheritedDataKeys: inheritedDataKeys,
+  getDataPropertyOrDefault: getDataPropertyOrDefault,
+  thrower: thrower,
+  isArray: es5.isArray,
+  asArray: asArray,
+  notEnumerableProp: notEnumerableProp,
+  isPrimitive: isPrimitive,
+  isObject: isObject,
+  isError: isError,
+  canEvaluate: canEvaluate,
+  errorObj: errorObj,
+  tryCatch: tryCatch,
+  inherits: inherits,
+  withAppended: withAppended,
+  maybeWrapAsError: maybeWrapAsError,
+  toFastProperties: toFastProperties,
+  filledRange: filledRange,
+  toString: safeToString,
+  canAttachTrace: canAttachTrace,
+  ensureErrorObject: ensureErrorObject,
+  originatesFromRejection: originatesFromRejection,
+  markAsOriginatingFromRejection: markAsOriginatingFromRejection,
+  classString: classString,
+  copyDescriptors: copyDescriptors,
+  isNode: isNode,
+  hasEnvVariables: hasEnvVariables,
+  env: env,
+  global: globalObject,
+  getNativePromise: getNativePromise,
+  contextBind: contextBind
+};
+ret.isRecentNode = ret.isNode && (function() {
+  var version;
+  if (process.versions && process.versions.node)
+    version = process.versions.node.split(".").map(Number);
+  else if (process.version) version = process.version.slice(1).split(".").map(Number);
+
+  return version[0] > 0 || (version[0] === 0 && version[1] > 10);
+})();
+ret.nodeSupportsAsyncResource = ret.isNode && (function() {
+  var supportsAsync = false;
+  try {
+    supportsAsync =
+      typeof __wpreq__("async_hooks").AsyncResource.prototype.runInAsyncScope == "function";
+  } catch (_) {
+    supportsAsync = false;
+  }
+  return supportsAsync;
+})();
+
+ret.isNode && ret.toFastProperties(process);
+
+try {
+  throw new Error();
+} catch (e) {
+  ret.lastLineError = e;
+}
+module.exports = ret;
+
+},
+"./errors":
+function(module, exports, __wpreq__) {
+
+var _TypeError, _RangeError,
+  es5 = __wpreq__("./es5"),
+  Objectfreeze = es5.freeze,
+  util = __wpreq__("./util"),
+  inherits = util.inherits,
+  notEnumerableProp = util.notEnumerableProp;
+
+function subError(nameProperty, defaultMessage) {
+  function SubError(message) {
+    if (!(this instanceof SubError)) return new SubError(message);
+    notEnumerableProp(this, "message", typeof message == "string" ? message : defaultMessage);
+    notEnumerableProp(this, "name", nameProperty);
+    Error.captureStackTrace ? Error.captureStackTrace(this, this.constructor) : Error.call(this);
+  }
+  inherits(SubError, Error);
+  return SubError;
+}
+
+var Warning = subError("Warning", "warning"),
+  CancellationError = subError("CancellationError", "cancellation error"),
+  TimeoutError = subError("TimeoutError", "timeout error"),
+  AggregateError = subError("AggregateError", "aggregate error");
+try {
+  _TypeError = TypeError;
+  _RangeError = RangeError;
+} catch (_) {
+  _TypeError = subError("TypeError", "type error");
+  _RangeError = subError("RangeError", "range error");
+}
+
+var methods =
+  "join pop push shift unshift slice filter forEach some every map indexOf lastIndexOf reduce reduceRight sort reverse".split(" ");
+
+for (var i = 0; i < methods.length; ++i)
+  if (typeof Array.prototype[methods[i]] == "function")
+    AggregateError.prototype[methods[i]] = Array.prototype[methods[i]];
+
+es5.defineProperty(AggregateError.prototype, "length", {
+  value: 0,
+  configurable: false,
+  writable: true,
+  enumerable: true
+});
+AggregateError.prototype.isOperational = true;
+var level = 0;
+AggregateError.prototype.toString = function() {
+  var indent = Array(level * 4 + 1).join(" "),
+    ret = "\n" + indent + "AggregateError of:\n";
+  level++;
+  indent = Array(level * 4 + 1).join(" ");
+  for (var i = 0; i < this.length; ++i) {
+    var str = this[i] === this ? "[Circular AggregateError]" : this[i] + "",
+      lines = str.split("\n");
+    for (var j = 0; j < lines.length; ++j) lines[j] = indent + lines[j];
+
+    ret += (str = lines.join("\n")) + "\n";
+  }
+  level--;
+  return ret;
+};
+
+function OperationalError(message) {
+  if (!(this instanceof OperationalError)) return new OperationalError(message);
+  notEnumerableProp(this, "name", "OperationalError");
+  notEnumerableProp(this, "message", message);
+  this.cause = message;
+  this.isOperational = true;
+
+  if (message instanceof Error) {
+    notEnumerableProp(this, "message", message.message);
+    notEnumerableProp(this, "stack", message.stack);
+  } else Error.captureStackTrace && Error.captureStackTrace(this, this.constructor);
+}
+inherits(OperationalError, Error);
+
+var errorTypes = Error.__BluebirdErrorTypes__;
+if (!errorTypes) {
+  errorTypes = Objectfreeze({
+    CancellationError: CancellationError,
+    TimeoutError: TimeoutError,
+    OperationalError: OperationalError,
+    RejectionError: OperationalError,
+    AggregateError: AggregateError
+  });
+  es5.defineProperty(Error, "__BluebirdErrorTypes__", {
+    value: errorTypes,
+    writable: false,
+    enumerable: false,
+    configurable: false
+  });
+}
+
+module.exports = {
+  Error: Error,
+  TypeError: _TypeError,
+  RangeError: _RangeError,
+  CancellationError: errorTypes.CancellationError,
+  OperationalError: errorTypes.OperationalError,
+  TimeoutError: errorTypes.TimeoutError,
+  AggregateError: errorTypes.AggregateError,
+  Warning: Warning
+};
+
+},
+"./es5":
+function(module) {
+
+var isES5 = (function() {
+  return this === void 0;
+})();
+
+if (isES5)
+  module.exports = {
+    freeze: Object.freeze,
+    defineProperty: Object.defineProperty,
+    getDescriptor: Object.getOwnPropertyDescriptor,
+    keys: Object.keys,
+    names: Object.getOwnPropertyNames,
+    getPrototypeOf: Object.getPrototypeOf,
+    isArray: Array.isArray,
+    isES5: isES5,
+    propertyIsWritable: function(obj, prop) {
+      var descriptor = Object.getOwnPropertyDescriptor(obj, prop);
+      return !(descriptor && !descriptor.writable && !descriptor.set);
+    }
+  };
+else {
+  var has = {}.hasOwnProperty,
+    str = {}.toString,
+    proto = {}.constructor.prototype;
+
+  var ObjectKeys = function(o) {
+    var ret = [];
+    for (var key in o) has.call(o, key) && ret.push(key);
+
+    return ret;
+  };
+
+  var ObjectGetDescriptor = function(o, key) {
+    return {value: o[key]};
+  };
+
+  var ObjectDefineProperty = function(o, key, desc) {
+    o[key] = desc.value;
+    return o;
+  };
+
+  var ObjectFreeze = function(obj) {
+    return obj;
+  };
+
+  var ObjectGetPrototypeOf = function(obj) {
+    try {
+      return Object(obj).constructor.prototype;
+    } catch (_) {
+      return proto;
+    }
+  };
+
+  var ArrayIsArray = function(obj) {
+    try {
+      return str.call(obj) === "[object Array]";
+    } catch (_) {
+      return false;
+    }
+  };
+
+  module.exports = {
+    isArray: ArrayIsArray,
+    keys: ObjectKeys,
+    names: ObjectKeys,
+    defineProperty: ObjectDefineProperty,
+    getDescriptor: ObjectGetDescriptor,
+    freeze: ObjectFreeze,
+    getPrototypeOf: ObjectGetPrototypeOf,
+    isES5: isES5,
+    propertyIsWritable: function() {
+      return true;
+    }
+  };
+}
+
+},
+async_hooks:
+function(module) {
+
+module.exports = require("async_hooks");
+
+},
+"./catch_filter":
+function(module, exports, __wpreq__) {
+
+module.exports = function(NEXT_FILTER) {
+var util = __wpreq__("./util"),
+  getKeys = __wpreq__("./es5").keys,
+  tryCatch = util.tryCatch,
+  errorObj = util.errorObj;
+
+function catchFilter(instances, cb, promise) {
+  return function(e) {
+    var boundTo = promise._boundValue();
+    predicateLoop: for (var i = 0; i < instances.length; ++i) {
+      var item = instances[i];
+
+      if (item === Error || (item != null && item.prototype instanceof Error)) {
+        if (e instanceof item) return tryCatch(cb).call(boundTo, e);
+      } else if (typeof item == "function") {
+        var matchesPredicate = tryCatch(item).call(boundTo, e);
+        if (matchesPredicate === errorObj) return matchesPredicate;
+        if (matchesPredicate) return tryCatch(cb).call(boundTo, e);
+      } else if (util.isObject(e)) {
+        for (var keys = getKeys(item), j = 0; j < keys.length; ++j) {
+          var key = keys[j];
+          if (item[key] != e[key]) continue predicateLoop;
+        }
+        return tryCatch(cb).call(boundTo, e);
+      }
+    }
+    return NEXT_FILTER;
+  };
+}
+
+return catchFilter;
+};
+
+},
+"./nodeback":
+function(module, exports, __wpreq__) {
+
+var util = __wpreq__("./util"),
+  maybeWrapAsError = util.maybeWrapAsError,
+  OperationalError = __wpreq__("./errors").OperationalError,
+  es5 = __wpreq__("./es5");
+
+function isUntypedError(obj) {
+  return obj instanceof Error && es5.getPrototypeOf(obj) === Error.prototype;
+}
+
+var rErrorKey = /^(?:name|message|stack|cause)$/;
+function wrapAsOperationalError(obj) {
+  var ret;
+  if (isUntypedError(obj)) {
+    (ret = new OperationalError(obj)).name = obj.name;
+    ret.message = obj.message;
+    ret.stack = obj.stack;
+    for (var keys = es5.keys(obj), i = 0; i < keys.length; ++i) {
+      var key = keys[i];
+      rErrorKey.test(key) || (ret[key] = obj[key]);
+    }
+    return ret;
+  }
+  util.markAsOriginatingFromRejection(obj);
+  return obj;
+}
+
+function nodebackForPromise(promise, multiArgs) {
+  return function(err, value) {
+    if (promise === null) return;
+    if (err) {
+      var wrapped = wrapAsOperationalError(maybeWrapAsError(err));
+      promise._attachExtraTrace(wrapped);
+      promise._reject(wrapped);
+    } else if (!multiArgs) promise._fulfill(value);
+    else {
+      var args = [].slice.call(arguments, 1);
+      promise._fulfill(args);
+    }
+    promise = null;
+  };
+}
+
+module.exports = nodebackForPromise;
+
+},
 "./bluebird":
 function(module, exports, __wpreq__) {
 
@@ -95,15 +735,13 @@ var PromiseArray = __wpreq__("./promise_array")(
   Promise, INTERNAL, tryConvertToPromise, apiRejection, Proxyable
 );
 var Context = __wpreq__("./context")(Promise),
-  createContext = Context.create;
+  createContext = Context.create,
 
-var debug = __wpreq__("./debuggability")(
-  Promise, Context, enableAsyncHooks, disableAsyncHooks
-);
-var PassThroughHandlerContext = __wpreq__("./finally")(
-  Promise, tryConvertToPromise, NEXT_FILTER
-);
-var catchFilter = __wpreq__("./catch_filter")(NEXT_FILTER),
+  debug = __wpreq__("./debuggability")(Promise, Context, enableAsyncHooks, disableAsyncHooks),
+  PassThroughHandlerContext = __wpreq__("./finally")(
+    Promise, tryConvertToPromise, NEXT_FILTER
+  ),
+  catchFilter = __wpreq__("./catch_filter")(NEXT_FILTER),
   nodebackForPromise = __wpreq__("./nodeback"),
   errorObj = util.errorObj,
   tryCatch = util.tryCatch;
@@ -169,8 +807,7 @@ Promise.prototype.then = function(didFulfill, didReject) {
     typeof didFulfill != "function" &&
     typeof didReject != "function"
   ) {
-    var msg =
-      ".then() only accepts functions but was passed: " + util.classString(didFulfill);
+    var msg = ".then() only accepts functions but was passed: " + util.classString(didFulfill);
     if (arguments.length > 1) msg += ", " + util.classString(didReject);
 
     this._warn(msg);
@@ -634,9 +1271,7 @@ Promise.prototype._reject = function(reason) {
 
   if (this._isFinal()) return async.fatalError(reason, util.isNode);
 
-  (bitField & 65535) > 0
-    ? async.settlePromises(this)
-    : this._ensurePossibleRejectionHandled();
+  (bitField & 65535) > 0 ? async.settlePromises(this) : this._ensurePossibleRejectionHandled();
 };
 
 Promise.prototype._fulfillPromises = function(len, value) {
@@ -755,456 +1390,6 @@ debug.setBounds(Async.firstLineError, util.lastLineError);
 
 return Promise;
 };
-
-},
-"./util":
-function(module, exports, __wpreq__) {
-
-var tryCatchTarget,
-  es5 = __wpreq__("./es5"),
-  canEvaluate = typeof navigator == "undefined",
-
-  errorObj = {e: {}};
-var globalObject = typeof self != "undefined" ? self
-  : typeof window != "undefined" ? window
-  : typeof global != "undefined" ? global
-  : this !== void 0 ? this : null;
-
-function tryCatcher() {
-  try {
-    var target = tryCatchTarget;
-    tryCatchTarget = null;
-    return target.apply(this, arguments);
-  } catch (e) {
-    errorObj.e = e;
-    return errorObj;
-  }
-}
-function tryCatch(fn) {
-  tryCatchTarget = fn;
-  return tryCatcher;
-}
-
-var inherits = function(Child, Parent) {
-  var hasProp = {}.hasOwnProperty;
-
-  function T() {
-    this.constructor = Child;
-    this.constructor$ = Parent;
-    for (var propertyName in Parent.prototype)
-      hasProp.call(Parent.prototype, propertyName) &&
-        propertyName.charAt(propertyName.length - 1) !== "$" &&
-        (this[propertyName + "$"] = Parent.prototype[propertyName]);
-  }
-  T.prototype = Parent.prototype;
-  Child.prototype = new T();
-  return Child.prototype;
-};
-
-function isPrimitive(val) {
-  return val == null || val === true || val === false ||
-    typeof val == "string" || typeof val == "number";
-}
-
-function isObject(value) {
-  return typeof value == "function" || (typeof value == "object" && value !== null);
-}
-
-function maybeWrapAsError(maybeError) {
-  return !isPrimitive(maybeError) ? maybeError : new Error(safeToString(maybeError));
-}
-
-function withAppended(target, appendee) {
-  var len = target.length,
-    ret = new Array(len + 1);
-  for (var i = 0; i < len; ++i) ret[i] = target[i];
-
-  ret[i] = appendee;
-  return ret;
-}
-
-function getDataPropertyOrDefault(obj, key, defaultValue) {
-  if (!es5.isES5) return {}.hasOwnProperty.call(obj, key) ? obj[key] : void 0;
-
-  var desc = Object.getOwnPropertyDescriptor(obj, key);
-
-  if (desc != null) return desc.get == null && desc.set == null ? desc.value : defaultValue;
-}
-
-function notEnumerableProp(obj, name, value) {
-  if (isPrimitive(obj)) return obj;
-  var descriptor = {value: value, configurable: true, enumerable: false, writable: true};
-  es5.defineProperty(obj, name, descriptor);
-  return obj;
-}
-
-function thrower(r) {
-  throw r;
-}
-
-var inheritedDataKeys = (function() {
-  var excludedPrototypes = [Array.prototype, Object.prototype, Function.prototype];
-
-  var isExcludedProto = function(val) {
-    for (var i = 0; i < excludedPrototypes.length; ++i)
-      if (excludedPrototypes[i] === val) return true;
-
-    return false;
-  };
-
-  if (es5.isES5) {
-    var getKeys = Object.getOwnPropertyNames;
-    return function(obj) {
-      var ret = [];
-      for (var visitedKeys = Object.create(null); obj != null && !isExcludedProto(obj); ) {
-        var keys;
-        try {
-          keys = getKeys(obj);
-        } catch (_) {
-          return ret;
-        }
-        for (var i = 0; i < keys.length; ++i) {
-          var key = keys[i];
-          if (visitedKeys[key]) continue;
-          visitedKeys[key] = true;
-          var desc = Object.getOwnPropertyDescriptor(obj, key);
-          desc == null || desc.get != null || desc.set != null || ret.push(key);
-        }
-        obj = es5.getPrototypeOf(obj);
-      }
-      return ret;
-    };
-  }
-
-  var hasProp = {}.hasOwnProperty;
-  return function(obj) {
-    if (isExcludedProto(obj)) return [];
-    var ret = [];
-
-    enumeration: for (var key in obj)
-      if (hasProp.call(obj, key)) ret.push(key);
-      else {
-        for (var i = 0; i < excludedPrototypes.length; ++i)
-          if (hasProp.call(excludedPrototypes[i], key)) continue enumeration;
-
-        ret.push(key);
-      }
-
-    return ret;
-  };
-})();
-
-var thisAssignmentPattern = /this\s*\.\s*\S+\s*=/;
-function isClass(fn) {
-  try {
-    if (typeof fn != "function") return false;
-
-    var keys = es5.names(fn.prototype),
-
-      hasMethods = es5.isES5 && keys.length > 1,
-      hasMethodsOtherThanConstructor =
-        keys.length > 0 && (keys.length !== 1 || keys[0] !== "constructor"),
-      hasThisAssignmentAndStaticMethods =
-        thisAssignmentPattern.test(fn + "") && es5.names(fn).length > 0;
-
-    return !!(
-      hasMethods || hasMethodsOtherThanConstructor || hasThisAssignmentAndStaticMethods
-    );
-  } catch (_) {
-    return false;
-  }
-}
-
-function toFastProperties(obj) {
-  function FakeConstructor() {}
-  FakeConstructor.prototype = obj;
-  var receiver = new FakeConstructor();
-  function ic() {
-    return typeof receiver.foo;
-  }
-  ic();
-  ic();
-  return obj;
-  eval(obj);
-}
-
-var rident = /^[a-z$_][a-z$_0-9]*$/i;
-function isIdentifier(str) {
-  return rident.test(str);
-}
-
-function filledRange(count, prefix, suffix) {
-  var ret = new Array(count);
-  for (var i = 0; i < count; ++i) ret[i] = prefix + i + suffix;
-
-  return ret;
-}
-
-function safeToString(obj) {
-  try {
-    return obj + "";
-  } catch (_) {
-    return "[no string representation]";
-  }
-}
-
-function isError(obj) {
-  return obj instanceof Error ||
-    (obj !== null &&
-      typeof obj == "object" &&
-      typeof obj.message == "string" &&
-      typeof obj.name == "string");
-}
-
-function markAsOriginatingFromRejection(e) {
-  try {
-    notEnumerableProp(e, "isOperational", true);
-  } catch (_) {}
-}
-
-function originatesFromRejection(e) {
-  return e != null &&
-    (e instanceof Error.__BluebirdErrorTypes__.OperationalError || e.isOperational === true);
-}
-
-function canAttachTrace(obj) {
-  return isError(obj) && es5.propertyIsWritable(obj, "stack");
-}
-
-var ensureErrorObject = (function() {
-  return "stack" in new Error() ? function(value) {
-    return canAttachTrace(value) ? value : new Error(safeToString(value));
-  } : function(value) {
-    if (canAttachTrace(value)) return value;
-    try {
-      throw new Error(safeToString(value));
-    } catch (err) {
-      return err;
-    }
-  };
-})();
-
-function classString(obj) {
-  return {}.toString.call(obj);
-}
-
-function copyDescriptors(from, to, filter) {
-  for (var keys = es5.names(from), i = 0; i < keys.length; ++i) {
-    var key = keys[i];
-    if (filter(key))
-      try {
-        es5.defineProperty(to, key, es5.getDescriptor(from, key));
-      } catch (_) {}
-  }
-}
-
-var asArray = function(v) {
-  return es5.isArray(v) ? v : null;
-};
-
-if (typeof Symbol != "undefined" && Symbol.iterator) {
-  var ArrayFrom = typeof Array.from == "function" ? function(v) {
-    return Array.from(v);
-  } : function(v) {
-    var ret = [];
-    for (var itResult, it = v[Symbol.iterator](); !(itResult = it.next()).done; )
-      ret.push(itResult.value);
-
-    return ret;
-  };
-
-  asArray = function(v) {
-    return es5.isArray(v)
-      ? v
-      : v != null && typeof v[Symbol.iterator] == "function"
-      ? ArrayFrom(v)
-      : null;
-  };
-}
-
-var reflectHandler,
-  isNode =
-    typeof process != "undefined" && classString(process).toLowerCase() === "[object process]",
-
-  hasEnvVariables = typeof process != "undefined" && process.env !== void 0;
-
-function env(key) {
-  return hasEnvVariables ? process.env[key] : void 0;
-}
-
-function getNativePromise() {
-  if (typeof Promise == "function")
-    try {
-      if (classString(new Promise(function() {})) === "[object Promise]") return Promise;
-    } catch (_) {}
-}
-
-function contextBind(ctx, cb) {
-  if (ctx === null || typeof cb != "function" || cb === reflectHandler) return cb;
-
-  if (ctx.domain !== null) cb = ctx.domain.bind(cb);
-
-  var async = ctx.async;
-  if (async !== null) {
-    var old = cb;
-    cb = function() {
-      var args = [].slice.call(arguments);
-      args.unshift(old, this);
-      return async.runInAsyncScope.apply(async, args);
-    };
-  }
-  return cb;
-}
-
-var ret = {
-  setReflectHandler: function(fn) {
-    reflectHandler = fn;
-  },
-  isClass: isClass,
-  isIdentifier: isIdentifier,
-  inheritedDataKeys: inheritedDataKeys,
-  getDataPropertyOrDefault: getDataPropertyOrDefault,
-  thrower: thrower,
-  isArray: es5.isArray,
-  asArray: asArray,
-  notEnumerableProp: notEnumerableProp,
-  isPrimitive: isPrimitive,
-  isObject: isObject,
-  isError: isError,
-  canEvaluate: canEvaluate,
-  errorObj: errorObj,
-  tryCatch: tryCatch,
-  inherits: inherits,
-  withAppended: withAppended,
-  maybeWrapAsError: maybeWrapAsError,
-  toFastProperties: toFastProperties,
-  filledRange: filledRange,
-  toString: safeToString,
-  canAttachTrace: canAttachTrace,
-  ensureErrorObject: ensureErrorObject,
-  originatesFromRejection: originatesFromRejection,
-  markAsOriginatingFromRejection: markAsOriginatingFromRejection,
-  classString: classString,
-  copyDescriptors: copyDescriptors,
-  isNode: isNode,
-  hasEnvVariables: hasEnvVariables,
-  env: env,
-  global: globalObject,
-  getNativePromise: getNativePromise,
-  contextBind: contextBind
-};
-ret.isRecentNode = ret.isNode && (function() {
-  var version;
-  if (process.versions && process.versions.node)
-    version = process.versions.node.split(".").map(Number);
-  else if (process.version) version = process.version.slice(1).split(".").map(Number);
-
-  return version[0] > 0 || (version[0] === 0 && version[1] > 10);
-})();
-ret.nodeSupportsAsyncResource = ret.isNode && (function() {
-  var supportsAsync = false;
-  try {
-    supportsAsync =
-      typeof __wpreq__("async_hooks").AsyncResource.prototype.runInAsyncScope == "function";
-  } catch (_) {
-    supportsAsync = false;
-  }
-  return supportsAsync;
-})();
-
-ret.isNode && ret.toFastProperties(process);
-
-try {
-  throw new Error();
-} catch (e) {
-  ret.lastLineError = e;
-}
-module.exports = ret;
-
-},
-"./es5":
-function(module) {
-
-var isES5 = (function() {
-  return this === void 0;
-})();
-
-if (isES5)
-  module.exports = {
-    freeze: Object.freeze,
-    defineProperty: Object.defineProperty,
-    getDescriptor: Object.getOwnPropertyDescriptor,
-    keys: Object.keys,
-    names: Object.getOwnPropertyNames,
-    getPrototypeOf: Object.getPrototypeOf,
-    isArray: Array.isArray,
-    isES5: isES5,
-    propertyIsWritable: function(obj, prop) {
-      var descriptor = Object.getOwnPropertyDescriptor(obj, prop);
-      return !(descriptor && !descriptor.writable && !descriptor.set);
-    }
-  };
-else {
-  var has = {}.hasOwnProperty,
-    str = {}.toString,
-    proto = {}.constructor.prototype;
-
-  var ObjectKeys = function(o) {
-    var ret = [];
-    for (var key in o) has.call(o, key) && ret.push(key);
-
-    return ret;
-  };
-
-  var ObjectGetDescriptor = function(o, key) {
-    return {value: o[key]};
-  };
-
-  var ObjectDefineProperty = function(o, key, desc) {
-    o[key] = desc.value;
-    return o;
-  };
-
-  var ObjectFreeze = function(obj) {
-    return obj;
-  };
-
-  var ObjectGetPrototypeOf = function(obj) {
-    try {
-      return Object(obj).constructor.prototype;
-    } catch (_) {
-      return proto;
-    }
-  };
-
-  var ArrayIsArray = function(obj) {
-    try {
-      return str.call(obj) === "[object Array]";
-    } catch (_) {
-      return false;
-    }
-  };
-
-  module.exports = {
-    isArray: ArrayIsArray,
-    keys: ObjectKeys,
-    names: ObjectKeys,
-    defineProperty: ObjectDefineProperty,
-    getDescriptor: ObjectGetDescriptor,
-    freeze: ObjectFreeze,
-    getPrototypeOf: ObjectGetPrototypeOf,
-    isES5: isES5,
-    propertyIsWritable: function() {
-      return true;
-    }
-  };
-}
-
-},
-async_hooks:
-function(module) {
-
-module.exports = require("async_hooks");
 
 },
 "./async":
@@ -1332,11 +1517,11 @@ module.exports.firstLineError = firstLineError;
 function(module, exports, __wpreq__) {
 
 var schedule,
-  util = __wpreq__("./util");
-var noAsyncScheduler = function() {
-  throw new Error("No async scheduler available\n\n    See http://goo.gl/MqrFmX\n");
-};
-var NativePromise = util.getNativePromise();
+  util = __wpreq__("./util"),
+  noAsyncScheduler = function() {
+    throw new Error("No async scheduler available\n\n    See http://goo.gl/MqrFmX\n");
+  },
+  NativePromise = util.getNativePromise();
 if (util.isNode && typeof MutationObserver == "undefined") {
   var GlobalSetImmediate = global.setImmediate,
     ProcessNextTick = process.nextTick;
@@ -1351,8 +1536,8 @@ if (util.isNode && typeof MutationObserver == "undefined") {
 } else if (
   typeof MutationObserver != "undefined" &&
   !(typeof window != "undefined" &&
-  window.navigator &&
-  (window.navigator.standalone || window.cordova)) &&
+    window.navigator &&
+    (window.navigator.standalone || window.cordova)) &&
   "classList" in document.documentElement
 )
   schedule = (function() {
@@ -1463,115 +1648,6 @@ Queue.prototype._resizeTo = function(capacity) {
 };
 
 module.exports = Queue;
-
-},
-"./errors":
-function(module, exports, __wpreq__) {
-
-var _TypeError, _RangeError,
-  es5 = __wpreq__("./es5"),
-  Objectfreeze = es5.freeze,
-  util = __wpreq__("./util"),
-  inherits = util.inherits,
-  notEnumerableProp = util.notEnumerableProp;
-
-function subError(nameProperty, defaultMessage) {
-  function SubError(message) {
-    if (!(this instanceof SubError)) return new SubError(message);
-    notEnumerableProp(this, "message", typeof message == "string" ? message : defaultMessage);
-    notEnumerableProp(this, "name", nameProperty);
-    Error.captureStackTrace
-      ? Error.captureStackTrace(this, this.constructor)
-      : Error.call(this);
-  }
-  inherits(SubError, Error);
-  return SubError;
-}
-
-var Warning = subError("Warning", "warning"),
-  CancellationError = subError("CancellationError", "cancellation error"),
-  TimeoutError = subError("TimeoutError", "timeout error"),
-  AggregateError = subError("AggregateError", "aggregate error");
-try {
-  _TypeError = TypeError;
-  _RangeError = RangeError;
-} catch (_) {
-  _TypeError = subError("TypeError", "type error");
-  _RangeError = subError("RangeError", "range error");
-}
-
-var methods =
-  "join pop push shift unshift slice filter forEach some every map indexOf lastIndexOf reduce reduceRight sort reverse".split(" ");
-
-for (var i = 0; i < methods.length; ++i)
-  if (typeof Array.prototype[methods[i]] == "function")
-    AggregateError.prototype[methods[i]] = Array.prototype[methods[i]];
-
-es5.defineProperty(AggregateError.prototype, "length", {
-  value: 0,
-  configurable: false,
-  writable: true,
-  enumerable: true
-});
-AggregateError.prototype.isOperational = true;
-var level = 0;
-AggregateError.prototype.toString = function() {
-  var indent = Array(level * 4 + 1).join(" "),
-    ret = "\n" + indent + "AggregateError of:\n";
-  level++;
-  indent = Array(level * 4 + 1).join(" ");
-  for (var i = 0; i < this.length; ++i) {
-    var str = this[i] === this ? "[Circular AggregateError]" : this[i] + "",
-      lines = str.split("\n");
-    for (var j = 0; j < lines.length; ++j) lines[j] = indent + lines[j];
-
-    ret += (str = lines.join("\n")) + "\n";
-  }
-  level--;
-  return ret;
-};
-
-function OperationalError(message) {
-  if (!(this instanceof OperationalError)) return new OperationalError(message);
-  notEnumerableProp(this, "name", "OperationalError");
-  notEnumerableProp(this, "message", message);
-  this.cause = message;
-  this.isOperational = true;
-
-  if (message instanceof Error) {
-    notEnumerableProp(this, "message", message.message);
-    notEnumerableProp(this, "stack", message.stack);
-  } else Error.captureStackTrace && Error.captureStackTrace(this, this.constructor);
-}
-inherits(OperationalError, Error);
-
-var errorTypes = Error.__BluebirdErrorTypes__;
-if (!errorTypes) {
-  errorTypes = Objectfreeze({
-    CancellationError: CancellationError,
-    TimeoutError: TimeoutError,
-    OperationalError: OperationalError,
-    RejectionError: OperationalError,
-    AggregateError: AggregateError
-  });
-  es5.defineProperty(Error, "__BluebirdErrorTypes__", {
-    value: errorTypes,
-    writable: false,
-    enumerable: false,
-    configurable: false
-  });
-}
-
-module.exports = {
-  Error: Error,
-  TypeError: _TypeError,
-  RangeError: _RangeError,
-  CancellationError: errorTypes.CancellationError,
-  OperationalError: errorTypes.OperationalError,
-  TimeoutError: errorTypes.TimeoutError,
-  AggregateError: errorTypes.AggregateError,
-  Warning: Warning
-};
 
 },
 "./thenables":
@@ -1799,8 +1875,8 @@ PromiseArray.prototype._resultCancelled = function() {
   var values = this._values;
   this._cancel();
   if (values instanceof Promise) values.cancel();
-  else for (var i = 0; i < values.length; ++i)
-      values[i] instanceof Promise && values[i].cancel();
+  else
+    for (var i = 0; i < values.length; ++i) values[i] instanceof Promise && values[i].cancel();
 };
 
 PromiseArray.prototype.shouldCopyValues = function() {
@@ -2106,8 +2182,9 @@ var fireDomEvent = (function() {
       };
     }
 
-    event = document.createEvent("CustomEvent");
-    event.initCustomEvent("testingtheevent", false, true, {});
+    (event = document.createEvent("CustomEvent")).initCustomEvent(
+      "testingtheevent", false, true, {}
+    );
     util.global.dispatchEvent(event);
     return function(name, event) {
       name = name.toLowerCase();
@@ -2890,91 +2967,6 @@ return PassThroughHandlerContext;
 };
 
 },
-"./catch_filter":
-function(module, exports, __wpreq__) {
-
-module.exports = function(NEXT_FILTER) {
-var util = __wpreq__("./util"),
-  getKeys = __wpreq__("./es5").keys,
-  tryCatch = util.tryCatch,
-  errorObj = util.errorObj;
-
-function catchFilter(instances, cb, promise) {
-  return function(e) {
-    var boundTo = promise._boundValue();
-    predicateLoop: for (var i = 0; i < instances.length; ++i) {
-      var item = instances[i];
-
-      if (item === Error || (item != null && item.prototype instanceof Error)) {
-        if (e instanceof item) return tryCatch(cb).call(boundTo, e);
-      } else if (typeof item == "function") {
-        var matchesPredicate = tryCatch(item).call(boundTo, e);
-        if (matchesPredicate === errorObj) return matchesPredicate;
-        if (matchesPredicate) return tryCatch(cb).call(boundTo, e);
-      } else if (util.isObject(e)) {
-        for (var keys = getKeys(item), j = 0; j < keys.length; ++j) {
-          var key = keys[j];
-          if (item[key] != e[key]) continue predicateLoop;
-        }
-        return tryCatch(cb).call(boundTo, e);
-      }
-    }
-    return NEXT_FILTER;
-  };
-}
-
-return catchFilter;
-};
-
-},
-"./nodeback":
-function(module, exports, __wpreq__) {
-
-var util = __wpreq__("./util"),
-  maybeWrapAsError = util.maybeWrapAsError,
-  OperationalError = __wpreq__("./errors").OperationalError,
-  es5 = __wpreq__("./es5");
-
-function isUntypedError(obj) {
-  return obj instanceof Error && es5.getPrototypeOf(obj) === Error.prototype;
-}
-
-var rErrorKey = /^(?:name|message|stack|cause)$/;
-function wrapAsOperationalError(obj) {
-  var ret;
-  if (isUntypedError(obj)) {
-    (ret = new OperationalError(obj)).name = obj.name;
-    ret.message = obj.message;
-    ret.stack = obj.stack;
-    for (var keys = es5.keys(obj), i = 0; i < keys.length; ++i) {
-      var key = keys[i];
-      rErrorKey.test(key) || (ret[key] = obj[key]);
-    }
-    return ret;
-  }
-  util.markAsOriginatingFromRejection(obj);
-  return obj;
-}
-
-function nodebackForPromise(promise, multiArgs) {
-  return function(err, value) {
-    if (promise === null) return;
-    if (err) {
-      var wrapped = wrapAsOperationalError(maybeWrapAsError(err));
-      promise._attachExtraTrace(wrapped);
-      promise._reject(wrapped);
-    } else if (!multiArgs) promise._fulfill(value);
-    else {
-      var args = [].slice.call(arguments, 1);
-      promise._fulfill(args);
-    }
-    promise = null;
-  };
-}
-
-module.exports = nodebackForPromise;
-
-},
 "./method":
 function(module, exports, __wpreq__) {
 
@@ -3709,18 +3701,18 @@ PromiseSpawn.prototype._continue = function(result) {
   }
 
   var maybePromise = tryConvertToPromise(value, this._promise);
-  if (!(maybePromise instanceof Promise)) {
-    maybePromise = promiseFromYieldHandler(maybePromise, this._yieldHandlers, this._promise);
-    if (maybePromise === null) {
-      this._promiseRejected(
-        new TypeError(
-          "A value %s was yielded that could not be treated as a promise\n\n    See http://goo.gl/MqrFmX\n\n".replace("%s", String(value)) +
-          "From coroutine:\n" +
-          this._stack.split("\n").slice(1, -7).join("\n")
-        )
-      );
-      return;
-    }
+  if (
+    !(maybePromise instanceof Promise) &&
+    (maybePromise = promiseFromYieldHandler(maybePromise, this._yieldHandlers, this._promise)) === null
+  ) {
+    this._promiseRejected(
+      new TypeError(
+        "A value %s was yielded that could not be treated as a promise\n\n    See http://goo.gl/MqrFmX\n\n".replace("%s", String(value)) +
+        "From coroutine:\n" +
+        this._stack.split("\n").slice(1, -7).join("\n")
+      )
+    );
+    return;
   }
   var bitField = (maybePromise = maybePromise._target())._bitField;
 
@@ -4123,11 +4115,10 @@ var makeNodePromisifiedEval = function(callback, receiver, originalName, fn, _, 
   var body =
     "'use strict';\n var ret = function (Parameters) {\n 'use strict';\n var len = arguments.length;\n var promise = new Promise(INTERNAL);\n promise._captureStackTrace();\n var nodeback = nodebackForPromise(promise, " +
     multiArgs +
-    ");\n var ret;\n var callback = tryCatch([GetFunctionCode]);\n switch(len) {\n [CodeForSwitchCase]\n }\n if (ret === errorObj) {\n promise._rejectCallback(maybeWrapAsError(ret.e), true, true);\n }\n if (!promise._isFateSealed()) promise._setAsyncGuaranteed();\n return promise;\n };\n notEnumerableProp(ret, '__isPromisified__', true);\n return ret;\n ";
-  body = body
-    .replace("[CodeForSwitchCase]", generateArgumentSwitchCase())
-    .replace("[GetFunctionCode]", getFunctionCode)
-    .replace("Parameters", parameterDeclaration(newParameterCount));
+    ");\n var ret;\n var callback = tryCatch([GetFunctionCode]);\n switch(len) {\n [CodeForSwitchCase]\n }\n if (ret === errorObj) {\n promise._rejectCallback(maybeWrapAsError(ret.e), true, true);\n }\n if (!promise._isFateSealed()) promise._setAsyncGuaranteed();\n return promise;\n };\n notEnumerableProp(ret, '__isPromisified__', true);\n return ret;\n "
+      .replace("[CodeForSwitchCase]", generateArgumentSwitchCase())
+      .replace("[GetFunctionCode]", getFunctionCode);
+  body = body.replace("Parameters", parameterDeclaration(newParameterCount));
   return new Function(
     "Promise",
     "fn",
@@ -4212,8 +4203,11 @@ Promise.promisify = function(fn, options) {
 
   if (isPromisified(fn)) return fn;
 
-  var receiver = (options = Object(options)).context === void 0 ? THIS : options.context,
-    ret = promisify(fn, receiver, !!options.multiArgs);
+  var ret = promisify(
+    fn,
+    (options = Object(options)).context === void 0 ? THIS : options.context,
+    !!options.multiArgs
+  );
   util.copyDescriptors(fn, ret, propsFilter);
   return ret;
 };

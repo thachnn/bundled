@@ -193,10 +193,10 @@ class EndError extends Error {
   }
 }
 
-const testElement = (el, tester) => Promise.resolve(el).then(tester);
+const testElement = (el, tester) => Promise.resolve(el).then(tester),
 
-const finder = el =>
-  Promise.all(el).then(val => val[1] === true && Promise.reject(new EndError(val[0])));
+  finder = el =>
+    Promise.all(el).then(val => val[1] === true && Promise.reject(new EndError(val[0])));
 
 module.exports = (iterable, tester, opts) => {
   opts = Object.assign({concurrency: Infinity, preserveOrder: true}, opts);
@@ -287,10 +287,10 @@ const fs = __webpack_require__(1),
   path = __webpack_require__(0),
   pify = __webpack_require__(12);
 
-const defaults = {mode: 0o777 & ~process.umask(), fs};
+const defaults = {mode: 0o777 & ~process.umask(), fs},
 
-const useNativeRecursiveOption =
-  /^\s*v?(10\.(1[2-9]|[2-9]\d|\d{3,})|1[1-9]|[2-9]\d|\d{3,})\./.test(process.version); // >=10.12.0
+  useNativeRecursiveOption = // >=10.12.0
+    /^\s*v?(10\.(1[2-9]|[2-9]\d|\d{3,})|1[1-9]|[2-9]\d|\d{3,})\./.test(process.version);
 
 const checkPath = pth => {
   if (process.platform === 'win32' && /[<>:"|?*]/.test(pth.replace(path.parse(pth).root, ''))) {
@@ -395,9 +395,7 @@ module.exports.sync = (input, options) => {
 function (module) {
 
 const processFn = (fn, options) => function (...args) {
-  const P = options.promiseModule;
-
-  return new P((resolve, reject) => {
+  return new (0, options.promiseModule)((resolve, reject) => {
     if (options.multiArgs)
       args.push((...result) => {
         if (options.errorFirst)
@@ -426,7 +424,7 @@ module.exports = (input, options) => {
   }, options);
 
   const objType = typeof input;
-  if (input === null || (objType != 'object' && objType != 'function'))
+  if (input === null || (objType !== 'object' && objType !== 'function'))
     throw new TypeError(
       `Expected \`input\` to be a \`Function\` or \`Object\`, got \`${input === null ? 'null' : objType}\``
     );
@@ -436,7 +434,8 @@ module.exports = (input, options) => {
     return options.include ? options.include.some(match) : !options.exclude.some(match);
   };
 
-  let ret = objType == 'function'
+  let ret =
+    objType === 'function'
     ? function (...args) {
         return options.excludeMain ? input(...args) : processFn(input, options).apply(this, args);
       }

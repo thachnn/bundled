@@ -32,11 +32,10 @@ exports.resolve = function() {
     resolvedAbsolute = path.charAt(0) === '/';
   }
 
-  resolvedPath = normalizeArray(filter(resolvedPath.split('/'), function(p) {
-    return !!p;
-  }), !resolvedAbsolute).join('/');
-
-  return (resolvedAbsolute ? '/' : '') + resolvedPath || '.';
+  return (resolvedAbsolute ? '/' : '') +
+    normalizeArray(filter(resolvedPath.split('/'), function(p) {
+      return !!p;
+    }), !resolvedAbsolute).join('/') || '.';
 };
 
 exports.normalize = function(path) {

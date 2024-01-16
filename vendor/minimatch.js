@@ -391,7 +391,7 @@ function parse(pattern, isSub) {
         var cs = pattern.substring(classStart + 1, i)
         try {
           RegExp('[' + cs + ']')
-        } catch (_) {
+        } catch (_er) {
           var sp = this.parse(cs, SUBPARSE)
           re = re.substr(0, reClassStart) + '\\[' + sp[0] + '\\]'
           hasMagic = hasMagic || sp[1]
@@ -797,7 +797,7 @@ function expand(str, isTop) {
       }
       N.push(c);
     }
-  } else N = concatMap(n, function (el) { return expand(el, false) });
+  } else N = concatMap(n, function (el) { return expand(el, false); });
 
   for (var j = 0; j < N.length; j++)
     for (var k = 0; k < post.length; k++) {

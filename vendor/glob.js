@@ -794,18 +794,16 @@ function finish(self) {
 
   for (var i = 0, l = self.matches.length; i < l; i++) {
     var matches = self.matches[i]
-    if (!matches || Object.keys(matches).length === 0) {
-      if (self.nonull) {
-        var literal = self.minimatch.globSet[i]
-        nou ? all.push(literal) : (all[literal] = true)
-      }
-    } else {
+    if (matches && Object.keys(matches).length !== 0) {
       var m = Object.keys(matches)
       nou
         ? all.push.apply(all, m)
         : m.forEach(function (m) {
             all[m] = true
           })
+    } else if (self.nonull) {
+      var literal = self.minimatch.globSet[i]
+      nou ? all.push(literal) : (all[literal] = true)
     }
   }
 
@@ -841,7 +839,8 @@ function mark(self, p) {
     var isDir = c === 'DIR' || Array.isArray(c),
       slash = p.slice(-1) === '/'
 
-    isDir && !slash ? (m += '/') : isDir || !slash || (m = m.slice(0, -1))
+    if (isDir && !slash) m += '/'
+    else if (!isDir && slash) m = m.slice(0, -1)
 
     if (m !== p) {
       var mabs = makeAbs(self, m)
@@ -967,7 +966,7 @@ var pathModule = __webpack_require__(0),
   isWindows = process.platform === 'win32',
   fs = __webpack_require__(1),
 
-  DEBUG = process.env.NODE_DEBUG && /\bfs\b/.test(process.env.NODE_DEBUG);
+  DEBUG = process.env.NODE_DEBUG && /fs\b/.test(process.env.NODE_DEBUG);
 
 function rethrow() {
   var callback;
@@ -1310,7 +1309,7 @@ GlobSync.prototype._processReaddir = function (prefix, read, abs, remain, index,
       var e = matchedEntries[i]
       if (prefix) e = prefix.slice(-1) !== '/' ? prefix + '/' + e : prefix + e
 
-      if (e.charAt(0) === '/' && !this.nomount) e = path.join(this.root, e)
+      e.charAt(0) !== '/' || this.nomount || (e = path.join(this.root, e))
 
       this._emitMatch(index, e)
     }
@@ -1517,7 +1516,7 @@ GlobSync.prototype._stat = function (f) {
 
   this.cache[abs] = this.cache[abs] || c
 
-  return !(needDir && c === 'FILE') && c
+  return (!needDir || c !== 'FILE') && c
 }
 
 GlobSync.prototype._mark = function (p) {
@@ -1567,10 +1566,9 @@ function makeres(key) {
 }
 
 function slice(args) {
-  var length = args.length,
-    array = []
+  var array = []
 
-  for (var i = 0; i < length; i++) array[i] = args[i]
+  for (var length = args.length, i = 0; i < length; i++) array[i] = args[i]
   return array
 }
 

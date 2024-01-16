@@ -1,7 +1,6 @@
 var getOwnPropertyDescriptors = Object.getOwnPropertyDescriptors || function(obj) {
-  var keys = Object.keys(obj),
-    descriptors = {};
-  for (var i = 0; i < keys.length; i++)
+  var descriptors = {};
+  for (var keys = Object.keys(obj), i = 0; i < keys.length; i++)
     descriptors[keys[i]] = Object.getOwnPropertyDescriptor(obj, keys[i]);
 
   return descriptors;
@@ -138,7 +137,7 @@ function stylizeNoColor(str, styleType) {
 function arrayToHash(array) {
   var hash = {};
 
-  array.forEach(function(val) {
+  array.forEach(function(val, _idx) {
     hash[val] = true;
   });
 
@@ -259,8 +258,7 @@ function formatArray(ctx, value, recurseTimes, visibleKeys, keys) {
 
 function formatProperty(ctx, value, recurseTimes, visibleKeys, key, array) {
   var name, str, desc;
-  desc = Object.getOwnPropertyDescriptor(value, key) || { value: value[key] };
-  if (desc.get)
+  if ((desc = Object.getOwnPropertyDescriptor(value, key) || { value: value[key] }).get)
     str = desc.set
       ? ctx.stylize('[Getter/Setter]', 'special')
       : ctx.stylize('[Getter]', 'special');
@@ -274,7 +272,7 @@ function formatProperty(ctx, value, recurseTimes, visibleKeys, key, array) {
         ? formatValue(ctx, desc.value, null)
         : formatValue(ctx, desc.value, recurseTimes - 1);
 
-      if (str.indexOf('\n') >= 0)
+      if (str.indexOf('\n') > -1)
         str = array
           ? str.split('\n').map(function(line) {
               return '  ' + line;
@@ -301,13 +299,12 @@ function formatProperty(ctx, value, recurseTimes, visibleKeys, key, array) {
 
 function reduceToSingleString(output, base, braces) {
   var numLinesEst = 0; // unused
-  var length = output.reduce(function(prev, cur) {
+
+  return output.reduce(function(prev, cur) {
     numLinesEst++;
     cur.indexOf('\n') < 0 || numLinesEst++;
     return prev + cur.replace(/\u001b\[\d\d?m/g, '').length + 1;
-  }, 0);
-
-  return length > 60
+  }, 0) > 60
     ? braces[0] +
       (base === '' ? '' : base + '\n ') +
       ' ' +
@@ -423,7 +420,7 @@ exports.log = function() {
 try {
   exports.inherits = require('util').inherits;
   if (typeof exports.inherits != 'function') throw '';
-} catch (_) {
+} catch (_e) {
   exports.inherits = typeof Object.create == 'function' ? function(ctor, superCtor) {
     ctor.super_ = superCtor;
     ctor.prototype = Object.create(superCtor.prototype, {

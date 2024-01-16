@@ -390,11 +390,11 @@ const {
   CHAR_RIGHT_SQUARE_BRACKET
 } = __webpack_require__(0);
 
-const isPathSeparator = code => code === CHAR_FORWARD_SLASH || code === CHAR_BACKWARD_SLASH;
+const isPathSeparator = code => code === CHAR_FORWARD_SLASH || code === CHAR_BACKWARD_SLASH,
 
-const depth = token => {
-  if (token.isPrefix !== true) token.depth = token.isGlobstar ? Infinity : 1;
-};
+  depth = token => {
+    if (token.isPrefix !== true) token.depth = token.isGlobstar ? Infinity : 1;
+  };
 
 const scan = (input, options) => {
   const opts = options || {},
@@ -723,7 +723,7 @@ const expandRange = (args, options) => {
 
   try {
     new RegExp(value);
-  } catch (_) {
+  } catch (_ex) {
     return args.map(v => utils.escapeRegex(v)).join('..');
   }
 
@@ -770,9 +770,9 @@ const parse = (input, options) => {
   } = PLATFORM_CHARS;
 
   const globstar = opts =>
-    `(${capture}(?:(?!${START_ANCHOR}${opts.dot ? DOTS_SLASH : DOT_LITERAL}).)*?)`;
+      `(${capture}(?:(?!${START_ANCHOR}${opts.dot ? DOTS_SLASH : DOT_LITERAL}).)*?)`,
 
-  const nodot = opts.dot ? '' : NO_DOT,
+    nodot = opts.dot ? '' : NO_DOT,
     qmarkNoDot = opts.dot ? QMARK : QMARK_NO_DOT;
   let star = opts.bash === true ? globstar(opts) : STAR;
 

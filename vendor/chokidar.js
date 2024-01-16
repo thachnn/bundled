@@ -283,7 +283,7 @@ var strictCheck = function(str) {
 
       if (close) {
         var n = str.indexOf(close, index);
-        if (n >= 0) index = n + 1;
+        if (n > -1) index = n + 1;
       }
 
       if (str[index] === '!') return true;
@@ -305,7 +305,7 @@ var relaxedCheck = function(str) {
 
       if (close) {
         var n = str.indexOf(close, index);
-        if (n >= 0) index = n + 1;
+        if (n > -1) index = n + 1;
       }
 
       if (str[index] === '!') return true;
@@ -337,8 +337,7 @@ const util = __webpack_require__(1),
 
   transform = toNumber => value => toNumber === true ? Number(value) : String(value),
 
-  isValidValue = value =>
-    typeof value == 'number' || (typeof value == 'string' && value !== ''),
+  isValidValue = value => typeof value == 'number' || (typeof value == 'string' && value !== ''),
 
   isNumber = num => Number.isInteger(+num);
 
@@ -408,8 +407,7 @@ const toRegex = (start, end, options) => {
   return toRegexRange(start, end, options);
 };
 
-const rangeError = (...args) =>
-  new RangeError('Invalid range arguments: ' + util.inspect(...args));
+const rangeError = (...args) => new RangeError('Invalid range arguments: ' + util.inspect(...args));
 
 const invalidRange = (start, end, options) => {
   if (options.strictRanges === true) throw rangeError([start, end]);
@@ -810,8 +808,9 @@ constructor(_opts) {
   this._readyEmitted = false;
   this.options = opts;
 
-  if (opts.useFsEvents) this._fsEventsHandler = new FsEventsHandler(this);
-  else this._nodeFsHandler = new NodeFsHandler(this);
+  opts.useFsEvents
+    ? (this._fsEventsHandler = new FsEventsHandler(this))
+    : (this._nodeFsHandler = new NodeFsHandler(this));
 
   Object.freeze(opts);
 }
@@ -1091,11 +1090,11 @@ _isIgnored(path, stats) {
     const { cwd } = this.options,
       ign = this.options.ignored,
 
-      ignored = ign && ign.map(normalizeIgnored(cwd));
-    const paths = arrify(ignored)
-      .filter((path) => typeof path === STRING_TYPE && !isGlob(path))
-      .map((path) => path + SLASH_GLOBSTAR);
-    const list = this._getGlobIgnored().map(normalizeIgnored(cwd)).concat(ignored, paths);
+      ignored = ign && ign.map(normalizeIgnored(cwd)),
+      paths = arrify(ignored)
+        .filter((path) => typeof path === STRING_TYPE && !isGlob(path))
+        .map((path) => path + SLASH_GLOBSTAR),
+      list = this._getGlobIgnored().map(normalizeIgnored(cwd)).concat(ignored, paths);
     this._userIgnored = anymatch(list, void 0, ANYMATCH_OPTS);
   }
 
@@ -2347,11 +2346,11 @@ const THROTTLE_MODE_WATCH = 'watch',
   close = promisify(fs.close),
   fsrealpath = promisify(fs.realpath),
 
-  statMethods = { lstat, stat },
+  statMethods = { lstat, stat };
 
-  foreach = (val, fn) => {
-    val instanceof Set ? val.forEach(fn) : fn(val);
-  };
+const foreach = (val, fn) => {
+  val instanceof Set ? val.forEach(fn) : fn(val);
+};
 
 const addAndConvert = (main, prop, item) => {
   let container = main[prop];
