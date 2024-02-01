@@ -95,7 +95,9 @@ if (program.configFile) options = JSON.parse(read_file(program.configFile));
 program.output || !program.sourceMap || program.sourceMap.url == "inline" || fatal("ERROR: cannot write source map to STDOUT");
 
 ["compress", "enclose", "ie8", "mangle", "module", "safari10", "sourceMap", "toplevel", "wrap"].forEach(function(name) {
-  if (name in program) options[name] = program[name];
+  if (name in program) options[name] = typeof program[name] == "object"
+    ? Object.assign((typeof options[name] == "object" && options[name]) || {}, program[name])
+    : program[name];
 });
 if ("ecma" in program) {
   program.ecma == (program.ecma | 0) || fatal("ERROR: ecma must be an integer");
@@ -103,7 +105,9 @@ if ("ecma" in program) {
   options.ecma = ecma > 5 && ecma < 2015 ? ecma + 2009 : ecma;
 }
 if (program.beautify) {
-  options.output = typeof program.beautify == "object" ? program.beautify : {};
+  options.output = Object.assign(
+    (typeof options[name] == "object" && options[name]) || {}, typeof program.beautify == "object" ? program.beautify : {}
+  );
   "beautify" in options.output || (options.output.beautify = true);
 }
 if (program.comments) {
