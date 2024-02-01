@@ -334,6 +334,18 @@
 -exports.default = _default;
 \ No newline at end of file
 +exports.default = minify;
+--- a/node_modules/terser/bin/terser
++++ b/node_modules/terser/bin/terser
+@@ -83 +83,3 @@ if (!program.output && program.sourceMap && program.sourceMap.url != "inline") {
+-        options[name] = program[name];
++        options[name] = typeof program[name] == "object"
++          ? Object.assign((typeof options[name] == "object" && options[name]) || {}, program[name])
++          : program[name];
+@@ -95 +97,3 @@ if (program.beautify) {
+-    options.output = typeof program.beautify == "object" ? program.beautify : {};
++    options.output = Object.assign(
++        (typeof options.output == "object" && options.output) || {}, typeof program.beautify == "object" ? program.beautify : {}
++    );
 --- a/node_modules/terser/lib/compress/index.js
 +++ b/node_modules/terser/lib/compress/index.js
 @@ -249 +249,2 @@ class Compressor extends TreeWalker {

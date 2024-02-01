@@ -588,7 +588,9 @@ module.exports = [
         '@webassemblyjs/helper-module-context': require.resolve('@webassemblyjs/helper-module-context/lib'),
       },
     },
-    optimization: { minimizer: [newTerserPlugin()] },
+    /*optimization: {
+      minimizer: [newTerserPlugin({ terserOptions: { compress: { unused: false }, output: { ecma: 2015 } } })],
+    },*/
     plugins: [
       newCopyPlugin([
         { from: '{LICENSE*,*.md,declarations/**,schemas/*.json}', context: 'node_modules/webpack' },

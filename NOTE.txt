@@ -20,7 +20,7 @@ git tag -f xxx-1.0
 [\[,] ,|__webpack_require__\.[a-z]|_WEBPACK_|webpackPoly|\b_(iterator|interop|loop|len|to(Array|Consum)|slice|typeof|extend|createClass|classCall)
 
 /^(function\(module,exports),(__webpack_require__)\)(?!.*\b\2\b)/gm   -> $1\)
-/^(function\(module),(exports)\)(?!.*\b\2[.;])/gm
+/^(function\(module),(exports)\)(?!.*(\b\2\.|=\2\b))/gm
 
 
 8:45 PM 11/23/2023
@@ -213,7 +213,7 @@ decomment --allowHashBang --keep "(^\s*[@#]__PURE__\s*$|^[*\s]*!\s*\S|(^|\n)[*\s
 │ ├── loader-utils@1.4.0        deduped
 │ ├── schema-utils@1.0.0        deduped invalid: "^2.6.5"
 │
-└─┬ webpack@4.46.0
+└─┬ webpack@4.46.0                                  51
   ├─┬ @webassemblyjs/ast@1.9.0                      x
   │ ├── @webassemblyjs/helper-module-context@1.9.0  deduped
   │ ├── @webassemblyjs/helper-wasm-bytecode@1.9.0
@@ -658,4 +658,13 @@ decomment --allowHashBang --keep "(^\s*[@#]__PURE__\s*$|^[*\s]*!\s*\S|(^|\n)[*\s
       └─┬ randomfill@1.0.4            x
         ├── randombytes@2.1.0         deduped
         └── safe-buffer@5.1.2         deduped
+
+
+6:17 PM 2/29/2024
+---
+
+/\(\{\n/
+/=>\s*\{\s*return\b/
+/[?:]\s*(true|false)(\s*:|[,;]?$)/m
+'`${', '}`'
 

@@ -16,17 +16,17 @@ overrides:
     options:
       semi: false
   - files:
-      - 'dist/**/{terser,acorn,wasm-*,tapable,enhanced-*,bluebird,webpack-*}.js'
+      - 'dist/**/{terser,acorn,wasm-*,tapable,enhanced-*,bluebird,webpack*}.js'
       - 'dist/buildin/*.js'
       - 'dist/**/bin/{terser,acorn}'
       - 'dist/web_modules/{timers-*,console-*}.js'
     options:
       singleQuote: false
-  - files: 'dist/**/{tapable,enhanced-*}.js'
+  - files: 'dist/**/{tapable,enhanced-*,webpack}.js'
     options:
       useTabs: true
   - files:
-      - 'dist/**/{terser,acorn,long,tapable,enhanced-*,neo-async,bluebird,webpack-*,terser-*,chokidar,micromatch}.js'
+      - 'dist/**/{terser,acorn,long,tapable,enhanced-*,neo-async,bluebird,webpack*,terser-*,chokidar,micromatch}.js'
       - 'dist/buildin/*.js'
       - 'dist/**/bin/terser'
       - 'dist/web_modules/{querystring*,url,util,timers-*,stream-br*,events,path-*,punycode}.js'
@@ -39,7 +39,7 @@ overrides:
       dedentSwitchLabels: true
   - files:
       - 'dist/**/bin/terser'
-      - 'dist/**/{source-map,long,uri-js,loader-utils,terser-plugin}.js'
+      - 'dist/**/{source-map,long,uri-js,loader-utils,terser-plugin,webpack}.js'
       - 'dist/web_modules/{mock/*,punycode,string_*,buffer,crypto-*}.js'
     options:
       preserveQuote: true
@@ -72,7 +72,7 @@ overrides:
     options:
       printWidth: 123
   - files:
-      - 'dist/**/{copy-plugin,terser-*}.js'
+      - 'dist/**/{copy-plugin,terser-*,webpack}.js'
       - 'dist/web_modules/punycode.js'
     options:
       printWidth: 110
@@ -85,6 +85,7 @@ overrides:
   - files:
       - 'dist/**/{glob,find-cache*,bluebird,readable-*,cacache,micromatch}.js'
       - 'dist/web_modules/buffer.js'
+      - 'dist/schemas/*.json'
     options:
       printWidth: 101
   - files:
