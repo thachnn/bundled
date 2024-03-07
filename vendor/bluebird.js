@@ -358,7 +358,7 @@ ret.isRecentNode = ret.isNode && (function() {
   return version[0] > 0 || (version[0] === 0 && version[1] > 10);
 })();
 ret.nodeSupportsAsyncResource = ret.isNode && (function() {
-  var supportsAsync = false;
+  var supportsAsync; // = false
   try {
     supportsAsync =
       typeof __wpreq__("async_hooks").AsyncResource.prototype.runInAsyncScope == "function";
@@ -686,7 +686,7 @@ var apiRejection = function(msg) {
 };
 function Proxyable() {}
 var UNDEFINED_BINDING = {},
-  util = __wpreq__("./util");
+  /** @property {*} toString */ util = __wpreq__("./util");
 util.setReflectHandler(reflectHandler);
 
 var getDomain = function() {
@@ -705,6 +705,10 @@ var getContextAsyncHooks = function() {
   return {domain: getDomain(), async: new AsyncResource("Bluebird::Promise")};
 };
 var getContext = util.isNode ? getContextDomain : getContextDefault;
+/**
+ * @method _getContext
+ * @memberof Promise#
+ */
 util.notEnumerableProp(Promise, "_getContext", getContext);
 var enableAsyncHooks = function() {
   getContext = getContextAsyncHooks;
@@ -755,6 +759,10 @@ function check(self, executor) {
     throw new TypeError("expecting a function but got " + util.classString(executor));
 }
 
+/**
+ * @constructor
+ * @exports BB
+ */
 function Promise(executor) {
   executor === INTERNAL || check(this, executor);
 
@@ -1157,7 +1165,8 @@ Promise.prototype._settlePromiseFromHandler = function(handler, receiver, value,
     : (x = tryCatch(handler).apply(this._boundValue(), value));
 
   var promiseCreated = promise._popContext();
-  if (((bitField = promise._bitField) & 65536) != 0) return;
+  bitField = promise._bitField;
+  if ((bitField & 65536) != 0) return;
 
   if (x === NEXT_FILTER) promise._reject(value);
   else if (x === errorObj) promise._rejectCallback(x.e, false);
@@ -1232,7 +1241,7 @@ Promise.prototype._settlePromiseCtx = function(ctx) {
   this._settlePromise(ctx.promise, ctx.handler, ctx.receiver, ctx.value);
 };
 
-Promise.prototype._settlePromise0 = function(handler, value, bitField) {
+Promise.prototype._settlePromise0 = function(handler, value, _bitField) {
   var promise = this._promise0,
     receiver = this._receiverAt(0);
   this._promise0 = void 0;
@@ -1769,6 +1778,7 @@ PromiseArray.prototype.promise = function() {
   return this._promise;
 };
 
+/** @alias PromiseArray#_init$ */
 PromiseArray.prototype._init = function init(_, resolveValueIfEmpty) {
   var values = tryConvertToPromise(this._values, this._promise);
   if (values instanceof Promise) {
@@ -1870,6 +1880,7 @@ PromiseArray.prototype._promiseRejected = function(reason) {
   return true;
 };
 
+/** @alias PromiseArray#_resultCancelled$ */
 PromiseArray.prototype._resultCancelled = function() {
   if (this._isResolved()) return;
   var values = this._values;
@@ -1899,8 +1910,11 @@ var longStackTraces = false,
   contextStack = [];
 
 Promise.prototype._promiseCreated = function() {};
+/** @memberof Promise# */
 Promise.prototype._pushContext = function() {};
+/** @memberof Promise# */
 Promise.prototype._popContext = function() { return null; };
+/** @memberof Promise# */
 Promise._peekContext = Promise.prototype._peekContext = function() {};
 
 function Context() {
@@ -1970,12 +1984,12 @@ var unhandledRejectionHandled,
   deferUnhandledRejectionCheck,
   async = Promise._async,
   Warning = __wpreq__("./errors").Warning,
-  util = __wpreq__("./util"),
+  /** @property {*} toString */ util = __wpreq__("./util"),
   es5 = __wpreq__("./es5"),
   canAttachTrace = util.canAttachTrace,
   bluebirdFramePattern = /[\\\/]bluebird[\\\/]js[\\\/](release|debug|instrumented)/,
   nodeFramePattern = /\((?:timers\.js):\d+:\d+\)/,
-  parseLinePattern = /[\/<\(](.+?):(\d+):(\d+)\)?\s*$/,
+  parseLinePattern = /[\/<(](.+?):(\d+):(\d+)\)?\s*$/,
   stackFramePattern = null,
   formatStack = null,
   indentStackFrames = false,
@@ -2018,12 +2032,14 @@ Promise.prototype.suppressUnhandledRejections = function() {
   target._bitField = (target._bitField & ~1048576) | 524288;
 };
 
+/** @memberof Promise# */
 Promise.prototype._ensurePossibleRejectionHandled = function() {
   if ((this._bitField & 524288) != 0) return;
   this._setRejectionIsUnhandled();
   deferUnhandledRejectionCheck(this);
 };
 
+/** @memberof Promise# */
 Promise.prototype._notifyUnhandledRejectionIsHandled = function() {
   fireRejectionEvent("rejectionHandled", unhandledRejectionHandled, void 0, this);
 };
@@ -2044,22 +2060,27 @@ Promise.prototype._notifyUnhandledRejection = function() {
   }
 };
 
+/** @memberof Promise# */
 Promise.prototype._setUnhandledRejectionIsNotified = function() {
   this._bitField = this._bitField | 262144;
 };
 
+/** @memberof Promise# */
 Promise.prototype._unsetUnhandledRejectionIsNotified = function() {
   this._bitField = this._bitField & ~262144;
 };
 
+/** @memberof Promise# */
 Promise.prototype._isUnhandledRejectionNotified = function() {
   return (this._bitField & 262144) > 0;
 };
 
+/** @memberof Promise# */
 Promise.prototype._setRejectionIsUnhandled = function() {
   this._bitField = this._bitField | 1048576;
 };
 
+/** @memberof Promise# */
 Promise.prototype._unsetRejectionIsUnhandled = function() {
   this._bitField = this._bitField & ~1048576;
   if (this._isUnhandledRejectionNotified()) {
@@ -2068,10 +2089,12 @@ Promise.prototype._unsetRejectionIsUnhandled = function() {
   }
 };
 
+/** @memberof Promise# */
 Promise.prototype._isRejectionUnhandled = function() {
   return (this._bitField & 1048576) > 0;
 };
 
+/** @memberof Promise# */
 Promise.prototype._warn = function(message, shouldUseOwnTrace, promise) {
   return warn(message, shouldUseOwnTrace, promise || this);
 };
@@ -2239,7 +2262,7 @@ var eventToObjectGenerator = {
 };
 
 var activeFireEvent = function(name) {
-  var globalEventFired = false;
+  var globalEventFired; // = false
   try {
     globalEventFired = fireGlobalEvent.apply(null, arguments);
   } catch (e) {
@@ -2247,7 +2270,7 @@ var activeFireEvent = function(name) {
     globalEventFired = true;
   }
 
-  var domEventFired = false;
+  var domEventFired; // = false
   try {
     domEventFired = fireDomEvent(name, eventToObjectGenerator[name].apply(null, arguments));
   } catch (e) {
@@ -2307,7 +2330,9 @@ Promise.config = function(opts) {
 
 function defaultFireEvent() { return false; }
 
+/** @memberof Promise# */
 Promise.prototype._fireEvent = defaultFireEvent;
+/** @memberof Promise# */
 Promise.prototype._execute = function(executor, resolve, reject) {
   try {
     executor(resolve, reject);
@@ -2315,13 +2340,20 @@ Promise.prototype._execute = function(executor, resolve, reject) {
     return e;
   }
 };
+/** @memberof Promise# */
 Promise.prototype._onCancel = function() {};
-Promise.prototype._setOnCancel = function(handler) {};
-Promise.prototype._attachCancellationCallback = function(onCancel) {};
+Promise.prototype._setOnCancel = /** @param {Function} handler */ function(handler) {};
+Promise.prototype._attachCancellationCallback = /** @param {Function} onCancel */ function(onCancel) {};
+/** @memberof Promise# */
 Promise.prototype._captureStackTrace = function() {};
+/** @memberof Promise# */
 Promise.prototype._attachExtraTrace = function() {};
+/** @memberof Promise# */
 Promise.prototype._dereferenceTrace = function() {};
+/** @memberof Promise# */
 Promise.prototype._clearCancellationData = function() {};
+// noinspection JSUnusedLocalSymbols
+/** @memberof Promise# */
 Promise.prototype._propagateFrom = function(parent, flags) {};
 
 function cancellationExecute(executor, resolve, reject) {
@@ -2584,7 +2616,7 @@ function formatNonError(obj) {
   if (typeof obj == "function") str = "[function " + (obj.name || "anonymous") + "]";
   else {
     str = obj && typeof obj.toString == "function" ? obj.toString() : util.toString(obj);
-    if (/\[object [a-zA-Z0-9$_]+\]/.test(str))
+    if (/\[object [a-zA-Z0-9$_]+]/.test(str))
       try {
         str = JSON.stringify(obj);
       } catch (_) {}
@@ -2604,7 +2636,7 @@ function longStackTracesIsSupported() {
 }
 
 var shouldIgnore = function() { return false; },
-  parseLineInfoRegex = /[\/<\(]([^:\/]+):(\d+):(?:\d+)\)?\s*$/;
+  parseLineInfoRegex = /[\/<(]([^:\/]+):(\d+):(?:\d+)\)?\s*$/;
 function parseLineInfo(line) {
   var matches = line.match(parseLineInfoRegex);
   if (matches) return {fileName: matches[1], line: parseInt(matches[2], 10)};
@@ -2925,6 +2957,7 @@ function finallyHandler(reasonOrValue) {
   return reasonOrValue;
 }
 
+/** @memberof Promise# */
 Promise.prototype._passThrough = function(handler, type, success, fail) {
   return typeof handler != "function"
     ? this.then()
@@ -3074,6 +3107,7 @@ Promise.prototype._setBoundTo = function(obj) {
   } else this._bitField = this._bitField & ~2097152;
 };
 
+/** @memberof Promise# */
 Promise.prototype._isBound = function() {
   return (this._bitField & 2097152) == 2097152;
 };
@@ -3093,6 +3127,7 @@ var util = __wpreq__("./util"),
   errorObj = util.errorObj,
   async = Promise._async;
 
+/** @memberof Promise# */
 Promise.prototype.break = Promise.prototype.cancel = function() {
   if (!debug.cancellation()) return this._warn("cancellation is disabled");
 
@@ -3116,10 +3151,12 @@ Promise.prototype.break = Promise.prototype.cancel = function() {
   }
 };
 
+/** @memberof Promise# */
 Promise.prototype._branchHasCancelled = function() {
   this._branchesRemainingToCancel--;
 };
 
+/** @memberof Promise# */
 Promise.prototype._enoughBranchesHaveCancelled = function() {
   return this._branchesRemainingToCancel === void 0 || this._branchesRemainingToCancel <= 0;
 };
@@ -3144,6 +3181,7 @@ Promise.prototype._cancelBranched = function() {
   this._enoughBranchesHaveCancelled() && this._cancel();
 };
 
+/** @memberof Promise# */
 Promise.prototype._cancel = function() {
   if (!this._isCancellable()) return;
   this._setCancelled();
@@ -3154,10 +3192,12 @@ Promise.prototype._cancelPromises = function() {
   this._length() > 0 && this._settlePromises();
 };
 
+/** @memberof Promise# */
 Promise.prototype._unsetOnCancel = function() {
   this._onCancelField = void 0;
 };
 
+/** @memberof Promise# */
 Promise.prototype._isCancellable = function() {
   return this.isPending() && !this._isCancelled();
 };
@@ -3166,6 +3206,7 @@ Promise.prototype.isCancellable = function() {
   return this.isPending() && !this.isCancelled();
 };
 
+/** @memberof Promise# */
 Promise.prototype._doInvokeOnCancel = function(onCancelCallback, internalOnly) {
   if (util.isArray(onCancelCallback))
     for (var i = 0; i < onCancelCallback.length; ++i)
@@ -3181,6 +3222,7 @@ Promise.prototype._doInvokeOnCancel = function(onCancelCallback, internalOnly) {
     }
 };
 
+/** @memberof Promise# */
 Promise.prototype._invokeOnCancel = function() {
   var onCancelCallback = this._onCancel();
   this._unsetOnCancel();
@@ -3304,22 +3346,30 @@ Promise.prototype.__isCancelled = function() {
   return (this._bitField & 65536) == 65536;
 };
 
+/**
+ * @memberof Promise#
+ * @returns {boolean}
+ */
 Promise.prototype._isCancelled = function() {
   return this._target().__isCancelled();
 };
 
+/** @memberof Promise# */
 Promise.prototype.isCancelled = function() {
   return (this._target()._bitField & 8454144) != 0;
 };
 
+/** @memberof Promise# */
 Promise.prototype.isPending = function() {
   return isPending.call(this._target());
 };
 
+/** @memberof Promise# */
 Promise.prototype.isRejected = function() {
   return isRejected.call(this._target());
 };
 
+/** @memberof Promise# */
 Promise.prototype.isFulfilled = function() {
   return isFulfilled.call(this._target());
 };
@@ -3328,10 +3378,12 @@ Promise.prototype.isResolved = function() {
   return isResolved.call(this._target());
 };
 
+/** @memberof Promise# */
 Promise.prototype.value = function() {
   return value.call(this._target());
 };
 
+/** @memberof Promise# */
 Promise.prototype.reason = function() {
   var target = this._target();
   target._unsetRejectionIsUnhandled();
@@ -3389,11 +3441,11 @@ if (canEvaluate) {
     var code =
       "return function(tryCatch, errorObj, Promise, async) {\n 'use strict';\n function [TheName](fn) {\n [TheProperties]\n this.fn = fn;\n this.asyncNeeded = true;\n this.now = 0;\n }\n [TheName].prototype._callFunction = function(promise) {\n promise._pushContext();\n var ret = tryCatch(this.fn)([ThePassedArguments]);\n promise._popContext();\n if (ret === errorObj) {\n promise._rejectCallback(ret.e, false);\n } else {\n promise._resolveCallback(ret);\n }\n };\n [TheName].prototype.checkFulfillment = function(promise) {\n var now = ++this.now;\n if (now === [TheTotal]) {\n if (this.asyncNeeded) {\n async.invoke(this._callFunction, this, promise);\n } else {\n this._callFunction(promise);\n }\n }\n };\n [TheName].prototype._resultCancelled = function() {\n [CancellationCode]\n };\n return [TheName];\n }(tryCatch, errorObj, Promise, async);\n ";
 
-    code = code.replace(/\[TheName\]/g, name)
-      .replace(/\[TheTotal\]/g, total)
-      .replace(/\[ThePassedArguments\]/g, passedArguments)
-      .replace(/\[TheProperties\]/g, assignment)
-      .replace(/\[CancellationCode\]/g, cancellationCode);
+    code = code.replace(/\[TheName]/g, name)
+      .replace(/\[TheTotal]/g, total)
+      .replace(/\[ThePassedArguments]/g, passedArguments)
+      .replace(/\[TheProperties]/g, assignment)
+      .replace(/\[CancellationCode]/g, cancellationCode);
 
     return new Function("tryCatch", "errorObj", "Promise", "async", code)(
       tryCatch, errorObj, Promise, async
@@ -3472,7 +3524,7 @@ if (cr) {
 }
 
 module.exports = function(Promise) {
-var util = __wpreq__("./util"),
+var /** @property {*} toString */ util = __wpreq__("./util"),
   canEvaluate = util.canEvaluate,
   isIdentifier = util.isIdentifier;
 
@@ -3737,6 +3789,7 @@ Promise.coroutine = function(generatorFunction, options) {
     PromiseSpawn$ = PromiseSpawn,
     stack = new Error().stack;
   return function() {
+    // noinspection UnnecessaryLocalVariableJS
     var generator = generatorFunction.apply(this, arguments),
       spawn = new PromiseSpawn$(void 0, void 0, yieldHandler, stack),
       ret = spawn.promise();
@@ -3815,7 +3868,8 @@ MappingPromiseArray.prototype._promiseFulfilled = function(value, index) {
     limit = this._limit;
 
   if (index < 0) {
-    values[(index = index * -1 - 1)] = value;
+    index = index * -1 - 1;
+    values[index] = value;
     if (limit >= 1) {
       this._inFlight--;
       this._drainQueue();
@@ -4183,6 +4237,7 @@ function promisifyAll(obj, suffix, filter, promisifier, multiArgs) {
       obj[promisifiedKey] = makeNodePromisified(key, THIS, key, fn, suffix, multiArgs);
     else {
       var promisified = promisifier(fn, function() {
+        // noinspection JSReferencingMutableVariableFromClosure
         return makeNodePromisified(key, THIS, key, fn, suffix, multiArgs);
       });
       util.notEnumerableProp(promisified, "__isPromisified__", true);
@@ -4744,7 +4799,7 @@ Promise._SomePromiseArray = SomePromiseArray;
 "./timers":
 function(module, exports, __wpreq__) {
 
-module.exports = function(Promise, INTERNAL, debug) {
+module.exports = function(/** module:BB */ Promise, INTERNAL, debug) {
 var util = __wpreq__("./util"),
   TimeoutError = Promise.TimeoutError;
 

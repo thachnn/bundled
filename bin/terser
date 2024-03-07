@@ -106,7 +106,7 @@ if ("ecma" in program) {
 }
 if (program.beautify) {
   options.output = Object.assign(
-    (typeof options[name] == "object" && options[name]) || {}, typeof program.beautify == "object" ? program.beautify : {}
+    (typeof options.output == "object" && options.output) || {}, typeof program.beautify == "object" ? program.beautify : {}
   );
   "beautify" in options.output || (options.output.beautify = true);
 }
@@ -400,7 +400,7 @@ function describe_ast() {
   var out = Terser.OutputStream({ beautify: true });
   function doitem(ctor) {
     out.print("AST_" + ctor.TYPE);
-    var props = ctor.SELF_PROPS.filter(function(prop) {
+    var props = ctor.SELF_PROPS.filter(function(/** string */ prop) {
       return !/^\$/.test(prop);
     });
     if (props.length > 0) {

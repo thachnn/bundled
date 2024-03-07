@@ -59,7 +59,7 @@ exports.isAbsolute = function(path) {
 
 exports.join = function() {
   var paths = Array.prototype.slice.call(arguments, 0);
-  return exports.normalize(filter(paths, function(p, index) {
+  return exports.normalize(filter(paths, function(p, _index) {
     if (typeof p != 'string')
       throw new TypeError('Arguments to path.join must be strings');
 

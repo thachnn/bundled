@@ -213,6 +213,7 @@ module.exports = function(val) {
   return type.slice(8, -1).toLowerCase().replace(/\s/g, '');
 };
 
+/** @returns {?string} */
 function ctorName(val) {
   return typeof val.constructor == 'function' ? val.constructor.name : null;
 }
@@ -246,6 +247,10 @@ function isRegexp(val) {
   );
 }
 
+/**
+ * @param {*} name
+ * @param {*} [val]
+ */
 function isGeneratorFn(name, val) {
   return ctorName(name) === 'GeneratorFunction';
 }
@@ -265,7 +270,7 @@ function isArguments(val) {
   return false;
 }
 
-function isBuffer(val) {
+function isBuffer(/** Buffer */ val) {
   return !!val.constructor && typeof val.constructor.isBuffer == 'function' &&
     val.constructor.isBuffer(val);
 }
@@ -507,7 +512,7 @@ utils.define = function(obj, key, val) {
 };
 
 utils.isEmptySets = function(str) {
-  return /^(?:\{,\})+$/.test(str);
+  return /^(?:{,})+$/.test(str);
 };
 
 utils.isQuotedString = function(str) {
@@ -653,6 +658,7 @@ utils.escapeBrackets = function(options) {
     }
 
     if (tok.val !== '(' && tok.val !== '[') return;
+    // noinspection JSMismatchedCollectionQueryUpdate
     var opts = utils.extend({}, options),
       brackets = [],
       parens = [],
@@ -726,7 +732,7 @@ utils.last = function(arr, n) {
 };
 
 utils.escapeRegex = function(str) {
-  return str.replace(/\\?([!^*?()[\]{}+?/])/g, '\\$1');
+  return str.replace(/\\?([!^*?()[\]{}+/])/g, '\\$1');
 };
 
 },
@@ -846,6 +852,7 @@ FragmentCache.prototype = {
   }
 };
 
+// noinspection JSUnusedAssignment
 exports = module.exports = FragmentCache;
 
 },
@@ -1127,7 +1134,7 @@ module.exports = function(braces, options) {
     });
 };
 
-function multiply(queue, n, options) {
+function multiply(queue, n, _options) {
   return utils.flatten(utils.repeat(utils.arrayify(queue), n));
 }
 
@@ -1144,6 +1151,10 @@ function isLiteralBrace(node, options) {
   return isEscaped(node.parent) || options.optimize !== false;
 }
 
+/**
+ * @param {*} node
+ * @param {*} [type]
+ */
 function noInner(node, type) {
   if (node.parent.queue.length === 1) return true;
 
@@ -1269,7 +1280,7 @@ module.exports = function(str, options, fn) {
   return arr;
 };
 
-function getClosingQuote(str, ch, i, brackets) {
+function getClosingQuote(str, ch, i, _brackets) {
   var idx = str.indexOf(ch, i);
   return str.charAt(idx - 1) === '\\' ? getClosingQuote(str, ch, idx + 1) : idx;
 }
@@ -1334,7 +1345,7 @@ module.exports = function(braces, options) {
 
     .set('escape', function() {
       var pos = this.position(),
-        m = this.match(/^(?:\\(.)|\$\{)/);
+        m = this.match(/^(?:\\(.)|\${)/);
       if (!m) return;
 
       var prev = this.prev(),
@@ -1365,7 +1376,7 @@ module.exports = function(braces, options) {
     .set('bracket', function() {
       var isInside = this.isInside('brace'),
         pos = this.position(),
-        m = this.match(/^(?:\[([!^]?)([^\]]{2,}|\]-)(\]|[^*+?]+)|\[)/);
+        m = this.match(/^(?:\[([!^]?)([^\]]{2,}|]-)(]|[^*+?]+)|\[)/);
       if (!m) return;
 
       var prev = this.prev(),
@@ -1407,7 +1418,7 @@ module.exports = function(braces, options) {
     .set('multiplier', function() {
       var isInside = this.isInside('brace'),
         pos = this.position(),
-        m = this.match(/^\{((?:,|\{,+\})+)\}/);
+        m = this.match(/^{((?:,|{,+})+)}/);
       if (!m) return;
 
       this.multiplier = true;
@@ -1426,7 +1437,7 @@ module.exports = function(braces, options) {
 
     .set('brace.open', function() {
       var pos = this.position(),
-        m = this.match(/^\{(?!(?:[^\\}]?|,+)\})/);
+        m = this.match(/^{(?!(?:[^\\}]?|,+)})/);
       if (!m) return;
 
       var prev = this.prev(),
@@ -1445,7 +1456,7 @@ module.exports = function(braces, options) {
 
     .set('brace.close', function() {
       var pos = this.position(),
-        m = this.match(/^\}/);
+        m = this.match(/^}/);
       if (!m || !m[0]) return;
 
       var brace = this.pop('brace'),
@@ -1482,14 +1493,14 @@ module.exports = function(braces, options) {
 
     .set('boundary', function() {
       var pos = this.position(),
-        m = this.match(/^[$^](?!\{)/);
+        m = this.match(/^[$^](?!{)/);
       if (m) return pos(new Node({ type: 'text', val: m[0] }));
     })
 
     .set('nobrace', function() {
       var isInside = this.isInside('brace'),
         pos = this.position(),
-        m = this.match(/^\{[^,]?\}/);
+        m = this.match(/^{[^,]?}/);
       if (!m) return;
 
       var prev = this.prev(),
@@ -1550,7 +1561,7 @@ function concatNodes(pos, node, parent, options) {
     var match = node.match[1];
     if (!match || match.indexOf('}') < 0) match = node.match[0];
 
-    var val = match.replace(/\{/g, ',').replace(/\}/g, '');
+    var val = match.replace(/{/g, ',').replace(/}/g, '');
     node.multiplier *= val.length;
     node.val = '';
   }
@@ -1852,10 +1863,14 @@ function define(obj, key, val) {
 function(module, exports, __webpack_require__) {
 
 exports = module.exports = createDebug.debug = createDebug.default = createDebug;
+/** @memberof exports */
 exports.coerce = coerce;
 exports.disable = disable;
+/** @memberof exports */
 exports.enable = enable;
+/** @memberof exports */
 exports.enabled = enabled;
+/** @memberof exports */
 exports.humanize = __webpack_require__(76);
 
 exports.names = [];
@@ -1868,7 +1883,7 @@ var prevTime;
 function selectColor(namespace) {
   var hash = 0;
 
-  for (var i in namespace) {
+  for (var /** @type {number} */ i in namespace) {
     hash = (hash << 5) - hash + namespace.charCodeAt(i);
     hash |= 0;
   }
@@ -1880,6 +1895,7 @@ function createDebug(namespace) {
   function debug() {
     if (!debug.enabled) return;
 
+    // noinspection UnnecessaryLocalVariableJS
     var self = debug,
 
       curr = +new Date(),
@@ -3077,7 +3093,7 @@ micromatch.braces = function(pattern, options) {
     throw new TypeError('expected pattern to be an array or string');
 
   function expand() {
-    return (options && options.nobrace === true) || !/\{.*\}/.test(pattern)
+    return (options && options.nobrace === true) || !/{.*}/.test(pattern)
       ? utils.arrayify(pattern)
       : braces(pattern, options);
   }
@@ -3439,7 +3455,7 @@ module.exports = function(regexpStr) {
         break;
 
       case '{':
-        var min, max, rs = /^(\d+)(,(\d+)?)?\}/.exec(str.slice(i));
+        var min, max, rs = /^(\d+)(,(\d+)?)?}/.exec(str.slice(i));
         if (rs !== null) {
           last.length !== 0 || repeatErr(i);
 
@@ -3493,7 +3509,7 @@ var types = __webpack_require__(9),
 
 exports.strToChars = function(str) {
   var chars_regex =
-    /(\[\\b\])|(\\)?\\(?:u([A-F0-9]{4})|x([A-F0-9]{2})|(0?[0-7]{2})|c([@A-Z\[\\\]\^?])|([0tnvfr]))/g;
+    /(\[\\b])|(\\)?\\(?:u([A-F0-9]{4})|x([A-F0-9]{2})|(0?[0-7]{2})|c([@A-Z\[\\\]^?])|([0tnvfr]))/g;
 
   return str.replace(chars_regex, function(s, b, lbs, a16, b16, c8, dctrl, eslsh) {
     if (lbs) return s;
@@ -3507,7 +3523,7 @@ exports.strToChars = function(str) {
 
     var c = String.fromCharCode(code);
 
-    if (/[\[\]{}\^$.|?*+()]/.test(c)) c = '\\' + c;
+    if (/[\[\]{}^$.|?*+()]/.test(c)) c = '\\' + c;
 
     return c;
   });
@@ -3515,7 +3531,7 @@ exports.strToChars = function(str) {
 
 exports.tokenizeClass = function(str, regexpStr) {
   var regexp =
-    /\\(?:(w)|(d)|(s)|(W)|(D)|(S))|((?:(?:\\)(.)|([^\]\\]))-(?:\\)?([^\]]))|(\])|(?:\\)?(.)/g;
+    /\\(?:(w)|(d)|(s)|(W)|(D)|(S))|((?:(?:\\)(.)|([^\]\\]))-(?:\\)?([^\]]))|(])|(?:\\)?(.)/g;
 
   for (var rs, c, tokens = []; (rs = regexp.exec(str)) != null; )
     if (rs[1]) tokens.push(sets.words());
@@ -3596,7 +3612,7 @@ function isAccessorDescriptor(obj, prop) {
     typeOf(obj) !== 'object' ||
     has(obj, 'value') || has(obj, 'writable') ||
     !has(obj, 'get') || typeof obj.get != 'function' ||
-    (has(obj, 'set') && typeof obj[key] != 'function' && obj[key] !== void 0)
+    (has(obj, 'set') && typeof obj.set != 'function' && obj.set !== void 0)
   )
     return false;
 
@@ -3753,8 +3769,8 @@ function toRange(a, b, start, stop, options) {
     ? toRegex(start, stop, options)
     : options.isNumber
     ? toRegex(Math.min(a, b), Math.max(a, b), options)
-    : '[' + (start = String.fromCharCode(Math.min(a, b))) +
-      '-' + (stop = String.fromCharCode(Math.max(a, b))) + ']';
+    : '[' + String.fromCharCode(Math.min(a, b)) +
+      '-' + String.fromCharCode(Math.max(a, b)) + ']';
 }
 
 function toSequence(arr, zeros, options) {
@@ -3814,7 +3830,7 @@ module.exports = function(obj) {
   return obj != null && (isBuffer(obj) || isSlowBuffer(obj) || !!obj._isBuffer)
 }
 
-function isBuffer(obj) {
+function isBuffer(/** Buffer */ obj) {
   return !!obj.constructor && typeof obj.constructor.isBuffer == 'function' &&
     obj.constructor.isBuffer(obj)
 }
@@ -3944,7 +3960,7 @@ function splitToPatterns(min, max, tok, options) {
   var ranges = splitToRanges(min, max),
     tokens = [];
 
-  for (var prev, len = ranges.length, idx = -1, start = min; ++idx < len; ) {
+  for (var prev = void 0, len = ranges.length, idx = -1, start = min; ++idx < len; ) {
     var range = ranges[idx],
       obj = rangeToPattern(start, range, options),
       zeros = '';
@@ -3977,7 +3993,7 @@ function filterPatterns(arr, comparison, prefix, intersection, options) {
 
     if (options.relaxZeros !== false && prefix === '-' && ele.charAt(0) === '0')
       ele = ele.charAt(1) === '{'
-        ? '0*' + ele.replace(/^0\{\d+\}/, '')
+        ? '0*' + ele.replace(/^0{\d+}/, '')
         : '0*' + ele.slice(1);
 
     intersection || contains(comparison, 'string', ele) || res.push(prefix + ele);
@@ -4223,6 +4239,7 @@ function assert(val, message) {
   if (!val) throw new Error(message);
 }
 
+// noinspection JSUnusedAssignment
 exports = module.exports = Node;
 
 },
@@ -4571,7 +4588,7 @@ Braces.prototype.init = function(options) {
   compilers(this.snapdragon, opts);
   parsers(this.snapdragon, opts);
 
-  utils.define(this.snapdragon, 'parse', function(pattern, options) {
+  utils.define(this.snapdragon, 'parse', /** @this Snapdragon */ function(pattern, options) {
     var parsed = Snapdragon.prototype.parse.apply(this, arguments);
     this.parser.ast.input = pattern;
 
@@ -4709,7 +4726,7 @@ function namespace(name) {
     return Base;
   });
 
-  define(Base, 'extend', cu.extend(Base, function(Ctor, Parent) {
+  define(Base, 'extend', cu.extend(Base, function(Ctor, _Parent) {
     Ctor.prototype.mixins = Ctor.prototype.mixins || [];
 
     define(Ctor, 'mixin', function(fn) {
@@ -5100,7 +5117,7 @@ cu.has = function(obj, val) {
   }
 
   if (Array.isArray(obj)) {
-    for (var arr = obj; len--; ) if (arr.indexOf(val[len]) > -1) return true;
+    while (len--) if (obj.indexOf(val[len]) > -1) return true;
 
     return false;
   }
@@ -5301,7 +5318,7 @@ function has(obj, val) {
   }
 
   if (Array.isArray(obj)) {
-    for (var arr = obj; len--; ) if (arr.indexOf(val[len]) > -1) return true;
+    while (len--) if (obj.indexOf(val[len]) > -1) return true;
 
     return false;
   }
@@ -5402,7 +5419,7 @@ Compiler.prototype = {
     return this;
   },
 
-  emit: function(str, node) {
+  emit: function(str, _node) {
     this.output += str;
     return str;
   },
@@ -5473,6 +5490,7 @@ exports.formatArgs = formatArgs;
 exports.save = save;
 exports.load = load;
 exports.useColors = useColors;
+/** @var {*} chrome */
 exports.storage = 'undefined' != typeof chrome && void 0 !== chrome.storage
   ? chrome.storage.local
   : localstorage();
@@ -5670,11 +5688,14 @@ function(module, exports, __webpack_require__) {
 var tty = __webpack_require__(78),
   util = __webpack_require__(2);
 
+/** @memberof exports */
 (exports = module.exports = __webpack_require__(31)).init = init;
 exports.log = log;
 exports.formatArgs = formatArgs;
+/** @memberof exports */
 exports.save = save;
 exports.load = load;
+/** @memberof exports */
 exports.useColors = useColors;
 
 exports.colors = [6, 2, 3, 4, 5, 1];
@@ -5751,6 +5772,7 @@ function load() {
 function createWritableStdioStream(fd) {
   var stream;
 
+  // noinspection JSUnresolvedFunction
   switch (process.binding('tty_wrap').guessHandleType(fd)) {
     case 'TTY':
       (stream = new tty.WriteStream(fd))._type = 'tty';
@@ -5831,7 +5853,7 @@ function callbackAsync(callback, error, result) {
 
 function parseMapToJSON(string, data) {
   try {
-    return JSON.parse(string.replace(/^\)\]\}'/, ''))
+    return JSON.parse(string.replace(/^\)]}'/, ''))
   } catch (error) {
     error.sourceMapData = data
     throw error
@@ -6273,6 +6295,10 @@ var fs = __webpack_require__(32),
 module.exports = mixin;
 
 function mixin(compiler) {
+  /**
+   * @method _comment
+   * @memberof compiler
+   */
   define(compiler, '_comment', compiler.comment);
   compiler.map = new utils.SourceMap.SourceMapGenerator();
   compiler.position = { line: 1, column: 1 };
@@ -6369,7 +6395,7 @@ function Parser(options) {
 Parser.prototype = {
   constructor: Parser,
 
-  init: function(options) {
+  init: function(_options) {
     this.orig = '';
     this.input = '';
     this.parsed = '';
@@ -6806,7 +6832,7 @@ module.exports = function(nanomatch, options) {
     .set('backslash', function(node) {
       return this.emit(node.val, node);
     })
-    .set('slash', function(node, nodes, i) {
+    .set('slash', function(node, nodes, _i) {
       var val = '[' + slash() + ']',
         parent = node.parent,
         prev = this.prev();
@@ -6876,16 +6902,16 @@ module.exports = function(nanomatch, options) {
       var prev = node.parsed.slice(-1);
       if (prev === ']' || prev === ')') return this.emit(node.val, node);
 
+      var ch = this.output.slice(-1);
       if (!this.output || (/[?*+]/.test(ch) && node.parent.type !== 'bracket'))
         return this.emit('\\+', node);
 
-      var ch = this.output.slice(-1);
       return /\w/.test(ch) && !node.inside
         ? this.emit('+\\+?', node)
         : this.emit('+', node);
     })
 
-    .set('globstar', function(node, nodes, i) {
+    .set('globstar', function(node, nodes, _i) {
       this.output || (this.state.leadingGlobstar = true);
 
       var prev = this.prev(),
@@ -7118,7 +7144,9 @@ module.exports = function(nanomatch, options) {
         m = this.match(/^\\(?![*+?(){}[\]'"])/);
       if (!m) return;
 
-      var val = this.isInside('bracket') ? '\\' : val.length > 1 ? '\\\\' : m[0];
+      var val = m[0];
+
+      this.isInside('bracket') ? (val = '\\') : val.length > 1 && (val = '\\\\');
 
       return pos({ type: 'backslash', val: val });
     })
@@ -7126,13 +7154,13 @@ module.exports = function(nanomatch, options) {
     .capture('square', function() {
       if (this.isInside('bracket')) return;
       var pos = this.position(),
-        m = this.match(/^\[([^!^\\])\]/);
+        m = this.match(/^\[([^!^\\])]/);
       if (m) return pos({ type: 'square', val: m[1] });
     })
 
     .capture('bracket', function() {
       var pos = this.position(),
-        m = this.match(/^(?:\[([!^]?)([^\]]+|\]-)(\]|[^*+?]+)|\[)/);
+        m = this.match(/^(?:\[([!^]?)([^\]]+|]-)(]|[^*+?]+)|\[)/);
       if (!m) return;
 
       var val = m[0],
@@ -7309,10 +7337,11 @@ utils.escapeRegex = function(str) {
 };
 
 utils.combineDupes = function(input, patterns) {
-  var substr = (patterns = utils.arrayify(patterns).join('|').split('|').map(function(s) {
+  patterns = utils.arrayify(patterns).join('|').split('|').map(function(s) {
     return s.replace(/\\?([+*\\/])/g, '\\$1');
-  })).join('|');
-  var regex = new RegExp('(' + substr + ')(?=\\1)', 'g');
+  });
+  var substr = patterns.join('|'),
+    regex = new RegExp('(' + substr + ')(?=\\1)', 'g');
   return input.replace(regex, '');
 };
 
@@ -7531,7 +7560,7 @@ function parsers(brackets) {
 
     .capture('posix', function() {
       var pos = this.position(),
-        m = this.match(/^\[:(.*?):\](?=.*\])/);
+        m = this.match(/^\[:(.*?):](?=.*])/);
       if (!m) return;
 
       var inside = this.isInside('bracket');
@@ -7545,7 +7574,7 @@ function parsers(brackets) {
     .capture('bracket.open', function() {
       var parsed = this.parsed,
         pos = this.position(),
-        m = this.match(/^\[(?=.*\])/);
+        m = this.match(/^\[(?=.*])/);
       if (!m) return;
 
       var prev = this.prev(),
@@ -7603,7 +7632,7 @@ function parsers(brackets) {
     .capture('bracket.close', function() {
       var parsed = this.parsed,
         pos = this.position(),
-        m = this.match(/^\]/);
+        m = this.match(/^]/);
       if (!m) return;
 
       var prev = this.prev(),
@@ -7686,7 +7715,7 @@ function Extglob(options) {
   compilers(this.snapdragon);
   parsers(this.snapdragon);
 
-  define(this.snapdragon, 'parse', function(str, options) {
+  define(this.snapdragon, 'parse', /** @this Snapdragon */ function(str, options) {
     var parsed = Snapdragon.prototype.parse.apply(this, arguments);
     parsed.input = str;
 
@@ -7702,11 +7731,11 @@ function Extglob(options) {
     return parsed;
   });
 
-  define(this, 'parse', function(ast, options) {
+  define(this, 'parse', /** @this Extglob */ function(ast, options) {
     return this.snapdragon.parse.apply(this.snapdragon, arguments);
   });
 
-  define(this, 'compile', function(ast, options) {
+  define(this, 'compile', /** @this Extglob */ function(ast, options) {
     return this.snapdragon.compile.apply(this.snapdragon, arguments);
   });
 }
@@ -7724,7 +7753,7 @@ var not,
   toRegex = __webpack_require__(3),
 
   TEXT = '([!@*?+]?\\(|\\)|\\[:?(?=.*?:?\\])|:?\\]|[*+?!^$.\\\\/])+';
-var createNotRegex = function(opts) {
+var createNotRegex = /** @param {*} opts */ function(opts) {
   return not || (not = textRegex(TEXT));
 };
 
@@ -7744,7 +7773,7 @@ module.exports = function(snapdragon) {
 
   snapdragon.parser
     .use(function() {
-      this.notRegex = /^\!+(?!\()/;
+      this.notRegex = /^!+(?!\()/;
     })
     .capture('escape', escape)
     .capture('slash', slash)

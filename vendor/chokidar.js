@@ -1203,13 +1203,11 @@ _readdirp(root, opts) {
 
 exports.FSWatcher = FSWatcher;
 
-const watch = (paths, options) => {
+exports.watch = (paths, options) => {
   const watcher = new FSWatcher(options);
   watcher.add(paths);
   return watcher;
 };
-
-exports.watch = watch;
 
 },
 // 11
@@ -1273,8 +1271,8 @@ class ReaddirpStream extends Readable {
   static get defaultOptions() {
     return {
       root: '.',
-      fileFilter: (path) => true,
-      directoryFilter: (path) => true,
+      fileFilter: (_path) => true,
+      directoryFilter: (_path) => true,
       type: FILE_TYPE,
       lstat: false,
       depth: 2147483648,
@@ -1382,7 +1380,7 @@ class ReaddirpStream extends Readable {
   }
 
   async _getEntryType(entry) {
-    const stats = entry && entry[this._statsProp];
+    const /** @type {Stats} */ stats = entry && entry[this._statsProp];
     if (!stats) return;
 
     if (stats.isFile()) return 'file';
@@ -1392,7 +1390,7 @@ class ReaddirpStream extends Readable {
       const full = entry.fullPath;
       try {
         const entryRealPath = await realpath(full),
-          entryRealPathStats = await lstat(entryRealPath);
+          /** @type {Stats} */ entryRealPathStats = await lstat(entryRealPath);
         if (entryRealPathStats.isFile()) return 'file';
 
         if (entryRealPathStats.isDirectory()) {
@@ -1431,7 +1429,7 @@ const readdirp = (root, options = {}) => {
   return new ReaddirpStream(options);
 };
 
-const readdirpPromise = (root, options = {}) =>
+readdirp.promise = (root, options = {}) =>
   new Promise((resolve, reject) => {
     const files = [];
     readdirp(root, options)
@@ -1440,7 +1438,6 @@ const readdirpPromise = (root, options = {}) =>
       .on('error', error => reject(error));
   });
 
-readdirp.promise = readdirpPromise;
 readdirp.ReaddirpStream = ReaddirpStream;
 readdirp.default = readdirp;
 
@@ -1472,7 +1469,7 @@ const createPattern = (matcher, options) => {
     const glob = picomatch(matcher, options);
     return (string) => matcher === string || glob(string);
   }
-  return matcher instanceof RegExp ? (string) => matcher.test(string) : (string) => false;
+  return matcher instanceof RegExp ? (string) => matcher.test(string) : (_string) => false;
 };
 
 const matchPatterns = (patterns, negPatterns, args, returnIndex) => {
@@ -1531,9 +1528,9 @@ var isGlob = __webpack_require__(8),
 
   slash = '/',
   backslash = /\\/g,
-  enclosure = /[\{\[].*[\}\]]$/,
-  globby = /(^|[^\\])([\{\[]|\([^\)]+$)/,
-  escaped = /\\([\!\*\?\|\[\]\(\)\{\}])/g;
+  enclosure = /[{\[].*[}\]]$/,
+  globby = /(^|[^\\])([{\[]|\([^)]+$)/,
+  escaped = /\\([!*?|\[\](){}])/g;
 
 module.exports = function(str, opts) {
   if (
@@ -1638,7 +1635,7 @@ function(module, exports, __webpack_require__) {
 const fill = __webpack_require__(9),
   utils = __webpack_require__(4);
 
-const compile = (ast, options = {}) => {
+module.exports = (ast, options = {}) => {
   let walk = (node, parent = {}) => {
     let invalidBlock = utils.isInvalidBrace(parent),
       invalidNode = node.invalid === true && options.escapeInvalid === true,
@@ -1673,8 +1670,6 @@ const compile = (ast, options = {}) => {
 
   return walk(ast);
 };
-
-module.exports = compile;
 
 },
 // 20
@@ -1796,7 +1791,7 @@ function splitToPatterns(min, max, tok, options) {
   let ranges = splitToRanges(min, max),
     tokens = [];
 
-  for (let prev, start = min, i = 0; i < ranges.length; i++) {
+  for (let prev = void 0, start = min, i = 0; i < ranges.length; i++) {
     let max = ranges[i],
       obj = rangeToPattern(String(start), String(max), options),
       zeros = '';
@@ -1821,7 +1816,7 @@ function splitToPatterns(min, max, tok, options) {
   return tokens;
 }
 
-function filterPatterns(arr, comparison, prefix, intersection, options) {
+function filterPatterns(arr, comparison, prefix, intersection, _options) {
   let result = [];
 
   for (let ele of arr) {
@@ -1861,7 +1856,7 @@ function toQuantifier(digits) {
   return stop || start > 1 ? `{${start + (stop ? ',' + stop : '')}}` : '';
 }
 
-function toCharacterClass(a, b, options) {
+function toCharacterClass(a, b, _options) {
   return `[${a}${b - a == 1 ? '' : '-'}${b}]`;
 }
 
@@ -1931,7 +1926,7 @@ const append = (queue = '', stash = '', enclose = false) => {
   return utils.flatten(result);
 };
 
-const expand = (ast, options = {}) => {
+module.exports = (ast, options = {}) => {
   let rangeLimit = options.rangeLimit === void 0 ? 1000 : options.rangeLimit;
 
   let walk = (node, parent = {}) => {
@@ -2000,8 +1995,6 @@ const expand = (ast, options = {}) => {
   return utils.flatten(walk(ast));
 };
 
-module.exports = expand;
-
 },
 // 23
 function(module, exports, __webpack_require__) {
@@ -2026,7 +2019,7 @@ const {
   CHAR_ZERO_WIDTH_NOBREAK_SPACE
 } = __webpack_require__(24);
 
-const parse = (input, options = {}) => {
+module.exports = (input, options = {}) => {
   if (typeof input != 'string') throw new TypeError('Expected a string');
 
   let opts = options || {},
@@ -2251,8 +2244,6 @@ const parse = (input, options = {}) => {
   push({ type: 'eos' });
   return ast;
 };
-
-module.exports = parse;
 
 },
 // 24
@@ -2549,7 +2540,7 @@ _handleFile(file, stats, initialAdd) {
         const at = newStats.atimeMs,
           mt = newStats.mtimeMs;
         (at && at > mt && mt === prevStats.mtimeMs) ||
-          this.fsw._emit(EV_CHANGE, file, newStats);
+          (await this.fsw._emit(EV_CHANGE, file, newStats));
 
         if (isLinux && prevStats.ino !== newStats.ino) {
           this.fsw._closeFile(path);
@@ -2563,7 +2554,7 @@ _handleFile(file, stats, initialAdd) {
       const at = newStats.atimeMs,
         mt = newStats.mtimeMs;
       (at && at > mt && mt === prevStats.mtimeMs) ||
-        this.fsw._emit(EV_CHANGE, file, newStats);
+        (await this.fsw._emit(EV_CHANGE, file, newStats));
 
       prevStats = newStats;
     }
@@ -2591,12 +2582,12 @@ async _handleSymlink(entry, directory, path, item) {
     if (dir.has(item)) {
       if (this.fsw._symlinkPaths.get(full) !== linkPath) {
         this.fsw._symlinkPaths.set(full, linkPath);
-        this.fsw._emit(EV_CHANGE, path, entry.stats);
+        await this.fsw._emit(EV_CHANGE, path, entry.stats);
       }
     } else {
       dir.add(item);
       this.fsw._symlinkPaths.set(full, linkPath);
-      this.fsw._emit(EV_ADD, path, entry.stats);
+      await this.fsw._emit(EV_ADD, path, entry.stats);
     }
     this.fsw._emitReady();
     return true;
@@ -2640,7 +2631,7 @@ _handleRead(directory, initialAdd, wh, target, dir, depth, throttler) {
 
       path = sysPath.join(dir, sysPath.relative(dir, path));
 
-      this._addToNodeFs(path, initialAdd, wh, depth + 1);
+      await this._addToNodeFs(path, initialAdd, wh, depth + 1);
     }
   }).on(EV_ERROR, this._boundHandleError);
 
@@ -2674,7 +2665,7 @@ async _handleDir(dir, stats, initialAdd, depth, target, wh, realpath) {
     tracked = parentDir.has(sysPath.basename(dir));
   (initialAdd && this.fsw.options.ignoreInitial) || target || tracked ||
     (wh.hasGlob && !wh.globFilter(dir)) ||
-    this.fsw._emit(EV_ADD_DIR, dir, stats);
+    (await this.fsw._emit(EV_ADD_DIR, dir, stats));
 
   parentDir.add(sysPath.basename(dir));
   this.fsw._getWatchedDir(dir);
@@ -2712,7 +2703,7 @@ async _addToNodeFs(path, initialAdd, priorWh, depth, target) {
   }
 
   try {
-    const stats = await statMethods[wh.statMethod](wh.watchPath);
+    const /** @type {Stats} */ stats = await statMethods[wh.statMethod](wh.watchPath);
     if (this.fsw.closed) return;
     if (this.fsw._isIgnored(wh.watchPath, stats)) {
       ready();
@@ -2733,7 +2724,7 @@ async _addToNodeFs(path, initialAdd, priorWh, depth, target) {
       if (this.fsw.closed) return;
       const parent = sysPath.dirname(wh.watchPath);
       this.fsw._getWatchedDir(parent).add(wh.watchPath);
-      this.fsw._emit(EV_ADD, wh.watchPath, stats);
+      await this.fsw._emit(EV_ADD, wh.watchPath, stats);
       closer = await this._handleDir(parent, stats, initialAdd, depth, path, wh, targetPath);
       if (this.fsw.closed) return;
 
@@ -2783,7 +2774,7 @@ const fs = __webpack_require__(2),
   sysPath = __webpack_require__(0),
   { promisify } = __webpack_require__(1);
 
-let fsevents;
+/** @type {Object.<string, *>} */ let fsevents;
 try {
   fsevents = __webpack_require__(29);
 } catch (error) {
@@ -2828,7 +2819,7 @@ const Depth = (value) => (isNaN(value) ? {} : { depth: value }),
 
   FSEventsWatchers = new Map(),
 
-  consolidateThreshhold = 10,
+  consolidateThreshold = 10,
 
   wrongEventFlags = new Set([69888, 70400, 71424, 72704, 73472, 131328, 131840, 262912]),
 
@@ -2896,7 +2887,7 @@ const couldConsolidate = (path) => {
   for (const watchPath of FSEventsWatchers.keys())
     if (watchPath.indexOf(path) === 0) {
       count++;
-      if (count >= consolidateThreshhold) return true;
+      if (count >= consolidateThreshold) return true;
     }
 
   return false;
@@ -3000,7 +2991,7 @@ _watchWithFsEvents(watchPath, realPath, transform, globFilter) {
         sameTypes(info, stats)
           ? this.addOrChange(path, fullPath, realPath, parent, watchedDir, item, info, opts)
           : this.handleEvent(EV_UNLINK, path, fullPath, realPath, parent, watchedDir, item, info, opts);
-      } else this.checkExists(path, fullPath, realPath, parent, watchedDir, item, info, opts);
+      } else await this.checkExists(path, fullPath, realPath, parent, watchedDir, item, info, opts);
     else
       switch (info.event) {
       case FSEVENT_CREATED:
@@ -3029,7 +3020,7 @@ async _handleFsEventsSymlink(linkPath, fullPath, transform, curDepth) {
 
     this.fsw._incrReadyCount();
 
-    this._addToFsEvents(linkTarget || linkPath, (path) => {
+    await this._addToFsEvents(linkTarget || linkPath, (path) => {
       let aliasedPath =
         linkTarget && linkTarget !== DOT_SLASH
         ? path.replace(linkTarget, linkPath)
@@ -3077,7 +3068,7 @@ async _addToFsEvents(path, transform, forceAdd, priorDepth) {
     wh = this.fsw._getWatchHelpers(path);
 
   try {
-    const stats = await statMethods[wh.statMethod](wh.watchPath);
+    const /** @type {Stats} */ stats = await statMethods[wh.statMethod](wh.watchPath);
     if (this.fsw.closed) return;
     if (this.fsw._isIgnored(wh.watchPath, stats)) throw null;
 
@@ -3136,6 +3127,7 @@ module.exports.canUse = canUse;
 // 29
 function(module) {
 
+// noinspection NpmUsedModulesInstalled
 module.exports = require('fsevents');
 
 }

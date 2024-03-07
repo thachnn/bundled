@@ -547,7 +547,7 @@ var makeOptions = function (value, options) {
   }
 }
 
-var prr = function (obj, key, value, options) {
+module.exports = function (obj, key, value, options) {
   options = makeOptions(value, options)
 
   if (typeof key == 'object') {
@@ -562,8 +562,6 @@ var prr = function (obj, key, value, options) {
 
   return setProperty(obj, key, options)
 }
-
-module.exports = prr
 
 }
 ]);

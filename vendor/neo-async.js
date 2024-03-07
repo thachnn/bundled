@@ -15,7 +15,7 @@ var obj = 'object',
   nativePush = Array.prototype.push,
   iteratorSymbol = typeof Symbol === func && Symbol.iterator;
 
-var nextTick, asyncNextTick, asyncSetImmediate;
+var nextTick, asyncNextTick = void 0, asyncSetImmediate = void 0;
 createImmediate();
 
 var each = createEach(arrayEach, baseEach, symbolEach),
@@ -605,7 +605,7 @@ function symbolEachKeyValue(collection, iterator, createCallback) {
 
 function onlyOnce(func) {
   return function(err, res) {
-    var fn = func;
+    /** @type {Function} */ var fn = func;
     func = throwError;
     fn(err, res);
   };
@@ -613,7 +613,7 @@ function onlyOnce(func) {
 
 function once(func) {
   return function(err, res) {
-    var fn = func;
+    /** @type {Function} */ var fn = func;
     func = noop;
     fn(err, res);
   };
@@ -3813,7 +3813,7 @@ function auto(tasks, concurrency, callback) {
         var safeResults = objectClone(results);
         safeResults[key] = arg;
         key = null;
-        var _callback = callback;
+        /** @type {Function} */ var _callback = callback;
         callback = noop;
         _callback(err, safeResults);
         return;
@@ -3851,7 +3851,7 @@ function auto(tasks, concurrency, callback) {
   }
 }
 
-var FN_ARGS = /^(function)?\s*[^\(]*\(\s*([^\)]*)\)/m,
+var FN_ARGS = /^(function)?\s*[^(]*\(\s*([^)]*)\)/m,
   FN_ARG_SPLIT = /,/,
   FN_ARG = /(=.+)?(\s*)$/,
   STRIP_COMMENTS = /((\/\/.*$)|(\/\*[\s\S]*?\*\/))/gm;
@@ -4317,7 +4317,8 @@ function ensureAsync(fn) {
 function constant() {
   var args = [null].concat(createArray(arguments));
   return function(callback) {
-    (callback = arguments[arguments.length - 1]).apply(this, args);
+    callback = arguments[arguments.length - 1];
+    callback.apply(this, args);
   };
 }
 

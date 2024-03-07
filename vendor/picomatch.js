@@ -92,7 +92,7 @@ module.exports = {
   REGEX_SPECIAL_CHARS: /[-*+?.^${}(|)[\]]/,
   REGEX_SPECIAL_CHARS_BACKREF: /(\\?)((\W)(\3*))/g,
   REGEX_SPECIAL_CHARS_GLOBAL: /([-*+?.^${}(|)[\]])/g,
-  REGEX_REMOVE_BACKSLASH: /(?:\[.*?[^\\]\]|\\(?=.))/g,
+  REGEX_REMOVE_BACKSLASH: /(?:\[.*?[^\\]]|\\(?=.))/g,
 
   REPLACEMENTS: { '***': '*', '**/**': '**', '**/**/**': '**' },
 
@@ -247,7 +247,7 @@ const picomatch = (glob, options, returnState = false) => {
   if (glob === '' || (typeof glob != 'string' && !isState))
     throw new TypeError('Expected pattern to be a non-empty string');
 
-  const opts = options || {},
+  const /** @type {Object.<string, *>} */ opts = options || {},
     posix = utils.isWindows(options),
     regex = isState
       ? picomatch.compileRe(glob, options)
@@ -396,7 +396,7 @@ const isPathSeparator = code => code === CHAR_FORWARD_SLASH || code === CHAR_BAC
     if (token.isPrefix !== true) token.depth = token.isGlobstar ? Infinity : 1;
   };
 
-const scan = (input, options) => {
+module.exports = (input, options) => {
   const opts = options || {},
 
     length = input.length - 1,
@@ -405,7 +405,7 @@ const scan = (input, options) => {
     tokens = [],
     parts = [];
 
-  let prev,
+  let prev = void 0,
     code,
     str = input,
     index = -1,
@@ -513,7 +513,7 @@ const scan = (input, options) => {
         code === CHAR_AT ||
         code === CHAR_ASTERISK ||
         code === CHAR_QUESTION_MARK ||
-        code === CHAR_EXCLAMATION_MARK) == true &&
+        code === CHAR_EXCLAMATION_MARK) && // == true
       peek() === CHAR_LEFT_PARENTHESES
     ) {
       isGlob = token.isGlob = true;
@@ -698,8 +698,6 @@ const scan = (input, options) => {
   return state;
 };
 
-module.exports = scan;
-
 },
 // 5
 function (module, exports, __webpack_require__) {
@@ -715,7 +713,7 @@ const {
   REPLACEMENTS
 } = constants;
 
-const expandRange = (args, options) => {
+const expandRange = (args, /** Object.<string, *> */ options) => {
   if (typeof options.expandRange == 'function') return options.expandRange(...args, options);
 
   args.sort();

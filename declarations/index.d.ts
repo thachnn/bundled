@@ -33,11 +33,8 @@ import {
   HookMap,
   SyncBailHook,
   SyncHook,
-  SyncLoopHook,
   SyncWaterfallHook,
-  AsyncParallelBailHook,
   AsyncParallelHook,
-  AsyncSeriesBailHook,
   AsyncSeriesHook,
   AsyncSeriesWaterfallHook,
 } from '../lib/tapable';
@@ -203,7 +200,7 @@ declare namespace webpack {
         chunkLoadTimeout?: number | undefined;
         /** This option enables cross-origin loading of chunks. */
         crossOriginLoading?: string | boolean | undefined;
-        /** The JSONP function used by webpack for asnyc loading of chunks. */
+        /** The JSONP function used by webpack for async loading of chunks. */
         jsonpFunction?: string | undefined;
         /** Allows customization of the script type webpack injects script tags into the DOM to download async chunks. */
         jsonpScriptType?: 'text/javascript' | 'module' | undefined;
@@ -625,12 +622,12 @@ declare namespace webpack {
 
     namespace Options {
         type Devtool = 'eval' | 'inline-source-map' | 'cheap-eval-source-map' | 'cheap-source-map' | 'cheap-module-eval-source-map' | 'cheap-module-source-map' | 'eval-source-map'
-            | 'source-map' | 'nosources-source-map' | 'hidden-source-map' | 'nosources-source-map' | 'inline-cheap-source-map' | 'inline-cheap-module-source-map' | '@eval'
+            | 'source-map' | 'nosources-source-map' | 'hidden-source-map' | 'inline-cheap-source-map' | 'inline-cheap-module-source-map' | '@eval'
             | '@inline-source-map' | '@cheap-eval-source-map' | '@cheap-source-map' | '@cheap-module-eval-source-map' | '@cheap-module-source-map' | '@eval-source-map'
-            | '@source-map' | '@nosources-source-map' | '@hidden-source-map' | '@nosources-source-map' | '#eval' | '#inline-source-map' | '#cheap-eval-source-map'
+            | '@source-map' | '@nosources-source-map' | '@hidden-source-map' | '#eval' | '#inline-source-map' | '#cheap-eval-source-map'
             | '#cheap-source-map' | '#cheap-module-eval-source-map' | '#cheap-module-source-map' | '#eval-source-map' | '#source-map' | '#nosources-source-map'
-            | '#hidden-source-map' | '#nosources-source-map' | '#@eval' | '#@inline-source-map' | '#@cheap-eval-source-map' | '#@cheap-source-map' | '#@cheap-module-eval-source-map'
-            | '#@cheap-module-source-map' | '#@eval-source-map' | '#@source-map' | '#@nosources-source-map' | '#@hidden-source-map' | '#@nosources-source-map' | boolean | string;
+            | '#hidden-source-map' | '#@eval' | '#@inline-source-map' | '#@cheap-eval-source-map' | '#@cheap-source-map' | '#@cheap-module-eval-source-map'
+            | '#@cheap-module-source-map' | '#@eval-source-map' | '#@source-map' | '#@nosources-source-map' | '#@hidden-source-map' | boolean | string;
 
         interface Performance {
             /** This property allows webpack to control what files are used to calculate performance hints. */
@@ -1058,12 +1055,12 @@ declare namespace webpack {
             index?: number | undefined;
         }
 
-        interface SynteticDependencyLocation {
+        interface SyntheticDependencyLocation {
             name: string;
             index?: number | undefined;
         }
 
-        type DependencyLocation = SynteticDependencyLocation | RealDependencyLocation;
+        type DependencyLocation = SyntheticDependencyLocation | RealDependencyLocation;
 
         class Dependency {
             constructor();
@@ -1740,7 +1737,7 @@ declare namespace webpack {
             depth?: number | undefined;
             errors: number;
             failed: boolean;
-            filteredModules?: boolean | undefined;
+            filteredModules?: boolean | number | undefined;
             id: number | string;
             identifier: string;
             index: number;
@@ -2160,7 +2157,7 @@ declare namespace webpack {
                 minSize: 30000;
                 /**
                  * Size in byte.
-                 * maximum size prefered for each chunk.
+                 * maximum size preferred for each chunk.
                  *
                  * Default: 51200
                  */

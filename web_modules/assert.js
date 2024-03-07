@@ -17,6 +17,7 @@ function shouldUseNative() {
   try {
     if (!Object.assign) return false;
 
+    // noinspection JSPrimitiveTypeWrapperUsage
     var test1 = new String('abc');
     test1[5] = 'de';
     if (Object.getOwnPropertyNames(test1)[0] === '5') return false;
@@ -101,7 +102,7 @@ function isView(arrbuf) {
 
 var assert = (module.exports = ok),
 
-  regex = /\s*function\s+([^\(\s]*)\s*/;
+  regex = /\s*function\s+([^(\s]*)\s*/;
 function getName(func) {
   if (!util.isFunction(func)) return;
 

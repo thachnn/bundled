@@ -55,8 +55,7 @@ function Duplex(options) {
 
   if (options && options.writable === false) this.writable = false;
 
-  this.allowHalfOpen = true;
-  if (options && options.allowHalfOpen === false) this.allowHalfOpen = false;
+  this.allowHalfOpen = !options || options.allowHalfOpen !== false;
 
   this.once('end', onend);
 }
@@ -472,6 +471,7 @@ function maybeReadMore_(stream, state) {
   state.readingMore = false;
 }
 
+// noinspection JSUnusedLocalSymbols
 Readable.prototype._read = function (n) {
   this.emit('error', new Error('_read() is not implemented'));
 };
@@ -1523,6 +1523,7 @@ Transform.prototype.push = function (chunk, encoding) {
   return Duplex.prototype.push.call(this, chunk, encoding);
 };
 
+// noinspection JSUnusedLocalSymbols
 Transform.prototype._transform = function (chunk, encoding, cb) {
   throw new Error('_transform() is not implemented');
 };
@@ -1539,7 +1540,7 @@ Transform.prototype._write = function (chunk, encoding, cb) {
   }
 };
 
-Transform.prototype._read = function (n) {
+Transform.prototype._read = /** @param {number} n */ function (n) {
   var ts = this._transformState;
 
   if (ts.writechunk !== null && ts.writecb && !ts.transforming) {

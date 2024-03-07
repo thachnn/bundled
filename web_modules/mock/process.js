@@ -13,7 +13,7 @@ exports.browser = true;
 exports.env = {};
 exports.argv = [];
 
-exports.binding = function (name) {
+exports.binding = /** @param {string} name */ function (name) {
   throw new Error('No such module. (Possibly not yet loaded)');
 };
 !(function () {

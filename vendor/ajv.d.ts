@@ -36,7 +36,7 @@ declare namespace ajv {
     * Validate data using schema
     * Schema will be compiled and cached (using serialized JSON as key, [fast-json-stable-stringify](https://github.com/epoberezkin/fast-json-stable-stringify) is used to serialize by default).
     * @param  {string|object|Boolean} schemaKeyRef key, ref or schema object
-    * @param  {Any} data to be validated
+    * @param  {*} data to be validated
     * @return {Boolean} validation result. Errors from the last validation will be available in `ajv.errors` (and also in compiled schema: `schema.errors`).
     */
     validate(schemaKeyRef: object | string | boolean, data: any): boolean | PromiseLike<any>;
@@ -65,7 +65,7 @@ declare namespace ajv {
     addSchema(schema: Array<object> | object, key?: string): Ajv;
     /**
     * Add schema that will be used to validate other schemas
-    * options in META_IGNORE_OPTIONS are alway set to false
+    * options in META_IGNORE_OPTIONS are always set to false
     * @param {object} schema schema object
     * @param {string} key optional schema key
     * @return {Ajv} this for method chaining

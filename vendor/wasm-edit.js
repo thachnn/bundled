@@ -880,12 +880,12 @@ function _inherits(subClass, superClass) {
 var OptimizerError = /*#__PURE__*/ (function () {
   _inherits(OptimizerError, Error);
 
-  function OptimizerError(name, initalError) {
+  function OptimizerError(name, initialError) {
     _classCallCheck(this, OptimizerError);
 
     var _this = OptimizerError.__proto__ || Object.getPrototypeOf(OptimizerError);
-    _this = _possibleConstructorReturn(this, _this.call(this, "Error while optimizing: " + name + ": " + initalError.message));
-    _this.stack = initalError.stack;
+    _this = _possibleConstructorReturn(this, _this.call(this, "Error while optimizing: " + name + ": " + initialError.message));
+    _this.stack = initialError.stack;
     return _this;
   }
 
@@ -1139,6 +1139,7 @@ function applyAdd(ast, uint8Buffer, node) {
   if (t.isGlobal(node) && ((body = node.init).length === 0 || body[body.length - 1].id !== "end"))
     throw new Error("expressions must be ended");
 
+  // noinspection UnnecessaryLocalVariableJS
   var newByteArray = encodeNode(node),
 
     start = t.getEndOfSection(sectionMetadata),

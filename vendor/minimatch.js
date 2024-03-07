@@ -56,7 +56,7 @@ var slashSplit = /\/+/
 minimatch.filter = filter
 function filter(pattern, options) {
   options = options || {}
-  return function (p, i, list) {
+  return function (p, i, _list) {
     return minimatch(p, pattern, options)
   }
 }
@@ -179,7 +179,7 @@ function make() {
 
   this.debug(this.pattern, set)
 
-  set = set.map(function (s, si, set) {
+  set = set.map(function (s, si, _set) {
     return s.map(this.parse, this)
   }, this)
 
@@ -224,7 +224,7 @@ function braceExpand(pattern, options) {
 
   assertValidPattern(pattern)
 
-  return options.nobrace || !/\{(?:(?!\{).)*\}/.test(pattern) ? [pattern] : expand(pattern)
+  return options.nobrace || !/{(?:(?!{).)*}/.test(pattern) ? [pattern] : expand(pattern)
 }
 
 var MAX_PATTERN_LENGTH = 65536
@@ -248,7 +248,7 @@ function parse(pattern, isSub) {
   }
   if (pattern === '') return ''
 
-  var stateChar,
+  var stateChar = void 0,
     re = '',
     hasMagic = !!options.nocase,
     escaping = false,
@@ -524,7 +524,8 @@ function makeRe() {
 }
 
 minimatch.match = function (list, pattern, options) {
-  var mm = new Minimatch(pattern, (options = options || {}))
+  options || (options = {})
+  var mm = new Minimatch(pattern, options)
   list = list.filter(function (f) {
     return mm.match(f)
   })
@@ -752,14 +753,14 @@ function expand(str, isTop) {
     isSequence = isNumericSequence || isAlphaSequence,
     isOptions = m.body.indexOf(',') >= 0;
   if (!isSequence && !isOptions)
-    return m.post.match(/,.*\}/)
-      ? expand((str = m.pre + '{' + m.body + escClose + m.post)) // redundant
+    return m.post.match(/,.*}/)
+      ? expand(m.pre + '{' + m.body + escClose + m.post)
       : [str];
 
   if (isSequence) n = m.body.split(/\.\./);
   else if ((n = parseCommaParts(m.body)).length === 1 &&
       (n = expand(n[0], false).map(embrace)).length === 1)
-    return (post = m.post.length ? expand(m.post, false) : ['']).map(function (p) {
+    return (m.post.length ? expand(m.post, false) : ['']).map(function (p) {
       return m.pre + n[0] + p;
     });
 

@@ -82,7 +82,7 @@ function polyfills(fs) {
               (er.code === 'EACCES' || er.code === 'EPERM') &&
               Date.now() - start < 60000) {
             setTimeout(function () {
-              fs.stat(to, function (stater, st) {
+              fs.stat(to, function (stater, _st) {
                 stater && stater.code === 'ENOENT' ? fs$rename(from, to, CB) : cb(er)
               })
             }, backoff)

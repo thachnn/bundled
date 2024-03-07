@@ -86,7 +86,7 @@ export interface CompressOptions {
      */
     expression?: boolean;
     /**
-     * convert declarations from varto function whenever possible
+     * convert declarations from var to function whenever possible
      * @default true
      */
     functions?: boolean;
@@ -192,7 +192,7 @@ export interface CompressOptions {
      * If you pass true for this, UglifyJS will assume that object property access
      * (e.g. foo.bar or foo["bar"]) doesn't have any side effects.
      * Specify "strict" to treat foo.bar as side-effect-free only when foo is certain to not throw,
-     * i.e. not null or undefine
+     * i.e. not null or undefined
      * @default 'strict'
      */
     pure_getters?: boolean | 'strict';

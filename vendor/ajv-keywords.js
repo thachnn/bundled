@@ -597,7 +597,7 @@ function getData(jsonPointer, lvl) {
 
 var IDENTIFIER = /^[a-z$_][a-z$_0-9]*$/i,
   INTEGER = /^[0-9]+$/,
-  SINGLE_QUOTE = /'|\\/g;
+  SINGLE_QUOTE = /['\\]/g;
 function getProperty(key) {
   return INTEGER.test(key)
     ? '[' + key + ']'
@@ -620,7 +620,7 @@ module.exports = __webpack_require__(1)('Minimum');
 // 17
 function (module) {
 
-module.exports = function (it, $keyword, $ruleType) {
+module.exports = function (it, $keyword, _$ruleType) {
   var out = ' ',
     $lvl = it.level,
     $dataLvl = it.dataLevel,
@@ -784,7 +784,7 @@ module.exports = function defFunc(ajv) {
 // 20
 function (module) {
 
-module.exports = function (it, $keyword, $ruleType) {
+module.exports = function (it, $keyword, _$ruleType) {
   var out = ' ',
     $lvl = it.level,
     $dataLvl = it.dataLevel,
@@ -874,7 +874,7 @@ module.exports = function defFunc(ajv) {
 // 22
 function (module) {
 
-module.exports = function (it, $keyword, $ruleType) {
+module.exports = function (it, $keyword, _$ruleType) {
   var out = ' ',
     $lvl = it.level,
     $dataLvl = it.dataLevel,

@@ -865,8 +865,7 @@ function objectInstruction(id, object) {
 }
 
 function withLoc(n, end, start) {
-  var loc = { start: start, end: end };
-  n.loc = loc;
+  n.loc = { start: start, end: end };
   return n;
 }
 function withRaw(n, raw) {
@@ -1306,7 +1305,7 @@ function isAnonymous(ident) {
   return ident.raw === "";
 }
 function getSectionMetadata(ast, name) {
-  var section;
+  var section = void 0;
   traverse(ast, {
     SectionMetadata: (function (_SectionMetadata) {
       function SectionMetadata() {

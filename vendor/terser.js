@@ -1021,6 +1021,7 @@ function parse($TEXT, options) {
 
   function embed_tokens(parser) {
     return function(...args) {
+      // noinspection UnnecessaryLocalVariableJS
       const start = S.token,
         expr = parser(...args);
       expr.start = start;
@@ -2216,7 +2217,7 @@ function parse($TEXT, options) {
   }
 
   function export_() {
-    var is_default,
+    var is_default = void 0,
       exported_names,
       node, exported_value, exported_definition,
       start = S.token;
@@ -2501,14 +2502,15 @@ function parse($TEXT, options) {
       var names = [];
 
       for (var i = 0; i < node.elements.length; i++) {
-        if (node.elements[i] instanceof AST_Expansion) {
-          i + 1 === node.elements.length ||
-            token_error(node.elements[i].start, "Spread must the be last element in destructuring array");
+        var eli = node.elements[i];
 
-          node.elements[i].expression = to_destructuring(node.elements[i].expression);
+        if (eli instanceof AST_Expansion) {
+          i + 1 === node.elements.length || token_error(eli.start, "Spread must the be last element in destructuring array");
+
+          eli.expression = to_destructuring(eli.expression);
         }
 
-        names.push(to_destructuring(node.elements[i]));
+        names.push(to_destructuring(eli));
       }
 
       node = new AST_Destructuring({ start: node.start, names: names, is_array: true, end: node.end });
@@ -2618,7 +2620,8 @@ var AST_Token = DEFNODE(
   "Token", "type value line col pos endline endcol endpos nlb comments_before comments_after file raw quote end", {}, null
 );
 
-var AST_Node = DEFNODE("Node", "start end", {
+/** @class */
+var AST_Node = DEFNODE("Node", "start end", /** @lends AST_Node.prototype */ {
   _clone: function(deep) {
     if (deep) {
       var self = this.clone();
@@ -2676,6 +2679,7 @@ function walk_body(node, visitor) {
   for (var i = 0, len = body.length; i < len; i++) body[i]._walk(visitor);
 }
 
+/** @this AST_Node */
 function clone_block_scope(deep) {
   var clone = this._clone(deep);
   if (this.block_scope) clone.block_scope = this.block_scope.clone();
@@ -2833,7 +2837,8 @@ var AST_With = DEFNODE("With", "expression", {
   }
 }, AST_StatementWithBody);
 
-var AST_Scope = DEFNODE("Scope", "variables functions uses_with uses_eval parent_scope enclosed cname _var_name_cache", {
+/** @class */
+var AST_Scope = DEFNODE("Scope", "variables functions uses_with uses_eval parent_scope enclosed cname _var_name_cache", /** @lends AST_Scope.prototype */ {
   $documentation: "Base class for all statements introducing a lexical scope",
   $propdoc: {
     variables: "[Map/S] a map of name -> SymbolDef for all variables/functions defined in this scope",
@@ -2863,6 +2868,7 @@ var AST_Scope = DEFNODE("Scope", "variables functions uses_with uses_eval parent
   }
 }, AST_Block);
 
+/** @class */
 var AST_Toplevel = DEFNODE("Toplevel", "globals", {
   $documentation: "The toplevel scope",
   $propdoc: { globals: "[Map/S] a map of name -> SymbolDef for all undeclared names" },
@@ -3456,7 +3462,8 @@ var AST_ObjectProperty = DEFNODE("ObjectProperty", "key value", {
   }
 });
 
-var AST_ObjectKeyVal = DEFNODE("ObjectKeyVal", "quote", {
+/** @class */
+var AST_ObjectKeyVal = DEFNODE("ObjectKeyVal", "quote", /** @lends AST_ObjectKeyVal.prototype */ {
   $documentation: "A key: value object property",
   $propdoc: { quote: "[string] the original quote character" },
   computed_key() {
@@ -3617,7 +3624,8 @@ var AST_LabelRef = DEFNODE("LabelRef", null, { $documentation: "Reference to a l
   AST_This = DEFNODE("This", null, { $documentation: "The `this` symbol" }, AST_Symbol),
   AST_Super = DEFNODE("Super", null, { $documentation: "The `super` symbol" }, AST_This);
 
-var AST_Constant = DEFNODE("Constant", null, {
+/** @class */
+var AST_Constant = DEFNODE("Constant", null, /** @lends AST_Constant.prototype */ {
   $documentation: "Base class for all constants",
   getValue: function() {
     return this.value;
@@ -3629,6 +3637,7 @@ var AST_String = DEFNODE("String", "value quote", {
   $propdoc: { value: "[string] the contents of this string", quote: "[string] the original quote character" }
 }, AST_Constant);
 
+/** @class */
 var AST_Number = DEFNODE("Number", "value literal", {
   $documentation: "A number literal",
   $propdoc: { value: "[number] the numeric value", literal: "[string] numeric value as string (optional)" }
@@ -4756,6 +4765,10 @@ function OutputStream(options) {
 
 !(function() {
   function DEFPRINT(nodetype, generator) {
+    /**
+     * @method _codegen
+     * @memberof AST_Node#
+     */
     nodetype.DEFMETHOD("_codegen", generator);
   }
 
@@ -4776,6 +4789,10 @@ function OutputStream(options) {
     output.pop_node();
     if (self === output.use_asm) output.use_asm = null;
   });
+  /**
+   * @method _print
+   * @memberof AST_Node#
+   */
   AST_Node.DEFMETHOD("_print", AST_Node.prototype.print);
 
   AST_Node.DEFMETHOD("print_to_string", function(options) {
@@ -4785,6 +4802,10 @@ function OutputStream(options) {
   });
 
   function PARENS(nodetype, func) {
+    /**
+     * @method needs_parens
+     * @memberof AST_Node#
+     */
     Array.isArray(nodetype)
       ? nodetype.forEach(function(nodetype) {
           PARENS(nodetype, func);
@@ -4991,6 +5012,10 @@ function OutputStream(options) {
     output.in_directive = false;
   }
 
+  /**
+   * @method _do_print_body
+   * @memberof AST_StatementWithBody#
+   */
   AST_StatementWithBody.DEFMETHOD("_do_print_body", function(output) {
     force_statement(this.body, output);
   });
@@ -5102,6 +5127,10 @@ function OutputStream(options) {
     self._do_print_body(output);
   });
 
+  /**
+   * @method _do_print
+   * @memberof AST_Node#
+   */
   AST_Lambda.DEFMETHOD("_do_print", function(output, nokeyword) {
     var self = this;
     if (!nokeyword) {
@@ -5711,6 +5740,10 @@ function OutputStream(options) {
 
     output.semicolon();
   });
+  /**
+   * @method _print_getter_setter
+   * @memberof AST_ObjectProperty#
+   */
   AST_ObjectProperty.DEFMETHOD("_print_getter_setter", function(type, output) {
     var self = this;
     if (self.static) {
@@ -5799,7 +5832,7 @@ function OutputStream(options) {
     return best;
   }
 
-  function make_num(num) {
+  function make_num(/** number */ num) {
     var match, len, digits,
       str = num.toString(10).replace(/^0\./, ".").replace("e+", "e"),
       candidates = [str];
@@ -5830,6 +5863,10 @@ function OutputStream(options) {
 
   function DEFMAP(nodetype, generator) {
     nodetype.forEach(function(nodetype) {
+      /**
+       * @method add_source_map
+       * @memberof AST_Node#
+       */
       nodetype.DEFMETHOD("add_source_map", generator);
     });
   }
@@ -6269,6 +6306,10 @@ AST_Scope.DEFMETHOD("figure_out_scope", function(options, { parent_scope = null,
       });
 });
 
+/**
+ * @method def_global
+ * @memberof AST_Toplevel#
+ */
 AST_Toplevel.DEFMETHOD("def_global", function(node) {
   var globals = this.globals, name = node.name;
   if (globals.has(name)) return globals.get(name);
@@ -6280,6 +6321,10 @@ AST_Toplevel.DEFMETHOD("def_global", function(node) {
   return g;
 });
 
+/**
+ * @method init_scope_vars
+ * @memberof AST_Scope#
+ */
 AST_Scope.DEFMETHOD("init_scope_vars", function(parent_scope) {
   this.variables = new Map();
   this.functions = new Map();
@@ -6291,6 +6336,10 @@ AST_Scope.DEFMETHOD("init_scope_vars", function(parent_scope) {
   this._var_name_cache = null;
 });
 
+/**
+ * @method var_names
+ * @memberof AST_Scope#
+ */
 AST_Scope.DEFMETHOD("var_names", function varNames() {
   var var_names = this._var_name_cache;
   if (!var_names) {
@@ -6307,6 +6356,10 @@ AST_Scope.DEFMETHOD("var_names", function varNames() {
   return var_names;
 });
 
+/**
+ * @method add_var_name
+ * @memberof AST_Scope#
+ */
 AST_Scope.DEFMETHOD("add_var_name", function(name) {
   this._added_var_names || (this._added_var_names = new Set());
 
@@ -6315,6 +6368,10 @@ AST_Scope.DEFMETHOD("add_var_name", function(name) {
   this._var_name_cache.add(name);
 });
 
+/**
+ * @method add_child_scope
+ * @memberof AST_Scope#
+ */
 AST_Scope.DEFMETHOD("add_child_scope", function(scope) {
   if (scope.parent_scope === this) return;
 
@@ -6350,6 +6407,10 @@ AST_Lambda.DEFMETHOD("is_block_scope", return_false);
 AST_Toplevel.DEFMETHOD("is_block_scope", return_false);
 AST_SwitchBranch.DEFMETHOD("is_block_scope", return_false);
 AST_Block.DEFMETHOD("is_block_scope", return_true);
+/**
+ * @method is_block_scope
+ * @memberof AST_Scope#
+ */
 AST_Scope.DEFMETHOD("is_block_scope", function() {
   return this._block_scope || false;
 });
@@ -6366,6 +6427,10 @@ AST_Arrow.DEFMETHOD("init_scope_vars", function() {
   this.uses_arguments = false;
 });
 
+/**
+ * @method mark_enclosed
+ * @memberof AST_Symbol#
+ */
 AST_Symbol.DEFMETHOD("mark_enclosed", function() {
   for (var def = this.definition(), s = this.scope; s; ) {
     push_uniq(s.enclosed, def);
@@ -6379,11 +6444,19 @@ AST_Symbol.DEFMETHOD("reference", function() {
   this.mark_enclosed();
 });
 
+/**
+ * @method find_variable
+ * @memberof AST_Scope#
+ */
 AST_Scope.DEFMETHOD("find_variable", function(name) {
   if (name instanceof AST_Symbol) name = name.name;
   return this.variables.get(name) || (this.parent_scope && this.parent_scope.find_variable(name));
 });
 
+/**
+ * @method def_function
+ * @memberof AST_Scope#
+ */
 AST_Scope.DEFMETHOD("def_function", function(symbol, init) {
   var def = this.def_variable(symbol, init);
   if (!def.init || def.init instanceof AST_Defun) def.init = init;
@@ -6391,6 +6464,10 @@ AST_Scope.DEFMETHOD("def_function", function(symbol, init) {
   return def;
 });
 
+/**
+ * @method def_variable
+ * @memberof AST_Scope#
+ */
 AST_Scope.DEFMETHOD("def_variable", function(symbol, init) {
   var def = this.variables.get(symbol.name);
   if (def) {
@@ -6418,6 +6495,10 @@ function next_mangled(scope, options) {
   }
 }
 
+/**
+ * @method next_mangled
+ * @memberof AST_Scope#
+ */
 AST_Scope.DEFMETHOD("next_mangled", function(options) {
   return next_mangled(this, options);
 });
@@ -6442,6 +6523,10 @@ AST_Function.DEFMETHOD("next_mangled", function(options, def) {
   }
 });
 
+/**
+ * @method unmangleable
+ * @memberof AST_Symbol#
+ */
 AST_Symbol.DEFMETHOD("unmangleable", function(options) {
   var def = this.definition();
   return !def || def.unmangleable(options);
@@ -6461,6 +6546,10 @@ AST_Symbol.DEFMETHOD("global", function() {
   return this.thedef.global;
 });
 
+/**
+ * @method _default_mangler_options
+ * @memberof AST_Toplevel#
+ */
 AST_Toplevel.DEFMETHOD("_default_mangler_options", function(options) {
   options = defaults(options, {
     eval: false,
@@ -6479,6 +6568,10 @@ AST_Toplevel.DEFMETHOD("_default_mangler_options", function(options) {
   return options;
 });
 
+/**
+ * @method mangle_names
+ * @memberof AST_Toplevel#
+ */
 AST_Toplevel.DEFMETHOD("mangle_names", function(options) {
   options = this._default_mangler_options(options);
 
@@ -6545,6 +6638,10 @@ AST_Toplevel.DEFMETHOD("mangle_names", function(options) {
   }
 });
 
+/**
+ * @method find_colliding_names
+ * @memberof AST_Toplevel#
+ */
 AST_Toplevel.DEFMETHOD("find_colliding_names", function(options) {
   const cache = options.cache && options.cache.props,
     avoid = new Set();
@@ -6603,14 +6700,23 @@ AST_Toplevel.DEFMETHOD("expand_names", function(options) {
   }
 });
 
+/**
+ * @method tail_node
+ * @memberof AST_Node#
+ */
 AST_Node.DEFMETHOD("tail_node", return_this);
 AST_Sequence.DEFMETHOD("tail_node", function() {
   return this.expressions[this.expressions.length - 1];
 });
 
+/**
+ * @method compute_char_frequency
+ * @memberof AST_Toplevel#
+ */
 AST_Toplevel.DEFMETHOD("compute_char_frequency", function(options) {
   options = this._default_mangler_options(options);
   try {
+    /** @this (AST_Node|*) */
     AST_Node.prototype.print = function(stream, force_parens) {
       this._print(stream, force_parens);
       this instanceof AST_Symbol && !this.unmangleable(options) ? base54.consider(this.name, -1)
@@ -6869,6 +6975,7 @@ AST_Unary.prototype._size = function() {
   return this.operator === "typeof" ? 7 : this.operator === "void" ? 5 : this.operator.length;
 };
 
+/** @this (AST_Binary|AST_Node) */
 AST_Binary.prototype._size = function(info) {
   if (this.operator === "in") return 4;
 
@@ -6931,6 +7038,7 @@ AST_SymbolClassProperty.prototype._size = function() {
   return this.name.length;
 };
 
+/** @this AST_SymbolRef */
 AST_SymbolRef.prototype._size = function() {
   const { name, thedef } = this;
 
@@ -6954,6 +7062,7 @@ AST_String.prototype._size = function() {
   return this.value.length + 2;
 };
 
+/** @this AST_Number */
 AST_Number.prototype._size = function() {
   const { value } = this;
   return value === 0 ? 1 : value > 0 && Math.floor(value) === value ? Math.floor(Math.log10(value) + 1) : value.toString().length;
@@ -7226,10 +7335,18 @@ AST_Toplevel.DEFMETHOD("drop_console", function() {
   }));
 });
 
+/**
+ * @method equivalent_to
+ * @memberof AST_Node#
+ */
 AST_Node.DEFMETHOD("equivalent_to", function(node) {
   return equivalent_to(this, node);
 });
 
+/**
+ * @method process_expression
+ * @memberof AST_Scope#
+ */
 AST_Scope.DEFMETHOD("process_expression", function(insert, compressor) {
   var self = this;
   var tt = new TreeTransformer(function(node) {
@@ -7732,6 +7849,10 @@ function is_modified(compressor, tw, node, value, level, immutable) {
   node.DEFMETHOD("reduce_vars", func);
 });
 
+/**
+ * @method reset_opt_flags
+ * @memberof AST_Toplevel#
+ */
 AST_Toplevel.DEFMETHOD("reset_opt_flags", function(compressor) {
   const self = this,
     reduce_vars = compressor.option("reduce_vars");
@@ -7756,6 +7877,10 @@ AST_Symbol.DEFMETHOD("fixed_value", function() {
   return !fixed || fixed instanceof AST_Node ? fixed : fixed();
 });
 
+/**
+ * @method is_immutable
+ * @memberof AST_SymbolRef#
+ */
 AST_SymbolRef.DEFMETHOD("is_immutable", function() {
   var orig = this.definition().orig;
   return orig.length == 1 && orig[0] instanceof AST_SymbolLambda;
@@ -7888,6 +8013,10 @@ function is_undeclared_ref(node) {
 var global_names = makePredicate(
   "Array Boolean clearInterval clearTimeout console Date decodeURI decodeURIComponent encodeURI encodeURIComponent Error escape eval EvalError Function isFinite isNaN JSON Math Number parseFloat parseInt RangeError ReferenceError RegExp Object setInterval setTimeout String SyntaxError TypeError unescape URIError"
 );
+/**
+ * @method is_declared
+ * @memberof AST_SymbolRef#
+ */
 AST_SymbolRef.DEFMETHOD("is_declared", function(compressor) {
   return !this.definition().undeclared || (compressor.option("unsafe") && global_names.has(this.name));
 });
@@ -7932,7 +8061,7 @@ function tighten_body(statements, compressor) {
 
   function collapse(statements, compressor) {
     if (scope.pinned()) return statements;
-    var args,
+    var args = void 0,
       candidates = [],
       stat_index = statements.length;
     var scanner = new TreeTransformer(function(node) {
@@ -8709,8 +8838,10 @@ function tighten_body(statements, compressor) {
       if (prop instanceof AST_Node) break;
       prop = "" + prop;
       var diff = compressor.option("ecma") < 2015 && compressor.has_directive("use strict") ? function(node) {
+        // noinspection JSReferencingMutableVariableFromClosure
         return node.key != prop && node.key && node.key.name != prop;
       } : function(node) {
+        // noinspection JSReferencingMutableVariableFromClosure
         return node.key && node.key.name != prop;
       };
       if (!def.value.properties.every(diff)) break;
@@ -8824,6 +8955,10 @@ function is_undefined(node, compressor) {
 }
 
 !(function(def_may_throw_on_access) {
+  /**
+   * @method may_throw_on_access
+   * @memberof AST_Node#
+   */
   AST_Node.DEFMETHOD("may_throw_on_access", function(compressor) {
     return !compressor.option("pure_getters") || this._dot_throw(compressor);
   });
@@ -8879,6 +9014,10 @@ function is_undefined(node, compressor) {
     return !fixed || fixed._dot_throw(compressor);
   });
 })(function(node, func) {
+  /**
+   * @method _dot_throw
+   * @memberof AST_Node#
+   */
   node.DEFMETHOD("_dot_throw", func);
 });
 
@@ -8905,6 +9044,10 @@ function is_undefined(node, compressor) {
   def_is_boolean(AST_True, return_true);
   def_is_boolean(AST_False, return_true);
 })(function(node, func) {
+  /**
+   * @method is_boolean
+   * @memberof AST_Node#
+   */
   node.DEFMETHOD("is_boolean", func);
 });
 
@@ -8930,6 +9073,10 @@ function is_undefined(node, compressor) {
     return this.consequent.is_number(compressor) && this.alternative.is_number(compressor);
   });
 })(function(node, func) {
+  /**
+   * @method is_number
+   * @memberof AST_Node#
+   */
   node.DEFMETHOD("is_number", func);
 });
 
@@ -8953,6 +9100,10 @@ function is_undefined(node, compressor) {
     return this.consequent.is_string(compressor) && this.alternative.is_string(compressor);
   });
 })(function(node, func) {
+  /**
+   * @method is_string
+   * @memberof AST_Node#
+   */
   node.DEFMETHOD("is_string", func);
 });
 
@@ -8982,6 +9133,10 @@ function is_lhs(node, parent) {
     compressor.warn("global_defs " + node.print_to_string() + " redefined [{file}:{line},{col}]", node.start);
   }
 
+  /**
+   * @method resolve_defines
+   * @memberof AST_Toplevel#
+   */
   AST_Toplevel.DEFMETHOD("resolve_defines", function(compressor) {
     if (!compressor.option("global_defs")) return this;
     this.figure_out_scope({ ie8: compressor.option("ie8") });
@@ -9011,6 +9166,10 @@ function is_lhs(node, parent) {
     if (HOP(defines, name)) return to_node(defines[name], this);
   });
 })(function(node, func) {
+  /**
+   * @method _find_defs
+   * @memberof AST_Node#
+   */
   node.DEFMETHOD("_find_defs", func);
 });
 
@@ -9072,12 +9231,20 @@ var static_fns = convert_to_predicate({
 });
 
 !(function(def_eval) {
+  /**
+   * @method evaluate
+   * @memberof AST_Node#
+   */
   AST_Node.DEFMETHOD("evaluate", function(compressor) {
     if (!compressor.option("evaluate")) return this;
     var val = this._eval(compressor, 1);
     return !val || val instanceof RegExp ? val : typeof val == "function" || typeof val == "object" ? this : val;
   });
   var unaryPrefix = makePredicate("! ~ - + void");
+  /**
+   * @method is_constant
+   * @memberof AST_Node#
+   */
   AST_Node.DEFMETHOD("is_constant", function() {
     return this instanceof AST_Constant
       ? !(this instanceof AST_RegExp)
@@ -9321,6 +9488,10 @@ var static_fns = convert_to_predicate({
   });
   def_eval(AST_New, return_this);
 })(function(node, func) {
+  /**
+   * @method _eval
+   * @memberof AST_Node#
+   */
   node.DEFMETHOD("_eval", func);
 });
 
@@ -9394,6 +9565,10 @@ var static_fns = convert_to_predicate({
     return basic_negation(this);
   });
 })(function(node, func) {
+  /**
+   * @method negate
+   * @memberof AST_Node#
+   */
   node.DEFMETHOD("negate", function(compressor, first_in_statement) {
     return func.call(this, compressor, first_in_statement);
   });
@@ -9402,6 +9577,10 @@ var static_fns = convert_to_predicate({
 var global_pure_fns = makePredicate(
   "Boolean decodeURI decodeURIComponent Date encodeURI encodeURIComponent Error escape EvalError isFinite isNaN Number Object parseFloat parseInt RangeError ReferenceError String SyntaxError TypeError unescape URIError"
 );
+/**
+ * @method is_expr_pure
+ * @memberof AST_Call#
+ */
 AST_Call.DEFMETHOD("is_expr_pure", function(compressor) {
   if (compressor.option("unsafe")) {
     var expr = this.expression,
@@ -9424,6 +9603,10 @@ AST_Call.DEFMETHOD("is_expr_pure", function(compressor) {
   }
   return !!has_annotation(this, _PURE) || !compressor.pure_funcs(this);
 });
+/**
+ * @method is_call_pure
+ * @memberof AST_Node#
+ */
 AST_Node.DEFMETHOD("is_call_pure", return_false);
 AST_Dot.DEFMETHOD("is_call_pure", function(compressor) {
   if (!compressor.option("unsafe")) return;
@@ -9553,6 +9736,10 @@ const pure_prop_access_globals = new Set(["Number", "String", "Array", "Object",
     return any(this.segments, compressor);
   });
 })(function(node, func) {
+  /**
+   * @method has_side_effects
+   * @memberof AST_Node#
+   */
   node.DEFMETHOD("has_side_effects", func);
 });
 
@@ -9664,6 +9851,10 @@ const pure_prop_access_globals = new Set(["Number", "String", "Array", "Object",
     return !!this.value && this.value.may_throw(compressor);
   });
 })(function(node, func) {
+  /**
+   * @method may_throw
+   * @memberof AST_Node#
+   */
   node.DEFMETHOD("may_throw", func);
 });
 
@@ -9726,6 +9917,10 @@ const pure_prop_access_globals = new Set(["Number", "String", "Array", "Object",
     return !(this.key instanceof AST_Node) && this.value.is_constant_expression();
   });
 })(function(node, func) {
+  /**
+   * @method is_constant_expression
+   * @memberof AST_Node#
+   */
   node.DEFMETHOD("is_constant_expression", func);
 });
 
@@ -9747,6 +9942,10 @@ function aborts(thing) {
     return this.alternative && aborts(this.body) && aborts(this.alternative) && this;
   });
 })(function(node, func) {
+  /**
+   * @method aborts
+   * @memberof AST_Statement#
+   */
   node.DEFMETHOD("aborts", func);
 });
 
@@ -9800,6 +9999,10 @@ function opt_AST_Lambda(self, compressor) {
 def_optimize(AST_Lambda, opt_AST_Lambda);
 
 const r_keep_assign = /keep_assign/;
+/**
+ * @method drop_unused
+ * @memberof AST_Scope#
+ */
 AST_Scope.DEFMETHOD("drop_unused", function(compressor) {
   if (!compressor.option("unused")) return;
   if (compressor.has_directive("use asm")) return;
@@ -10084,6 +10287,10 @@ AST_Scope.DEFMETHOD("drop_unused", function(compressor) {
   }
 });
 
+/**
+ * @method hoist_declarations
+ * @memberof AST_Scope#
+ */
 AST_Scope.DEFMETHOD("hoist_declarations", function(compressor) {
   var self = this;
   if (compressor.has_directive("use asm") || !Array.isArray(self.body)) return self;
@@ -10191,6 +10398,10 @@ AST_Scope.DEFMETHOD("hoist_declarations", function(compressor) {
   return self;
 });
 
+/**
+ * @method make_var_name
+ * @memberof AST_Scope#
+ */
 AST_Scope.DEFMETHOD("make_var_name", function(prefix) {
   var var_names = this.var_names(),
     name = (prefix = prefix.replace(/(?:^[^a-z_$]|[^a-z0-9_$])/gi, "_"));
@@ -10199,6 +10410,10 @@ AST_Scope.DEFMETHOD("make_var_name", function(prefix) {
   return name;
 });
 
+/**
+ * @method hoist_properties
+ * @memberof AST_Scope#
+ */
 AST_Scope.DEFMETHOD("hoist_properties", function(compressor) {
   var self = this;
   if (!compressor.option("hoist_props") || compressor.has_directive("use asm")) return self;
@@ -10410,6 +10625,10 @@ AST_Scope.DEFMETHOD("hoist_properties", function(compressor) {
     return values && make_sequence(this, values);
   });
 })(function(node, func) {
+  /**
+   * @method drop_side_effect_free
+   * @memberof AST_Node#
+   */
   node.DEFMETHOD("drop_side_effect_free", func);
 });
 
@@ -10736,6 +10955,10 @@ def_optimize(AST_Try, function(self, compressor) {
   return self;
 });
 
+/**
+ * @method remove_initializers
+ * @memberof AST_Definitions#
+ */
 AST_Definitions.DEFMETHOD("remove_initializers", function() {
   var decls = [];
   this.definitions.forEach(function(def) {
@@ -10750,6 +10973,10 @@ AST_Definitions.DEFMETHOD("remove_initializers", function() {
   this.definitions = decls;
 });
 
+/**
+ * @method to_assignments
+ * @memberof AST_Definitions#
+ */
 AST_Definitions.DEFMETHOD("to_assignments", function(compressor) {
   var reduce_vars = compressor.option("reduce_vars");
   var assignments = this.definitions.reduce(function(a, def) {
@@ -10781,8 +11008,8 @@ function retain_top_func(fn, compressor) {
   return compressor.top_retain && fn instanceof AST_Defun && has_flag(fn, TOP) && fn.name && compressor.top_retain(fn.name);
 }
 
-def_optimize(AST_Call, function(self, compressor) {
-  var exp = self.expression,
+def_optimize(AST_Call, function(/** (AST_Call|AST_Node) */ self, compressor) {
+  var /** @type {(AST_Node|*)} */ exp = self.expression,
     fn = exp;
   inline_array_like_spread(self, compressor, self.args);
   var simple_args = self.args.every(arg => !(arg instanceof AST_Expansion));
@@ -10975,9 +11202,9 @@ def_optimize(AST_Call, function(self, compressor) {
         );
         var mangle = { ie8: compressor.option("ie8") };
         ast.figure_out_scope(mangle);
-        var fun,
+        var fun = void 0,
           comp = new Compressor(compressor.options);
-        (ast = ast.transform(comp)).figure_out_scope(mangle);
+        (ast = ast.transform(/** @type {TreeTransformer} */ comp)).figure_out_scope(mangle);
         base54.reset();
         ast.compute_char_frequency(mangle);
         ast.mangle_names(mangle);
@@ -11316,6 +11543,10 @@ def_optimize(AST_Sequence, function(self, compressor) {
   }
 });
 
+/**
+ * @method lift_sequences
+ * @memberof AST_Unary#
+ */
 AST_Unary.DEFMETHOD("lift_sequences", function(compressor) {
   if (compressor.option("sequences") && this.expression instanceof AST_Sequence) {
     var x = this.expression.expressions.slice(),
@@ -11869,7 +12100,7 @@ def_optimize(AST_SymbolRef, function(self, compressor) {
     if (single_use && fixed instanceof AST_Class)
       single_use =
         !(fixed.extends && (fixed.extends.may_throw(compressor) || fixed.extends.has_side_effects(compressor))) &&
-        !fixed.properties.some(prop => prop.may_throw(compressor) || prop.has_side_effects(compressor));
+        !fixed.properties.some(/** AST_Node */ prop => prop.may_throw(compressor) || prop.has_side_effects(compressor));
 
     if (single_use && fixed) {
       if (fixed instanceof AST_DefClass) {
@@ -12441,12 +12672,20 @@ def_optimize(AST_Sub, function(self, compressor) {
   return ev !== self ? best_of(compressor, make_node_from_constant(ev, self).optimize(compressor), self) : self;
 });
 
+/**
+ * @method contains_this
+ * @memberof AST_Lambda#
+ */
 AST_Lambda.DEFMETHOD("contains_this", function() {
   return walk(this, node =>
     node instanceof AST_This ? walk_abort : (node !== this && node instanceof AST_Scope && !(node instanceof AST_Arrow)) || void 0
   );
 });
 
+/**
+ * @method flatten_object
+ * @memberof AST_PropAccess#
+ */
 AST_PropAccess.DEFMETHOD("flatten_object", function(key, compressor) {
   if (!compressor.option("properties")) return;
   var arrows = compressor.option("unsafe_arrows") && compressor.option("ecma") >= 2015,
@@ -12757,7 +12996,7 @@ function SourceMap(options) {
     orig_map = options.orig && new MOZ_SourceMap.SourceMapConsumer(options.orig);
 
   orig_map &&
-    orig_map.sources.forEach(function(source) {
+    orig_map.sources.forEach(function(/** string */ source) {
       var sourceContent = orig_map.sourceContentFor(source, true);
       sourceContent && generator.setSourceContent(source, sourceContent);
     });
@@ -12786,6 +13025,7 @@ function SourceMap(options) {
   };
 }
 
+// noinspection SpellCheckingInspection
 var domprops = [
   "$&",
   "$'",

@@ -91,7 +91,7 @@ or packaging just about any resource or asset.
 
 ### Get Started
 
-Check out webpack's quick [**Get Started**](https://webpack.js.org/guides/getting-started) guide and the [other guides](https://webpack.js.org/guides/).
+Check out webpack’s quick [**Get Started**](https://webpack.js.org/guides/getting-started) guide and the [other guides](https://webpack.js.org/guides/).
 
 ### Browser Compatibility
 
@@ -331,15 +331,15 @@ Contributions go far beyond pull requests and commits. Although we love giving y
 * Adding unit, or functional tests
 * Triaging GitHub issues -- especially determining whether an issue still persists or is reproducible.
 * [Searching #webpack on twitter](https://twitter.com/search?q=webpack) and helping someone else who needs help
-* Teaching others how to contribute to one of the many webpack's repos!
-* [Blogging, speaking about, or creating tutorials](https://github.com/webpack-contrib/awesome-webpack) about one of webpack's many features.
+* Teaching others how to contribute to one of the many webpack’s repos!
+* [Blogging, speaking about, or creating tutorials](https://github.com/webpack-contrib/awesome-webpack) about one of webpack’s many features.
 * Helping others in our webpack [gitter channel](https://gitter.im/webpack/webpack).
 
 If you are worried or don't know where to start, you can **always** reach out to [Sean Larkin (@TheLarkInn) on Twitter](https://twitter.com/thelarkinn) or simply submit an issue and a maintainer can help give you guidance!
 
 We have also started a series on our [Medium Publication](https://medium.com/webpack) called [The Contributor's Guide to webpack](https://medium.com/webpack/contributors-guide/home). We welcome you to read it and post any questions or responses if you still need help.
 
-_Looking to speak about webpack?_ We'd **love** to review your talk abstract/CFP! You can email it to webpack [at] opencollective [dot] com and we can give pointers or tips!!!
+_Looking to speak about webpack?_ We'd **love** to review your talk abstract/CFP! You can email it to webpack@opencollective.com and we can give pointers or tips!!!
 
 <h3 align="center">Creating your own plugins and loaders</h3>
 
@@ -358,7 +358,7 @@ If you want to discuss something or just need help, [here is our Gitter room](ht
 If you are still having difficulty, we would love for you to post
 a question to [StackOverflow with the webpack tag](https://stackoverflow.com/tags/webpack). It is much easier to answer questions that include your webpack.config.js and relevant files! So if you can provide them, we'd be extremely grateful (and more likely to help you find the answer!)
 
-If you are twitter savvy you can tweet #webpack with your question and someone should be able to reach out and help also.
+If you are Twitter savvy you can tweet #webpack with your question and someone should be able to reach out and help also.
 
 If you have discovered a 🐜 or have a feature suggestion, feel free to create an issue on Github.
 

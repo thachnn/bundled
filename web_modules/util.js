@@ -130,6 +130,10 @@ function stylizeWithColor(str, styleType) {
     : str;
 }
 
+/**
+ * @param {string} str
+ * @param {string} [styleType]
+ */
 function stylizeNoColor(str, styleType) {
   return str;
 }
@@ -400,7 +404,7 @@ function objectToString(o) {
   return Object.prototype.toString.call(o);
 }
 
-function pad(n) {
+function pad(/** number */ n) {
   return n < 10 ? '0' + n.toString(10) : n.toString(10);
 }
 

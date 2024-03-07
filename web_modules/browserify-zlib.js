@@ -4064,10 +4064,10 @@ module.exports = function (type, lens, lens_index, codes, table, table_index, wo
   var incr, fill, low, mask, next, end, here_bits, here_op, here_val;
   var bits = opts.bits,
 
-    len = 0,
-    sym = 0,
-    min = 0, max = 0,
-    root = 0,
+    len, // = 0
+    sym, // = 0
+    min = 0, max, // = 0
+    root, // = 0
     curr = 0,
     drop = 0,
     left = 0,

@@ -120,13 +120,15 @@ process.emit = noop;
 process.prependListener = noop;
 process.prependOnceListener = noop;
 
-process.listeners = function (name) { return []; };
+process.listeners = /** @param {string} name */ function (name) { return []; };
 
+// noinspection JSUnusedLocalSymbols
 process.binding = function (name) {
   throw new Error('process.binding is not supported');
 };
 
 process.cwd = function () { return '/'; };
+// noinspection JSUnusedLocalSymbols
 process.chdir = function (dir) {
   throw new Error('process.chdir is not supported');
 };

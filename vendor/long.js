@@ -1,5 +1,6 @@
 module.exports = Long;
 
+/** @type {Object.<string, *>} */
 var wasm = null;
 try {
   wasm = new WebAssembly.Instance(new WebAssembly.Module(new Uint8Array([
@@ -13,7 +14,7 @@ function Long(low, high, unsigned) {
   this.unsigned = !!unsigned;
 }
 
-Long.prototype.__isLong__;
+// FIXME Long.prototype.__isLong__;
 Object.defineProperty(Long.prototype, "__isLong__", { value: true });
 
 function isLong(obj) {

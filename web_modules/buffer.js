@@ -568,7 +568,7 @@ Buffer.prototype.lastIndexOf = function (val, byteOffset, encoding) {
   return bidirectionalIndexOf(this, val, byteOffset, encoding, false)
 }
 
-function hexWrite(buf, string, offset, length) {
+function hexWrite(buf, /** string */ string, offset, length) {
   offset = Number(offset) || 0
   var remaining = buf.length - offset
   if (!length) length = remaining
@@ -796,6 +796,7 @@ function utf16leSlice(buf, start, end) {
   return res
 }
 
+/** @returns {Buffer} */
 Buffer.prototype.slice = function (start, end) {
   var newBuf,
     len = this.length
@@ -888,7 +889,8 @@ Buffer.prototype.readIntLE = function (offset, byteLength, noAssert) {
     mul = 1
   for (var i = 0; ++i < byteLength && (mul *= 0x100); ) val += this[offset + i] * mul
 
-  if (val >= (mul *= 0x80)) val -= Math.pow(2, 8 * byteLength)
+  mul *= 0x80
+  if (val >= mul) val -= Math.pow(2, 8 * byteLength)
 
   return val
 }
@@ -903,7 +905,8 @@ Buffer.prototype.readIntBE = function (offset, byteLength, noAssert) {
     val = this[offset + --i]
   while (i > 0 && (mul *= 0x100)) val += this[offset + --i] * mul
 
-  if (val >= (mul *= 0x80)) val -= Math.pow(2, 8 * byteLength)
+  mul *= 0x80
+  if (val >= mul) val -= Math.pow(2, 8 * byteLength)
 
   return val
 }
@@ -1176,7 +1179,7 @@ Buffer.prototype.writeInt32BE = function (value, offset, noAssert) {
   return offset + 4
 }
 
-function checkIEEE754(buf, value, offset, ext, max, min) {
+function checkIEEE754(buf, value, offset, ext, max, _min) {
   if (offset + ext > buf.length) throw new RangeError('Index out of range')
   if (offset < 0) throw new RangeError('Index out of range')
 }
@@ -1298,11 +1301,11 @@ function stringtrim(str) {
   return str.trim ? str.trim() : str.replace(/^\s+|\s+$/g, '')
 }
 
-function toHex(n) {
+function toHex(/** number */ n) {
   return n < 16 ? '0' + n.toString(16) : n.toString(16)
 }
 
-function utf8ToBytes(string, units) {
+function utf8ToBytes(/** string */ string, units) {
   units = units || Infinity
   var bytes = []
 

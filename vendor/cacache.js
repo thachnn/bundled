@@ -160,7 +160,7 @@ function tryGet(key, p) {
     : p[key]
 }
 
-const proxyHandler = {
+const proxyHandler = /** @type {ProxyHandler<FiggyPudding>} */ {
   has: (obj, prop) => prop in obj.__specs && pudGet(obj, prop, false) !== void 0,
   ownKeys: obj => Object.keys(obj.__specs),
   get: (obj, prop) =>
@@ -257,7 +257,7 @@ function rimraf(p, options, cb) {
 
   if (options.disableGlob || !glob.hasMagic(p)) return afterGlob(null, [p])
 
-  options.lstat(p, function (er, stat) {
+  options.lstat(p, function (er, _stat) {
     if (!er) return afterGlob(null, [p])
 
     glob(p, options.glob, afterGlob)
@@ -663,7 +663,7 @@ function bucketEntriesSync(bucket, filter) {
   return _bucketEntries(fs.readFileSync(bucket, 'utf8'), filter)
 }
 
-function _bucketEntries(data, filter) {
+function _bucketEntries(data, _filter) {
   let entries = []
   data.split('\n').forEach(entry => {
     if (!entry) return
@@ -778,7 +778,8 @@ const SsriOpts = figgyPudding({
 class Hash {
   get isHash() { return true }
   constructor(hash, opts) {
-    const strict = !!(opts = SsriOpts(opts)).strict
+    opts = SsriOpts(opts)
+    const strict = !!opts.strict
     this.source = hash.trim()
     const match = this.source.match(strict ? STRICT_SRI_REGEX : SRI_REGEX)
     if (!match) return
@@ -796,7 +797,8 @@ class Hash {
     return this.toString()
   }
   toString(opts) {
-    if ((opts = SsriOpts(opts)).strict && !(
+    opts = SsriOpts(opts)
+    if (opts.strict && !(
         SPEC_ALGORITHMS.some(x => x === this.algorithm) &&
         this.digest.match(BASE64_REGEX) &&
         (this.options || []).every(opt => opt.match(VCHAR_REGEX))))
@@ -840,7 +842,8 @@ class Integrity {
     ) || false
   }
   pickAlgorithm(opts) {
-    const pickAlgorithm = (opts = SsriOpts(opts)).pickAlgorithm,
+    opts = SsriOpts(opts)
+    const pickAlgorithm = opts.pickAlgorithm,
       keys = Object.keys(this)
     if (!keys.length)
       throw new Error('No algorithms available for ' + JSON.stringify(this.toString()))
@@ -1042,7 +1045,7 @@ function createIntegrity(opts) {
       hashes.forEach(h => h.update(chunk, enc))
       return this
     },
-    digest: function (enc) {
+    digest: function (_enc) {
       return algorithms.reduce((acc, algo) => {
         const digest = hashes.shift().digest('base64'),
           hash = new Hash(`${algo}-${digest}${optString}`, opts)
@@ -1161,7 +1164,7 @@ function fixOwnerSync(cache, filepath) {
 }
 
 module.exports.mkdirfix = mkdirfix
-function mkdirfix(cache, p, cb) {
+function mkdirfix(cache, p, _cb) {
   return BB.resolve(inferOwner(cache)).then(() =>
     mkdirp(p).then(made => {
       if (made) return fixOwner(cache, made).then(() => made)
@@ -1451,7 +1454,7 @@ function unknownType(num, type) {
 }
 
 function invalidType(num, expectedTypes, value) {
-  var valueType
+  var valueType = void 0
   Object.keys(types).forEach(function (typeCode) {
     if (types[typeCode].check(value)) valueType = types[typeCode].label
   })
@@ -1691,7 +1694,7 @@ var pipe = function (from, to) {
   return from.pipe(to)
 }
 
-var pump = function () {
+module.exports = function () {
   var error,
     streams = Array.prototype.slice.call(arguments),
     callback = (isFn(streams[streams.length - 1] || noop) && streams.pop()) || noop
@@ -1712,8 +1715,6 @@ var pump = function () {
 
   return streams.reduce(pipe)
 }
-
-module.exports = pump
 
 },
 // 24
@@ -1769,7 +1770,7 @@ const BB = __webpack_require__(1),
 
   contentPath = __webpack_require__(9),
   figgyPudding = __webpack_require__(4),
-  fs = __webpack_require__(6),
+  /** @property {*} copyFileSync */ fs = __webpack_require__(6),
   PassThrough = __webpack_require__(16).PassThrough,
   pipe = BB.promisify(__webpack_require__(2).pipe),
   ssri = __webpack_require__(10),
@@ -1834,12 +1835,12 @@ if (fs.copyFile) {
 
 function copy(cache, integrity, dest, opts) {
   opts = ReadOpts(opts)
-  return withContentSri(cache, integrity, (cpath, sri) => copyFileAsync(cpath, dest))
+  return withContentSri(cache, integrity, (cpath, _sri) => copyFileAsync(cpath, dest))
 }
 
 function copySync(cache, integrity, dest, opts) {
   opts = ReadOpts(opts)
-  return withContentSriSync(cache, integrity, (cpath, sri) => fs.copyFileSync(cpath, dest))
+  return withContentSriSync(cache, integrity, (cpath, _sri) => fs.copyFileSync(cpath, dest))
 }
 
 module.exports.hasContent = hasContent
@@ -2008,7 +2009,8 @@ MurmurHash3.prototype.result = function () {
   if (k1 > 0) {
     k1 = (k1 * 0x2d51 + 0xcc9e0000 * (k1 & 0xffff)) & 0xffffffff;
     k1 = (k1 << 15) | (k1 >>> 17);
-    h1 ^= k1 = (0x3593 * k1 + 0x1b870000 * (k1 & 0xffff)) & 0xffffffff;
+    k1 = (0x3593 * k1 + 0x1b870000 * (k1 & 0xffff)) & 0xffffffff;
+    h1 ^= k1;
   }
 
   h1 ^= this.len;
@@ -2016,7 +2018,8 @@ MurmurHash3.prototype.result = function () {
   h1 = (0xca6b * (h1 ^= h1 >>> 16) + 0x85eb0000 * (h1 & 0xffff)) & 0xffffffff;
   h1 = (0xae35 * (h1 ^= h1 >>> 13) + 0xc2b20000 * (h1 & 0xffff)) & 0xffffffff;
 
-  return (h1 ^= h1 >>> 16) >>> 0;
+  h1 ^= h1 >>> 16;
+  return h1 >>> 0;
 };
 
 MurmurHash3.prototype.reset = function (seed) {
@@ -2068,7 +2071,9 @@ RunQueue.prototype.run = function () {
 }
 
 RunQueue.prototype._runQueue = function () {
-  for (var self = this; this.inflight < this.maxConcurrency && this.queued; ) {
+  var self = this
+
+  while (this.inflight < this.maxConcurrency && this.queued) {
     if (!this.currentQueue || this.currentQueue.length === 0) {
       if (this.inflight) return
       for (var prios = Object.keys(this.queue), ii = 0; ii < prios.length; ++ii) {
@@ -2087,6 +2092,7 @@ RunQueue.prototype._runQueue = function () {
       args = next.args || []
 
     new this.Promise(function (resolve) {
+      // noinspection JSReferencingMutableVariableFromClosure
       resolve(next.cmd.apply(null, args))
     }).then(function () {
       --self.inflight
@@ -2337,7 +2343,7 @@ const inferOwner = path => {
     return { uid, gid }
   }
   const parent = dirname(path)
-  const parentTrap = parent === path ? null : er =>
+  const parentTrap = parent === path ? null : _er =>
     inferOwner(parent).then((owner) => {
       cache.set(path, owner)
       return owner
@@ -2438,6 +2444,7 @@ var define = function (opts) {
 
   inherits(Pumpify, Duplexify)
 
+  /** @this (Pumpify|Duplexify|EventEmitter) */
   Pumpify.prototype.setPipeline = function () {
     var streams = toArray(arguments),
       self = this,
@@ -2483,6 +2490,7 @@ module.exports.ctor = define
 // 36
 function (module, exports, __webpack_require__) {
 
+// noinspection JSIncompatibleTypesComparison
 var stream = __webpack_require__(7),
   eos = __webpack_require__(17),
   inherits = __webpack_require__(12),
@@ -2518,6 +2526,7 @@ var toStreams2 = function (rs) {
   return new stream.Readable({ objectMode: true, highWaterMark: 16 }).wrap(rs)
 }
 
+/** @constructor */
 var Duplexify = function (writable, readable, opts) {
   if (!(this instanceof Duplexify)) return new Duplexify(writable, readable, opts)
   stream.Duplex.call(this, opts)
@@ -2552,10 +2561,12 @@ Duplexify.obj = function (writable, readable, opts) {
   return new Duplexify(writable, readable, opts)
 }
 
+/** @this (Duplexify|EventEmitter) */
 Duplexify.prototype.cork = function () {
   ++this._corked != 1 || this.emit('cork')
 }
 
+/** @this (Duplexify|EventEmitter) */
 Duplexify.prototype.uncork = function () {
   this._corked && --this._corked == 0 && this.emit('uncork')
 }
@@ -2598,6 +2609,7 @@ Duplexify.prototype.setWritable = function (writable) {
   this.uncork()
 }
 
+/** @this (Duplexify|Readable) */
 Duplexify.prototype.setReadable = function (readable) {
   this._unread && this._unread()
 
@@ -2644,6 +2656,7 @@ Duplexify.prototype._read = function () {
   this._forward()
 }
 
+/** @this (Duplexify|Readable) */
 Duplexify.prototype._forward = function () {
   if (this._forwarding || !this._readable2 || !this._drained) return
   this._forwarding = true
@@ -2664,6 +2677,7 @@ Duplexify.prototype.destroy = function (err) {
   })
 }
 
+/** @this (Duplexify|EventEmitter) */
 Duplexify.prototype._destroy = function (err) {
   if (err) {
     var ondrain = this._ondrain
@@ -2688,6 +2702,7 @@ Duplexify.prototype._write = function (data, enc, cb) {
   this._writable.write(data) === false ? (this._ondrain = cb) : cb()
 }
 
+/** @this (Duplexify|EventEmitter) */
 Duplexify.prototype._finish = function (cb) {
   var self = this
   this.emit('preend')
@@ -2700,6 +2715,7 @@ Duplexify.prototype._finish = function (cb) {
   })
 }
 
+/** @this (Duplexify|Writable) */
 Duplexify.prototype.end = function (data, enc, cb) {
   if (typeof data == 'function') return this.end(null, null, data)
   if (typeof enc == 'function') return this.end(data, null, enc)
@@ -2902,7 +2918,7 @@ ConcatStream.prototype.getBody = function () {
 }
 
 function isArrayish(arr) {
-  return /Array\]$/.test(Object.prototype.toString.call(arr))
+  return /Array]$/.test(Object.prototype.toString.call(arr))
 }
 
 function isBufferish(p) {
@@ -3123,6 +3139,7 @@ function defaults(opts) {
 // 43
 function (module, exports, __webpack_require__) {
 
+// noinspection JSIncompatibleTypesComparison
 var stream = __webpack_require__(7),
   inherits = __webpack_require__(12),
 
@@ -3191,6 +3208,7 @@ const BB = __webpack_require__(1),
   read = __webpack_require__(25),
   through = __webpack_require__(2).through,
 
+  writeFileAsync = BB.promisify(fs.writeFile),
   GetOpts = figgyPudding({ integrity: {}, memoize: {}, size: {} })
 
 module.exports = function (cache, key, opts) {
@@ -3377,7 +3395,7 @@ function copy(byDigest, cache, key, dest, opts) {
     })
 
   return getData(byDigest, cache, key, opts).then(res =>
-    fs.writeFileAsync(dest, byDigest ? res : res.data).then(() =>
+    writeFileAsync(dest, byDigest ? res : res.data).then(() =>
       byDigest ? key : { metadata: res.metadata, size: res.size, integrity: res.integrity }
     )
   )
@@ -4347,7 +4365,7 @@ function move(from, to, opts) {
     return rimrafAsync(target, opts)
   }
 
-  function rename(from, to, opts, done) {
+  function rename(from, to, opts, _done) {
     return renameAsync(from, to).catch(function (err) {
       return err.code !== 'EXDEV'
         ? Promise.reject(err)
@@ -4506,10 +4524,10 @@ function recurseDir(from, to, opts) {
 function copySymlink(from, to, opts) {
   validate('SSO', [from, to, opts])
   var fs = opts.fs || nodeFs,
+    Promise = opts.Promise || global.Promise,
     readlink = opts.readlink || promisify(Promise, fs.readlink),
     stat = opts.stat || promisify(Promise, fs.symlink),
-    symlink = opts.symlink || promisify(Promise, fs.symlink),
-    Promise = opts.Promise || global.Promise
+    symlink = opts.symlink || promisify(Promise, fs.symlink)
 
   return readlink(from).then(function (fromDest) {
     var absoluteDest = path.resolve(path.dirname(from), fromDest),
@@ -4841,7 +4859,7 @@ const BB = __webpack_require__(1),
   figgyPudding = __webpack_require__(4),
   finished = BB.promisify(__webpack_require__(2).finished),
   fixOwner = __webpack_require__(13),
-  fs = __webpack_require__(6),
+  /** @type {Object.<string, *>} */ fs = __webpack_require__(6),
   glob = BB.promisify(__webpack_require__(26)),
   index = __webpack_require__(8),
   path = __webpack_require__(0),
@@ -4887,11 +4905,11 @@ function verify(cache, opts) {
   })
 }
 
-function markStartTime(cache, opts) {
+function markStartTime(cache, _opts) {
   return { startTime: new Date() }
 }
 
-function markEndTime(cache, opts) {
+function markEndTime(cache, _opts) {
   return { endTime: new Date() }
 }
 
@@ -4992,7 +5010,7 @@ function rebuildIndex(cache, opts) {
   })
 }
 
-function rebuildBucket(cache, bucket, stats, opts) {
+function rebuildBucket(cache, bucket, stats, _opts) {
   return fs.truncateAsync(bucket._path).then(() =>
     BB.mapSeries(bucket, entry => {
       const content = contentPath(cache, entry.integrity)

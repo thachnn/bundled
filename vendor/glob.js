@@ -218,7 +218,7 @@ Glob.prototype._realpathSet = function (index, cb) {
   if (n === 0) return cb()
 
   var set = (this.matches[index] = Object.create(null))
-  found.forEach(function (p, i) {
+  found.forEach(function (p, _i) {
     p = self._makeAbs(p)
     rp.realpath(p, self.realpathCache, function (er, real) {
       !er
@@ -853,7 +853,7 @@ function mark(self, p) {
 }
 
 function makeAbs(self, f) {
-  var abs = f
+  var abs // = f
   abs = f.charAt(0) === '/'
     ? path.join(self.root, f)
     : isAbsolute(f) || f === ''
@@ -981,7 +981,8 @@ function rethrow() {
     if (!err) return;
 
     backtrace.message = err.message;
-    missingCallback((err = backtrace));
+    err = backtrace;
+    missingCallback(err);
   }
 
   function missingCallback(err) {
@@ -1012,7 +1013,7 @@ exports.realpathSync = function (p, cache) {
     seenLinks = {},
     knownHard = {};
 
-  var pos, current, base, previous;
+  var pos = void 0, current = void 0, base, previous;
 
   start();
 

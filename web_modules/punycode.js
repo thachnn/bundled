@@ -55,7 +55,7 @@ function mapDomain(string, fn) {
   return result + map(string.replace(regexSeparators, '.').split('.'), fn).join('.');
 }
 
-function ucs2decode(string) {
+function ucs2decode(/** string */ string) {
   var output = [];
   for (var value, extra, counter = 0, length = string.length; counter < length; )
     if ((value = string.charCodeAt(counter++)) >= 0xD800 && value <= 0xDBFF && counter < length)
@@ -218,6 +218,7 @@ punycode = {
   toUnicode: toUnicode
 };
 
+/** @var {*} define */
 if (typeof define == 'function' && typeof define.amd == 'object' && define.amd)
   define('punycode', function() { return punycode; });
 else if (freeExports && freeModule)

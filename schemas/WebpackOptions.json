@@ -8,11 +8,7 @@
           { "type": "string", "minLength": 1 },
           {
             "type": "array",
-            "items": {
-              "description": "A non-empty string",
-              "type": "string",
-              "minLength": 1
-            }
+            "items": { "description": "A non-empty string", "type": "string", "minLength": 1 }
           }
         ]
       }
@@ -22,10 +18,7 @@
       "items": { "description": "A non-empty string", "type": "string", "minLength": 1 }
     },
     "Entry": {
-      "anyOf": [
-        { "$ref": "#/definitions/EntryDynamic" },
-        { "$ref": "#/definitions/EntryStatic" }
-      ]
+      "anyOf": [{ "$ref": "#/definitions/EntryDynamic" }, { "$ref": "#/definitions/EntryStatic" }]
     },
     "EntryDynamic": {
       "description": "A Function returning an entry object, an entry string, an entry array or a promise to these things.",
@@ -65,10 +58,7 @@
       "minProperties": 1
     },
     "EntryStatic": {
-      "oneOf": [
-        { "$ref": "#/definitions/EntryObject" },
-        { "$ref": "#/definitions/EntryItem" }
-      ]
+      "oneOf": [{ "$ref": "#/definitions/EntryObject" }, { "$ref": "#/definitions/EntryItem" }]
     },
     "ExternalItem": {
       "anyOf": [
@@ -143,10 +133,7 @@
       "type": "object",
       "additionalProperties": false,
       "properties": {
-        "amd": {
-          "description": "Name of the exposed AMD library in the UMD",
-          "type": "string"
-        },
+        "amd": { "description": "Name of the exposed AMD library in the UMD", "type": "string" },
         "commonjs": {
           "description": "Name of the exposed commonjs export in the UMD",
           "type": "string"
@@ -237,10 +224,7 @@
         },
         "unsafeCache": {
           "description": "Cache the resolving of module requests",
-          "anyOf": [
-            { "type": "boolean" },
-            { "instanceof": "Function", "tsType": "Function" }
-          ]
+          "anyOf": [{ "type": "boolean" }, { "instanceof": "Function", "tsType": "Function" }]
         },
         "wrappedContextCritical": {
           "description": "Enable warnings for partial dynamic dependencies",
@@ -381,10 +365,7 @@
           "description": "Removes modules from chunks when these modules are already included in all parents",
           "type": "boolean"
         },
-        "removeEmptyChunks": {
-          "description": "Remove chunks which are empty",
-          "type": "boolean"
-        },
+        "removeEmptyChunks": { "description": "Remove chunks which are empty", "type": "boolean" },
         "runtimeChunk": {
           "description": "Create an additional chunk which contains only the webpack runtime and chunk hash maps",
           "oneOf": [
@@ -396,10 +377,7 @@
               "properties": {
                 "name": {
                   "description": "The name or name factory for the runtime chunks",
-                  "oneOf": [
-                    { "type": "string" },
-                    { "instanceof": "Function", "tsType": "Function" }
-                  ]
+                  "oneOf": [{ "type": "string" }, { "instanceof": "Function", "tsType": "Function" }]
                 }
               }
             }
@@ -411,10 +389,7 @@
         },
         "splitChunks": {
           "description": "Optimize duplication and caching by splitting chunks by shared modules and cache group",
-          "oneOf": [
-            { "enum": [false] },
-            { "$ref": "#/definitions/OptimizationSplitChunksOptions" }
-          ]
+          "oneOf": [{ "enum": [false] }, { "$ref": "#/definitions/OptimizationSplitChunksOptions" }]
         },
         "usedExports": {
           "description": "Figure out which exports are used by modules to mangle export names, omit unused exports and generate more efficient code",
@@ -517,10 +492,7 @@
                       { "type": "string" }
                     ]
                   },
-                  "priority": {
-                    "description": "Priority of this cache group",
-                    "type": "number"
-                  },
+                  "priority": { "description": "Priority of this cache group", "type": "number" },
                   "reuseExistingChunk": {
                     "description": "Try to reuse existing chunk (with name) when it has matching modules",
                     "type": "boolean"
@@ -638,19 +610,13 @@
         "auxiliaryComment": {
           "description": "Add a comment in the UMD wrapper.",
           "anyOf": [
-            {
-              "description": "Append the same comment above each import style.",
-              "type": "string"
-            },
+            { "description": "Append the same comment above each import style.", "type": "string" },
             {
               "description": "Set explicit comments for `commonjs`, `commonjs2`, `amd`, and `root`.",
               "type": "object",
               "additionalProperties": false,
               "properties": {
-                "amd": {
-                  "description": "Set comment for `amd` section in UMD",
-                  "type": "string"
-                },
+                "amd": { "description": "Set comment for `amd` section in UMD", "type": "string" },
                 "commonjs": {
                   "description": "Set comment for `commonjs` (exports) section in UMD",
                   "type": "string"
@@ -686,10 +652,7 @@
         },
         "devtoolFallbackModuleFilenameTemplate": {
           "description": "Similar to `output.devtoolModuleFilenameTemplate`, but used in the case of duplicate module identifiers.",
-          "anyOf": [
-            { "type": "string" },
-            { "instanceof": "Function", "tsType": "Function" }
-          ]
+          "anyOf": [{ "type": "string" }, { "instanceof": "Function", "tsType": "Function" }]
         },
         "devtoolLineToLine": {
           "description": "Enable line to line mapped mode for all/specified modules. Line to line mapped mode uses a simple SourceMap where each line of the generated source is mapped to the same line of the original source. It’s a performance optimization. Only use it if your performance need to be better and you are sure that input lines match which generated lines.",
@@ -706,10 +669,7 @@
         },
         "devtoolModuleFilenameTemplate": {
           "description": "Filename template string of function for the sources array in a generated SourceMap.",
-          "anyOf": [
-            { "type": "string" },
-            { "instanceof": "Function", "tsType": "Function" }
-          ]
+          "anyOf": [{ "type": "string" }, { "instanceof": "Function", "tsType": "Function" }]
         },
         "devtoolNamespace": {
           "description": "Module namespace to use when interpolating filename template string for the sources array in a generated SourceMap. Defaults to `output.library` if not set. It's useful for avoiding runtime collisions in sourcemaps from multiple webpack projects built as libraries.",
@@ -731,10 +691,7 @@
           "type": "string",
           "minLength": 1
         },
-        "hashDigest": {
-          "description": "Digest type used for the hash",
-          "type": "string"
-        },
+        "hashDigest": { "description": "Digest type used for the hash", "type": "string" },
         "hashDigestLength": {
           "description": "Number of chars which are used for the hash",
           "type": "number",
@@ -744,10 +701,7 @@
           "description": "Algorithm used for generation the hash (see node.js crypto package)",
           "anyOf": [
             { "type": "string", "minLength": 1 },
-            {
-              "instanceof": "Function",
-              "tsType": "import('../lib/util/createHash').HashConstructor"
-            }
+            { "instanceof": "Function", "tsType": "((algorithm: string, options?: any) => any)" }
           ]
         },
         "hashSalt": {
@@ -825,10 +779,7 @@
         },
         "publicPath": {
           "description": "The `publicPath` specifies the public URL address of the output files when referenced in a browser.",
-          "anyOf": [
-            { "type": "string" },
-            { "instanceof": "Function", "tsType": "Function" }
-          ]
+          "anyOf": [{ "type": "string" }, { "instanceof": "Function", "tsType": "Function" }]
         },
         "sourceMapFilename": {
           "description": "The filename of the SourceMaps for the JavaScript files. They are inside the `output.path` directory.",
@@ -919,10 +870,7 @@
           "description": "Include the context information in the cache identifier when caching",
           "type": "boolean"
         },
-        "concord": {
-          "description": "Enable concord resolving extras",
-          "type": "boolean"
-        },
+        "concord": { "description": "Enable concord resolving extras", "type": "boolean" },
         "descriptionFiles": {
           "description": "Filenames used to find a description file",
           "anyOf": [{ "$ref": "#/definitions/ArrayOfStringValues" }]
@@ -990,10 +938,7 @@
         },
         "unsafeCache": {
           "description": "Enable caching of successfully resolved requests",
-          "anyOf": [
-            { "type": "boolean" },
-            { "type": "object", "additionalProperties": true }
-          ]
+          "anyOf": [{ "type": "boolean" }, { "type": "object", "additionalProperties": true }]
         },
         "useSyncFileSystemCalls": {
           "description": "Use synchronous filesystem calls for the resolver",
@@ -1206,10 +1151,7 @@
     },
     "RuleSetRules": {
       "type": "array",
-      "items": {
-        "description": "A rule",
-        "anyOf": [{ "$ref": "#/definitions/RuleSetRule" }]
-      }
+      "items": { "description": "A rule", "anyOf": [{ "$ref": "#/definitions/RuleSetRule" }] }
     },
     "RuleSetUse": {
       "anyOf": [
@@ -1258,10 +1200,7 @@
           "type": "boolean"
         },
         "assets": { "description": "add assets information", "type": "boolean" },
-        "assetsSort": {
-          "description": "sort the assets by that field",
-          "type": "string"
-        },
+        "assetsSort": { "description": "sort the assets by that field", "type": "string" },
         "builtAt": { "description": "add built at time information", "type": "boolean" },
         "cached": {
           "description": "add also information about cached (not built) modules",
@@ -1285,10 +1224,7 @@
           "type": "boolean"
         },
         "chunks": { "description": "add chunk information", "type": "boolean" },
-        "chunksSort": {
-          "description": "sort the chunks by that field",
-          "type": "string"
-        },
+        "chunksSort": { "description": "sort the chunks by that field", "type": "string" },
         "colors": {
           "description": "Enables/Disables colorful output",
           "oneOf": [
@@ -1299,19 +1235,10 @@
               "properties": {
                 "bold": { "description": "Custom color for bold text", "type": "string" },
                 "cyan": { "description": "Custom color for cyan text", "type": "string" },
-                "green": {
-                  "description": "Custom color for green text",
-                  "type": "string"
-                },
-                "magenta": {
-                  "description": "Custom color for magenta text",
-                  "type": "string"
-                },
+                "green": { "description": "Custom color for green text", "type": "string" },
+                "magenta": { "description": "Custom color for magenta text", "type": "string" },
                 "red": { "description": "Custom color for red text", "type": "string" },
-                "yellow": {
-                  "description": "Custom color for yellow text",
-                  "type": "string"
-                }
+                "yellow": { "description": "Custom color for yellow text", "type": "string" }
               }
             }
           ]
@@ -1362,16 +1289,10 @@
           "description": "Include debug logging of specified loggers (i. e. for plugins or loaders). Filters can be Strings, RegExps or Functions",
           "anyOf": [
             { "$ref": "#/definitions/FilterTypes" },
-            {
-              "description": "Enable/Disable debug logging for all loggers",
-              "type": "boolean"
-            }
+            { "description": "Enable/Disable debug logging for all loggers", "type": "boolean" }
           ]
         },
-        "loggingTrace": {
-          "description": "add stack traces to logging output",
-          "type": "boolean"
-        },
+        "loggingTrace": { "description": "add stack traces to logging output", "type": "boolean" },
         "maxModules": {
           "description": "Set the maximum number of modules to be shown",
           "type": "number"
@@ -1385,10 +1306,7 @@
           "type": "boolean"
         },
         "modules": { "description": "add built modules information", "type": "boolean" },
-        "modulesSort": {
-          "description": "sort the modules by that field",
-          "type": "string"
-        },
+        "modulesSort": { "description": "sort the modules by that field", "type": "string" },
         "nestedModules": {
           "description": "add information about modules nested in other modules (like with module concatenation)",
           "type": "boolean"
@@ -1399,10 +1317,7 @@
         },
         "outputPath": { "description": "Add output path information", "type": "boolean" },
         "performance": { "description": "add performance hint flags", "type": "boolean" },
-        "providedExports": {
-          "description": "show exports provided by modules",
-          "type": "boolean"
-        },
+        "providedExports": { "description": "show exports provided by modules", "type": "boolean" },
         "publicPath": { "description": "Add public path information", "type": "boolean" },
         "reasons": {
           "description": "add information about the reasons why modules are included",
@@ -1410,14 +1325,8 @@
         },
         "source": { "description": "add the source code of modules", "type": "boolean" },
         "timings": { "description": "add timing information", "type": "boolean" },
-        "usedExports": {
-          "description": "show exports used by modules",
-          "type": "boolean"
-        },
-        "version": {
-          "description": "add webpack version information",
-          "type": "boolean"
-        },
+        "usedExports": { "description": "show exports used by modules", "type": "boolean" },
+        "version": { "description": "add webpack version information", "type": "boolean" },
         "warnings": { "description": "add warnings", "type": "boolean" },
         "warningsFilter": {
           "description": "Suppress warnings that match the specified filters. Filters can be Strings, RegExps or Functions",
@@ -1428,7 +1337,7 @@
     "WebpackPluginFunction": {
       "description": "Function acting as plugin",
       "instanceof": "Function",
-      "tsType": "(this: import('../lib/Compiler'), compiler: import('../lib/Compiler')) => void"
+      "tsType": "(this: import('../').Compiler, compiler: import('../').Compiler) => void"
     },
     "WebpackPluginInstance": {
       "description": "Plugin instance",
@@ -1438,7 +1347,7 @@
         "apply": {
           "description": "The run point of the plugin, required method.",
           "instanceof": "Function",
-          "tsType": "(compiler: import('../lib/Compiler')) => void"
+          "tsType": "(compiler: import('../').Compiler) => void"
         }
       },
       "required": ["apply"]
@@ -1450,10 +1359,7 @@
     "amd": {
       "description": "Set the value of `require.amd` and `define.amd`. Or disable AMD support.",
       "anyOf": [
-        {
-          "description": "You can pass `false` to disable AMD support.",
-          "enum": [false]
-        },
+        { "description": "You can pass `false` to disable AMD support.", "enum": [false] },
         {
           "description": "You can pass an object to set the value of `require.amd` and `define.amd`.",
           "type": "object"
@@ -1487,10 +1393,7 @@
         "type": "string"
       }
     },
-    "devServer": {
-      "description": "Options for the webpack-dev-server",
-      "type": "object"
-    },
+    "devServer": { "description": "Options for the webpack-dev-server", "type": "object" },
     "devtool": {
       "description": "A developer tool to enhance debugging.",
       "anyOf": [{ "type": "string" }, { "enum": [false] }]
@@ -1512,10 +1415,7 @@
           "description": "Enable debug logging for specific loggers",
           "anyOf": [
             { "$ref": "#/definitions/FilterTypes" },
-            {
-              "description": "Enable/Disable debug logging for all loggers",
-              "type": "boolean"
-            }
+            { "description": "Enable/Disable debug logging for all loggers", "type": "boolean" }
           ]
         },
         "level": {
@@ -1524,10 +1424,7 @@
         }
       }
     },
-    "loader": {
-      "description": "Custom values available in the loader context.",
-      "type": "object"
-    },
+    "loader": { "description": "Custom values available in the loader context.", "type": "object" },
     "mode": {
       "description": "Enable production optimizations or development hints.",
       "enum": ["development", "production", "none"]
@@ -1572,10 +1469,7 @@
         ]
       }
     },
-    "profile": {
-      "description": "Capture timing information for each module.",
-      "type": "boolean"
-    },
+    "profile": { "description": "Capture timing information for each module.", "type": "boolean" },
     "recordsInputPath": {
       "description": "Store compiler state to a json file.",
       "type": "string",
@@ -1633,10 +1527,7 @@
             "electron-preload"
           ]
         },
-        {
-          "instanceof": "Function",
-          "tsType": "((compiler: import('../lib/Compiler')) => void)"
-        }
+        { "instanceof": "Function", "tsType": "((compiler: import('../').Compiler) => void)" }
       ]
     },
     "watch": {
@@ -1657,16 +1548,10 @@
           "description": "Enable polling mode for watching",
           "anyOf": [
             { "description": "`true`: use polling.", "type": "boolean" },
-            {
-              "description": "`number`: use polling with specified interval.",
-              "type": "number"
-            }
+            { "description": "`number`: use polling with specified interval.", "type": "number" }
           ]
         },
-        "stdin": {
-          "description": "Stop watching when stdin stream has ended",
-          "type": "boolean"
-        }
+        "stdin": { "description": "Stop watching when stdin stream has ended", "type": "boolean" }
       }
     }
   }

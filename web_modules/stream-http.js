@@ -230,6 +230,7 @@ IncomingMessage.prototype._onXHRProgress = function () {
     xhr = self._xhr,
 
     response = null
+  /** @var {Object.<string, *>} global */
   switch (self._mode) {
     case 'text:vbarray':
       if (xhr.readyState !== rStates.DONE) break
@@ -517,7 +518,8 @@ ClientRequest.prototype._onFinish = function () {
       return
     }
 
-    if ('responseType' in xhr) xhr.responseType = self._mode.split(':')[0]
+    if ('responseType' in xhr)
+      xhr.responseType = /** @type {XMLHttpRequestResponseType} */ self._mode.split(':')[0]
 
     if ('withCredentials' in xhr) xhr.withCredentials = !!opts.withCredentials
 

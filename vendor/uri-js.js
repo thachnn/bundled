@@ -123,7 +123,7 @@ function mapDomain(string, fn) {
   return result + map(string.replace(regexSeparators, '.').split('.'), fn).join('.');
 }
 
-function ucs2decode(string) {
+function ucs2decode(/** string */ string) {
   var output = [];
   for (var counter = 0, length = string.length; counter < length; ) {
     var value = string.charCodeAt(counter++);
@@ -352,7 +352,7 @@ function _normalizeIPv6(host, protocol) {
     first = _address$toLowerCase$2[1],
 
     firstFields = first ? first.split(":").map(_stripLeadingZeros) : [],
-    lastFields = last.split(":").map(_stripLeadingZeros),
+    /** @type {string[]} */ lastFields = last.split(":").map(_stripLeadingZeros),
     isLastFieldIPv4Address = protocol.IPV4ADDRESS.test(lastFields[lastFields.length - 1]),
     fieldCount = isLastFieldIPv4Address ? 7 : 8,
     lastFieldsStart = lastFields.length - fieldCount,
@@ -370,7 +370,7 @@ function _normalizeIPv6(host, protocol) {
   }, []).sort(function (a, b) {
     return b.length - a.length;
   })[0];
-  var newHost = void 0;
+  var newHost; // = void 0
   if (longestZeroFields && longestZeroFields.length > 1) {
     var newFirst = fields.slice(0, longestZeroFields.index),
       newLast = fields.slice(longestZeroFields.index + longestZeroFields.length);
@@ -381,7 +381,7 @@ function _normalizeIPv6(host, protocol) {
 
   return newHost;
 }
-var URI_PARSE = /^(?:([^:\/?#]+):)?(?:\/\/((?:([^\/?#@]*)@)?(\[[^\/?#\]]+\]|[^\/?#:]*)(?:\:(\d*))?))?([^?#]*)(?:\?([^#]*))?(?:#((?:.|\n|\r)*))?/i,
+var URI_PARSE = /^(?:([^:\/?#]+):)?(?:\/\/((?:([^\/?#@]*)@)?(\[[^\/?#\]]+]|[^\/?#:]*)(?::(\d*))?))?([^?#]*)(?:\?([^#]*))?(?:#((?:.|\n|\r)*))?/i,
   NO_MATCH_IS_UNDEFINED = "".match(/(){0}/)[1] === void 0;
 function parse(uriString) {
   var options = arguments.length > 1 && arguments[1] !== void 0 ? arguments[1] : {},
@@ -411,7 +411,7 @@ function parse(uriString) {
     components.path = matches[6] || "";
     components.query = uriString.indexOf("?") !== -1 ? matches[7] : void 0;
     components.fragment = uriString.indexOf("#") !== -1 ? matches[8] : void 0;
-    if (isNaN(components.port)) components.port = uriString.match(/\/\/(?:.|\n)*\:(?:\/|\?|\#|$)/) ? matches[4] : void 0;
+    if (isNaN(components.port)) components.port = uriString.match(/\/\/(?:.|\n)*:(?:\/|\?|#|$)/) ? matches[4] : void 0;
   }
   if (components.host) components.host = _normalizeIPv6(_normalizeIPv4(components.host, protocol), protocol);
 
@@ -530,7 +530,8 @@ function resolveComponents(base, relative) {
     base = parse(serialize(base, options), options);
     relative = parse(serialize(relative, options), options);
   }
-  if (!(options = options || {}).tolerant && relative.scheme) {
+  options || (options = {});
+  if (!options.tolerant && relative.scheme) {
     target.scheme = relative.scheme;
     target.userinfo = relative.userinfo;
     target.host = relative.host;
@@ -603,12 +604,12 @@ function unescapeComponent(str, options) {
 var handler = {
   scheme: "http",
   domainHost: true,
-  parse: function (components, options) {
+  parse: function (components, _options) {
     components.host || (components.error = components.error || "HTTP URIs must have a host.");
 
     return components;
   },
-  serialize: function (components, options) {
+  serialize: function (components, _options) {
     var secure = String(components.scheme).toLowerCase() === "https";
     if (components.port === (secure ? 443 : 80) || components.port === "") components.port = void 0;
 
@@ -631,7 +632,7 @@ function isSecure(wsComponents) {
 var handler$2 = {
   scheme: "ws",
   domainHost: true,
-  parse: function (components, options) {
+  parse: function (components, _options) {
     var wsComponents = components;
     wsComponents.secure = isSecure(wsComponents);
     wsComponents.resourceName = (wsComponents.path || '/') + (wsComponents.query ? '?' + wsComponents.query : '');
@@ -639,7 +640,7 @@ var handler$2 = {
     wsComponents.query = void 0;
     return wsComponents;
   },
-  serialize: function (wsComponents, options) {
+  serialize: function (wsComponents, _options) {
     if (wsComponents.port === (isSecure(wsComponents) ? 443 : 80) || wsComponents.port === "") wsComponents.port = void 0;
 
     if (typeof wsComponents.secure == 'boolean') {
@@ -762,7 +763,7 @@ var handler$4 = {
   }
 };
 
-var URN_PARSE = /^([^\:]+)\:(.*)/;
+var URN_PARSE = /^([^:]+):(.*)/;
 var handler$5 = {
   scheme: "urn",
   parse: function (components, options) {
@@ -796,7 +797,7 @@ var handler$5 = {
   }
 };
 
-var UUID = /^[0-9A-Fa-f]{8}(?:\-[0-9A-Fa-f]{4}){3}\-[0-9A-Fa-f]{12}$/;
+var UUID = /^[0-9A-Fa-f]{8}(?:-[0-9A-Fa-f]{4}){3}-[0-9A-Fa-f]{12}$/;
 var handler$6 = {
   scheme: "urn:uuid",
   parse: function (urnComponents, options) {
@@ -808,7 +809,7 @@ var handler$6 = {
 
     return uuidComponents;
   },
-  serialize: function (uuidComponents, options) {
+  serialize: function (uuidComponents, _options) {
     var urnComponents = uuidComponents;
     urnComponents.nss = (uuidComponents.uuid || "").toLowerCase();
     return urnComponents;

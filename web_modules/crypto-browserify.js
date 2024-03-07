@@ -99,6 +99,7 @@ function inherits(ctor, superCtor) {
   ctor.prototype.constructor = ctor;
 }
 
+/** @constructor */
 function BN(number, base, endian) {
   if (BN.isBN(number)) return number;
 
@@ -226,7 +227,7 @@ BN.prototype._initArray = function (number, base, endian) {
   return this.strip();
 };
 
-function parseHex4Bits(string, index) {
+function parseHex4Bits(/** string */ string, index) {
   var c = string.charCodeAt(index);
   return c >= 65 && c <= 70
     ? c - 55
@@ -862,6 +863,7 @@ function smallMulTo(self, num, out) {
   out.length = len;
   len = (len - 1) | 0;
 
+  // noinspection UnnecessaryLocalVariableJS
   var a = self.words[0] | 0,
     b = num.words[0] | 0,
     r = a * b,
@@ -2828,6 +2830,7 @@ assert.equal = function (l, r, msg) {
 // 4
 function (module, exports, __webpack_require__) {
 
+// noinspection UnnecessaryLocalVariableJS
 var utils = exports,
   BN = __webpack_require__(2),
   minAssert = __webpack_require__(3),
@@ -2912,10 +2915,9 @@ utils.intFromLE = intFromLE;
 // 5
 function (module, exports, __webpack_require__) {
 
-var assert = __webpack_require__(3),
-  inherits = __webpack_require__(1);
+var assert = __webpack_require__(3);
 
-exports.inherits = inherits;
+exports.inherits = __webpack_require__(1);
 
 function isSurrogatePair(msg, i) {
   return (msg.charCodeAt(i) & 0xFC00) == 0xD800 &&
@@ -2972,7 +2974,7 @@ function htonl(w) {
 }
 exports.htonl = htonl;
 
-function toHex32(msg, endian) {
+function toHex32(/** number[] */ msg, endian) {
   var res = '';
   for (var i = 0; i < msg.length; i++) {
     var w = msg[i];
@@ -3341,7 +3343,7 @@ Hash.prototype.digest = function (enc) {
   }
 
   this._update(this._block)
-  var hash = this._hash()
+  var hash = /** @type {Buffer} */ this._hash()
 
   return enc ? hash.toString(enc) : hash
 }
@@ -3569,7 +3571,7 @@ function cryptBlock(M, keySchedule, SUB_MIX, SBOX, nRounds) {
   t3 = ((SBOX[s3 >>> 24] << 24) | (SBOX[(s0 >>> 16) & 0xff] << 16) |
       (SBOX[(s1 >>> 8) & 0xff] << 8) | SBOX[s2 & 0xff]) ^ keySchedule[ksRow++]
 
-  return [(t0 >>>= 0), (t1 >>>= 0), (t2 >>>= 0), (t3 >>>= 0)] // redundant
+  return [t0 >>> 0, t1 >>> 0, t2 >>> 0, t3 >>> 0]
 }
 
 var RCON = [0x00, 0x01, 0x02, 0x04, 0x08, 0x10, 0x20, 0x40, 0x80, 0x1b, 0x36]
@@ -4576,6 +4578,7 @@ module.exports = function (len) {
 };
 
 function Rand(rand) {
+  /** @property {Function} getByte */
   this.rand = rand;
 }
 module.exports.Rand = Rand;
@@ -4830,6 +4833,7 @@ try {
   pre = void 0;
 }
 
+// noinspection SpellCheckingInspection
 defineCurve('secp256k1', {
   type: 'short',
   prime: 'k256',
@@ -4963,11 +4967,12 @@ HashBase.prototype._update = function () {
   throw new Error('_update is not implemented')
 }
 
+/** @returns {(string|Buffer)} */
 HashBase.prototype.digest = function (encoding) {
   if (this._finalized) throw new Error('Digest already called')
   this._finalized = true
 
-  var digest = this._digest()
+  var digest = /** @type {Buffer} */ this._digest()
   if (encoding !== void 0) digest = digest.toString(encoding)
 
   this._block.fill(0)
@@ -5799,7 +5804,7 @@ exports.pc2 = function (inL, inR, out, off) {
 };
 
 exports.expand = function (r, out, off) {
-  var outL = 0,
+  var outL, // = 0
     outR = 0;
 
   outL = ((r & 1) << 5) | (r >>> 27);
@@ -5886,7 +5891,7 @@ exports.permute = function (num) {
   return out >>> 0;
 };
 
-exports.padSplit = function (num, size, group) {
+exports.padSplit = function (/** number */ num, size, group) {
   var str = num.toString(2);
   while (str.length < size) str = '0' + str;
 
@@ -7042,6 +7047,7 @@ DERDecoder.prototype.decode = function (data, options) {
   return this.tree._decode(data, options);
 };
 
+/** @constructor */
 function DERNode(parent) {
   base.Node.call(this, 'der', parent);
 }
@@ -7118,6 +7124,7 @@ DERNode.prototype._decodeList = function (buffer, tag, decoder, options) {
   return result;
 };
 
+/** @this (DERNode|Node) */
 DERNode.prototype._decodeStr = function (buffer, tag) {
   if (tag === 'bitstr') {
     var unused = buffer.readUInt8();
@@ -7204,7 +7211,7 @@ DERNode.prototype._decodeTime = function (buffer, tag) {
   return Date.UTC(year, mon - 1, day, hour, min, sec, 0);
 };
 
-DERNode.prototype._decodeNull = function (buffer) {
+DERNode.prototype._decodeNull = /** @param {*} buffer */ function (buffer) {
   return null;
 };
 
@@ -7215,7 +7222,7 @@ DERNode.prototype._decodeBool = function (buffer) {
 
 DERNode.prototype._decodeInt = function (buffer, values) {
   var raw = buffer.raw(),
-    res = new bignum(raw);
+    /** @type {BN} */ res = new bignum(raw);
 
   if (values) res = values[res.toString(10)] || res;
 
@@ -7341,7 +7348,7 @@ DERNode.prototype._encodeStr = function (str, tag) {
     : tag === 'printstr'
     ? !this._isPrintstr(str)
       ? this.reporter.error(
-          'Encoding of string type: printstr supports only latin upper and lower case letters, digits, space, apostrophe, left and rigth parenthesis, plus sign, comma, hyphen, dot, slash, colon, equal sign, question mark'
+          'Encoding of string type: printstr supports only latin upper and lower case letters, digits, space, apostrophe, left and right parenthesis, plus sign, comma, hyphen, dot, slash, colon, equal sign, question mark'
         )
       : this._createEncoderBuffer(str)
     : /str$/.test(tag) || tag === 'objDesc'
@@ -7355,7 +7362,7 @@ DERNode.prototype._encodeObjid = function (id, values, relative) {
       return this.reporter.error('string objid given, but no values map found');
     if (!values.hasOwnProperty(id))
       return this.reporter.error('objid not found in values map');
-    id = values[id].split(/[\s\.]+/g);
+    id = values[id].split(/[\s.]+/g);
     for (var i = 0; i < id.length; i++) id[i] |= 0;
   } else if (Array.isArray(id)) {
     id = id.slice();
@@ -8315,8 +8322,7 @@ function instantiate(Base) {
 exports.instantiate = instantiate;
 
 proto._cbcInit = function () {
-  var state = new CBCState(this.options.iv);
-  this._cbcState = state;
+  this._cbcState = new CBCState(this.options.iv);
 };
 
 proto._update = function (inp, inOff, out, outOff) {
@@ -8371,8 +8377,7 @@ function EDEState(type, key) {
 function EDE(options) {
   Cipher.call(this, options);
 
-  var state = new EDEState(this.type, this.options.key);
-  this._edeState = state;
+  this._edeState = new EDEState(this.type, this.options.key);
 }
 inherits(EDE, Cipher);
 
@@ -8903,6 +8908,7 @@ exports.createDiffieHellman = exports.DiffieHellman = createDiffieHellman
 // 92
 function (module) {
 
+// noinspection SpellCheckingInspection
 module.exports = JSON.parse(
   '{"modp1":{"gen":"02","prime":"ffffffffffffffffc90fdaa22168c234c4c6628b80dc1cd129024e088a67cc74020bbea63b139b22514a08798e3404ddef9519b3cd3a431b302b0a6df25f14374fe1356d6d51c245e485b576625e7ec6f44c42e9a63a3620ffffffffffffffff"},"modp2":{"gen":"02","prime":"ffffffffffffffffc90fdaa22168c234c4c6628b80dc1cd129024e088a67cc74020bbea63b139b22514a08798e3404ddef9519b3cd3a431b302b0a6df25f14374fe1356d6d51c245e485b576625e7ec6f44c42e9a637ed6b0bff5cb6f406b7edee386bfb5a899fa5ae9f24117c4b1fe649286651ece65381ffffffffffffffff"},"modp5":{"gen":"02","prime":"ffffffffffffffffc90fdaa22168c234c4c6628b80dc1cd129024e088a67cc74020bbea63b139b22514a08798e3404ddef9519b3cd3a431b302b0a6df25f14374fe1356d6d51c245e485b576625e7ec6f44c42e9a637ed6b0bff5cb6f406b7edee386bfb5a899fa5ae9f24117c4b1fe649286651ece45b3dc2007cb8a163bf0598da48361c55d39a69163fa8fd24cf5f83655d23dca3ad961c62f356208552bb9ed529077096966d670c354e4abc9804f1746c08ca237327ffffffffffffffff"},"modp14":{"gen":"02","prime":"ffffffffffffffffc90fdaa22168c234c4c6628b80dc1cd129024e088a67cc74020bbea63b139b22514a08798e3404ddef9519b3cd3a431b302b0a6df25f14374fe1356d6d51c245e485b576625e7ec6f44c42e9a637ed6b0bff5cb6f406b7edee386bfb5a899fa5ae9f24117c4b1fe649286651ece45b3dc2007cb8a163bf0598da48361c55d39a69163fa8fd24cf5f83655d23dca3ad961c62f356208552bb9ed529077096966d670c354e4abc9804f1746c08ca18217c32905e462e36ce3be39e772c180e86039b2783a2ec07a28fb5c55df06f4c52c9de2bcbf6955817183995497cea956ae515d2261898fa051015728e5a8aacaa68ffffffffffffffff"},"modp15":{"gen":"02","prime":"ffffffffffffffffc90fdaa22168c234c4c6628b80dc1cd129024e088a67cc74020bbea63b139b22514a08798e3404ddef9519b3cd3a431b302b0a6df25f14374fe1356d6d51c245e485b576625e7ec6f44c42e9a637ed6b0bff5cb6f406b7edee386bfb5a899fa5ae9f24117c4b1fe649286651ece45b3dc2007cb8a163bf0598da48361c55d39a69163fa8fd24cf5f83655d23dca3ad961c62f356208552bb9ed529077096966d670c354e4abc9804f1746c08ca18217c32905e462e36ce3be39e772c180e86039b2783a2ec07a28fb5c55df06f4c52c9de2bcbf6955817183995497cea956ae515d2261898fa051015728e5a8aaac42dad33170d04507a33a85521abdf1cba64ecfb850458dbef0a8aea71575d060c7db3970f85a6e1e4c7abf5ae8cdb0933d71e8c94e04a25619dcee3d2261ad2ee6bf12ffa06d98a0864d87602733ec86a64521f2b18177b200cbbe117577a615d6c770988c0bad946e208e24fa074e5ab3143db5bfce0fd108e4b82d120a93ad2caffffffffffffffff"},"modp16":{"gen":"02","prime":"ffffffffffffffffc90fdaa22168c234c4c6628b80dc1cd129024e088a67cc74020bbea63b139b22514a08798e3404ddef9519b3cd3a431b302b0a6df25f14374fe1356d6d51c245e485b576625e7ec6f44c42e9a637ed6b0bff5cb6f406b7edee386bfb5a899fa5ae9f24117c4b1fe649286651ece45b3dc2007cb8a163bf0598da48361c55d39a69163fa8fd24cf5f83655d23dca3ad961c62f356208552bb9ed529077096966d670c354e4abc9804f1746c08ca18217c32905e462e36ce3be39e772c180e86039b2783a2ec07a28fb5c55df06f4c52c9de2bcbf6955817183995497cea956ae515d2261898fa051015728e5a8aaac42dad33170d04507a33a85521abdf1cba64ecfb850458dbef0a8aea71575d060c7db3970f85a6e1e4c7abf5ae8cdb0933d71e8c94e04a25619dcee3d2261ad2ee6bf12ffa06d98a0864d87602733ec86a64521f2b18177b200cbbe117577a615d6c770988c0bad946e208e24fa074e5ab3143db5bfce0fd108e4b82d120a92108011a723c12a787e6d788719a10bdba5b2699c327186af4e23c1a946834b6150bda2583e9ca2ad44ce8dbbbc2db04de8ef92e8efc141fbecaa6287c59474e6bc05d99b2964fa090c3a2233ba186515be7ed1f612970cee2d7afb81bdd762170481cd0069127d5b05aa993b4ea988d8fddc186ffb7dc90a6c08f4df435c934063199ffffffffffffffff"},"modp17":{"gen":"02","prime":"ffffffffffffffffc90fdaa22168c234c4c6628b80dc1cd129024e088a67cc74020bbea63b139b22514a08798e3404ddef9519b3cd3a431b302b0a6df25f14374fe1356d6d51c245e485b576625e7ec6f44c42e9a637ed6b0bff5cb6f406b7edee386bfb5a899fa5ae9f24117c4b1fe649286651ece45b3dc2007cb8a163bf0598da48361c55d39a69163fa8fd24cf5f83655d23dca3ad961c62f356208552bb9ed529077096966d670c354e4abc9804f1746c08ca18217c32905e462e36ce3be39e772c180e86039b2783a2ec07a28fb5c55df06f4c52c9de2bcbf6955817183995497cea956ae515d2261898fa051015728e5a8aaac42dad33170d04507a33a85521abdf1cba64ecfb850458dbef0a8aea71575d060c7db3970f85a6e1e4c7abf5ae8cdb0933d71e8c94e04a25619dcee3d2261ad2ee6bf12ffa06d98a0864d87602733ec86a64521f2b18177b200cbbe117577a615d6c770988c0bad946e208e24fa074e5ab3143db5bfce0fd108e4b82d120a92108011a723c12a787e6d788719a10bdba5b2699c327186af4e23c1a946834b6150bda2583e9ca2ad44ce8dbbbc2db04de8ef92e8efc141fbecaa6287c59474e6bc05d99b2964fa090c3a2233ba186515be7ed1f612970cee2d7afb81bdd762170481cd0069127d5b05aa993b4ea988d8fddc186ffb7dc90a6c08f4df435c93402849236c3fab4d27c7026c1d4dcb2602646dec9751e763dba37bdf8ff9406ad9e530ee5db382f413001aeb06a53ed9027d831179727b0865a8918da3edbebcf9b14ed44ce6cbaced4bb1bdb7f1447e6cc254b332051512bd7af426fb8f401378cd2bf5983ca01c64b92ecf032ea15d1721d03f482d7ce6e74fef6d55e702f46980c82b5a84031900b1c9e59e7c97fbec7e8f323a97a7e36cc88be0f1d45b7ff585ac54bd407b22b4154aacc8f6d7ebf48e1d814cc5ed20f8037e0a79715eef29be32806a1d58bb7c5da76f550aa3d8a1fbff0eb19ccb1a313d55cda56c9ec2ef29632387fe8d76e3c0468043e8f663f4860ee12bf2d5b0b7474d6e694f91e6dcc4024ffffffffffffffff"},"modp18":{"gen":"02","prime":"ffffffffffffffffc90fdaa22168c234c4c6628b80dc1cd129024e088a67cc74020bbea63b139b22514a08798e3404ddef9519b3cd3a431b302b0a6df25f14374fe1356d6d51c245e485b576625e7ec6f44c42e9a637ed6b0bff5cb6f406b7edee386bfb5a899fa5ae9f24117c4b1fe649286651ece45b3dc2007cb8a163bf0598da48361c55d39a69163fa8fd24cf5f83655d23dca3ad961c62f356208552bb9ed529077096966d670c354e4abc9804f1746c08ca18217c32905e462e36ce3be39e772c180e86039b2783a2ec07a28fb5c55df06f4c52c9de2bcbf6955817183995497cea956ae515d2261898fa051015728e5a8aaac42dad33170d04507a33a85521abdf1cba64ecfb850458dbef0a8aea71575d060c7db3970f85a6e1e4c7abf5ae8cdb0933d71e8c94e04a25619dcee3d2261ad2ee6bf12ffa06d98a0864d87602733ec86a64521f2b18177b200cbbe117577a615d6c770988c0bad946e208e24fa074e5ab3143db5bfce0fd108e4b82d120a92108011a723c12a787e6d788719a10bdba5b2699c327186af4e23c1a946834b6150bda2583e9ca2ad44ce8dbbbc2db04de8ef92e8efc141fbecaa6287c59474e6bc05d99b2964fa090c3a2233ba186515be7ed1f612970cee2d7afb81bdd762170481cd0069127d5b05aa993b4ea988d8fddc186ffb7dc90a6c08f4df435c93402849236c3fab4d27c7026c1d4dcb2602646dec9751e763dba37bdf8ff9406ad9e530ee5db382f413001aeb06a53ed9027d831179727b0865a8918da3edbebcf9b14ed44ce6cbaced4bb1bdb7f1447e6cc254b332051512bd7af426fb8f401378cd2bf5983ca01c64b92ecf032ea15d1721d03f482d7ce6e74fef6d55e702f46980c82b5a84031900b1c9e59e7c97fbec7e8f323a97a7e36cc88be0f1d45b7ff585ac54bd407b22b4154aacc8f6d7ebf48e1d814cc5ed20f8037e0a79715eef29be32806a1d58bb7c5da76f550aa3d8a1fbff0eb19ccb1a313d55cda56c9ec2ef29632387fe8d76e3c0468043e8f663f4860ee12bf2d5b0b7474d6e694f91e6dbe115974a3926f12fee5e438777cb6a932df8cd8bec4d073b931ba3bc832b68d9dd300741fa7bf8afc47ed2576f6936ba424663aab639c5ae4f5683423b4742bf1c978238f16cbe39d652de3fdb8befc848ad922222e04a4037c0713eb57a81a23f0c73473fc646cea306b4bcbc8862f8385ddfa9d4b7fa2c087e879683303ed5bdd3a062b3cf5b3a278a66d2a13f83f44f82ddf310ee074ab6a364597e899a0255dc164f31cc50846851df9ab48195ded7ea1b1d510bd7ee74d73faf36bc31ecfa268359046f4eb879f924009438b481c6cd7889a002ed5ee382bc9190da6fc026e479558e4475677e9aa9e3050e2765694dfc81f56e880b96e7160c980dd98edd3dfffffffffffffffff"}}'
 );
@@ -8939,7 +8945,7 @@ function setPrivateKey(priv, enc) {
 }
 
 var primeCache = {};
-function checkPrime(prime, generator) {
+function checkPrime(/** BN */ prime, /** Buffer */ generator) {
   var gen = generator.toString('hex'),
     hex = [gen, prime.toString(16)].join('_');
   if (hex in primeCache) return primeCache[hex];
@@ -9008,7 +9014,8 @@ DH.prototype.generateKeys = function () {
 };
 
 DH.prototype.computeSecret = function (other) {
-  var secret = (other = new BN(other).toRed(this._prime)).redPow(this._priv).fromRed(),
+  other = new BN(other).toRed(this._prime);
+  var secret = other.redPow(this._priv).fromRed(),
     out = new Buffer(secret.toArray()),
     prime = this.getPrime();
   if (out.length < prime.length) {
@@ -9093,7 +9100,7 @@ Sign.prototype.update = function (data, enc) {
 Sign.prototype.sign = function (key, enc) {
   this.end()
   var hash = this._hash.digest(),
-    sig = sign(hash, key, this._hashType, this._signType, this._tag)
+    /** @type {Buffer} */ sig = sign(hash, key, this._hashType, this._signType, this._tag)
 
   return enc ? sig.toString(enc) : sig
 }
@@ -9689,6 +9696,13 @@ Point.prototype.toJ = function () {
     : this.curve.jpoint(this.x, this.y, this.curve.one);
 };
 
+/**
+ * @constructor
+ * @instance
+ * @property {BN} x
+ * @property {BN} y
+ * @property {BN} z
+ */
 function JPoint(curve, x, y, z) {
   Base.BasePoint.call(this, curve, 'jacobian');
   if (x === null && y === null && z === null) {
@@ -9918,7 +9932,7 @@ JPoint.prototype._dbl = function () {
     c = jx2.redAdd(jx2).redIAdd(jx2).redIAdd(a.redMul(jz4)),
 
     jxd4 = jx.redAdd(jx),
-    t1 = (jxd4 = jxd4.redIAdd(jxd4)).redMul(jy2),
+    t1 = jxd4.redIAdd(jxd4).redMul(jy2),
     nx = c.redSqr().redISub(t1.redAdd(t1)),
     t2 = t1.redISub(nx),
 
@@ -9940,7 +9954,7 @@ JPoint.prototype.trpl = function () {
     m = xx.redAdd(xx).redIAdd(xx),
     mm = m.redSqr(),
     e = this.x.redAdd(yy).redSqr().redISub(xx).redISub(yyyy),
-    ee = (e = (e = (e = e.redIAdd(e)).redAdd(e).redIAdd(e)).redISub(mm)).redSqr(),
+    ee = (e = (e = e.redIAdd(e)).redAdd(e).redIAdd(e).redISub(mm)).redSqr(),
     t = yyyy.redIAdd(yyyy);
   t = (t = (t = t.redIAdd(t)).redIAdd(t)).redIAdd(t);
   var u = m.redIAdd(e).redSqr().redISub(mm).redISub(ee).redISub(t),
@@ -10779,6 +10793,7 @@ Hmac.prototype.digest = function (enc) {
 // 106
 function (module) {
 
+// noinspection SpellCheckingInspection
 module.exports = {
   doubles: {
     step: 4,
@@ -11718,7 +11733,7 @@ EC.prototype.recoverPubKey = function (msg, signature, j, enc) {
     isYOdd = j & 1,
     isSecondKey = j >> 1;
   if (r.cmp(this.curve.p.umod(this.curve.n)) >= 0 && isSecondKey)
-    throw new Error('Unable to find sencond key candinate');
+    throw new Error('Unable to find second key candidate');
 
   r = isSecondKey
     ? this.curve.pointFromX(r.add(this.curve.n), isYOdd)
@@ -12169,6 +12184,7 @@ var utils = __webpack_require__(4),
   parseBytes = utils.parseBytes,
   cachedProperty = utils.cachedProperty;
 
+/** @constructor */
 function KeyPair(eddsa, params) {
   this.eddsa = eddsa;
   this._secret = parseBytes(params.secret);
@@ -12189,6 +12205,10 @@ KeyPair.prototype.secret = function () {
   return this._secret;
 };
 
+/**
+ * @method pubBytes
+ * @memberof KeyPair#
+ */
 cachedProperty(KeyPair, 'pubBytes', function () {
   return this.eddsa.encodePoint(this.pub());
 });
@@ -12199,6 +12219,10 @@ cachedProperty(KeyPair, 'pub', function () {
     : this.eddsa.g.mul(this.priv());
 });
 
+/**
+ * @method privBytes
+ * @memberof KeyPair#
+ */
 cachedProperty(KeyPair, 'privBytes', function () {
   var eddsa = this.eddsa,
     hash = this.hash(),
@@ -12220,6 +12244,10 @@ cachedProperty(KeyPair, 'hash', function () {
   return this.eddsa.hash().update(this.secret()).digest();
 });
 
+/**
+ * @method messagePrefix
+ * @memberof KeyPair#
+ */
 cachedProperty(KeyPair, 'messagePrefix', function () {
   return this.hash().slice(this.eddsa.encodingLength);
 });
@@ -12254,6 +12282,7 @@ var BN = __webpack_require__(2),
   cachedProperty = utils.cachedProperty,
   parseBytes = utils.parseBytes;
 
+/** @constructor */
 function Signature(eddsa, sig) {
   this.eddsa = eddsa;
 
@@ -12282,10 +12311,18 @@ cachedProperty(Signature, 'R', function () {
   return this.eddsa.decodePoint(this.Rencoded());
 });
 
+/**
+ * @method Rencoded
+ * @memberof Signature#
+ */
 cachedProperty(Signature, 'Rencoded', function () {
   return this.eddsa.encodePoint(this.R());
 });
 
+/**
+ * @method Sencoded
+ * @memberof Signature#
+ */
 cachedProperty(Signature, 'Sencoded', function () {
   return this.eddsa.encodeInt(this.S());
 });
@@ -12308,7 +12345,7 @@ var asn1 = __webpack_require__(14)
 
 exports.certificate = __webpack_require__(124)
 
-var RSAPrivateKey = asn1.define('RSAPrivateKey', function () {
+exports.RSAPrivateKey = asn1.define('RSAPrivateKey', function () {
   this.seq().obj(
     this.key('version').int(),
     this.key('modulus').int(),
@@ -12321,20 +12358,17 @@ var RSAPrivateKey = asn1.define('RSAPrivateKey', function () {
     this.key('coefficient').int()
   )
 })
-exports.RSAPrivateKey = RSAPrivateKey
 
-var RSAPublicKey = asn1.define('RSAPublicKey', function () {
+exports.RSAPublicKey = asn1.define('RSAPublicKey', function () {
   this.seq().obj(this.key('modulus').int(), this.key('publicExponent').int())
 })
-exports.RSAPublicKey = RSAPublicKey
 
-var PublicKey = asn1.define('SubjectPublicKeyInfo', function () {
+exports.PublicKey = asn1.define('SubjectPublicKeyInfo', function () {
   this.seq().obj(
     this.key('algorithm').use(AlgorithmIdentifier),
     this.key('subjectPublicKey').bitstr()
   )
 })
-exports.PublicKey = PublicKey
 
 var AlgorithmIdentifier = asn1.define('AlgorithmIdentifier', function () {
   this.seq().obj(
@@ -12347,15 +12381,15 @@ var AlgorithmIdentifier = asn1.define('AlgorithmIdentifier', function () {
   )
 })
 
-var PrivateKeyInfo = asn1.define('PrivateKeyInfo', function () {
+exports.PrivateKey = asn1.define('PrivateKeyInfo', function () {
   this.seq().obj(
     this.key('version').int(),
     this.key('algorithm').use(AlgorithmIdentifier),
     this.key('subjectPrivateKey').octstr()
   )
 })
-exports.PrivateKey = PrivateKeyInfo
-var EncryptedPrivateKeyInfo = asn1.define('EncryptedPrivateKeyInfo', function () {
+
+exports.EncryptedPrivateKey = asn1.define('EncryptedPrivateKeyInfo', function () {
   this.seq().obj(
     this.key('algorithm').seq().obj(
       this.key('id').objid(),
@@ -12373,9 +12407,7 @@ var EncryptedPrivateKeyInfo = asn1.define('EncryptedPrivateKeyInfo', function ()
   )
 })
 
-exports.EncryptedPrivateKey = EncryptedPrivateKeyInfo
-
-var DSAPrivateKey = asn1.define('DSAPrivateKey', function () {
+exports.DSAPrivateKey = asn1.define('DSAPrivateKey', function () {
   this.seq().obj(
     this.key('version').int(),
     this.key('p').int(),
@@ -12385,13 +12417,12 @@ var DSAPrivateKey = asn1.define('DSAPrivateKey', function () {
     this.key('priv_key').int()
   )
 })
-exports.DSAPrivateKey = DSAPrivateKey
 
 exports.DSAparam = asn1.define('DSAparam', function () {
   this.int()
 })
 
-var ECPrivateKey = asn1.define('ECPrivateKey', function () {
+exports.ECPrivateKey = asn1.define('ECPrivateKey', function () {
   this.seq().obj(
     this.key('version').int(),
     this.key('privateKey').octstr(),
@@ -12399,7 +12430,6 @@ var ECPrivateKey = asn1.define('ECPrivateKey', function () {
     this.key('publicKey').optional().explicit(1).bitstr()
   )
 })
-exports.ECPrivateKey = ECPrivateKey
 
 var ECParameters = asn1.define('ECParameters', function () {
   this.choice({ namedCurve: this.objid() })
@@ -12614,6 +12644,38 @@ var overrided = [
   '_encodeNull', '_encodeInt', '_encodeBool'
 ];
 
+/**
+ * @constructor
+ * @instance
+ * @prop {Function} seqof
+ * @prop {Function} setof
+ * @prop {Function} objid
+ * @prop {Function} gentime
+ * @prop {Function} utctime
+ * @prop {Function} null_
+ * @prop {Function} int
+ * @prop {Function} bitstr
+ * @prop {Function} octstr
+ *
+ * @prop {Function} _peekTag
+ * @prop {Function} _decodeTag
+ * @prop {Function} _use
+ * @prop {Function} _decodeStr
+ * @prop {Function} _decodeObjid
+ * @prop {Function} _decodeTime
+ * @prop {Function} _decodeNull
+ * @prop {Function} _decodeInt
+ * @prop {Function} _decodeBool
+ * @prop {Function} _decodeList
+ *
+ * @prop {Function} _encodeComposite
+ * @prop {Function} _encodeStr
+ * @prop {Function} _encodeObjid
+ * @prop {Function} _encodeTime
+ * @prop {Function} _encodeNull
+ * @prop {Function} _encodeInt
+ * @prop {Function} _encodeBool
+ */
 function Node(enc, parent) {
   var state = {};
   this._baseState = state;
@@ -13000,6 +13062,7 @@ Node.prototype._createEncoderBuffer = function (data) {
   return new EncoderBuffer(data, this.reporter);
 };
 
+/** @this (Node|DERNode) */
 Node.prototype._encode = function (data, reporter, parent) {
   var state = this._baseState;
   if (state.default !== null && state.default === data) return;
@@ -13061,7 +13124,7 @@ Node.prototype._encodeValue = function (data, reporter, parent) {
 
     var child = this.clone();
     child._baseState.implicit = null;
-    content = this._createEncoderBuffer(data.map(function (item) {
+    content = this._createEncoderBuffer(data.map(/** @this Node */ function (item) {
       var state = this._baseState;
 
       return this._getUse(state.args[0], data)._encode(item, reporter);
@@ -13124,7 +13187,7 @@ Node.prototype._isNumstr = function (str) {
 };
 
 Node.prototype._isPrintstr = function (str) {
-  return /^[A-Za-z0-9 '\(\)\+,\-\.\/:=\?]*$/.test(str);
+  return /^[A-Za-z0-9 '()+,\-.\/:=?]*$/.test(str);
 };
 
 },
@@ -13223,7 +13286,7 @@ PEMDecoder.prototype.decode = function (data, options) {
     throw new Error('PEM section not found for: ' + label);
 
   var base64 = lines.slice(start + 1, end).join('');
-  base64.replace(/[^a-z0-9\+\/=]+/gi, '');
+  base64.replace(/[^a-z0-9+\/=]+/gi, '');
 
   var input = new Buffer(base64, 'base64');
   return DERDecoder.prototype.decode.call(this, input, options);
@@ -13330,15 +13393,13 @@ var TBSCertificate = asn.define('TBSCertificate', function () {
   )
 })
 
-var X509Certificate = asn.define('X509Certificate', function () {
+module.exports = asn.define('X509Certificate', function () {
   this.seq().obj(
     this.key('tbsCertificate').use(TBSCertificate),
     this.key('signatureAlgorithm').use(AlgorithmIdentifier),
     this.key('signatureValue').bitstr()
   )
 })
-
-module.exports = X509Certificate
 
 },
 // 125
@@ -13353,10 +13414,10 @@ module.exports = JSON.parse(
 function (module, exports, __webpack_require__) {
 
 var findProc =
-    /Proc-Type: 4,ENCRYPTED[\n\r]+DEK-Info: AES-((?:128)|(?:192)|(?:256))-CBC,([0-9A-H]+)[\n\r]+([0-9A-z\n\r\+\/\=]+)[\n\r]+/m,
+    /Proc-Type: 4,ENCRYPTED[\n\r]+DEK-Info: AES-((?:128)|(?:192)|(?:256))-CBC,([0-9A-H]+)[\n\r]+([0-9A-z\n\r+\/=]+)[\n\r]+/m,
   startRegex = /^-----BEGIN ((?:.*? KEY)|CERTIFICATE)-----/m,
   fullRegex =
-    /^-----BEGIN ((?:.*? KEY)|CERTIFICATE)-----([0-9A-z\n\r\+\/\=]+)-----END \1-----$/m,
+    /^-----BEGIN ((?:.*? KEY)|CERTIFICATE)-----([0-9A-z\n\r+\/=]+)-----END \1-----$/m,
   evp = __webpack_require__(17),
   ciphers = __webpack_require__(27),
   Buffer = __webpack_require__(0).Buffer
@@ -13548,7 +13609,7 @@ ECDH.prototype.setPrivateKey = function (priv, enc) {
   enc = enc || 'utf8'
   Buffer.isBuffer(priv) || (priv = new Buffer(priv, enc))
 
-  var _priv = new BN(priv)
+  /** @type {BN} */ var _priv = new BN(priv)
   _priv = _priv.toString(16)
   this.keys = this.curve.genKeyPair()
   this.keys._importPrivate(_priv)
@@ -13614,7 +13675,7 @@ module.exports = function (publicKey, msg, reverse) {
 }
 
 function oaep(key, msg) {
-  var k = key.modulus.byteLength(),
+  var k = /** @type {number} */ key.modulus.byteLength(),
     mLen = msg.length,
     iHash = createHash('sha1').update(Buffer.alloc(0)).digest(),
     hLen = iHash.length,
@@ -13632,7 +13693,7 @@ function oaep(key, msg) {
 }
 function pkcs1(key, msg, reverse) {
   var mLen = msg.length,
-    k = key.modulus.byteLength()
+    /** @type {number} */ k = key.modulus.byteLength()
   if (mLen > k - 11) throw new Error('message too long')
 
   var ps = reverse ? Buffer.alloc(k - mLen - 3, 0xff) : nonZero(k - mLen - 3)
@@ -13664,7 +13725,7 @@ var parseKeys = __webpack_require__(19),
   crt = __webpack_require__(30),
   createHash = __webpack_require__(10),
   withPublic = __webpack_require__(64),
-  Buffer = __webpack_require__(0).Buffer
+  /** @type {Buffer} */ Buffer = __webpack_require__(0).Buffer
 
 module.exports = function (privateKey, enc, reverse) {
   var padding = privateKey.padding ? privateKey.padding : reverse ? 1 : 4,
@@ -13705,7 +13766,7 @@ function oaep(key, msg) {
   return db.slice(i)
 }
 
-function pkcs1(key, msg, reverse) {
+function pkcs1(key, /** Buffer */ msg, reverse) {
   var p1 = msg.slice(0, 2),
     i = 2,
     status = 0

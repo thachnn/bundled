@@ -3,7 +3,7 @@
 var Buffer = require('buffer').Buffer;
 
 var isEncoding = Buffer.isEncoding || function (encoding) {
-  switch ((encoding = '' + encoding) && encoding.toLowerCase()) {
+  switch (!(encoding = '' + encoding) || encoding.toLowerCase()) {
     case 'hex':
     case 'utf8':
     case 'utf-8':
@@ -138,7 +138,7 @@ function utf8CheckIncomplete(self, buf, i) {
   return 0;
 }
 
-function utf8CheckExtraBytes(self, buf, p) {
+function utf8CheckExtraBytes(self, buf, _p) {
   if ((buf[0] & 0xC0) != 0x80) {
     self.lastNeed = 0;
     return '\ufffd';
@@ -167,7 +167,7 @@ function utf8FillLast(buf) {
   this.lastNeed -= buf.length;
 }
 
-function utf8Text(buf, i) {
+function utf8Text(/** Buffer */ buf, i) {
   var total = utf8CheckIncomplete(this, buf, i);
   if (!this.lastNeed) return buf.toString('utf8', i);
   this.lastTotal = total;
@@ -181,7 +181,7 @@ function utf8End(buf) {
   return this.lastNeed ? r + '\ufffd' : r;
 }
 
-function utf16Text(buf, i) {
+function utf16Text(/** Buffer */ buf, i) {
   if ((buf.length - i) % 2 == 0) {
     var r = buf.toString('utf16le', i);
     if (r) {
@@ -211,7 +211,7 @@ function utf16End(buf) {
   return r;
 }
 
-function base64Text(buf, i) {
+function base64Text(/** Buffer */ buf, i) {
   var n = (buf.length - i) % 3;
   if (n === 0) return buf.toString('base64', i);
   this.lastNeed = 3 - n;
@@ -229,7 +229,7 @@ function base64End(buf) {
   return this.lastNeed ? r + this.lastChar.toString('base64', 0, 3 - this.lastNeed) : r;
 }
 
-function simpleWrite(buf) {
+function simpleWrite(/** Buffer */ buf) {
   return buf.toString(this.encoding);
 }
 

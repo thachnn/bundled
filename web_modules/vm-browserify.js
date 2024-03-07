@@ -54,7 +54,7 @@ Script.prototype.runInContext = function (context) {
     throw new TypeError("needs a 'context' argument.");
 
   var iframe = document.createElement('iframe');
-  iframe.style || (iframe.style = {});
+  iframe.style || (iframe.style = /** @type {CSSStyleDeclaration} */ {});
   iframe.style.display = 'none';
 
   document.body.appendChild(iframe);

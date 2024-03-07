@@ -1140,9 +1140,9 @@ function decode$1(ab, opts) {
 
           dump([_index2], "index");
         } else {
-          var aligun32 = readU32(),
-            align = aligun32.value;
-          eatBytes(aligun32.nextIndex);
+          var alignu32 = readU32(),
+            align = alignu32.value;
+          eatBytes(alignu32.nextIndex);
           dump([align], "align");
           var offsetu32 = readU32(),
             _offset2 = offsetu32.value;
@@ -1290,10 +1290,10 @@ function decode$1(ab, opts) {
   function parseNameSectionFunctions() {
     var functionNames = [],
       numberOfFunctionsu32 = readU32(),
-      numbeOfFunctions = numberOfFunctionsu32.value;
+      numberOfFunctions = numberOfFunctionsu32.value;
     eatBytes(numberOfFunctionsu32.nextIndex);
 
-    for (var i = 0; i < numbeOfFunctions; i++) {
+    for (var i = 0; i < numberOfFunctions; i++) {
       var indexu32 = readU32(),
         index = indexu32.value;
       eatBytes(indexu32.nextIndex);
@@ -1307,11 +1307,11 @@ function decode$1(ab, opts) {
 
   function parseNameSectionLocals() {
     var localNames = [],
-      numbeOfFunctionsu32 = readU32(),
-      numbeOfFunctions = numbeOfFunctionsu32.value;
-    eatBytes(numbeOfFunctionsu32.nextIndex);
+      numberOfFunctionsu32 = readU32(),
+      numberOfFunctions = numberOfFunctionsu32.value;
+    eatBytes(numberOfFunctionsu32.nextIndex);
 
-    for (var i = 0; i < numbeOfFunctions; i++) {
+    for (var i = 0; i < numberOfFunctions; i++) {
       var functionIndexu32 = readU32(),
         functionIndex = functionIndexu32.value;
       eatBytes(functionIndexu32.nextIndex);
@@ -1333,6 +1333,7 @@ function decode$1(ab, opts) {
   }
 
   function parseNameSection(remainingBytes) {
+    // noinspection UnnecessaryLocalVariableJS
     var nameMetadata = [],
       initialOffset = offset;
 
@@ -1755,6 +1756,7 @@ function decode$1(ab, opts) {
         var _remainingBytes2 = sectionSizeInBytes - sectionName.nextIndex;
 
         if (sectionName.value === "name") {
+          // noinspection UnnecessaryLocalVariableJS
           var initialOffset = offset;
 
           try {
@@ -1764,6 +1766,7 @@ function decode$1(ab, opts) {
             eatBytes(offset - (initialOffset + _remainingBytes2));
           }
         } else if (sectionName.value === "producers") {
+          // noinspection UnnecessaryLocalVariableJS
           var _initialOffset = offset;
 
           try {

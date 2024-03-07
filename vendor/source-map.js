@@ -775,6 +775,7 @@ SourceMapConsumer.prototype._charIsMappingSeparator = function (aStr, index) {
   return c === ";" || c === ",";
 };
 
+// noinspection JSUnusedLocalSymbols
 SourceMapConsumer.prototype._parseMappings = function (aStr, aSourceRoot) {
   throw new Error("Subclasses must implement _parseMappings");
 };
@@ -940,6 +941,7 @@ BasicSourceMapConsumer.fromSourceMap = function (aSourceMap, aSourceMapURL) {
     return util.computeSourceURL(smc.sourceRoot, s, aSourceMapURL);
   });
 
+  // noinspection JSMismatchedCollectionQueryUpdate
   var generatedMappings = aSourceMap._mappings.toArray().slice(),
     destGeneratedMappings = (smc.__generatedMappings = []),
     destOriginalMappings = (smc.__originalMappings = []);
@@ -985,7 +987,7 @@ function Mapping() {
   this.name = null;
 }
 
-BasicSourceMapConsumer.prototype._parseMappings = function (aStr, aSourceRoot) {
+BasicSourceMapConsumer.prototype._parseMappings = function (aStr, _aSourceRoot) {
   var mapping, str, segment, end, value,
     generatedLine = 1,
     previousGeneratedColumn = 0,
@@ -1308,7 +1310,7 @@ IndexedSourceMapConsumer.prototype.generatedPositionFor = function (aArgs) {
   return { line: null, column: null };
 };
 
-IndexedSourceMapConsumer.prototype._parseMappings = function (aStr, aSourceRoot) {
+IndexedSourceMapConsumer.prototype._parseMappings = function (aStr, _aSourceRoot) {
   this.__generatedMappings = [];
   this.__originalMappings = [];
   for (var i = 0; i < this._sections.length; i++) {

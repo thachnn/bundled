@@ -42,7 +42,7 @@ function Url() {
 
 var protocolPattern = /^([a-z0-9.+-]+:)/i,
   portPattern = /:[0-9]*$/,
-  simplePathPattern = /^(\/\/?(?!\/)[^\?\s]*)(\?[^\s]*)?$/,
+  simplePathPattern = /^(\/\/?(?!\/)[^?\s]*)(\?[^\s]*)?$/,
 
   delims = ['<', '>', '"', '`', ' ', '\r', '\n', '\t'],
   unwise = ['{', '}', '|', '\\', '^', '`'].concat(delims),
@@ -107,10 +107,10 @@ Url.prototype.parse = function(url, parseQueryString, slashesDenoteHost) {
     }
   }
 
-  var proto = protocolPattern.exec(rest);
+  var lowerProto,
+    proto = protocolPattern.exec(rest);
   if (proto) {
-    var lowerProto = (proto = proto[0]).toLowerCase();
-    this.protocol = lowerProto;
+    this.protocol = lowerProto = (proto = proto[0]).toLowerCase();
     rest = rest.substr(proto.length);
   }
 
@@ -467,8 +467,8 @@ Url.prototype.resolveObject = function(relative) {
     }
   }
 
-  !(mustEndAbs = mustEndAbs || (result.host && srcPath.length)) || isAbsolute ||
-    srcPath.unshift('');
+  mustEndAbs = mustEndAbs || (result.host && srcPath.length);
+  !mustEndAbs || isAbsolute || srcPath.unshift('');
 
   if (!srcPath.length) {
     result.pathname = null;

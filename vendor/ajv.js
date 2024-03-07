@@ -114,7 +114,7 @@ function toHash(arr) {
 }
 
 var IDENTIFIER = /^[a-z$_][a-z$_0-9]*$/i,
-  SINGLE_QUOTE = /'|\\/g;
+  SINGLE_QUOTE = /['\\]/g;
 function getProperty(key) {
   return typeof key == 'number'
     ? '[' + key + ']'
@@ -581,7 +581,7 @@ module.exports = function (data, opts) {
 './dotjs/validate':
 function (module) {
 
-module.exports = function (it, $keyword, $ruleType) {
+module.exports = function (it, $keyword, _$ruleType) {
   var $errorKeyword,
     $$outStack,
     out = '',
@@ -607,6 +607,7 @@ module.exports = function (it, $keyword, $ruleType) {
   }
   if (typeof it.schema == 'boolean' || (!$refKeywords && !it.schema.$ref)) {
     $keyword = 'false schema';
+    // noinspection JSUnusedAssignment
     var $lvl = it.level,
       $dataLvl = it.dataLevel,
       $schema = it.schema[$keyword],
@@ -963,7 +964,7 @@ module.exports = function (it, $keyword, $ruleType) {
 './dotjs/_limit':
 function (module) {
 
-module.exports = function (it, $keyword, $ruleType) {
+module.exports = function (it, $keyword, _$ruleType) {
   var $schemaValue,
     out = ' ',
     $lvl = it.level,
@@ -1105,7 +1106,7 @@ module.exports = function (it, $keyword, $ruleType) {
 './dotjs/_limitItems':
 function (module) {
 
-module.exports = function (it, $keyword, $ruleType) {
+module.exports = function (it, $keyword, _$ruleType) {
   var $schemaValue,
     out = ' ',
     $lvl = it.level,
@@ -1129,8 +1130,8 @@ module.exports = function (it, $keyword, $ruleType) {
 
   out += ' ' + $data + '.length ' + ($keyword == 'maxItems' ? '>' : '<') + ' ' + $schemaValue + ') { ';
   var $errorKeyword = $keyword,
-    $$outStack = $$outStack || [];
-  $$outStack.push(out);
+    $$outStack;
+  ($$outStack = $$outStack || []).push(out);
   out = '';
   if (it.createErrors !== false) {
     out += " { keyword: '" + ($errorKeyword || '_limitItems') + "' , dataPath: (dataPath || '') + " + it.errorPath + ' , schemaPath: ' + it.util.toQuotedString($errSchemaPath) + ' , params: { limit: ' + $schemaValue + ' } ';
@@ -1170,7 +1171,7 @@ module.exports = function (it, $keyword, $ruleType) {
 './dotjs/_limitLength':
 function (module) {
 
-module.exports = function (it, $keyword, $ruleType) {
+module.exports = function (it, $keyword, _$ruleType) {
   var $schemaValue,
     out = ' ',
     $lvl = it.level,
@@ -1197,8 +1198,8 @@ module.exports = function (it, $keyword, $ruleType) {
 
   out += ' ' + $op + ' ' + $schemaValue + ') { ';
   var $errorKeyword = $keyword,
-    $$outStack = $$outStack || [];
-  $$outStack.push(out);
+    $$outStack;
+  ($$outStack = $$outStack || []).push(out);
   out = '';
   if (it.createErrors !== false) {
     out += " { keyword: '" + ($errorKeyword || '_limitLength') + "' , dataPath: (dataPath || '') + " + it.errorPath + ' , schemaPath: ' + it.util.toQuotedString($errSchemaPath) + ' , params: { limit: ' + $schemaValue + ' } ';
@@ -1238,7 +1239,7 @@ module.exports = function (it, $keyword, $ruleType) {
 './dotjs/_limitProperties':
 function (module) {
 
-module.exports = function (it, $keyword, $ruleType) {
+module.exports = function (it, $keyword, _$ruleType) {
   var $schemaValue,
     out = ' ',
     $lvl = it.level,
@@ -1262,8 +1263,8 @@ module.exports = function (it, $keyword, $ruleType) {
 
   out += ' Object.keys(' + $data + ').length ' + ($keyword == 'maxProperties' ? '>' : '<') + ' ' + $schemaValue + ') { ';
   var $errorKeyword = $keyword,
-    $$outStack = $$outStack || [];
-  $$outStack.push(out);
+    $$outStack;
+  ($$outStack = $$outStack || []).push(out);
   out = '';
   if (it.createErrors !== false) {
     out += " { keyword: '" + ($errorKeyword || '_limitProperties') + "' , dataPath: (dataPath || '') + " + it.errorPath + ' , schemaPath: ' + it.util.toQuotedString($errSchemaPath) + ' , params: { limit: ' + $schemaValue + ' } ';
@@ -1827,12 +1828,12 @@ function compile(schema, root, localRefs, baseId) {
     var _refVal, refCode,
       refIndex = refs[ref];
     if (refIndex !== void 0)
-      return resolvedRef((_refVal = refVal[refIndex]), (refCode = 'refVal[' + refIndex + ']')); // redundant
+      return resolvedRef(refVal[refIndex], 'refVal[' + refIndex + ']');
 
     if (!isRoot && root.refs) {
       var rootRefId = root.refs[ref];
       if (rootRefId !== void 0)
-        return resolvedRef((_refVal = root.refVal[rootRefId]), (refCode = addLocalRef(ref, _refVal)));
+        return resolvedRef((_refVal = root.refVal[rootRefId]), addLocalRef(ref, _refVal));
     }
 
     refCode = addLocalRef(ref);
@@ -2122,10 +2123,10 @@ var DATE = /^(\d\d\d\d)-(\d\d)-(\d\d)$/,
   TIME = /^(\d\d):(\d\d):(\d\d)(\.\d+)?(z|[+-]\d\d(?::?\d\d)?)?$/i,
   HOSTNAME = /^(?=.{1,253}\.?$)[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?(?:\.[a-z0-9](?:[-0-9a-z]{0,61}[0-9a-z])?)*\.?$/i,
   URI =
-    /^(?:[a-z][a-z0-9+\-.]*:)(?:\/?\/(?:(?:[a-z0-9\-._~!$&'()*+,;=:]|%[0-9a-f]{2})*@)?(?:\[(?:(?:(?:(?:[0-9a-f]{1,4}:){6}|::(?:[0-9a-f]{1,4}:){5}|(?:[0-9a-f]{1,4})?::(?:[0-9a-f]{1,4}:){4}|(?:(?:[0-9a-f]{1,4}:){0,1}[0-9a-f]{1,4})?::(?:[0-9a-f]{1,4}:){3}|(?:(?:[0-9a-f]{1,4}:){0,2}[0-9a-f]{1,4})?::(?:[0-9a-f]{1,4}:){2}|(?:(?:[0-9a-f]{1,4}:){0,3}[0-9a-f]{1,4})?::[0-9a-f]{1,4}:|(?:(?:[0-9a-f]{1,4}:){0,4}[0-9a-f]{1,4})?::)(?:[0-9a-f]{1,4}:[0-9a-f]{1,4}|(?:(?:25[0-5]|2[0-4]\d|[01]?\d\d?)\.){3}(?:25[0-5]|2[0-4]\d|[01]?\d\d?))|(?:(?:[0-9a-f]{1,4}:){0,5}[0-9a-f]{1,4})?::[0-9a-f]{1,4}|(?:(?:[0-9a-f]{1,4}:){0,6}[0-9a-f]{1,4})?::)|[Vv][0-9a-f]+\.[a-z0-9\-._~!$&'()*+,;=:]+)\]|(?:(?:25[0-5]|2[0-4]\d|[01]?\d\d?)\.){3}(?:25[0-5]|2[0-4]\d|[01]?\d\d?)|(?:[a-z0-9\-._~!$&'()*+,;=]|%[0-9a-f]{2})*)(?::\d*)?(?:\/(?:[a-z0-9\-._~!$&'()*+,;=:@]|%[0-9a-f]{2})*)*|\/(?:(?:[a-z0-9\-._~!$&'()*+,;=:@]|%[0-9a-f]{2})+(?:\/(?:[a-z0-9\-._~!$&'()*+,;=:@]|%[0-9a-f]{2})*)*)?|(?:[a-z0-9\-._~!$&'()*+,;=:@]|%[0-9a-f]{2})+(?:\/(?:[a-z0-9\-._~!$&'()*+,;=:@]|%[0-9a-f]{2})*)*)(?:\?(?:[a-z0-9\-._~!$&'()*+,;=:@/?]|%[0-9a-f]{2})*)?(?:#(?:[a-z0-9\-._~!$&'()*+,;=:@/?]|%[0-9a-f]{2})*)?$/i,
+    /^(?:[a-z][a-z0-9+\-.]*:)(?:\/?\/(?:(?:[a-z0-9\-._~!$&'()*+,;=:]|%[0-9a-f]{2})*@)?(?:\[(?:(?:(?:(?:[0-9a-f]{1,4}:){6}|::(?:[0-9a-f]{1,4}:){5}|(?:[0-9a-f]{1,4})?::(?:[0-9a-f]{1,4}:){4}|(?:(?:[0-9a-f]{1,4}:)?[0-9a-f]{1,4})?::(?:[0-9a-f]{1,4}:){3}|(?:(?:[0-9a-f]{1,4}:){0,2}[0-9a-f]{1,4})?::(?:[0-9a-f]{1,4}:){2}|(?:(?:[0-9a-f]{1,4}:){0,3}[0-9a-f]{1,4})?::[0-9a-f]{1,4}:|(?:(?:[0-9a-f]{1,4}:){0,4}[0-9a-f]{1,4})?::)(?:[0-9a-f]{1,4}:[0-9a-f]{1,4}|(?:(?:25[0-5]|2[0-4]\d|[01]?\d\d?)\.){3}(?:25[0-5]|2[0-4]\d|[01]?\d\d?))|(?:(?:[0-9a-f]{1,4}:){0,5}[0-9a-f]{1,4})?::[0-9a-f]{1,4}|(?:(?:[0-9a-f]{1,4}:){0,6}[0-9a-f]{1,4})?::)|[Vv][0-9a-f]+\.[a-z0-9\-._~!$&'()*+,;=:]+)]|(?:(?:25[0-5]|2[0-4]\d|[01]?\d\d?)\.){3}(?:25[0-5]|2[0-4]\d|[01]?\d\d?)|(?:[a-z0-9\-._~!$&'()*+,;=]|%[0-9a-f]{2})*)(?::\d*)?(?:\/(?:[a-z0-9\-._~!$&'()*+,;=:@]|%[0-9a-f]{2})*)*|\/(?:(?:[a-z0-9\-._~!$&'()*+,;=:@]|%[0-9a-f]{2})+(?:\/(?:[a-z0-9\-._~!$&'()*+,;=:@]|%[0-9a-f]{2})*)*)?|(?:[a-z0-9\-._~!$&'()*+,;=:@]|%[0-9a-f]{2})+(?:\/(?:[a-z0-9\-._~!$&'()*+,;=:@]|%[0-9a-f]{2})*)*)(?:\?(?:[a-z0-9\-._~!$&'()*+,;=:@/?]|%[0-9a-f]{2})*)?(?:#(?:[a-z0-9\-._~!$&'()*+,;=:@/?]|%[0-9a-f]{2})*)?$/i,
   URIREF =
-    /^(?:[a-z][a-z0-9+\-.]*:)?(?:\/?\/(?:(?:[a-z0-9\-._~!$&'()*+,;=:]|%[0-9a-f]{2})*@)?(?:\[(?:(?:(?:(?:[0-9a-f]{1,4}:){6}|::(?:[0-9a-f]{1,4}:){5}|(?:[0-9a-f]{1,4})?::(?:[0-9a-f]{1,4}:){4}|(?:(?:[0-9a-f]{1,4}:){0,1}[0-9a-f]{1,4})?::(?:[0-9a-f]{1,4}:){3}|(?:(?:[0-9a-f]{1,4}:){0,2}[0-9a-f]{1,4})?::(?:[0-9a-f]{1,4}:){2}|(?:(?:[0-9a-f]{1,4}:){0,3}[0-9a-f]{1,4})?::[0-9a-f]{1,4}:|(?:(?:[0-9a-f]{1,4}:){0,4}[0-9a-f]{1,4})?::)(?:[0-9a-f]{1,4}:[0-9a-f]{1,4}|(?:(?:25[0-5]|2[0-4]\d|[01]?\d\d?)\.){3}(?:25[0-5]|2[0-4]\d|[01]?\d\d?))|(?:(?:[0-9a-f]{1,4}:){0,5}[0-9a-f]{1,4})?::[0-9a-f]{1,4}|(?:(?:[0-9a-f]{1,4}:){0,6}[0-9a-f]{1,4})?::)|[Vv][0-9a-f]+\.[a-z0-9\-._~!$&'()*+,;=:]+)\]|(?:(?:25[0-5]|2[0-4]\d|[01]?\d\d?)\.){3}(?:25[0-5]|2[0-4]\d|[01]?\d\d?)|(?:[a-z0-9\-._~!$&'"()*+,;=]|%[0-9a-f]{2})*)(?::\d*)?(?:\/(?:[a-z0-9\-._~!$&'"()*+,;=:@]|%[0-9a-f]{2})*)*|\/(?:(?:[a-z0-9\-._~!$&'"()*+,;=:@]|%[0-9a-f]{2})+(?:\/(?:[a-z0-9\-._~!$&'"()*+,;=:@]|%[0-9a-f]{2})*)*)?|(?:[a-z0-9\-._~!$&'"()*+,;=:@]|%[0-9a-f]{2})+(?:\/(?:[a-z0-9\-._~!$&'"()*+,;=:@]|%[0-9a-f]{2})*)*)?(?:\?(?:[a-z0-9\-._~!$&'"()*+,;=:@/?]|%[0-9a-f]{2})*)?(?:#(?:[a-z0-9\-._~!$&'"()*+,;=:@/?]|%[0-9a-f]{2})*)?$/i,
-  URITEMPLATE = /^(?:(?:[^\x00-\x20"'<>%\\^`{|}]|%[0-9a-f]{2})|\{[+#./;?&=,!@|]?(?:[a-z0-9_]|%[0-9a-f]{2})+(?::[1-9][0-9]{0,3}|\*)?(?:,(?:[a-z0-9_]|%[0-9a-f]{2})+(?::[1-9][0-9]{0,3}|\*)?)*\})*$/i,
+    /^(?:[a-z][a-z0-9+\-.]*:)?(?:\/?\/(?:(?:[a-z0-9\-._~!$&'()*+,;=:]|%[0-9a-f]{2})*@)?(?:\[(?:(?:(?:(?:[0-9a-f]{1,4}:){6}|::(?:[0-9a-f]{1,4}:){5}|(?:[0-9a-f]{1,4})?::(?:[0-9a-f]{1,4}:){4}|(?:(?:[0-9a-f]{1,4}:)?[0-9a-f]{1,4})?::(?:[0-9a-f]{1,4}:){3}|(?:(?:[0-9a-f]{1,4}:){0,2}[0-9a-f]{1,4})?::(?:[0-9a-f]{1,4}:){2}|(?:(?:[0-9a-f]{1,4}:){0,3}[0-9a-f]{1,4})?::[0-9a-f]{1,4}:|(?:(?:[0-9a-f]{1,4}:){0,4}[0-9a-f]{1,4})?::)(?:[0-9a-f]{1,4}:[0-9a-f]{1,4}|(?:(?:25[0-5]|2[0-4]\d|[01]?\d\d?)\.){3}(?:25[0-5]|2[0-4]\d|[01]?\d\d?))|(?:(?:[0-9a-f]{1,4}:){0,5}[0-9a-f]{1,4})?::[0-9a-f]{1,4}|(?:(?:[0-9a-f]{1,4}:){0,6}[0-9a-f]{1,4})?::)|[Vv][0-9a-f]+\.[a-z0-9\-._~!$&'()*+,;=:]+)]|(?:(?:25[0-5]|2[0-4]\d|[01]?\d\d?)\.){3}(?:25[0-5]|2[0-4]\d|[01]?\d\d?)|(?:[a-z0-9\-._~!$&'"()*+,;=]|%[0-9a-f]{2})*)(?::\d*)?(?:\/(?:[a-z0-9\-._~!$&'"()*+,;=:@]|%[0-9a-f]{2})*)*|\/(?:(?:[a-z0-9\-._~!$&'"()*+,;=:@]|%[0-9a-f]{2})+(?:\/(?:[a-z0-9\-._~!$&'"()*+,;=:@]|%[0-9a-f]{2})*)*)?|(?:[a-z0-9\-._~!$&'"()*+,;=:@]|%[0-9a-f]{2})+(?:\/(?:[a-z0-9\-._~!$&'"()*+,;=:@]|%[0-9a-f]{2})*)*)?(?:\?(?:[a-z0-9\-._~!$&'"()*+,;=:@/?]|%[0-9a-f]{2})*)?(?:#(?:[a-z0-9\-._~!$&'"()*+,;=:@/?]|%[0-9a-f]{2})*)?$/i,
+  URITEMPLATE = /^(?:(?:[^\x00-\x20"'<>%\\^`{|}]|%[0-9a-f]{2})|{[+#./;?&=,!@|]?(?:[a-z0-9_]|%[0-9a-f]{2})+(?::[1-9][0-9]{0,3}|\*)?(?:,(?:[a-z0-9_]|%[0-9a-f]{2})+(?::[1-9][0-9]{0,3}|\*)?)*})*$/i,
   URL =
     /^(?:(?:http[s\u017F]?|ftp):\/\/)(?:(?:[\0-\x08\x0E-\x1F!-\x9F\xA1-\u167F\u1681-\u1FFF\u200B-\u2027\u202A-\u202E\u2030-\u205E\u2060-\u2FFF\u3001-\uD7FF\uE000-\uFEFE\uFF00-\uFFFF]|[\uD800-\uDBFF][\uDC00-\uDFFF]|[\uD800-\uDBFF](?![\uDC00-\uDFFF])|(?:[^\uD800-\uDBFF]|^)[\uDC00-\uDFFF])+(?::(?:[\0-\x08\x0E-\x1F!-\x9F\xA1-\u167F\u1681-\u1FFF\u200B-\u2027\u202A-\u202E\u2030-\u205E\u2060-\u2FFF\u3001-\uD7FF\uE000-\uFEFE\uFF00-\uFFFF]|[\uD800-\uDBFF][\uDC00-\uDFFF]|[\uD800-\uDBFF](?![\uDC00-\uDFFF])|(?:[^\uD800-\uDBFF]|^)[\uDC00-\uDFFF])*)?@)?(?:(?!10(?:\.[0-9]{1,3}){3})(?!127(?:\.[0-9]{1,3}){3})(?!169\.254(?:\.[0-9]{1,3}){2})(?!192\.168(?:\.[0-9]{1,3}){2})(?!172\.(?:1[6-9]|2[0-9]|3[01])(?:\.[0-9]{1,3}){2})(?:[1-9][0-9]?|1[0-9][0-9]|2[01][0-9]|22[0-3])(?:\.(?:1?[0-9]{1,2}|2[0-4][0-9]|25[0-5])){2}(?:\.(?:[1-9][0-9]?|1[0-9][0-9]|2[0-4][0-9]|25[0-4]))|(?:(?:(?:[0-9a-z\xA1-\uD7FF\uE000-\uFFFF]|[\uD800-\uDBFF](?![\uDC00-\uDFFF])|(?:[^\uD800-\uDBFF]|^)[\uDC00-\uDFFF])+-)*(?:[0-9a-z\xA1-\uD7FF\uE000-\uFFFF]|[\uD800-\uDBFF](?![\uDC00-\uDFFF])|(?:[^\uD800-\uDBFF]|^)[\uDC00-\uDFFF])+)(?:\.(?:(?:[0-9a-z\xA1-\uD7FF\uE000-\uFFFF]|[\uD800-\uDBFF](?![\uDC00-\uDFFF])|(?:[^\uD800-\uDBFF]|^)[\uDC00-\uDFFF])+-)*(?:[0-9a-z\xA1-\uD7FF\uE000-\uFFFF]|[\uD800-\uDBFF](?![\uDC00-\uDFFF])|(?:[^\uD800-\uDBFF]|^)[\uDC00-\uDFFF])+)*(?:\.(?:(?:[a-z\xA1-\uD7FF\uE000-\uFFFF]|[\uD800-\uDBFF](?![\uDC00-\uDFFF])|(?:[^\uD800-\uDBFF]|^)[\uDC00-\uDFFF]){2,})))(?::[0-9]{2,5})?(?:\/(?:[\0-\x08\x0E-\x1F!-\x9F\xA1-\u167F\u1681-\u1FFF\u200B-\u2027\u202A-\u202E\u2030-\u205E\u2060-\u2FFF\u3001-\uD7FF\uE000-\uFEFE\uFF00-\uFFFF]|[\uD800-\uDBFF][\uDC00-\uDFFF]|[\uD800-\uDBFF](?![\uDC00-\uDFFF])|(?:[^\uD800-\uDBFF]|^)[\uDC00-\uDFFF])*)?$/i,
   UUID = /^(?:urn:uuid:)?[0-9a-f]{8}-(?:[0-9a-f]{4}-){3}[0-9a-f]{12}$/i,
@@ -2151,7 +2152,7 @@ formats.fast = {
   email: /^[a-z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?(?:\.[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?)*$/i,
   hostname: HOSTNAME,
   ipv4: /^(?:(?:25[0-5]|2[0-4]\d|[01]?\d\d?)\.){3}(?:25[0-5]|2[0-4]\d|[01]?\d\d?)$/,
-  ipv6: /^\s*(?:(?:(?:[0-9a-f]{1,4}:){7}(?:[0-9a-f]{1,4}|:))|(?:(?:[0-9a-f]{1,4}:){6}(?::[0-9a-f]{1,4}|(?:(?:25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(?:\.(?:25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3})|:))|(?:(?:[0-9a-f]{1,4}:){5}(?:(?:(?::[0-9a-f]{1,4}){1,2})|:(?:(?:25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(?:\.(?:25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3})|:))|(?:(?:[0-9a-f]{1,4}:){4}(?:(?:(?::[0-9a-f]{1,4}){1,3})|(?:(?::[0-9a-f]{1,4})?:(?:(?:25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(?:\.(?:25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3}))|:))|(?:(?:[0-9a-f]{1,4}:){3}(?:(?:(?::[0-9a-f]{1,4}){1,4})|(?:(?::[0-9a-f]{1,4}){0,2}:(?:(?:25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(?:\.(?:25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3}))|:))|(?:(?:[0-9a-f]{1,4}:){2}(?:(?:(?::[0-9a-f]{1,4}){1,5})|(?:(?::[0-9a-f]{1,4}){0,3}:(?:(?:25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(?:\.(?:25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3}))|:))|(?:(?:[0-9a-f]{1,4}:){1}(?:(?:(?::[0-9a-f]{1,4}){1,6})|(?:(?::[0-9a-f]{1,4}){0,4}:(?:(?:25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(?:\.(?:25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3}))|:))|(?::(?:(?:(?::[0-9a-f]{1,4}){1,7})|(?:(?::[0-9a-f]{1,4}){0,5}:(?:(?:25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(?:\.(?:25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3}))|:)))(?:%.+)?\s*$/i,
+  ipv6: /^\s*(?:(?:(?:[0-9a-f]{1,4}:){7}(?:[0-9a-f]{1,4}|:))|(?:(?:[0-9a-f]{1,4}:){6}(?::[0-9a-f]{1,4}|(?:(?:25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(?:\.(?:25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3})|:))|(?:(?:[0-9a-f]{1,4}:){5}(?:(?:(?::[0-9a-f]{1,4}){1,2})|:(?:(?:25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(?:\.(?:25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3})|:))|(?:(?:[0-9a-f]{1,4}:){4}(?:(?:(?::[0-9a-f]{1,4}){1,3})|(?:(?::[0-9a-f]{1,4})?:(?:(?:25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(?:\.(?:25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3}))|:))|(?:(?:[0-9a-f]{1,4}:){3}(?:(?:(?::[0-9a-f]{1,4}){1,4})|(?:(?::[0-9a-f]{1,4}){0,2}:(?:(?:25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(?:\.(?:25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3}))|:))|(?:(?:[0-9a-f]{1,4}:){2}(?:(?:(?::[0-9a-f]{1,4}){1,5})|(?:(?::[0-9a-f]{1,4}){0,3}:(?:(?:25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(?:\.(?:25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3}))|:))|(?:(?:[0-9a-f]{1,4}:)(?:(?:(?::[0-9a-f]{1,4}){1,6})|(?:(?::[0-9a-f]{1,4}){0,4}:(?:(?:25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(?:\.(?:25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3}))|:))|(?::(?:(?:(?::[0-9a-f]{1,4}){1,7})|(?:(?::[0-9a-f]{1,4}){0,5}:(?:(?:25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(?:\.(?:25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3}))|:)))(?:%.+)?\s*$/i,
   regex: regex,
   uuid: UUID,
   'json-pointer': JSON_POINTER,
@@ -2170,7 +2171,7 @@ formats.full = {
   email: /^[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*@(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?$/i,
   hostname: HOSTNAME,
   ipv4: /^(?:(?:25[0-5]|2[0-4]\d|[01]?\d\d?)\.){3}(?:25[0-5]|2[0-4]\d|[01]?\d\d?)$/,
-  ipv6: /^\s*(?:(?:(?:[0-9a-f]{1,4}:){7}(?:[0-9a-f]{1,4}|:))|(?:(?:[0-9a-f]{1,4}:){6}(?::[0-9a-f]{1,4}|(?:(?:25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(?:\.(?:25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3})|:))|(?:(?:[0-9a-f]{1,4}:){5}(?:(?:(?::[0-9a-f]{1,4}){1,2})|:(?:(?:25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(?:\.(?:25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3})|:))|(?:(?:[0-9a-f]{1,4}:){4}(?:(?:(?::[0-9a-f]{1,4}){1,3})|(?:(?::[0-9a-f]{1,4})?:(?:(?:25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(?:\.(?:25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3}))|:))|(?:(?:[0-9a-f]{1,4}:){3}(?:(?:(?::[0-9a-f]{1,4}){1,4})|(?:(?::[0-9a-f]{1,4}){0,2}:(?:(?:25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(?:\.(?:25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3}))|:))|(?:(?:[0-9a-f]{1,4}:){2}(?:(?:(?::[0-9a-f]{1,4}){1,5})|(?:(?::[0-9a-f]{1,4}){0,3}:(?:(?:25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(?:\.(?:25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3}))|:))|(?:(?:[0-9a-f]{1,4}:){1}(?:(?:(?::[0-9a-f]{1,4}){1,6})|(?:(?::[0-9a-f]{1,4}){0,4}:(?:(?:25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(?:\.(?:25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3}))|:))|(?::(?:(?:(?::[0-9a-f]{1,4}){1,7})|(?:(?::[0-9a-f]{1,4}){0,5}:(?:(?:25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(?:\.(?:25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3}))|:)))(?:%.+)?\s*$/i,
+  ipv6: /^\s*(?:(?:(?:[0-9a-f]{1,4}:){7}(?:[0-9a-f]{1,4}|:))|(?:(?:[0-9a-f]{1,4}:){6}(?::[0-9a-f]{1,4}|(?:(?:25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(?:\.(?:25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3})|:))|(?:(?:[0-9a-f]{1,4}:){5}(?:(?:(?::[0-9a-f]{1,4}){1,2})|:(?:(?:25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(?:\.(?:25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3})|:))|(?:(?:[0-9a-f]{1,4}:){4}(?:(?:(?::[0-9a-f]{1,4}){1,3})|(?:(?::[0-9a-f]{1,4})?:(?:(?:25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(?:\.(?:25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3}))|:))|(?:(?:[0-9a-f]{1,4}:){3}(?:(?:(?::[0-9a-f]{1,4}){1,4})|(?:(?::[0-9a-f]{1,4}){0,2}:(?:(?:25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(?:\.(?:25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3}))|:))|(?:(?:[0-9a-f]{1,4}:){2}(?:(?:(?::[0-9a-f]{1,4}){1,5})|(?:(?::[0-9a-f]{1,4}){0,3}:(?:(?:25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(?:\.(?:25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3}))|:))|(?:(?:[0-9a-f]{1,4}:)(?:(?:(?::[0-9a-f]{1,4}){1,6})|(?:(?::[0-9a-f]{1,4}){0,4}:(?:(?:25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(?:\.(?:25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3}))|:))|(?::(?:(?:(?::[0-9a-f]{1,4}){1,7})|(?:(?::[0-9a-f]{1,4}){0,5}:(?:(?:25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(?:\.(?:25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3}))|:)))(?:%.+)?\s*$/i,
   regex: regex,
   uuid: UUID,
   'json-pointer': JSON_POINTER,
@@ -2212,7 +2213,7 @@ function date_time(str) {
   return dateTime.length == 2 && date(dateTime[0]) && time(dateTime[1], true);
 }
 
-var NOT_URI_FRAGMENT = /\/|:/;
+var NOT_URI_FRAGMENT = /[\/:]/;
 function uri(str) {
   return NOT_URI_FRAGMENT.test(str) && URI.test(str);
 }
@@ -2264,7 +2265,7 @@ module.exports = function () {
     'additionalItems', 'then', 'else'
   ];
   var TYPES = ['number', 'integer', 'string', 'array', 'object', 'boolean', 'null'];
-  RULES.all = toHash(ALL);
+  RULES.all = /** @type {Object.<string, *>} */ toHash(ALL);
   RULES.types = toHash(TYPES);
 
   RULES.forEach(function (group) {
@@ -2337,7 +2338,7 @@ module.exports = {
 './dotjs/ref':
 function (module) {
 
-module.exports = function (it, $keyword, $ruleType) {
+module.exports = function (it, $keyword, _$ruleType) {
   var $async, $refCode, $$outStack,
     out = ' ',
     $lvl = it.level,
@@ -2436,7 +2437,7 @@ module.exports = function (it, $keyword, $ruleType) {
 './dotjs/allOf':
 function (module) {
 
-module.exports = function (it, $keyword, $ruleType) {
+module.exports = function (it, $keyword, _$ruleType) {
   var out = ' ',
     $schema = it.schema[$keyword],
     $schemaPath = it.schemaPath + it.util.getProperty($keyword),
@@ -2475,7 +2476,7 @@ module.exports = function (it, $keyword, $ruleType) {
 './dotjs/anyOf':
 function (module) {
 
-module.exports = function (it, $keyword, $ruleType) {
+module.exports = function (it, $keyword, _$ruleType) {
   var out = ' ',
     $lvl = it.level,
     $dataLvl = it.dataLevel,
@@ -2542,7 +2543,7 @@ module.exports = function (it, $keyword, $ruleType) {
 './dotjs/comment':
 function (module) {
 
-module.exports = function (it, $keyword, $ruleType) {
+module.exports = function (it, $keyword, _$ruleType) {
   var out = ' ',
     $schema = it.schema[$keyword],
     $errSchemaPath = it.errSchemaPath + '/' + $keyword,
@@ -2559,7 +2560,7 @@ module.exports = function (it, $keyword, $ruleType) {
 './dotjs/const':
 function (module) {
 
-module.exports = function (it, $keyword, $ruleType) {
+module.exports = function (it, $keyword, _$ruleType) {
   var out = ' ',
     $lvl = it.level,
     $dataLvl = it.dataLevel,
@@ -2576,8 +2577,8 @@ module.exports = function (it, $keyword, $ruleType) {
   $isData || (out += ' var schema' + $lvl + ' = validate.schema' + $schemaPath + ';');
 
   out += 'var ' + $valid + ' = equal(' + $data + ', schema' + $lvl + '); if (!' + $valid + ') {   ';
-  var $$outStack = $$outStack || [];
-  $$outStack.push(out);
+  var $$outStack;
+  ($$outStack = $$outStack || []).push(out);
   out = '';
   if (it.createErrors !== false) {
     out += " { keyword: 'const' , dataPath: (dataPath || '') + " + it.errorPath + ' , schemaPath: ' + it.util.toQuotedString($errSchemaPath) + ' , params: { allowedValue: schema' + $lvl + ' } ';
@@ -2607,7 +2608,7 @@ module.exports = function (it, $keyword, $ruleType) {
 './dotjs/contains':
 function (module) {
 
-module.exports = function (it, $keyword, $ruleType) {
+module.exports = function (it, $keyword, _$ruleType) {
   var out = ' ',
     $lvl = it.level,
     $dataLvl = it.dataLevel,
@@ -2649,8 +2650,8 @@ module.exports = function (it, $keyword, $ruleType) {
     out += ' ' + $closingBraces + ' if (!' + $nextValid + ') {';
   } else out += ' if (' + $data + '.length == 0) {';
 
-  var $$outStack = $$outStack || [];
-  $$outStack.push(out);
+  var $$outStack;
+  ($$outStack = $$outStack || []).push(out);
   out = '';
   if (it.createErrors !== false) {
     out += " { keyword: 'contains' , dataPath: (dataPath || '') + " + it.errorPath + ' , schemaPath: ' + it.util.toQuotedString($errSchemaPath) + ' , params: {} ';
@@ -2683,7 +2684,7 @@ module.exports = function (it, $keyword, $ruleType) {
 './dotjs/dependencies':
 function (module) {
 
-module.exports = function (it, $keyword, $ruleType) {
+module.exports = function (it, $keyword, _$ruleType) {
   var out = ' ',
     $lvl = it.level,
     $dataLvl = it.dataLevel,
@@ -2737,8 +2738,8 @@ module.exports = function (it, $keyword, $ruleType) {
       if (it.opts._errorDataPathProperty)
         it.errorPath = it.opts.jsonPointers ? it.util.getPathExpr($currentErrorPath, $propertyPath, true) : $currentErrorPath + ' + ' + $propertyPath;
 
-      var $$outStack = $$outStack || [];
-      $$outStack.push(out);
+      var $$outStack;
+      ($$outStack = $$outStack || []).push(out);
       out = '';
       if (it.createErrors !== false) {
         out += " { keyword: 'dependencies' , dataPath: (dataPath || '') + " + it.errorPath + ' , schemaPath: ' + it.util.toQuotedString($errSchemaPath) + " , params: { property: '" + it.util.escapeQuotes($property) + "', missingProperty: '" + $missingProperty + "', depsCount: " + $deps.length + ", deps: '" + it.util.escapeQuotes($deps.length == 1 ? $deps[0] : $deps.join(', ')) + "' } ";
@@ -2835,7 +2836,7 @@ module.exports = function (it, $keyword, $ruleType) {
 './dotjs/enum':
 function (module) {
 
-module.exports = function (it, $keyword, $ruleType) {
+module.exports = function (it, $keyword, _$ruleType) {
   var out = ' ',
     $lvl = it.level,
     $dataLvl = it.dataLevel,
@@ -2861,8 +2862,8 @@ module.exports = function (it, $keyword, $ruleType) {
   if ($isData) out += '  }  ';
 
   out += ' if (!' + $valid + ') {   ';
-  var $$outStack = $$outStack || [];
-  $$outStack.push(out);
+  var $$outStack;
+  ($$outStack = $$outStack || []).push(out);
   out = '';
   if (it.createErrors !== false) {
     out += " { keyword: 'enum' , dataPath: (dataPath || '') + " + it.errorPath + ' , schemaPath: ' + it.util.toQuotedString($errSchemaPath) + ' , params: { allowedValues: schema' + $lvl + ' } ';
@@ -2964,7 +2965,8 @@ module.exports = function (it, $keyword, $ruleType) {
     }
     if ($async) {
       if (!it.async) throw new Error('async format in sync schema');
-      out += ' if (!(await ' + ($formatRef = 'formats' + it.util.getProperty($schema) + '.validate') + '(' + $data + '))) { ';
+      $formatRef = 'formats' + it.util.getProperty($schema) + '.validate';
+      out += ' if (!(await ' + $formatRef + '(' + $data + '))) { ';
     } else {
       out += ' if (! ';
       var $formatRef = 'formats' + it.util.getProperty($schema);
@@ -2976,8 +2978,8 @@ module.exports = function (it, $keyword, $ruleType) {
       out += ') { ';
     }
   }
-  var $$outStack = $$outStack || [];
-  $$outStack.push(out);
+  var $$outStack;
+  ($$outStack = $$outStack || []).push(out);
   out = '';
   if (it.createErrors !== false) {
     out += " { keyword: 'format' , dataPath: (dataPath || '') + " + it.errorPath + ' , schemaPath: ' + it.util.toQuotedString($errSchemaPath) + ' , params: { format:  ';
@@ -3017,7 +3019,7 @@ module.exports = function (it, $keyword, $ruleType) {
 './dotjs/if':
 function (module) {
 
-module.exports = function (it, $keyword, $ruleType) {
+module.exports = function (it, $keyword, _$ruleType) {
   var out = ' ',
     $lvl = it.level,
     $dataLvl = it.dataLevel,
@@ -3109,7 +3111,7 @@ module.exports = function (it, $keyword, $ruleType) {
 './dotjs/items':
 function (module) {
 
-module.exports = function (it, $keyword, $ruleType) {
+module.exports = function (it, $keyword, _$ruleType) {
   var out = ' ',
     $lvl = it.level,
     $dataLvl = it.dataLevel,
@@ -3136,8 +3138,8 @@ module.exports = function (it, $keyword, $ruleType) {
       var $currErrSchemaPath = $errSchemaPath;
       $errSchemaPath = it.errSchemaPath + '/additionalItems';
       out += '  if (!' + $valid + ') {   ';
-      var $$outStack = $$outStack || [];
-      $$outStack.push(out);
+      var $$outStack;
+      ($$outStack = $$outStack || []).push(out);
       out = '';
       if (it.createErrors !== false) {
         out += " { keyword: 'additionalItems' , dataPath: (dataPath || '') + " + it.errorPath + ' , schemaPath: ' + it.util.toQuotedString($errSchemaPath) + ' , params: { limit: ' + $schema.length + ' } ';
@@ -3240,7 +3242,7 @@ module.exports = function (it, $keyword, $ruleType) {
 './dotjs/multipleOf':
 function (module) {
 
-module.exports = function (it, $keyword, $ruleType) {
+module.exports = function (it, $keyword, _$ruleType) {
   var $schemaValue,
     out = ' ',
     $lvl = it.level,
@@ -3271,8 +3273,8 @@ module.exports = function (it, $keyword, $ruleType) {
   if ($isData) out += '  )  ';
 
   out += ' ) {   ';
-  var $$outStack = $$outStack || [];
-  $$outStack.push(out);
+  var $$outStack;
+  ($$outStack = $$outStack || []).push(out);
   out = '';
   if (it.createErrors !== false) {
     out += " { keyword: 'multipleOf' , dataPath: (dataPath || '') + " + it.errorPath + ' , schemaPath: ' + it.util.toQuotedString($errSchemaPath) + ' , params: { multipleOf: ' + $schemaValue + ' } ';
@@ -3307,7 +3309,7 @@ module.exports = function (it, $keyword, $ruleType) {
 './dotjs/not':
 function (module) {
 
-module.exports = function (it, $keyword, $ruleType) {
+module.exports = function (it, $keyword, _$ruleType) {
   var out = ' ',
     $lvl = it.level,
     $dataLvl = it.dataLevel,
@@ -3338,8 +3340,8 @@ module.exports = function (it, $keyword, $ruleType) {
     if ($allErrorsOption) $it.opts.allErrors = $allErrorsOption;
     it.compositeRule = $it.compositeRule = $wasComposite;
     out += ' if (' + $nextValid + ') {   ';
-    var $$outStack = $$outStack || [];
-    $$outStack.push(out);
+    var $$outStack;
+    ($$outStack = $$outStack || []).push(out);
     out = '';
     if (it.createErrors !== false) {
       out += " { keyword: 'not' , dataPath: (dataPath || '') + " + it.errorPath + ' , schemaPath: ' + it.util.toQuotedString($errSchemaPath) + ' , params: {} ';
@@ -3383,7 +3385,7 @@ module.exports = function (it, $keyword, $ruleType) {
 './dotjs/oneOf':
 function (module) {
 
-module.exports = function (it, $keyword, $ruleType) {
+module.exports = function (it, $keyword, _$ruleType) {
   var out = ' ',
     $lvl = it.level,
     $dataLvl = it.dataLevel,
@@ -3451,7 +3453,7 @@ module.exports = function (it, $keyword, $ruleType) {
 './dotjs/pattern':
 function (module) {
 
-module.exports = function (it, $keyword, $ruleType) {
+module.exports = function (it, $keyword, _$ruleType) {
   var $schemaValue,
     out = ' ',
     $lvl = it.level,
@@ -3472,8 +3474,8 @@ module.exports = function (it, $keyword, $ruleType) {
     out += ' (' + $schemaValue + ' !== undefined && typeof ' + $schemaValue + " != 'string') || ";
 
   out += ' !' + ($isData ? '(new RegExp(' + $schemaValue + '))' : it.usePattern($schema)) + '.test(' + $data + ') ) {   ';
-  var $$outStack = $$outStack || [];
-  $$outStack.push(out);
+  var $$outStack;
+  ($$outStack = $$outStack || []).push(out);
   out = '';
   if (it.createErrors !== false) {
     out += " { keyword: 'pattern' , dataPath: (dataPath || '') + " + it.errorPath + ' , schemaPath: ' + it.util.toQuotedString($errSchemaPath) + ' , params: { pattern:  ';
@@ -3513,7 +3515,7 @@ module.exports = function (it, $keyword, $ruleType) {
 './dotjs/properties':
 function (module) {
 
-module.exports = function (it, $keyword, $ruleType) {
+module.exports = function (it, $keyword, _$ruleType) {
   var out = ' ',
     $lvl = it.level,
     $dataLvl = it.dataLevel,
@@ -3804,7 +3806,7 @@ module.exports = function (it, $keyword, $ruleType) {
 './dotjs/propertyNames':
 function (module) {
 
-module.exports = function (it, $keyword, $ruleType) {
+module.exports = function (it, $keyword, _$ruleType) {
   var out = ' ',
     $lvl = it.level,
     $dataLvl = it.dataLevel,
@@ -3879,7 +3881,7 @@ module.exports = function (it, $keyword, $ruleType) {
 './dotjs/required':
 function (module) {
 
-module.exports = function (it, $keyword, $ruleType) {
+module.exports = function (it, $keyword, _$ruleType) {
   var out = ' ',
     $lvl = it.level,
     $dataLvl = it.dataLevel,
@@ -4106,7 +4108,7 @@ module.exports = function (it, $keyword, $ruleType) {
 './dotjs/uniqueItems':
 function (module) {
 
-module.exports = function (it, $keyword, $ruleType) {
+module.exports = function (it, $keyword, _$ruleType) {
   var $schemaValue,
     out = ' ',
     $lvl = it.level,
@@ -4148,8 +4150,8 @@ module.exports = function (it, $keyword, $ruleType) {
   if ($isData) out += '  }  ';
 
   out += ' if (!' + $valid + ') {   ';
-  var $$outStack = $$outStack || [];
-  $$outStack.push(out);
+  var $$outStack;
+  ($$outStack = $$outStack || []).push(out);
   out = '';
   if (it.createErrors !== false) {
     out += " { keyword: 'uniqueItems' , dataPath: (dataPath || '') + " + it.errorPath + ' , schemaPath: ' + it.util.toQuotedString($errSchemaPath) + ' , params: { i: i, j: j } ';
@@ -4413,7 +4415,7 @@ function validateKeyword(definition, throwError) {
 './dotjs/custom':
 function (module) {
 
-module.exports = function (it, $keyword, $ruleType) {
+module.exports = function (it, $keyword, _$ruleType) {
   var $errorKeyword,
     $schemaValue,
     out = ' ',
