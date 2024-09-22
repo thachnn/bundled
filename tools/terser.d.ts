@@ -218,12 +218,14 @@ export class AST_Node {
     transform: (tt: TreeTransformer, in_list?: boolean) => AST_Node;
     TYPE: string;
     CTOR: typeof AST_Node;
+    figure_out_scope(options?: OutputOptions): void;
+    to_mozilla_ast(parent?: AST_Node): any;
 }
 
 declare class SymbolDef {
     constructor(scope?: AST_Scope, orig?: object, init?: object);
     name: string;
-    orig: AST_SymbolRef[];
+    orig: AST_SymbolDeclaration[];
     init: AST_SymbolRef;
     eliminated: number;
     scope: AST_Scope;
@@ -254,12 +256,12 @@ declare class AST_Directive extends AST_Statement {
 
 declare class AST_SimpleStatement extends AST_Statement {
     constructor(props?: object);
-    body: AST_Node[];
+    body: AST_Node;
 }
 
 declare class AST_Block extends AST_Statement {
     constructor(props?: object);
-    body: AST_Node[];
+    body: AST_Node[] | AST_Node;
     block_scope: AST_Scope | null;
 }
 
@@ -572,6 +574,7 @@ declare class AST_Binary extends AST_Node {
 
 declare class AST_Assign extends AST_Binary {
     constructor(props?: object);
+    left: AST_Symbol | AST_Node;
 }
 
 declare class AST_DefaultAssign extends AST_Binary {
@@ -631,6 +634,9 @@ declare class AST_Symbol extends AST_Node {
     scope: AST_Scope;
     name: string;
     thedef: SymbolDef;
+    unreferenced(): boolean;
+    definition(): SymbolDef;
+    fixed_value(): boolean | AST_Node;
 }
 
 declare class AST_SymbolDeclaration extends AST_Symbol {
