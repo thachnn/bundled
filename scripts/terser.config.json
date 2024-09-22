@@ -2,20 +2,25 @@
   "mangle": false,
   "compress": {
     "toplevel": 0,
-    "passes": 1,
+    "passes": 2,
     "keep_infinity": true,
     "reduce_vars": false,
     "inline": 0,
     "sequences": false,
+    "ecma": 2015,
+    "conditionals": 1,
+    "join_vars": true,
+    "loops": 1,
     "booleans_as_integers": 0,
     "lhs_constants": false
   },
   "output": {
-    "comments": false,
     "keep_numbers": true,
     "quote_style": 3,
     "beautify": true,
     "indent_level": 2,
-    "width": 100
+    "ecma": 5,
+    "width": 100,
+    "ascii_only": true
   }
 }

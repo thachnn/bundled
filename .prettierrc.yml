@@ -1,0 +1,12 @@
+trailingComma: 'es5'
+singleQuote: true
+#
+overrides:
+  - files: 'dist/**'
+    options:
+      trailingComma: 'none'
+      arrowParens: 'avoid'
+  - files: 'dist/**/bin/*'
+    options:
+      parser: 'babel'
+    #

@@ -20,13 +20,16 @@
   "scripts": {
     "build": "node scripts/build.js",
     "clean": "git clean -fdx dist/ node_modules/.cache",
-    "postinstall": "git apply --reject --unidiff-zero --whitespace=nowarn scripts/fix-deps.patch",
+    "postinstall": "git apply --reject --unidiff-zero --ignore-whitespace --whitespace=nowarn scripts/fix-deps.patch",
     "terser": "node node_modules/webpack/bin/terser --config-file scripts/terser.config.json",
+    "rollup": "node node_modules/rollup/dist/bin/rollup -c --configName",
     "webpack": "node node_modules/webpack-cli/bin/cli.js --progress --display-modules",
     "test": "grep -r --include=*.js -E \"[\\[,] ,|__webpack_require__\\.[a-z]|_WEBPACK_|webpackPoly|\\b_(iterator|interop)\" dist"
   },
   "dependencies": {},
   "devDependencies": {
+    "@types/node": "*",
+    "rollup": "^2.0.6",
     "webpack": "thachnn/bundled#webpack-4.46.0",
     "webpack-cli": "thachnn/bundled#webpack-cli-3.3.12"
   },
