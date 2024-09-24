@@ -135,6 +135,7 @@ module.exports = [
       'enhanced-resolve': 'commonjs2 ../lib/enhanced-resolve',
       micromatch: 'commonjs2 ../vendor/micromatch',
       yargs: 'commonjs2 ../vendor/yargs',
+      '../config/optionsSchema.json': 'commonjs ./optionsSchema.json',
     },
     module: {
       rules: [
@@ -175,8 +176,12 @@ module.exports = [
             return (pkg.version += '-0'), JSON.stringify(pkg, null, 2) + '\n';
           },
         },
+        { from: 'node_modules/webpack-cli/bin/config/optionsSchema.json', to: 'bin/' },
         { from: 'node_modules/v8-compile-cache/v8-*.js', to: 'vendor/[name].[ext]', transform: minifyContent },
-        { from: '{lib,vendor}/{enhanced-*,tapable,graceful-*,micromatch,source-*}.*', context: 'node_modules/webpack' },
+        {
+          from: '{lib,vendor}/{enhanced-resolve,tapable,graceful-fs,micromatch,source-map}.*',
+          context: 'node_modules/webpack',
+        },
       ]),
       new BannerPlugin({ banner: '#!/usr/bin/env node', raw: true }),
     ],

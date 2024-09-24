@@ -9,7 +9,7 @@ git tag -f xxx-1.0
 3:23 PM 11/19/2023
 ---
 
-^(\}(,|\(\[) function\(.*\) \{)\n  (?!("use strict";$|module\.exports = (require|JSON\.parse)\(.*\n\}))
+^\/\/ \d+\nfunction\b.*\{(?!\s*(['"]use strict['"];?$|module\.exports = (require|JSON\.parse)\())
 
 ^(\}(,|\(\[) function\(.*\) \{)\n  "use strict";$
 

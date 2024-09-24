@@ -6,21 +6,42 @@ overrides:
     options:
       trailingComma: 'none'
       arrowParens: 'avoid'
-  - files: 'dist/**/bin/*'
+  - files: 'dist/**/bin/!(*.*)'
     options:
       parser: 'babel'
     #
+  - files: 'dist/**/yargs.js'
+    options:
+      semi: false
+  - files: 'dist/**/cli.js'
+    options:
+      singleQuote: false
+  - files: 'dist/**/cli.js'
+    options:
+      useTabs: true
+  - files: 'dist/**/{v8-compile-cache,cli}.js'
+    options:
+      spaceAfterAnonFunc: false
   - files: 'dist/**/loader-utils.js'
     options:
       dedentSwitchLabels: true
-  - files: 'dist/**/loader-utils.js'
+  - files: 'dist/**/{loader-utils,cli,yargs}.js'
     options:
       preserveQuote: true
     #
-  - files: 'dist/**/loader-utils.js'
+  - files: 'dist/**/{loader-utils,v8-compile-cache,yargs}.js'
     options:
       bracketSpacing: false
+  - files: 'dist/**/{loader-utils,yargs}.js'
+    options:
       arrowParens: 'always'
+  - files: 'dist/**/*.json'
+    options:
+      printWidth: 110
   - files: 'dist/**/loader-utils.js'
     options:
       printWidth: 105
+  - files: 'dist/**/v8-compile-cache.js'
+    options:
+      printWidth: 89
+      trailingComma: 'es5'
