@@ -1,44 +1,46 @@
 {
-  "name": "npm-package-bundler",
-  "version": "3.3.12-webpack-cli.0",
-  "description": "Use webpack v4 to bundle NPM package webpack-cli v3",
-  "keywords": [
-    "npm",
-    "yarn",
-    "package",
-    "module",
-    "bundle",
-    "bundled",
-    "rollup",
-    "webpack"
-  ],
-  "repository": "thachnn/bundled",
+  "name": "webpack-cli",
+  "version": "3.3.12-0",
+  "description": "CLI for webpack & friends",
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/webpack/webpack-cli.git"
+  },
+  "bin": {
+    "webpack-cli": "./bin/cli.js"
+  },
+  "main": "./bin/cli.js",
   "engines": {
-    "node": ">=10"
+    "node": ">=6.11.5"
   },
-  "scripts": {
-    "build": "node scripts/build.js",
-    "clean": "git clean -fdx dist/ node_modules/.cache",
-    "postinstall": "git apply --reject --unidiff-zero --ignore-whitespace --whitespace=nowarn scripts/fix-deps.patch",
-    "terser": "node node_modules/webpack/bin/terser --config-file scripts/terser.config.json",
-    "rollup": "node node_modules/rollup/dist/bin/rollup -c --configName",
-    "webpack": "node node_modules/webpack-cli/bin/cli.js --progress --display-modules",
-    "test": "grep -r --include=*.js -E \"[\\[,] ,|__webpack_require__\\.[a-z]|_WEBPACK_|webpackPoly|\\b_(iterator|interop)\" dist"
-  },
-  "dependencies": {
-    "webpack-cli": "^3.3.12"
+  "keywords": [
+    "webpack",
+    "cli",
+    "scaffolding",
+    "module",
+    "bundler",
+    "web"
+  ],
+  "files": [
+    "bin",
+    "lib",
+    "vendor"
+  ],
+  "peerDependencies": {
+    "webpack": "4.x.x"
   },
   "devDependencies": {
-    "@types/node": "6",
-    "rollup": "^2.0.6",
-    "webpack": "thachnn/bundled#webpack-4.46.0"
-  },
-  "resolutions": {
-    "**/resolve-dir/global-modules": "^2.0.0",
-    "webpack-cli/*/micromatch": "npm:blank-package@3.0.0",
-    "webpack-cli/chalk": "npm:blank-package@3.0.0",
-    "webpack-cli/cross-spawn": "npm:blank-package@7.0.0",
-    "webpack-cli/enhanced-resolve": "npm:blank-package@4.0.0"
+    "chalk": "^2.4.2",
+    "cross-spawn": "^6.0.5",
+    "enhanced-resolve": "^4.1.1",
+    "findup-sync": "^3.0.0",
+    "global-modules": "^2.0.0",
+    "import-local": "^2.0.0",
+    "interpret": "^1.4.0",
+    "loader-utils": "^1.4.0",
+    "supports-color": "^6.1.0",
+    "v8-compile-cache": "^2.1.1",
+    "yargs": "^13.3.2"
   }
 }
