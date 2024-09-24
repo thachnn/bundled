@@ -53,3 +53,90 @@ git tag -f xxx-1.0
 decomment --allowHashBang --keep "(^\s*[@#]__PURE__\s*$|^[*\s]*!\s*\S|(^|\n)[*\s]*@(preserve|lic(ense)?|cc_on|CC_ON)\b)"
 
 
+8:35 AM 9/24/2024
+---
+
+#
+┬ webpack-cli@3.3.12              v   unwrap IIFE
+├── v8-compile-cache@2.3.0        x
+├─┬ webpack@4.46.0-0    invalid: "4.x.x"
+│ └── fsevents@~2.1.2   OPTIONAL
+│
+├─┬ chalk@2.4.2                   v-
+│ ├─┬ ansi-styles@3.2.1           deduped
+│ ├── escape-string-regexp@1.0.5
+│ └── supports-color@6.1.0        deduped invalid: "^5.3.0"
+│
+├─┬ cross-spawn@6.0.5             v-
+│ ├── nice-try@1.0.5              x-
+│ ├── path-key@2.0.1
+│ ├── semver@5.7.1                x-  .satisfies()
+│ ├─┬ shebang-command@1.2.0
+│ │ └── shebang-regex@1.0.0
+│ └─┬ which@1.3.1                 deduped
+│
+├─┬ enhanced-resolve@4.5.0        v .sync()
+│
+├─┬ findup-sync@3.0.0             v
+│ ├── detect-file@1.0.0           x
+│ ├─┬ is-glob@4.0.3               x
+│ │ └── is-extglob@2.1.1          x
+│ ├─┬ micromatch@3.1.10           v .matcher()
+│ │
+│ └─┬ resolve-dir@1.0.1           x
+│   ├── global-modules@2.0.0      deduped invalid: "^1.0.0"
+│   └─┬ expand-tilde@2.0.2        x
+│     └─┬ homedir-polyfill@1.0.3  x-  -> require('os').homedir
+│       └── parse-passwd@1.0.0
+│
+├── interpret@1.4.0         x .extensions   discard 'mjs-stub'
+├─┬ global-modules@2.0.0    x
+│ └─┬ global-prefix@3.0.0   x
+│   ├── ini@1.3.8           x .parse()  /^exports\.(stringify|safe) *=/gm -> '//$&'
+│   ├── kind-of@6.0.3       -
+│   └─┬ which@1.3.1         x .sync()
+│     └── isexe@2.0.0       x .sync()
+├─┬ import-local@2.0.0      x
+│ ├─┬ pkg-dir@3.0.0         x .sync()
+│ │ └── find-up@3.0.0       deduped   .sync()
+│ └─┬ resolve-cwd@2.0.0     x .silent()
+│   └── resolve-from@3.0.0  x .silent()
+├─┬ loader-utils@1.4.0      v .parseQuery() /loader-utils/lib/parseQuery
+│ ├── big.js@5.2.2          x-
+│ ├── emojis-list@3.0.0     x-
+│ └─┬ json5@1.0.1           x .parse()  /json5/lib/parse
+│   └── minimist@1.2.6      -
+├─┬ supports-color@6.1.0    x .stdout
+│ └── has-flag@3.0.0        x
+│
+└─┬ yargs@13.3.2                        v
+  ├─┬ cliui@5.0.0                       x
+  │ ├── string-width@3.1.0              deduped
+  │ ├─┬ strip-ansi@5.2.0                x
+  │ │ └── ansi-regex@4.1.1              x
+  │ └─┬ wrap-ansi@5.1.0                 x
+  │   ├─┬ ansi-styles@3.2.1             x .codes
+  │   │ └─┬ color-convert@1.9.3         x
+  │   │   └── color-name@1.1.3          x
+  │   ├── string-width@3.1.0            deduped
+  │   └── strip-ansi@5.2.0              deduped
+  ├─┬ find-up@3.0.0                     x .sync()
+  │ └─┬ locate-path@3.0.0               x .sync()
+  │   ├── path-exists@3.0.0             x .sync()
+  │   ├─┬ p-locate@3.0.0                x-  () => Promise.resolve()
+  │     └─┬ p-limit@2.3.0
+  │       └── p-try@2.2.0
+  ├── get-caller-file@2.0.5             x
+  ├── require-directory@2.1.1           x
+  ├── require-main-filename@2.0.0       x
+  ├── set-blocking@2.0.0                x
+  ├─┬ string-width@3.1.0                x
+  │ ├── emoji-regex@7.0.3               x
+  │ ├── is-fullwidth-code-point@2.0.0   x
+  │ └── strip-ansi@5.2.0                deduped
+  ├── which-module@2.0.0                x   require.cache => __webpack_require__.c
+  ├── y18n@4.0.3                        v   FIXME: prevent fs.readFile in _readLocaleFile()
+  └─┬ yargs-parser@13.1.2               x .detailed()
+    ├── camelcase@5.3.1                 x
+    └── decamelize@1.2.0                x
+

@@ -10,3 +10,17 @@ overrides:
     options:
       parser: 'babel'
     #
+  - files: 'dist/**/loader-utils.js'
+    options:
+      dedentSwitchLabels: true
+  - files: 'dist/**/loader-utils.js'
+    options:
+      preserveQuote: true
+    #
+  - files: 'dist/**/loader-utils.js'
+    options:
+      bracketSpacing: false
+      arrowParens: 'always'
+  - files: 'dist/**/loader-utils.js'
+    options:
+      printWidth: 105

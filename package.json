@@ -1,7 +1,7 @@
 {
   "name": "npm-package-bundler",
-  "version": "1.0.0-xxx.0",
-  "description": "Use webpack v4 to bundle NPM package xxx v1.0",
+  "version": "3.3.12-webpack-cli.0",
+  "description": "Use webpack v4 to bundle NPM package webpack-cli v3",
   "keywords": [
     "npm",
     "yarn",
@@ -26,12 +26,19 @@
     "webpack": "node node_modules/webpack-cli/bin/cli.js --progress --display-modules",
     "test": "grep -r --include=*.js -E \"[\\[,] ,|__webpack_require__\\.[a-z]|_WEBPACK_|webpackPoly|\\b_(iterator|interop)\" dist"
   },
-  "dependencies": {},
-  "devDependencies": {
-    "@types/node": "*",
-    "rollup": "^2.0.6",
-    "webpack": "thachnn/bundled#webpack-4.46.0",
-    "webpack-cli": "thachnn/bundled#webpack-cli-3.3.12"
+  "dependencies": {
+    "webpack-cli": "^3.3.12"
   },
-  "resolutions": {}
+  "devDependencies": {
+    "@types/node": "6",
+    "rollup": "^2.0.6",
+    "webpack": "thachnn/bundled#webpack-4.46.0"
+  },
+  "resolutions": {
+    "**/resolve-dir/global-modules": "^2.0.0",
+    "webpack-cli/*/micromatch": "npm:blank-package@3.0.0",
+    "webpack-cli/chalk": "npm:blank-package@3.0.0",
+    "webpack-cli/cross-spawn": "npm:blank-package@7.0.0",
+    "webpack-cli/enhanced-resolve": "npm:blank-package@4.0.0"
+  }
 }
