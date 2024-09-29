@@ -1,7 +1,7 @@
 {
   "name": "npm-package-bundler",
-  "version": "1.0.0-xxx.0",
-  "description": "Use webpack v4 to bundle NPM package xxx v1.0",
+  "version": "4.16.2-tape.0",
+  "description": "Bundle NPM package tape v4.x by webpack v4-bundled",
   "keywords": [
     "npm",
     "yarn",
@@ -26,12 +26,18 @@
     "webpack": "node node_modules/webpack-cli/bin/cli.js --progress --display-modules",
     "test": "grep -r --include=*.js -E \"[\\[,] ,|__webpack_require__\\.[a-z]|_WEBPACK_|webpackPoly|\\b_(iterator|interop)\" dist"
   },
-  "dependencies": {},
+  "dependencies": {
+    "tape": "^4.13.3"
+  },
   "devDependencies": {
-    "@types/node": "*",
+    "@types/node": "4",
     "rollup": "^2.0.6",
     "webpack": "thachnn/bundled#webpack-4.46.0",
     "webpack-cli": "thachnn/bundled#webpack-cli-3.3.12"
   },
-  "resolutions": {}
+  "resolutions": {
+    "**/call-bind": "npm:blank-package@1.5.0",
+    "**/define-properties": "npm:blank-package@1.5.0",
+    "tape/string.prototype.trim": "npm:blank-package@1.5.0"
+  }
 }

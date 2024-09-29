@@ -53,3 +53,74 @@ git tag -f xxx-1.0
 decomment --allowHashBang --keep "(^\s*[@#]__PURE__\s*$|^[*\s]*!\s*\S|(^|\n)[*\s]*@(preserve|lic(ense)?|cc_on|CC_ON)\b)"
 
 
+10:24 PM 9/29/2024
+---
+
+#
+┬ tape@4.16.2
+│
+├── minimist@1.2.7                      x bin
+├─┬ resolve@1.22.1                      x bin .sync()
+│ ├─┬ is-core-module@2.9.0              x!
+│ │ └── has@1.0.3                     deduped
+│ ├── path-parse@1.0.7                  x
+│ └── supports-preserve-symlinks-flag@1.0.0 -
+│
+├─┬ dotignore@0.1.2                     x bin .createMatcher()
+│ └─┬ minimatch@3.1.2                   v .makeRe()
+│   └─┬ brace-expansion@1.1.11          x
+│     ├── balanced-match@1.0.0          x
+│     └── concat-map@0.0.1              x
+│
+├─┬ glob@7.2.3                          v bin .hasMagic() .sync()
+│ ├── fs.realpath@1.0.0                 x .realpath() .realpathSync()
+│ ├─┬ inflight@1.0.6                    x
+│ │ ├── once@1.4.0                    deduped
+│ │ └── wrappy@1.0.2                    x
+│ ├── inherits@2.0.4                  deduped-
+│ ├── minimatch@3.1.2                 deduped .GLOBSTAR .Minimatch
+│ ├─┬ once@1.4.0                        x
+│ │ └── wrappy@1.0.2                  deduped
+│ └── path-is-absolute@1.0.1            x
+│
+│
+├─┬ call-bind@1.0.2                     x- call-bind/callBound   -> Function.prototype.call.bind(Array.prototype.slice)
+│ ├── function-bind@1.1.1               == Function.prototype.bind
+│ └─┬ get-intrinsic@1.1.3
+│   ├── function-bind@1.1.1           deduped
+│   ├── has-symbols@1.0.3
+│   └── has@1.0.3                     deduped
+│
+├─┬ deep-equal@1.1.1                    v
+│ ├── is-arguments@1.0.4                x
+│ ├── is-date-object@1.0.1              x
+│ ├── is-regex@1.1.4                  deduped
+│ ├── object-is@1.0.1                   x   Object.is || ./implementation
+│ ├── object-keys@1.1.1                 x-  Object.keys
+│ └─┬ regexp.prototype.flags@1.4.3      v?- error: ./polyfill
+│   ├── call-bind@1.0.2               deduped
+│   ├── functions-have-names@1.2.2      x-
+│   └─┬ define-properties@1.1.4
+│     ├─┬ has-property-descriptors@1.0.0
+│     │ └── get-intrinsic@1.1.3       deduped
+│     └── object-keys@1.1.1           deduped
+│
+├── defined@1.0.1                       x
+├─┬ for-each@0.3.3                      x-  -> Function.prototype.call.bind(Array.prototype.forEach)
+│ └── is-callable@1.2.7                 ?
+│
+├─┬ has@1.0.3                           x-  -> Function.call.bind(Object.prototype.hasOwnProperty)
+│ └── function-bind@1.1.1             deduped
+├── inherits@2.0.4                      v   -> FIXME ['util', 'inherits']
+├─┬ is-regex@1.1.4                      x?
+│ ├── call-bind@1.0.2                 deduped
+│ └─┬ has-tostringtag@1.0.0             x-    has-tostringtag/shams
+│   └── has-symbols@1.0.3             deduped has-symbols/shams
+├── object-inspect@1.12.3               x './util.inspect': ['util', 'inspect']
+│
+├─┬ resumer@0.0.0                       x
+│ └── through@2.3.8                   deduped
+├── through@2.3.8                       x
+│
+└─┬ string.prototype.trim@1.2.7       invalid:  String.prototype.trim
+

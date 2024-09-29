@@ -34,7 +34,7 @@ const webpackConfig = (name, config, clean = name.charAt(0) !== '/') => {
     optimization: {
       nodeEnv: false,
       // minimize: false,
-      minimizer: [newTerserPlugin({ terserOptions: { output: { ecma: 2015 } } })],
+      minimizer: [newTerserPlugin({ terserOptions: { output: { ecma: 5 } } })], // 2015
     },
     plugins: [
       new ReplaceCodePlugin({
@@ -94,36 +94,58 @@ const commonjs1Patches = [
 
 //
 module.exports = [
-  /* TODO:
-  webpackConfig('import-local', {
-    entry: { index: './node_modules/import-local/index' },
-    output: { libraryTarget: 'commonjs2', filename: '[name]' },
-    externals: { fsevents: 'commonjs2 fsevents' },
+  webpackConfig('/tape', {
+    entry: { index: './node_modules/tape/index' },
+    output: { libraryTarget: 'commonjs2' },
+    //externals: { fsevents: 'fsevents' },
     module: {
       rules: [
         {
-          test: /\bnode_modules[\\/]import-local\b.index\.js$/i,
+          test: /\bnode_modules[\\/]object-inspect\b.index\.js$/i,
           loader: 'webpack/lib/replace-loader',
-          options: { search: /\brequire((\.resolve)?\(\w+)/g, replace: '__non_webpack_require__$1' },
+          options: {
+            search: /\brequire\(['"]\.(\/[^'"]+)['"]\)/g,
+            replace: (m, p1) => m.replaceWithFile(/().*/, 'object-inspect' + p1),
+          },
+        },
+      ],
+    },
+  }),
+  webpackConfig('/tape-bin', {
+    entry: { 'bin/tape': './node_modules/tape/bin/tape' },
+    output: { filename: '[name]' },
+    module: {
+      rules: [
+        {
+          test: /\bnode_modules[\\/]tape\b.bin\b.tape$/i,
+          loader: 'webpack/lib/replace-loader',
+          options: {
+            multiple: [
+              { search: /^#!/, replace: '//$&' },
+              { search: /\b(require\(['"]resolve)(['"]\))\.(\w+)/g, replace: '$1/lib/$3$2' },
+              { search: /\brequire(\(\w+)/g, replace: '__non_webpack_require__$1' },
+            ],
+          },
         },
       ],
     },
     optimization: {
-      minimizer: [
-        newTerserPlugin({ test: /(\.m?js|[\\/][\w-]+)$/i, terserOptions: { output: { ascii_only: false } } }),
-      ],
+      minimizer: [newTerserPlugin({ test: /(\.m?js|[\\/][\w-]+)$/i })],
     },
     plugins: [
       newCopyPlugin([
-        { from: '{LICENSE*,!(CONTRIBUTING).md}', context: 'node_modules/import-local' },
+        { from: '{LICENSE*,*.{md,markdown}}', context: 'node_modules/tape' },
         {
-          from: 'node_modules/import-local/package.json',
-          transform: (s) => String(s).replace(/,\s*"(d(evD)?ependencies|scripts)":\s*\{[^{}]*\}/g, ''),
+          from: 'node_modules/tape/package.json',
+          transform(pkg) {
+            (pkg = JSON.parse(pkg)).devDependencies = pkg.dependencies;
+            ['dependencies', 'scripts', 'testling'].forEach((k) => delete pkg[k]);
+
+            return (pkg.version += '-0'), JSON.stringify(pkg, null, 4) + '\n';
+          },
         },
-        { from: 'node_modules/acorn/dist/bin.js', to: '[name]/acorn', transform: minifyContent },
       ]),
       new BannerPlugin({ banner: '#!/usr/bin/env node', raw: true }),
     ],
   }),
-  */
 ];

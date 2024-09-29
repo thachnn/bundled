@@ -3,7 +3,7 @@
 const { statSync } = require('fs');
 const { dirname, resolve, sep } = require('path');
 
-let { minify } = require('terser');
+let { minify } = require('webpack/vendor/terser');
 
 /**
  * @typedef {import('terser').MinifyOptions} MinifyOptions
