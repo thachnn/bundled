@@ -1,6 +1,6 @@
 'use strict';
 
-const Module = require('module'),
+const Module = /** @type {Object.<string, *>} */ require('module'),
   crypto = require('crypto'),
   fs = require('fs'),
   path = require('path'),
@@ -87,7 +87,7 @@ class FileSystemBlobStore {
   _load() {
     try {
       this._storedBlob = fs.readFileSync(this._blobFilename);
-      this._storedMap = JSON.parse(fs.readFileSync(this._mapFilename));
+      this._storedMap = JSON.parse(fs.readFileSync(this._mapFilename, 'utf8'));
     } catch (_) {
       this._storedBlob = Buffer.alloc(0);
       this._storedMap = {};

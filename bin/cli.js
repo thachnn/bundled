@@ -75,7 +75,6 @@ function(module, exports, __webpack_require__) {
 
 const path = __webpack_require__(0),
   prefix = __webpack_require__(20);
-let gm;
 
 function getPath() {
   return process.platform === 'win32' || process.env.OSTYPE === 'msys' || process.env.OSTYPE === 'cygwin'
@@ -83,7 +82,7 @@ function getPath() {
     : path.resolve(prefix, 'lib/node_modules');
 }
 
-module.exports = gm || (gm = getPath());
+module.exports = getPath();
 
 },
 // 7
@@ -427,7 +426,7 @@ yargs.parse(process.argv.slice(2), (err, argv, output) => {
 		let compiler,
 			lastHash = null;
 		try {
-			compiler = webpack(options);
+			compiler = /** @type {Compiler} */ webpack(options);
 		} catch (err) {
 			if (err.name === "WebpackOptionsValidationError") {
 				console.error(argv.color ? `\x1b[1m\x1b[31m${err.message}\x1b[39m\x1b[22m` : err.message);
@@ -452,7 +451,7 @@ yargs.parse(process.argv.slice(2), (err, argv, output) => {
 			});
 		}
 
-		function compilerCallback(err, stats) {
+		function compilerCallback(err, /** Stats */ stats) {
 			(options.watch && !err) || compiler.purgeInputFileSystem();
 
 			if (err) {
@@ -533,7 +532,7 @@ module.exports.silent = moduleId => resolveFrom.silent(process.cwd(), moduleId);
 function(module, exports, __webpack_require__) {
 
 const path = __webpack_require__(0),
-	Module = __webpack_require__(13);
+	Module = /** @type {Object.<string, *>} */ __webpack_require__(13);
 
 const resolveFrom = (fromDir, moduleId, silent) => {
 	if (typeof fromDir != 'string')
@@ -733,8 +732,7 @@ const runWhenInstalled = (packages, pathForCmd, ...args) => {
 
 module.exports = function(packages, ...args) {
 	const nameOfPackage = "@webpack-cli/" + packages;
-	let pathForCmd,
-		packageIsInstalled = false;
+	let pathForCmd, packageIsInstalled; // = false
 	try {
 		const path = __webpack_require__(0),
 			fs = __webpack_require__(2);
@@ -886,7 +884,7 @@ function decode(str) {
   var out = {},
     p = out,
     section = null,
-    re = /^\[([^\]]*)\]$|^([^=]+)(=(.*))?$/i
+    re = /^\[([^\]]*)]$|^([^=]+)(=(.*))?$/i
 
   str.split(/[\r\n]+/g).forEach(function(line, _, __) {
     if (!line || line.match(/^\s*[;#]/)) return
@@ -941,6 +939,10 @@ function isQuoted(val) {
     (val.charAt(0) === "'" && val.slice(-1) === "'")
 }
 
+/**
+ * @param {?string} val
+ * @param {boolean} [doUnesc]
+ */
 function unsafe(val, doUnesc) {
   if (isQuoted((val = (val || '').trim()))) {
     if (val.charAt(0) === "'") val = val.substr(1, val.length - 2)
@@ -987,7 +989,7 @@ function getNotFoundError(cmd) {
   return er
 }
 
-function getPathInfo(cmd, opt) {
+function getPathInfo(cmd, /** @prop {*} colon */ opt) {
   var colon = opt.colon || COLON,
     pathEnv = opt.path || process.env.PATH || '',
     pathExt = ['']
@@ -1043,7 +1045,7 @@ function which(cmd, opt, cb) {
   })(0, pathEnv.length)
 }
 
-function whichSync(cmd, opt) {
+function whichSync(cmd, /** @prop {*} nothrow */ opt) {
   var info = getPathInfo(cmd, (opt = opt || {})),
     pathEnv = info.env,
     pathExt = info.ext,
@@ -1084,6 +1086,7 @@ var core = __webpack_require__(process.platform === 'win32' || global.TESTING_WI
 module.exports = isexe
 isexe.sync = sync
 
+/** @returns {(Promise|undefined)} */
 function isexe(path, options, cb) {
   if (typeof options == 'function') {
     cb = options
@@ -1109,7 +1112,7 @@ function isexe(path, options, cb) {
   })
 }
 
-function sync(path, options) {
+function sync(path, /** @prop {*} ignoreErrors */ options) {
   try {
     return core.sync(path, options || {})
   } catch (er) {
@@ -1951,7 +1954,7 @@ module.exports = function(...args) {
 						binding += "-loader";
 					}
 					const rule = {
-						test: new RegExp("\\." + name.replace(/[\-\[\]\/\{\}\(\)\*\+\?\.\\\^\$\|]/g, "\\$&") + "$"),
+						test: new RegExp("\\." + name.replace(/[\-\[\]\/{}()*+?.\\^$|]/g, "\\$&") + "$"),
 						loader: binding
 					};
 					if (arg === "module-bind-pre") rule.enforce = "pre";
@@ -2562,12 +2565,12 @@ function(module, exports, __webpack_require__) {
 var fs = __webpack_require__(2),
   path = __webpack_require__(0);
 
-module.exports = function(filepath, options) {
+module.exports = function(filepath, /** @prop {*} nocase */ options) {
   return !filepath || typeof filepath != 'string'
     ? null
     : fs.existsSync(filepath)
     ? path.resolve(filepath)
-    : (options = options || {}).nocase === true
+    : (options || {}).nocase === true
     ? nocase(filepath)
     : null;
 };
@@ -2589,6 +2592,7 @@ function nocase(filepath) {
   return null;
 }
 
+/** @returns {(Object|null)} */
 function tryReaddir(filepath) {
   var ctx = { path: filepath, files: [] };
   try {
