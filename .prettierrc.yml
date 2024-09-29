@@ -6,7 +6,7 @@ overrides:
     options:
       trailingComma: 'none'
       arrowParens: 'avoid'
-  - files: 'dist/**/bin/*'
+  - files: 'dist/**/bin/!(*.*)'
     options:
       parser: 'babel'
     #
