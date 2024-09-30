@@ -1,43 +1,61 @@
 {
-  "name": "npm-package-bundler",
-  "version": "4.16.2-tape.0",
-  "description": "Bundle NPM package tape v4.x by webpack v4-bundled",
-  "keywords": [
-    "npm",
-    "yarn",
-    "package",
-    "module",
-    "bundle",
-    "bundled",
-    "rollup",
-    "webpack"
-  ],
-  "repository": "thachnn/bundled",
-  "license": "MIT",
-  "engines": {
-    "node": ">=10"
-  },
-  "scripts": {
-    "build": "node scripts/build.js",
-    "clean": "git clean -fdx dist/ node_modules/.cache",
-    "postinstall": "git apply --reject --unidiff-zero --ignore-whitespace --whitespace=nowarn scripts/fix-deps.patch",
-    "terser": "node node_modules/webpack/bin/terser --config-file scripts/terser.config.json",
-    "rollup": "node node_modules/rollup/dist/bin/rollup -c --configName",
-    "webpack": "node node_modules/webpack-cli/bin/cli.js --progress --display-modules",
-    "test": "grep -r --include=*.js -E \"[\\[,] ,|__webpack_require__\\.[a-z]|_WEBPACK_|webpackPoly|\\b_(iterator|interop)\" dist"
-  },
-  "dependencies": {
-    "tape": "^4.13.3"
-  },
-  "devDependencies": {
-    "@types/node": "4",
-    "rollup": "^2.0.6",
-    "webpack": "thachnn/bundled#webpack-4.46.0",
-    "webpack-cli": "thachnn/bundled#webpack-cli-3.3.12"
-  },
-  "resolutions": {
-    "**/call-bind": "npm:blank-package@1.5.0",
-    "**/define-properties": "npm:blank-package@1.5.0",
-    "tape/string.prototype.trim": "npm:blank-package@1.5.0"
-  }
+    "name": "tape",
+    "version": "4.16.2-0",
+    "description": "tap-producing test harness for node and browsers",
+    "main": "index.js",
+    "browser": {
+        "fs": false
+    },
+    "bin": "./bin/tape",
+    "directories": {
+        "example": "example",
+        "test": "test"
+    },
+    "devDependencies": {
+        "call-bind": "~1.0.2",
+        "deep-equal": "~1.1.1",
+        "defined": "~1.0.1",
+        "dotignore": "~0.1.2",
+        "for-each": "~0.3.3",
+        "glob": "~7.2.3",
+        "has": "~1.0.3",
+        "inherits": "~2.0.4",
+        "is-regex": "~1.1.4",
+        "minimist": "~1.2.7",
+        "object-inspect": "~1.12.3",
+        "resolve": "~1.22.1",
+        "resumer": "~0.0.0",
+        "string.prototype.trim": "~1.2.7",
+        "through": "~2.3.8"
+    },
+    "repository": {
+        "type": "git",
+        "url": "git://github.com/ljharb/tape.git"
+    },
+    "homepage": "https://github.com/ljharb/tape",
+    "keywords": [
+        "tap",
+        "test",
+        "harness",
+        "assert",
+        "browser"
+    ],
+    "author": "Jordan Harband <ljharb@gmail.com>",
+    "funding": {
+        "url": "https://github.com/sponsors/ljharb"
+    },
+    "license": "MIT",
+    "auto-changelog": {
+        "output": "CHANGELOG.md",
+        "template": "keepachangelog",
+        "unreleased": false,
+        "commitLimit": false,
+        "backfillLimit": false,
+        "hideCredit": true
+    },
+    "publishConfig": {
+        "ignore": [
+            ".github/workflows"
+        ]
+    }
 }
