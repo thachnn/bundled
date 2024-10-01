@@ -34,7 +34,7 @@ const webpackConfig = (name, config, clean = name.charAt(0) !== '/') => {
     optimization: {
       nodeEnv: false,
       // minimize: false,
-      minimizer: [newTerserPlugin({ terserOptions: { output: { ecma: 5 } } })], // 2015
+      minimizer: [newTerserPlugin({ terserOptions: { output: { ecma: 2015 } } })],
     },
     plugins: [
       new ReplaceCodePlugin({
@@ -97,23 +97,29 @@ module.exports = [
   webpackConfig('/tape', {
     entry: { index: './node_modules/tape/index' },
     output: { libraryTarget: 'commonjs2' },
-    //externals: { fsevents: 'fsevents' },
     module: {
       rules: [
         {
           test: /\bnode_modules[\\/]object-inspect\b.index\.js$/i,
           loader: 'webpack/lib/replace-loader',
           options: {
-            search: /\brequire\(['"]\.(\/[^'"]+)['"]\)/g,
+            search: /\brequire\(['"]\.(\/[^'"]+)['"]\);?/g,
             replace: (m, p1) => m.replaceWithFile(/().*/, 'object-inspect' + p1),
           },
         },
       ],
     },
+    optimization: { minimizer: [newTerserPlugin()] },
+  }),
+  webpackConfig('/glob', {
+    entry: { 'lib/glob': './node_modules/glob/glob' },
+    output: { libraryTarget: 'commonjs2' },
+    externals: { minimatch: './minimatch' },
   }),
   webpackConfig('/tape-bin', {
     entry: { 'bin/tape': './node_modules/tape/bin/tape' },
     output: { filename: '[name]' },
+    externals: { glob: 'commonjs2 ../lib/glob', minimatch: 'commonjs2 ../lib/minimatch' },
     module: {
       rules: [
         {
@@ -144,6 +150,7 @@ module.exports = [
             return (pkg.version += '-0'), JSON.stringify(pkg, null, 4) + '\n';
           },
         },
+        { from: 'node_modules/webpack/vendor/{glob,minimatch}.*', to: 'lib/[name].[ext]' },
       ]),
       new BannerPlugin({ banner: '#!/usr/bin/env node', raw: true }),
     ],

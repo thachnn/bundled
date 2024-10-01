@@ -10,3 +10,9 @@ overrides:
     options:
       parser: 'babel'
     #
+  - files: 'dist/**/index.js'
+    options:
+      useTabs: true
+  - files: 'dist/**/tape'
+    options:
+      printWidth: 110

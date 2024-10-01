@@ -41,6 +41,11 @@
 @@ -28 +28 @@ if (hasToStringTag) {
 -var $toString = callBound('Object.prototype.toString');
 +var $toString = callBound(Object.prototype.toString);
+--- a/node_modules/object-inspect/index.js
++++ b/node_modules/object-inspect/index.js
+@@ -33 +33 @@ var hasShammedSymbols = typeof Symbol === 'function' && typeof Symbol.iterator =
+-var toStringTag = typeof Symbol === 'function' && Symbol.toStringTag && (typeof Symbol.toStringTag === hasShammedSymbols ? 'object' : 'symbol')
++var toStringTag = typeof Symbol === 'function' && Symbol.toStringTag && typeof Symbol.toStringTag === (hasShammedSymbols ? 'object' : 'symbol')
 --- a/node_modules/regexp.prototype.flags/implementation.js
 +++ b/node_modules/regexp.prototype.flags/implementation.js
 @@ -3 +3,0 @@
