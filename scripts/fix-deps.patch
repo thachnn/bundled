@@ -8,9 +8,12 @@
 +module.exports = assembleStyles();
 --- a/node_modules/glob/glob.js
 +++ b/node_modules/glob/glob.js
-@@ -46 +46 @@ var Minimatch = minimatch.Minimatch
+@@ -45,2 +45 @@ var minimatch = require('minimatch')
+-var Minimatch = minimatch.Minimatch
 -var inherits = require('inherits')
 +var inherits = require('util').inherits
+@@ -56 +55,0 @@ var inflight = require('inflight')
+-var util = require('util')
 --- a/node_modules/string_decoder/lib/string_decoder.js
 +++ b/node_modules/string_decoder/lib/string_decoder.js
 @@ -26 +26 @@
@@ -19,3 +22,8 @@
 @@ -104 +104 @@ function StringDecoder(encoding) {
 -  this.lastChar = Buffer.allocUnsafe(nb);
 +  this.lastChar = (Buffer.allocUnsafe || Buffer)(nb);
+--- a/node_modules/is-core-module/index.js
++++ b/node_modules/is-core-module/index.js
+@@ -3 +3 @@
+-var has = require('has');
++var has = Function.call.bind(Object.prototype.hasOwnProperty);

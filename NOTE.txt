@@ -53,3 +53,11 @@ git tag -f xxx-1.0
 decomment --allowHashBang --keep "(^\s*[@#]__PURE__\s*$|^[*\s]*!\s*\S|(^|\n)[*\s]*@(preserve|lic(ense)?|cc_on|CC_ON)\b)"
 
 
+6:04 PM 10/2/2024
+---
+
+* Optimization
+  /\.indexOf\b.*[!=]=+\s*-1\b/  /-1\s*[!=]=+.*\.indexOf\b/
+  /\.length\b.*!=+\s*0\b/   /\b0\s*!=+.*\.length\b/
+
+
