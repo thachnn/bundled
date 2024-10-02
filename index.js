@@ -170,10 +170,9 @@ function (module, exports, __webpack_require__) {
 
 try {
   module.exports = __webpack_require__(4).inherits;
-  if (typeof module.exports != 'function') throw '';
-} catch (_) {
-  module.exports = __webpack_require__(18);
-}
+  if (typeof module.exports == 'function') return;
+} catch (_) {}
+module.exports = __webpack_require__(18);
 
 },
 // 4
@@ -769,7 +768,7 @@ function createExitHarness(conf) {
 	var stream = harness.createStream({ objectMode: conf.objectMode }),
 		es = stream.pipe(conf.stream || createDefaultStream());
 	canEmitExit &&
-		es.on('error', function (err) { harness._exitCode = 1; });
+		es.on('error', function (_err) { harness._exitCode = 1; });
 
 	var ended = false;
 	stream.on('end', function () { ended = true; });
@@ -1606,7 +1605,7 @@ var defined = __webpack_require__(1),
 	callBound = function (fn) { return Function.call.bind(fn); },
 	has = callBound(Object.prototype.hasOwnProperty),
 	$exec = callBound(RegExp.prototype.exec),
-	yamlIndicators = /:|-|\?/,
+	yamlIndicators = /[:\-?]/,
 	nextTick = typeof setImmediate != 'undefined' ? setImmediate : process.nextTick;
 
 function coalesceWhiteSpaces(str) {
