@@ -1,7 +1,7 @@
 {
   "name": "npm-package-bundler",
-  "version": "1.0.0-xxx.0",
-  "description": "Use webpack v4 to bundle NPM package xxx v1.0",
+  "version": "1.22.19-yarn.0",
+  "description": "Bundle NPM package yarn v1.22.19 with webpack v4 and rollup v2",
   "keywords": [
     "npm",
     "yarn",
@@ -26,12 +26,19 @@
     "webpack": "node node_modules/webpack-cli/bin/cli.js --progress --display-modules",
     "test": "grep -r --include=*.js -E \"[\\[,] ,|__webpack_require__\\.[a-z]|_WEBPACK_|webpackPoly|\\b_(iterator|interop)\" dist"
   },
-  "dependencies": {},
+  "dependencies": {
+    "yarn": "yarnpkg/yarn#v1.22.19"
+  },
   "devDependencies": {
-    "@types/node": "*",
+    "@types/node": "4",
+    "flow-remove-types": "thachnn/bundled#flow-remove-types-2.168.0",
     "rollup": "^2.0.6",
     "webpack": "thachnn/bundled#webpack-4.46.0",
     "webpack-cli": "thachnn/bundled#webpack-cli-3.3.12"
   },
-  "resolutions": {}
+  "resolutions": {
+    "**/dnscache/lodash.clone": "^4.5.0",
+    "yarn/babel-runtime": "npm:blank-package@7.0.0",
+    "yarn/imports-loader": "npm:blank-package@1.0.0"
+  }
 }
