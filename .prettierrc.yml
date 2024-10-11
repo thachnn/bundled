@@ -10,3 +10,11 @@ overrides:
     options:
       parser: 'babel'
     #
+  - files: 'dist/**/lockfile.js'
+    options:
+      preserveQuote: true
+  - files: 'dist/**/lockfile.js'
+    options:
+      trailingComma: 'es5'
+      bracketSpacing: false
+      printWidth: 115

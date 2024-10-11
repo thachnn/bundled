@@ -4,6 +4,7 @@ const { statSync } = require('fs');
 const { dirname, resolve, sep } = require('path');
 
 let { minify } = require('webpack/vendor/terser');
+const flowRemoveTypes = require('flow-remove-types');
 
 /**
  * @typedef {import('terser').MinifyOptions} MinifyOptions
@@ -95,6 +96,22 @@ const transformCode = (opts = {}) => ({
   transform: (code, id) => (opts.patterns && opts.test.test(id) ? replaceBulk(code, opts.patterns) : null),
 });
 
+/** @returns {RollupPlugin} */
+const jsonPlugin = (opts = {}) =>
+  transformCode({
+    name: 'json',
+    test: opts.test || /\.json$/i,
+    patterns: [].concat(opts.transform || [], [
+      {
+        search: /[\s\S]*/,
+        replace: (o) =>
+          Object.keys((o = JSON.parse(o)))
+            .map((k) => `export const ${k} = ${JSON.stringify(o[k])};\n`)
+            .join('') + `export default { ${Object.keys(o).join(', ')} };`,
+      },
+    ]),
+  });
+
 /**
  * @param {{test?: RegExp, transform?: TransformPatterns}} [opts]
  * @returns {RollupPlugin}
@@ -126,13 +143,65 @@ const commonJS = (opts = {}) =>
     ]),
   });
 
+/** @returns {RollupPlugin} */
+const flowPlugin = ({ name, test, transform, ...opts } = {}) =>
+  transformCode({
+    name: name || 'flow-remove-types',
+    test: test || /\.js$/i,
+    patterns: [].concat(transform || [], [
+      { search: /[\s\S]*/, replace: (m) => flowRemoveTypes(m, Object.assign({ pretty: true }, opts)).toString() },
+      { search: /^(\s*import\b[^,'"]*)(,\s*{\s*})+/gm, replace: '$1' },
+      {
+        search: /^[^\S\n]*const(\s+[\w$]+|\s*{[^{}]+})\s*=\s*require *\( *(['"][^'"]+['"]) *\)(\s*\.([\w$]+))? *;?$/gm,
+        replace: (_, p1, p2, p3, p4) => `import ${(p3 ? `{${p4}: ${p1}}` : p1).replace(/\s*:\s*/g, ' as ')} from ${p2}`,
+      },
+      { search: /^[^\S\n]*exports\.([\w$]+\s*=)/gm, replace: 'export const $1' },
+    ]),
+  });
+
 //
 const configSet = [
-  /*
-  buildConfig('long', {
-    input: 'node_modules/@xtuc/long/src/long.js',
-    output: { file: 'dist/vendor/long.js', strict: false },
-    plugins: [commonJS()],
+  buildConfig('lockfile', {
+    input: 'node_modules/yarn/src/lockfile/index.js',
+    output: { file: 'dist/lib/lockfile.js', esModule: false },
+    external: ['path', 'util', 'os', 'fs', 'buffer', 'crypto', 'stream'],
+    plugins: [
+      transformCode({
+        name: 'unused-constants',
+        test: /\byarn[\\/]src\b.constants\.js$/i,
+        patterns: [
+          { search: /^(const ([\w$]+|{[^{}]+})\s*=\s*require\b|export const \w+\s*=\s*[A-Za-z])/gm, replace: '//$&' },
+        ],
+      }),
+      transformCode({
+        name: 'unused-fs',
+        test: /\byarn[\\/]src\b.util\b.fs\.js$/i,
+        patterns: [
+          { search: /^(import (glob|Block|{\s*copy)|export (const (?!exists)\w+.*;$|{\s*unlink))/gm, replace: '//$&' },
+        ],
+      }),
+      flowPlugin({
+        ignoreUninitializedFields: true,
+        test: /\byarn[\\/].*\.js$/i,
+        transform: [
+          { search: /^const \w+\s*=\s*require\(['"]camelcase\b/m, replace: '//$&' },
+          { search: /^const (\w+)\s*=\s*require\((['"]ssri['"])\)/m, replace: 'import * as $1 from $2' },
+          { search: /\brequire\(['"]js-yaml\b/, replace: '$&/lib/js-yaml/loader' },
+        ],
+      }),
+      jsonPlugin(),
+      commonJS({
+        test: /\b(invariant|strip-bom|ssri|js-yaml)[\\/].*\.js$/i,
+        transform: [
+          { search: /^(  )(match|pickAlgorithm)\b.*{\n+(\1\1.*\n+)*\1}/gm, replace: '/*$&*/' },
+          {
+            search: /^var (\w+)\s*=\s*(require\(['"](\.\/schema)\/default_)safe\b.*(\nvar \w+\s*=\s*)\2full\b.*/m,
+            replace: "import $1 from '$3/failsafe';$4$1;\nexport { $1 as FAILSAFE_SCHEMA };",
+          },
+          { search: /^var (\w+)\s*=\s*require\((['"]\.+\/common['"])\)/m, replace: 'import * as $1 from $2' },
+        ],
+      }),
+      terserPlugin({ output: { ecma: 2015 } }),
+    ],
   }),
-  */
 ];
