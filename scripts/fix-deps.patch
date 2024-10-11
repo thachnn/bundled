@@ -265,11 +265,6 @@
 @@ -97 +113 @@ export default class NpmResolver extends RegistryResolver {
 -    const body = await this.config.registries.npm.request(escapedName);
 +    const body = await this.config.registries.npm.request(escapedName, {unfiltered: !!this.config.packageDateLimit});
---- a/node_modules/yarn/src/util/dynamic-require.js
-+++ b/node_modules/yarn/src/util/dynamic-require.js
-@@ -4 +4 @@
--exports.dynamicRequire = typeof __webpack_require__ !== 'undefined' ? __non_webpack_require__ : require; // eslint-disable-line
-+export const dynamicRequire = typeof __webpack_require__ != 'undefined' ? __non_webpack_require__ : require; // eslint-disable-line
 --- a/node_modules/yarn/src/util/execute-lifecycle-script.js
 +++ b/node_modules/yarn/src/util/execute-lifecycle-script.js
 @@ -237 +237,2 @@ export async function makeEnv(
@@ -292,9 +287,3 @@
 +          res = arguments[1];
 +        } else {
 +          res = Array.prototype.slice.call(arguments, 1);
---- a/node_modules/yarn/src/util/semver.js
-+++ b/node_modules/yarn/src/util/semver.js
-@@ -3 +3,2 @@
--import semver, {type Release} from 'semver';
-+import type {Release} from 'semver';
-+const semver = require('semver');
