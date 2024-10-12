@@ -1,44 +1,21 @@
 {
-  "name": "npm-package-bundler",
-  "version": "1.22.19-yarn.0",
-  "description": "Bundle NPM package yarn v1.22.19 with webpack v4 and rollup v2",
-  "keywords": [
-    "npm",
-    "yarn",
-    "package",
-    "module",
-    "bundle",
-    "bundled",
-    "rollup",
-    "webpack"
-  ],
-  "repository": "thachnn/bundled",
-  "license": "MIT",
+  "name": "yarn",
+  "installationMethod": "tar",
+  "version": "1.22.19-0",
+  "packageManager": "yarn@1.22.17",
+  "license": "BSD-2-Clause",
+  "preferGlobal": true,
+  "description": "📦🐈 Fast, reliable, and secure dependency management.",
   "engines": {
-    "node": ">=10"
+    "node": ">=4.0.0"
   },
+  "repository": "yarnpkg/yarn",
+  "bin": {
+    "yarn": "./bin/yarn.js",
+    "yarnpkg": "./bin/yarn.js"
+  },
+  "main": "lib/lockfile.js",
   "scripts": {
-    "build": "node scripts/build.js",
-    "clean": "git clean -fdx dist/ node_modules/.cache",
-    "postinstall": "git apply --reject --unidiff-zero --ignore-whitespace --whitespace=nowarn scripts/fix-deps.patch",
-    "terser": "node node_modules/webpack/bin/terser --config-file scripts/terser.config.json",
-    "rollup": "node node_modules/rollup/dist/bin/rollup -c --configName",
-    "webpack": "node node_modules/webpack-cli/bin/cli.js --progress --display-modules",
-    "test": "grep -r --include=*.js -E \"[\\[,] ,|__webpack_require__\\.[a-z]|_WEBPACK_|webpackPoly|\\b_(iterator|interop)\" dist"
-  },
-  "dependencies": {
-    "yarn": "yarnpkg/yarn#v1.22.19"
-  },
-  "devDependencies": {
-    "@types/node": "4",
-    "flow-remove-types": "thachnn/bundled#flow-remove-types-2.168.0",
-    "rollup": "^2.0.6",
-    "webpack": "thachnn/bundled#webpack-4.46.0",
-    "webpack-cli": "thachnn/bundled#webpack-cli-3.3.12"
-  },
-  "resolutions": {
-    "**/dnscache/lodash.clone": "^4.5.0",
-    "yarn/babel-runtime": "npm:blank-package@7.0.0",
-    "yarn/imports-loader": "npm:blank-package@1.0.0"
+    "preinstall": "node ./preinstall.js"
   }
 }
