@@ -145,6 +145,11 @@
 +  'packageDateLimit',
 +  'disableWrappersFolder',
  ];
+--- a/node_modules/yarn/src/cli/commands/policies.js
++++ b/node_modules/yarn/src/cli/commands/policies.js
+@@ -159 +159 @@ const {run, setFlags, examples} = buildSubCommands('policies', {
+-    } else if (V2_NAMES.includes(range) || isLocalFile(range) || isV2Version(range)) {
++    } else if (V2_NAMES.indexOf(range) >= 0 || isLocalFile(range) || isV2Version(range)) {
 --- a/node_modules/yarn/src/cli/index.js
 +++ b/node_modules/yarn/src/cli/index.js
 @@ -29 +29 @@ import {ProcessTermError} from '../errors';
@@ -193,6 +198,8 @@
 +  }
 +
    validateError: ?Object = null;
+@@ -100 +104,0 @@ export default class TarballFetcher extends BaseFetcher {
+-    const fs = require('fs');
 --- a/node_modules/yarn/src/lockfile/parse.js
 +++ b/node_modules/yarn/src/lockfile/parse.js
 @@ -75 +75 @@ function* tokenise(input: string): Iterator<Token> {
@@ -215,8 +222,8 @@
 -    }
 -  } else {
 @@ -409 +404,3 @@ function parse(str: string, fileLoc: string): Object {
-+      } catch (error2) {
-+        throw error || error2;
++  } catch (error2) {
++    throw error || error2;
    }
 --- a/node_modules/yarn/src/package-hoister.js
 +++ b/node_modules/yarn/src/package-hoister.js
@@ -268,10 +275,15 @@
      return nohoistList;
 -  };
 +  }
+--- a/node_modules/yarn/src/registries/yarn-registry.js
++++ b/node_modules/yarn/src/registries/yarn-registry.js
+@@ -101 +101 @@ export default class YarnRegistry extends NpmRegistry {
+-          if (FOLDER_KEY.includes(key)) {
++          if (FOLDER_KEY.indexOf(key) >= 0) {
 --- a/node_modules/yarn/src/resolvers/registries/npm-resolver.js
 +++ b/node_modules/yarn/src/resolvers/registries/npm-resolver.js
 @@ -27 +27,2 @@ type RegistryResponse = {
-+  time?: ?{[key: string]: ?string},
++  time?: {[key: string]: ?string},
  };
 @@ -51 +52,16 @@ export default class NpmResolver extends RegistryResolver {
 +    // Only install package version that have release date before a specified one.
@@ -309,9 +321,7 @@
 -        if (result.length <= 1) {
 -          res = result[0];
 -        }
-@@ -21 +18,5 @@ export function promisify(fn: Function, firstData?: boolean): (...args: Array<an
+@@ -21 +18,3 @@ export function promisify(fn: Function, firstData?: boolean): (...args: Array<an
            err = null;
-+        } else if (arguments.length <= 2) {
-+          res = arguments[1];
 +        } else {
-+          res = Array.prototype.slice.call(arguments, 1);
++          res = arguments.length <= 2 ? arguments[1] : Array.prototype.slice.call(arguments, 1);

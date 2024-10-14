@@ -13,7 +13,7 @@ overrides:
   - files: 'dist/**/lockfile.js'
     options:
       preserveQuote: true
-  - files: 'dist/**/lockfile.js'
+  - files: 'dist/**/{lockfile,cli}.js'
     options:
       trailingComma: 'es5'
       bracketSpacing: false

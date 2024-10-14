@@ -37,8 +37,14 @@
     "webpack-cli": "thachnn/bundled#webpack-cli-3.3.12"
   },
   "resolutions": {
+    "**/cli-table3/string-width": "^2.1.0",
     "**/dnscache/lodash.clone": "^4.5.0",
+    "**/fill-range/is-number": "^4.0.0",
+    "**/tar-fs/pump": "^2.0.0",
     "yarn/babel-runtime": "npm:blank-package@7.0.0",
+    "yarn/hash-for-dep/broccoli-kitchen-sink-helpers": "npm:blank-package@1.0.0",
+    "yarn/hash-for-dep/heimdalljs": "npm:blank-package@1.0.0",
+    "yarn/hash-for-dep/heimdalljs-logger": "npm:blank-package@1.0.0",
     "yarn/imports-loader": "npm:blank-package@1.0.0"
   }
 }

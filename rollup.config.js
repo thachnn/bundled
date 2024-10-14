@@ -24,7 +24,7 @@ const baseTerserOpts = require('./scripts/terser.config.json');
 const terserPlugin = (options = {}) => ({
   name: 'terser',
   renderChunk(code, chunk, outputOpts) {
-    let opts = { sourceMap: !!outputOpts.sourcemap };
+    let opts = { sourceMap: !!outputOpts.sourcemap, output: { ecma: 2015 } };
 
     outputOpts.format !== 'es' || (opts.module = true);
     // outputOpts.format !== 'cjs' || (opts.toplevel = true);
@@ -97,10 +97,10 @@ const transformCode = (opts = {}) => ({
 });
 
 /** @returns {RollupPlugin} */
-const jsonPlugin = (opts = {}) =>
+const packageJson = (opts = {}) =>
   transformCode({
     name: 'json',
-    test: opts.test || /\.json$/i,
+    test: opts.test || /\bpackage\.json$/i,
     patterns: [].concat(opts.transform || [], [
       {
         search: /[\s\S]*/,
@@ -152,12 +152,17 @@ const flowPlugin = ({ name, test, transform, ...opts } = {}) =>
       { search: /[\s\S]*/, replace: (m) => flowRemoveTypes(m, Object.assign({ pretty: true }, opts)).toString() },
       { search: /^(\s*import\b[^,'"]*)(,\s*{\s*})+/gm, replace: '$1' },
       {
-        search: /^[^\S\n]*const(\s+[\w$]+|\s*{[^{}]+})\s*=\s*require *\( *(['"][^'"]+['"]) *\)(\s*\.([\w$]+))? *;?$/gm,
+        search: /(?<!{\s*)\bconst\s+([\w$]+|{[^{}]+})\s*=\s*require *\( *(['"][^'"]+['"]) *\)(\s*\.([\w$]+))? *;?$/gm,
         replace: (_, p1, p2, p3, p4) => `import ${(p3 ? `{${p4}: ${p1}}` : p1).replace(/\s*:\s*/g, ' as ')} from ${p2}`,
       },
       { search: /^[^\S\n]*exports\.([\w$]+\s*=)/gm, replace: 'export const $1' },
     ]),
   });
+
+const yarnDeps = (
+  'micromatch semver commander minimatch proper-lockfile loud-rejection death normalize-url ini ci-info glob tar-fs tar-stream npm-logical-tree dnscache request-capture-har request object-path inquirer cli-table3 uuid' +
+  ' detect-indent ssri @zkochan/cmd-shim gunzip-maybe debug rimraf mkdirp camelcase chalk yn deep-equal node-emoji resolve leven puka bytes strip-ansi read validate-npm-package-license'
+).split(' ');
 
 //
 const configSet = [
@@ -189,7 +194,7 @@ const configSet = [
           { search: /\brequire\(['"]js-yaml\b/, replace: '$&/lib/js-yaml/loader' },
         ],
       }),
-      jsonPlugin(),
+      packageJson(),
       commonJS({
         test: /\b(invariant|strip-bom|ssri|js-yaml)[\\/].*\.js$/i,
         transform: [
@@ -201,7 +206,43 @@ const configSet = [
           { search: /^var (\w+)\s*=\s*require\((['"]\.+\/common['"])\)/m, replace: 'import * as $1 from $2' },
         ],
       }),
-      terserPlugin({ output: { ecma: 2015 } }),
+    ],
+  }),
+  //
+  buildConfig('cli', {
+    input: 'node_modules/yarn/src/cli/index.js',
+    output: { file: 'dist/lib/cli.js', esModule: false },
+    external: yarnDeps.concat(
+      'path fs http net util url os string_decoder tty crypto stream events child_process zlib readline'.split(' '),
+      ['./lockfile', '../lockfile', '../../lockfile']
+    ),
+    plugins: [
+      transformCode({
+        name: 'inline-import',
+        test: /\byarn[\\/].*\.tpl\.js$/i,
+        patterns: [{ search: /[\s\S]*/, replace: (m) => 'export default `' + m.replace(/(`|\\|\${)/g, '\\$&') + '`' }],
+      }),
+      flowPlugin({ name: 'flow-allow-fields', test: /\byarn[\\/]src\b.config\.js$/i }),
+      flowPlugin({
+        ignoreUninitializedFields: true,
+        test: /\byarn[\\/](?!(.*\.tpl|src\b.config)\.).*\.js$/i,
+        transform: [
+          { search: /^(.*)\brequire *\( *(['"](\w+)['"]) *\)(\s*\.\w+ *\()/gm, replace: 'import $3 from $2;\n$1$3$4' },
+        ],
+      }),
+      packageJson(),
+      commonJS({
+        test: /\b(hash-for-dep|is-ci|is-webpack-bundle|(is-)?builtin-modules?|invariant|strip-bom)[\\/].*\.js$/i,
+      }),
+      terserPlugin({
+        transform: [
+          {
+            search: new RegExp(`\\brequire\\(['"](${yarnDeps.join('|')})['"]\\)`, 'g'),
+            replace: (_, p1) => '_libs' + (/\W/.test((p1 = p1.replace(/^@[^/]*\//, ''))) ? `['${p1}']` : '.' + p1),
+          },
+          { search: /^.*\s_libs\b/m, replace: "var _libs = require('./vendors');\n$&" },
+        ],
+      }),
     ],
   }),
 ];
