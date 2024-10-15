@@ -104,10 +104,11 @@ const packageJson = (opts = {}) =>
     patterns: [].concat(opts.transform || [], [
       {
         search: /[\s\S]*/,
-        replace: (o) =>
-          Object.keys((o = JSON.parse(o)))
-            .map((k) => `export const ${k} = ${JSON.stringify(o[k])};\n`)
-            .join('') + `export default { ${Object.keys(o).join(', ')} };`,
+        replace(o) {
+          const ks = Object.keys((o = JSON.parse(o))).filter((k) => !/\W/.test(k));
+          // prettier-ignore
+          return ks.map((k) => `export const ${k} = ${JSON.stringify(o[k])};\n`).join('') + `export default { ${ks.join()} }`;
+        },
       },
     ]),
   });
@@ -159,10 +160,7 @@ const flowPlugin = ({ name, test, transform, ...opts } = {}) =>
     ]),
   });
 
-const yarnDeps = (
-  'micromatch semver commander minimatch proper-lockfile loud-rejection death normalize-url ini ci-info glob tar-fs tar-stream npm-logical-tree dnscache request-capture-har request object-path inquirer cli-table3 uuid' +
-  ' detect-indent ssri @zkochan/cmd-shim gunzip-maybe debug rimraf mkdirp camelcase chalk yn deep-equal node-emoji resolve leven puka bytes strip-ansi read validate-npm-package-license'
-).split(' ');
+const yarnDeps = require('./scripts/yarn-deps.json');
 
 //
 const configSet = [
@@ -211,7 +209,7 @@ const configSet = [
   //
   buildConfig('cli', {
     input: 'node_modules/yarn/src/cli/index.js',
-    output: { file: 'dist/lib/cli.js', esModule: false },
+    output: { file: 'dist/lib/cli.js', esModule: false, banner: '#!/usr/bin/env node' },
     external: yarnDeps.concat(
       'path fs http net util url os string_decoder tty crypto stream events child_process zlib readline'.split(' '),
       ['./lockfile', '../lockfile', '../../lockfile']
@@ -220,7 +218,13 @@ const configSet = [
       transformCode({
         name: 'inline-import',
         test: /\byarn[\\/].*\.tpl\.js$/i,
-        patterns: [{ search: /[\s\S]*/, replace: (m) => 'export default `' + m.replace(/(`|\\|\${)/g, '\\$&') + '`' }],
+        patterns: [
+          {
+            search: /[\s\S]*/,
+            replace: (m) =>
+              `export default (() => {//${m}/*!__PURE__*/blacklistCheck(isStrictRegExp);\n}).toString().slice(9, -1)`,
+          },
+        ],
       }),
       flowPlugin({ name: 'flow-allow-fields', test: /\byarn[\\/]src\b.config\.js$/i }),
       flowPlugin({
@@ -235,12 +239,17 @@ const configSet = [
         test: /\b(hash-for-dep|is-ci|is-webpack-bundle|(is-)?builtin-modules?|invariant|strip-bom)[\\/].*\.js$/i,
       }),
       terserPlugin({
+        output: { ascii_only: false, comments: /^(#!|\s*[@#]__|\**\s*!\s*\S)/ },
         transform: [
           {
             search: new RegExp(`\\brequire\\(['"](${yarnDeps.join('|')})['"]\\)`, 'g'),
             replace: (_, p1) => '_libs' + (/\W/.test((p1 = p1.replace(/^@[^/]*\//, ''))) ? `['${p1}']` : '.' + p1),
           },
           { search: /^.*\s_libs\b/m, replace: "var _libs = require('./vendors');\n$&" },
+          {
+            search: /^([ \t]+)([\w$]+ *\+=).*;(?:\n+\1\2.*;)+/gm,
+            replace: (m, p1) => m.replace(new RegExp(`;(\\n+${p1})[\\w$]+ *\\+=`, 'g'), ' +$1 '),
+          },
         ],
       }),
     ],

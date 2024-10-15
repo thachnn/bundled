@@ -1493,11 +1493,11 @@ verror@1.10.0:
     extsprintf "^1.2.0"
 
 webpack-cli@thachnn/bundled#webpack-cli-3.3.12:
-  version "3.3.12-0"
+  version "3.3.12-1"
   resolved "https://codeload.github.com/thachnn/bundled/tar.gz/refs/tags/webpack-cli-3.3.12"
 
 webpack@thachnn/bundled#webpack-4.46.0:
-  version "4.46.0-0"
+  version "4.46.0-1"
   resolved "https://codeload.github.com/thachnn/bundled/tar.gz/refs/tags/webpack-4.46.0"
   optionalDependencies:
     fsevents "~2.1.2"

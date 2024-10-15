@@ -161,6 +161,12 @@
 @@ -560 +561,2 @@ export async function main({
        otp: commander.otp,
 +      packageDateLimit: commander.packageDateLimit,
+@@ -671,3 +673,3 @@ async function start(): Promise<void> {
+-export const autoRun = module.children.length === 0;
++export const autoRun = require.main === module;
+ 
+-if (require.main === module) {
++if (autoRun) {
 --- a/node_modules/yarn/src/config.js
 +++ b/node_modules/yarn/src/config.js
 @@ -72 +72,3 @@ export type ConfigOptions = {
@@ -249,25 +255,19 @@
 -  _isRootPackage = (pkg: Manifest): boolean => {
 +  }
 +  _isRootPackage(pkg: Manifest): boolean {
-@@ -989,4 +989,4 @@ export class NohoistResolver {
+@@ -989,2 +989,2 @@ export class NohoistResolver {
 -  };
 -  _originalPath = (info: HoistManifest): string => {
 +  }
 +  _originalPath(info: HoistManifest): string {
-     return this._makePath(info.originalParentPath, info.pkg.name);
--  };
-+  }
 @@ -998 +998 @@ export class NohoistResolver {
 -  _isTopPackage = (info: HoistManifest): boolean => {
 +  _isTopPackage(info: HoistManifest): boolean {
-@@ -1005,4 +1005,4 @@ export class NohoistResolver {
+@@ -1005,2 +1005,2 @@ export class NohoistResolver {
 -  };
 -  _isLink = (info: HoistManifest): boolean => {
 +  }
 +  _isLink(info: HoistManifest): boolean {
-     return info.pkg._remote != null && LINK_TYPES.has(info.pkg._remote.type);
--  };
-+  }
 @@ -1012 +1012 @@ export class NohoistResolver {
 -  _extractNohoistList = (pkg: Manifest, pathPrefix: string): ?Array<string> => {
 +  _extractNohoistList(pkg: Manifest, pathPrefix: string): ?Array<string> {

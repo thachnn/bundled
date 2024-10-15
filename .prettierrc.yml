@@ -10,11 +10,25 @@ overrides:
     options:
       parser: 'babel'
     #
-  - files: 'dist/**/lockfile.js'
+  - files: 'dist/**/{lockfile,acorn}.js'
     options:
       preserveQuote: true
+  - files: 'dist/**/{lockfile,cli,acorn}.js'
+    options:
+      bracketSpacing: false
+  - files: 'dist/**/{cli,acorn}.js'
+    options:
+      spaceAfterAnonFunc: false
+    #
   - files: 'dist/**/{lockfile,cli}.js'
     options:
       trailingComma: 'es5'
-      bracketSpacing: false
       printWidth: 115
+  - files: 'dist/**/cli.js'
+    options:
+      printWidth: 120
+  - files: 'dist/**/acorn.js'
+    options:
+      singleQuote: false
+      dedentSwitchLabels: true
+      printWidth: 135

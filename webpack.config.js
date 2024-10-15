@@ -93,37 +93,164 @@ const commonjs1Patches = [
 ];
 
 //
+const generateLibsIndex = () => {
+  const yarnDeps = require('./scripts/yarn-deps.json');
+  return (
+    'module.exports = {\n  __proto__: null,\n' +
+    yarnDeps
+      .map((p) => [p.replace(/^@[^/]*\//, ''), p])
+      .map(([k, v]) => `  get ${/\W/.test(k) ? `'${k}'` : k}() { return require('${v}'); }`)
+      .join(',\n') +
+    '\n};'
+  );
+};
+
+const usedRxjsFn = (
+  'Observable observable Subject Subscription Subscriber pipe defer empty from fromEvent of EMPTY config ' +
+  'concatMap filter map flatMap publish reduce share take takeUntil'
+).replace(/\s+/g, '|');
+
+const usedLodashFn = (
+  'assign assignIn constant defaults filter flatten keys keysIn map memoize omit property set uniq extend clone eq ' +
+  'find findIndex get hasIn identity isArguments isArray isArrayLike isBoolean isBuffer isFunction isLength isMap ' +
+  'isNumber isObject isObjectLike isPlainObject isSet isString isSymbol isTypedArray last stubArray stubFalse noop ' +
+  'sum toFinite toInteger toNumber toString'
+).split(/\s+/);
+
+//
 module.exports = [
-  /* TODO:
-  webpackConfig('import-local', {
-    entry: { index: './node_modules/import-local/index' },
-    output: { libraryTarget: 'commonjs2', filename: '[name]' },
-    externals: { fsevents: 'commonjs2 fsevents' },
+  webpackConfig('/libs', {
+    entry: { 'lib/vendors': './node_modules/yarn/src/api' },
+    output: { libraryTarget: 'commonjs2' },
+    externals: {
+      'os-tmpdir': ['os', 'tmpdir'],
+      'string_decoder/': 'string_decoder',
+      inherits: ['util', 'inherits'],
+    },
     module: {
       rules: [
         {
-          test: /\bnode_modules[\\/]import-local\b.index\.js$/i,
+          test: /\bnode_modules[\\/]yarn\b.src\b.api\.js$/i,
           loader: 'webpack/lib/replace-loader',
-          options: { search: /\brequire((\.resolve)?\(\w+)/g, replace: '__non_webpack_require__$1' },
+          options: { search: /[\s\S]*/, replace: generateLibsIndex },
+        },
+        {
+          test: /\bnode_modules[\\/](request-capture-har|tough-cookie)\b.package\.json$/i,
+          loader: 'webpack/lib/replace-loader',
+          options: { search: /[\s\S]*/, replace: (m) => `{ ${m.match(/^  "(name|version|desc\w+)":.*"/gm).join()} }` },
+        },
+        // Optimize dependencies
+        {
+          test: /\bnode_modules[\\/]rxjs\b._esm\d*.(operators\b.)?index\.js$/i,
+          loader: 'webpack/lib/replace-loader',
+          options: { search: new RegExp(`^export *{[^{}]*\\b(?!(${usedRxjsFn})\\b)\\w+ *}`, 'gm'), replace: '//$&' },
+        },
+        {
+          test: /\bnode_modules[\\/]lodash\b.index\.js$/i,
+          loader: 'webpack/lib/replace-loader',
+          options: {
+            search: /[\s\S]*/,
+            replace: `module.exports = {\n${usedLodashFn.map((f) => `  ${f}: require('./${f}')`).join(',\n')}\n};`,
+          },
+        },
+        {
+          test: /\bnode_modules[\\/]jsprim\b.lib.jsprim\.js$/i,
+          loader: 'webpack/lib/replace-loader',
+          options: {
+            search: /^(.*= *require\(['"](verror|json|util)\b|exports\.(?!(rfc|iso|is|has|for|st|end|parseD))\w+ *=)/gm,
+            replace: '//$&',
+          },
+        },
+        // Too old packages
+        {
+          test: /\bnode_modules[\\/](mz\b.fs|thenify\b.index)\.js$/i,
+          loader: 'webpack/lib/replace-loader',
+          options: { search: /^var Promise *= *require\(['"]any-promise\b/m, replace: '//$&' },
+        },
+        // Output optimization
+        {
+          test: /\bnode_modules[\\/]ssri\b.index\.js$/i,
+          loader: 'webpack/lib/replace-loader',
+          options: {
+            search: /^(module\.)?exports\.(?!(parse|stringify|from(Hex|Data)|integrityStream)\b)\w+ *=/gm,
+            replace: '//$&',
+          },
+        },
+        {
+          test: /\bnode_modules[\\/]external-editor\b.main.index\.js$/i,
+          loader: 'webpack/lib/replace-loader',
+          options: {
+            multiple: [
+              {
+                search: /^Object\.defineProperty\(exports\b/m,
+                replace: (m) =>
+                  m.replaceWithFile(/^/, 'tslib', (s) =>
+                    s.match(/^([ \t]*)var extendStatics *=[\s\S]*?\n\1};$/m)[0].replace(/;(\s+__extends *=)/, ',$1')
+                  ),
+              },
+              { search: /\b\w+Error_1\./g, replace: '' },
+              {
+                search: /^var (\w+Error)_1 *= *require\(['"]\.(\/errors\/\1)\b.*/gm,
+                replace: (m, p1, p2) =>
+                  m.replaceWithFile(/.*/, 'external-editor/main' + p2, (s) =>
+                    s.match(new RegExp(`^var ${p1} *=.*{\\n[\\s\\S]*?\\n}.*`, 'm')).toString()
+                  ),
+              },
+            ],
+          },
+        },
+        {
+          test: /\bnode_modules[\\/]tmp\b.lib.tmp\.js$/i,
+          loader: 'webpack/lib/replace-loader',
+          options: { search: /^(module\.)?exports\.(file|dir)\w* *=/gm, replace: '//$&' },
         },
       ],
     },
+    resolve: {
+      mainFields: ['es2015', 'module', 'main'],
+      alias: {
+        retry$: path.resolve(__dirname, 'node_modules/retry/lib/retry.js'),
+        'node-emoji$': path.resolve(__dirname, 'node_modules/node-emoji/lib/emoji.js'),
+        lodash$: path.resolve(__dirname, 'node_modules/lodash/index.js'),
+        'cli-table3$': path.resolve(__dirname, 'node_modules/cli-table3/src/table.js'),
+        'mime-db$': path.resolve(__dirname, 'node_modules/mime-db/db.json'),
+        'colors/safe$': path.resolve(__dirname, 'node_modules/colors/lib/colors.js'),
+        'http-signature$': path.resolve(__dirname, 'node_modules/http-signature/lib/signer.js'),
+      },
+    },
+    stats: { modulesSort: 'index' },
     optimization: {
-      minimizer: [
-        newTerserPlugin({ test: /(\.m?js|[\\/][\w-]+)$/i, terserOptions: { output: { ascii_only: false } } }),
-      ],
+      moduleIds: 'named',
+      minimizer: [newTerserPlugin({ terserOptions: { output: { ascii_only: false, ecma: 2015 } } })],
     },
     plugins: [
       newCopyPlugin([
-        { from: '{LICENSE*,!(CONTRIBUTING).md}', context: 'node_modules/import-local' },
+        { from: '{LICENSE*,README*,bin/!(*.js)}', context: 'node_modules/yarn' },
         {
-          from: 'node_modules/import-local/package.json',
-          transform: (s) => String(s).replace(/,\s*"(d(evD)?ependencies|scripts)":\s*\{[^{}]*\}/g, ''),
+          from: 'node_modules/yarn/package.json',
+          transform(content) {
+            const pkg = JSON.parse(String(content).replace(/^\s+"(babel-runtime|imports-loader)":.*/gm, ''));
+            pkg.devDependencies = pkg.dependencies;
+            ['dependencies', 'jest', 'resolutions', 'config'].forEach((k) => delete pkg[k]);
+
+            Object.assign(pkg, { installationMethod: 'tar', scripts: { preinstall: 'node ./preinstall.js' } });
+            return (pkg.version += '-0'), JSON.stringify(pkg, null, 2) + '\n';
+          },
         },
-        { from: 'node_modules/acorn/dist/bin.js', to: '[name]/acorn', transform: minifyContent },
+        { from: 'preinstall.js', context: 'node_modules/yarn/scripts', transform: minifyContent },
+        {
+          from: 'node_modules/yarn/bin/*.js',
+          to: 'bin/[name].js',
+          transform: (s) => minifyContent(String(s).replace(/__dirname *\+ *('|")\//g, '$1')),
+        },
+        { from: 'node_modules/v8-compile-cache/v8-compile-cache.js', to: 'lib/', transform: minifyContent },
       ]),
-      new BannerPlugin({ banner: '#!/usr/bin/env node', raw: true }),
+      // __wpreq__
+      /*new ReplaceCodePlugin({
+        search: /(^\/\*{3}\/ |\b__webpack_require__\(.*?)"\.\/node_modules\/([^\n"]+)/gm,
+        replace: (_, p1, p2) =>
+          p1 + '"' + p2.replace(/(\/index\.js(on)?|\.js)$/, '').replace(/^([\w.-]+)\/(lib\/)?(?!request$)\1$/, '$1'),
+      }),*/
     ],
   }),
-  */
 ];
