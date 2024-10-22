@@ -197,7 +197,7 @@ function run() {
       if (program.parse.acorn)
         files = convert_ast(function(toplevel, name) {
           return __webpack_require__(13).parse(files[name], {
-            ecmaVersion: 2018,
+            ecmaVersion: 14,
             locations: true,
             program: toplevel,
             sourceFile: name,
@@ -474,7 +474,7 @@ function Option(flags, description) {
   this.flags = flags;
   this.required = flags.indexOf('<') >= 0;
   this.optional = flags.indexOf('[') >= 0;
-  this.bool = flags.indexOf('-no-') === -1;
+  this.bool = flags.indexOf('-no-') < 0;
   if ((flags = flags.split(/[ ,|]+/)).length > 1 && !/^[[<]/.test(flags[1])) this.short = flags.shift();
   this.long = flags.shift();
   this.description = description || '';
@@ -762,7 +762,7 @@ Command.prototype.parseArgs = function(args, unknown) {
 
     unknown.length > 0 && this.unknownOption(unknown[0]);
 
-    this.commands.length !== 0 || this._args.filter((a) => a.required).length !== 0 || this.emit('command:*');
+    this.commands.length > 0 || this._args.filter((a) => a.required).length > 0 || this.emit('command:*');
   }
 
   return this;
@@ -856,7 +856,7 @@ Command.prototype.description = function(str, argsDescription) {
 
 Command.prototype.alias = function(alias) {
   var command = this;
-  if (this.commands.length !== 0) command = this.commands[this.commands.length - 1];
+  if (this.commands.length > 0) command = this.commands[this.commands.length - 1];
 
   if (arguments.length === 0) return command._alias;
 
@@ -1403,7 +1403,7 @@ exports.retrieveSourceMap = retrieveSourceMap;
 exports.install = function(options) {
   if ((options = options || {}).environment) {
     environment = options.environment;
-    if (["node", "browser", "auto"].indexOf(environment) === -1)
+    if (["node", "browser", "auto"].indexOf(environment) < 0)
       throw new Error("environment " + environment + " was unknown. Available options are {auto, browser, node}");
   }
 
