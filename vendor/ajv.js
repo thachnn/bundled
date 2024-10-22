@@ -556,7 +556,7 @@ module.exports = function (data, opts) {
 
     if (node === null) return 'null';
 
-    if (seen.indexOf(node) !== -1) {
+    if (seen.indexOf(node) > -1) {
       if (cycles) return JSON.stringify('__cycle__');
       throw new TypeError('Converting circular structure to JSON');
     }
@@ -678,7 +678,7 @@ module.exports = function (it, $keyword, _$ruleType) {
     $typeSchema = it.schema.type,
     $typeIsArray = Array.isArray($typeSchema);
   if ($typeSchema && it.opts.nullable && it.schema.nullable === true)
-    if ($typeIsArray) $typeSchema.indexOf('null') != -1 || ($typeSchema = $typeSchema.concat('null'));
+    if ($typeIsArray) $typeSchema.indexOf('null') > -1 || ($typeSchema = $typeSchema.concat('null'));
     else if ($typeSchema != 'null') {
       $typeSchema = [$typeSchema, 'null'];
       $typeIsArray = true;
@@ -2928,7 +2928,7 @@ module.exports = function (it, $keyword, $ruleType) {
     out += ' (';
     if ($unknownFormats != 'ignore') {
       out += ' (' + $schemaValue + ' && !' + $format + ' ';
-      if ($allowUnknown) out += ' && self._opts.unknownFormats.indexOf(' + $schemaValue + ') == -1 ';
+      if ($allowUnknown) out += ' && self._opts.unknownFormats.indexOf(' + $schemaValue + ') < 0 ';
 
       out += ') || ';
     }

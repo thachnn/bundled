@@ -148,7 +148,7 @@ function instr(id, object, args, namedArgs) {
 
   if (object !== void 0) node.object = object;
 
-  if (namedArgs !== void 0 && Object.keys(namedArgs).length !== 0) node.namedArgs = namedArgs;
+  if (namedArgs !== void 0 && Object.keys(namedArgs).length > 0) node.namedArgs = namedArgs;
 
   return node;
 }

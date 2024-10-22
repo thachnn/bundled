@@ -1630,7 +1630,7 @@ Emitter.prototype.removeEventListener = function(event, fn) {
       break;
     }
 
-  callbacks.length !== 0 || delete this._callbacks['$' + event];
+  callbacks.length > 0 || delete this._callbacks['$' + event];
 
   return this;
 };
@@ -3436,7 +3436,7 @@ module.exports = function(regexpStr) {
         break;
 
       case ')':
-        groupStack.length !== 0 ||
+        groupStack.length > 0 ||
           util.error(regexpStr, 'Unmatched ) at column ' + (i - 1));
 
         last = (lastGroup = groupStack.pop()).options
@@ -3457,7 +3457,7 @@ module.exports = function(regexpStr) {
       case '{':
         var min, max, rs = /^(\d+)(,(\d+)?)?}/.exec(str.slice(i));
         if (rs !== null) {
-          last.length !== 0 || repeatErr(i);
+          last.length > 0 || repeatErr(i);
 
           min = parseInt(rs[1], 10);
           max = rs[2] ? (rs[3] ? parseInt(rs[3], 10) : Infinity) : min;
@@ -3469,19 +3469,19 @@ module.exports = function(regexpStr) {
         break;
 
       case '?':
-        last.length !== 0 || repeatErr(i);
+        last.length > 0 || repeatErr(i);
 
         last.push({ type: types.REPETITION, min: 0, max: 1, value: last.pop() });
         break;
 
       case '+':
-        last.length !== 0 || repeatErr(i);
+        last.length > 0 || repeatErr(i);
 
         last.push({ type: types.REPETITION, min: 1, max: Infinity, value: last.pop() });
         break;
 
       case '*':
-        last.length !== 0 || repeatErr(i);
+        last.length > 0 || repeatErr(i);
 
         last.push({ type: types.REPETITION, min: 0, max: Infinity, value: last.pop() });
         break;
@@ -4515,7 +4515,7 @@ utils.isInside = function(state, node, type) {
       var key = keys[idx],
         val = state.inside[key];
 
-      if (Array.isArray(val) && val.length !== 0 && type.test(key)) return true;
+      if (Array.isArray(val) && val.length > 0 && type.test(key)) return true;
     }
   }
   return false;
@@ -5000,7 +5000,7 @@ module.exports = function hasValue(val) {
       return true;
     case 'string':
     case 'arguments':
-      return val.length !== 0;
+      return val.length > 0;
     case 'error':
       return val.message !== '';
     case 'array':

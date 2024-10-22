@@ -794,7 +794,7 @@ function finish(self) {
 
   for (var i = 0, l = self.matches.length; i < l; i++) {
     var matches = self.matches[i]
-    if (matches && Object.keys(matches).length !== 0) {
+    if (matches && Object.keys(matches).length > 0) {
       var m = Object.keys(matches)
       nou
         ? all.push.apply(all, m)

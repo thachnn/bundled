@@ -186,7 +186,7 @@ function make() {
   this.debug(this.pattern, set)
 
   set = set.filter(function (s) {
-    return s.indexOf(false) === -1
+    return s.indexOf(false) < 0
   })
 
   this.debug(this.pattern, set)

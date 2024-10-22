@@ -7452,7 +7452,7 @@ DERNode.prototype._encodeInt = function (num, values) {
 
   if (Buffer.isBuffer(num)) {
     var size = num.length;
-    num.length !== 0 || size++;
+    num.length > 0 || size++;
 
     var out = new Buffer(size);
     num.copy(out);
@@ -12757,7 +12757,7 @@ Node.prototype._useArgs = function (args) {
     return !(arg instanceof this.constructor);
   }, this);
 
-  if (children.length !== 0) {
+  if (children.length > 0) {
     assert(state.children === null);
     state.children = children;
 
@@ -12765,7 +12765,7 @@ Node.prototype._useArgs = function (args) {
       child._baseState.parent = this;
     }, this);
   }
-  if (args.length !== 0) {
+  if (args.length > 0) {
     assert(state.args === null);
     state.args = args;
     state.reverseArgs = args.map(function (arg) {

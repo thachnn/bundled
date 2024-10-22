@@ -198,7 +198,7 @@ Url.prototype.parse = function(url, parseQueryString, slashesDenoteHost) {
   if (!unsafeProtocol[lowerProto])
     for (i = 0, l = autoEscape.length; i < l; i++) {
       var ae = autoEscape[i];
-      if (rest.indexOf(ae) === -1) continue;
+      if (rest.indexOf(ae) < 0) continue;
       var esc = encodeURIComponent(ae);
       if (esc === ae) esc = escape(ae);
 
@@ -256,7 +256,7 @@ Url.prototype.format = function() {
   if (this.host) host = auth + this.host;
   else if (this.hostname) {
     host = auth +
-      (this.hostname.indexOf(':') === -1 ? this.hostname : '[' + this.hostname + ']');
+      (this.hostname.indexOf(':') < 0 ? this.hostname : '[' + this.hostname + ']');
     if (this.port) host += ':' + this.port;
   }
 

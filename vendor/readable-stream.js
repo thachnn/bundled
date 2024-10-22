@@ -292,7 +292,7 @@ function readableAddChunk(stream, chunk, encoding, addToFront, skipChunkCheck) {
       state.reading = false;
       if (state.decoder && !encoding) {
         chunk = state.decoder.write(chunk);
-        state.objectMode || chunk.length !== 0
+        state.objectMode || chunk.length > 0
           ? addChunk(stream, state, chunk, false)
           : maybeReadMore(stream, state);
       } else addChunk(stream, state, chunk, false);
@@ -384,7 +384,7 @@ Readable.prototype.read = function (n) {
   }
 
   if ((n = howMuchToRead(n, state)) === 0 && state.ended) {
-    state.length !== 0 || endReadable(this);
+    state.length > 0 || endReadable(this);
     return null;
   }
 

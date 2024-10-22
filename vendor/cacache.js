@@ -1402,7 +1402,7 @@ var types = {
 
 function addSchema(schema, arity) {
   var group = (arity[schema.length] = arity[schema.length] || [])
-  group.indexOf(schema) !== -1 || group.push(schema)
+  group.indexOf(schema) < 0 && group.push(schema)
 }
 
 var validate = (module.exports = function (rawSchemas, args) {
@@ -2057,7 +2057,7 @@ function RunQueue(opts) {
 RunQueue.prototype = {}
 
 RunQueue.prototype.run = function () {
-  if (arguments.length !== 0) throw new Error('RunQueue.run takes no arguments')
+  if (arguments.length > 0) throw new Error('RunQueue.run takes no arguments')
   var self = this,
     deferred = this.deferred
   if (!deferred.promise)

@@ -1803,7 +1803,7 @@ PromiseArray.prototype._init = function init(_, resolveValueIfEmpty) {
     return;
   }
 
-  values.length !== 0
+  values.length > 0
     ? this._iterate(values)
 
     : resolveValueIfEmpty === -5

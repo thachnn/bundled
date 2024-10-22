@@ -557,7 +557,7 @@ function arrayIndexOf(arr, val, byteOffset, encoding, dir) {
 }
 
 Buffer.prototype.includes = function (val, byteOffset, encoding) {
-  return this.indexOf(val, byteOffset, encoding) !== -1
+  return this.indexOf(val, byteOffset, encoding) > -1
 }
 
 Buffer.prototype.indexOf = function (val, byteOffset, encoding) {

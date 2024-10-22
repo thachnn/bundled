@@ -318,7 +318,7 @@ http.request = function (opts, cb) {
     port = opts.port,
     path = opts.path || '/'
 
-  if (host && host.indexOf(':') !== -1) host = '[' + host + ']'
+  if (host && host.indexOf(':') > -1) host = '[' + host + ']'
 
   opts.url = (host ? protocol + '//' + host : '') + (port ? ':' + port : '') + path
   opts.method = (opts.method || 'GET').toUpperCase()
@@ -437,7 +437,7 @@ inherits(ClientRequest, stream.Writable)
 ClientRequest.prototype.setHeader = function (name, value) {
   var self = this,
     lowerName = name.toLowerCase()
-  if (unsafeHeaders.indexOf(lowerName) !== -1) return
+  if (unsafeHeaders.indexOf(lowerName) > -1) return
 
   self._headers[lowerName] = { name: name, value: value }
 }

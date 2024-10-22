@@ -1090,7 +1090,7 @@ module.exports = function defFunc(ajv) {
     compile: function (schema, parentSchema) {
       var cfg;
 
-      if (schema.indexOf('toEnumCase') !== -1) {
+      if (schema.indexOf('toEnumCase') > -1) {
         cfg = {hash: {}};
 
         if (!parentSchema.enum)

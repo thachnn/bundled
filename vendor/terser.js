@@ -6439,6 +6439,10 @@ AST_Symbol.DEFMETHOD("mark_enclosed", function() {
   }
 });
 
+/**
+ * @method reference
+ * @memberof AST_Symbol#
+ */
 AST_Symbol.DEFMETHOD("reference", function() {
   this.definition().references.push(this);
   this.mark_enclosed();
@@ -7307,6 +7311,10 @@ class Compressor extends TreeWalker {
 }
 
 function def_optimize(node, optimizer) {
+  /**
+   * @method optimize
+   * @memberof AST_Node#
+   */
   node.DEFMETHOD("optimize", function(compressor) {
     var self = this;
     if (has_flag(self, OPTIMIZED)) return self;
@@ -11428,7 +11436,7 @@ def_optimize(AST_Call, function(/** (AST_Call|AST_Node) */ self, compressor) {
       !can_inject_vars(block_scoped, inline >= 3 && safe_to_inject) ||
       !can_inject_args(block_scoped, inline >= 2 && safe_to_inject) ||
       !can_inject_args_values() ||
-      (in_loop && in_loop.length != 0 && is_reachable(fn, in_loop))
+      (in_loop && in_loop.length > 0 && is_reachable(fn, in_loop))
     );
   }
 

@@ -3873,3 +3873,278 @@ exports.tokenizer = tokenizer;
 exports.version = version;
 
 Object.defineProperty(exports, "__esModule", {value: true});
+
+function privateClassElements(Parser) {
+
+var super$ = Parser.prototype
+if (super$.parsePrivateName) return Parser
+
+var pp, acorn = Parser.acorn
+pp = Parser.prototype = Object.create(super$)
+
+pp._branch = function() {
+  this.__branch = this.__branch || new Parser({ecmaVersion: this.options.ecmaVersion}, this.input)
+  this.__branch.end = this.end
+  this.__branch.pos = this.pos
+  this.__branch.type = this.type
+  this.__branch.value = this.value
+  this.__branch.containsEsc = this.containsEsc
+  return this.__branch
+}
+
+pp.parsePrivateClassElementName = function(element) {
+  element.computed = false
+  element.key = this.parsePrivateName()
+  element.key.name != "constructor" ||
+    this.raise(element.key.start, "Classes may not have a private element named constructor")
+  var accept = {get: "set", set: "get"}[element.kind],
+    privateBoundNames = this._privateBoundNames
+  hasOwnProperty.call(privateBoundNames, element.key.name) && privateBoundNames[element.key.name] !== accept &&
+    this.raise(element.start, "Duplicate private element")
+
+  privateBoundNames[element.key.name] = element.kind || true
+  delete this._unresolvedPrivateNames[element.key.name]
+  return element.key
+}
+
+pp.parsePrivateName = function() {
+  var node = this.startNode()
+  node.name = this.value
+  this.next()
+  this.finishNode(node, "PrivateName")
+  this.options.allowReserved != "never" || this.checkUnreserved(node)
+  return node
+}
+
+pp.getTokenFromCode = function(code) {
+  if (code !== 35) return super$.getTokenFromCode.apply(this, arguments)
+
+  ++this.pos
+  var word = this.readWord1()
+  return this.finishToken(this.privateNameToken, word)
+}
+
+pp.parseClass = function(node, _isStatement) {
+  var oldOuterPrivateBoundNames = this._outerPrivateBoundNames
+  this._outerPrivateBoundNames = this._privateBoundNames
+  this._privateBoundNames = Object.create(this._privateBoundNames || null)
+  var oldOuterUnresolvedPrivateNames = this._outerUnresolvedPrivateNames
+  this._outerUnresolvedPrivateNames = this._unresolvedPrivateNames
+  this._unresolvedPrivateNames = Object.create(null)
+
+  var _return = super$.parseClass.apply(this, arguments),
+
+    unresolvedPrivateNames = this._unresolvedPrivateNames
+  this._privateBoundNames = this._outerPrivateBoundNames
+  this._outerPrivateBoundNames = oldOuterPrivateBoundNames
+  this._unresolvedPrivateNames = this._outerUnresolvedPrivateNames
+  this._outerUnresolvedPrivateNames = oldOuterUnresolvedPrivateNames
+  if (!this._unresolvedPrivateNames) {
+    var names = Object.keys(unresolvedPrivateNames)
+    if (names.length) {
+      names.sort(function(n1, n2) { return unresolvedPrivateNames[n1] - unresolvedPrivateNames[n2] })
+      this.raise(unresolvedPrivateNames[names[0]], "Usage of undeclared private name")
+    }
+  } else Object.assign(this._unresolvedPrivateNames, unresolvedPrivateNames)
+  return _return
+}
+
+pp.parseClassSuper = function(_node) {
+  var privateBoundNames = this._privateBoundNames
+  this._privateBoundNames = this._outerPrivateBoundNames
+  var unresolvedPrivateNames = this._unresolvedPrivateNames
+  this._unresolvedPrivateNames = this._outerUnresolvedPrivateNames
+  var _return = super$.parseClassSuper.apply(this, arguments)
+  this._privateBoundNames = privateBoundNames
+  this._unresolvedPrivateNames = unresolvedPrivateNames
+  return _return
+}
+
+pp.parseSubscript = function(base, startPos, startLoc, noCalls, _maybeAsyncArrow) {
+  if (!this.eat(acorn.tokTypes.dot)) return super$.parseSubscript.apply(this, arguments)
+
+  var node = this.startNodeAt(startPos, startLoc)
+  node.object = base
+  node.computed = false
+  if (this.type == this.privateNameToken) {
+    base.type != "Super" || this.raise(this.start, "Cannot access private element on super")
+
+    node.property = this.parsePrivateName()
+    if (!this._privateBoundNames || !this._privateBoundNames[node.property.name]) {
+      this._unresolvedPrivateNames || this.raise(node.property.start, "Usage of undeclared private name")
+
+      this._unresolvedPrivateNames[node.property.name] = node.property.start
+    }
+  } else node.property = this.parseIdent(true)
+
+  return this.finishNode(node, "MemberExpression")
+}
+
+pp.parseMaybeUnary = function(refDestructuringErrors, _sawUnary) {
+  var _return = super$.parseMaybeUnary.apply(this, arguments)
+  _return.operator != "delete" ||
+    _return.argument.type != "MemberExpression" || _return.argument.property.type != "PrivateName" ||
+    this.raise(_return.start, "Private elements may not be deleted")
+
+  return _return
+}
+
+pp.privateNameToken = new acorn.TokenType("privateName")
+return Parser
+
+}
+function classFields(Parser) {
+
+var tt = Parser.acorn.tokTypes,
+
+  pp, super$ = (Parser = privateClassElements(Parser)).prototype
+pp = Parser.prototype = Object.create(super$)
+
+pp._maybeParseFieldValue = function(field) {
+  if (this.eat(tt.eq)) {
+    var oldInFieldValue = this._inFieldValue
+    this._inFieldValue = true
+    field.value = this.parseExpression()
+    this._inFieldValue = oldInFieldValue
+  } else field.value = null
+}
+
+pp.parseClassElement = function(_constructorAllowsSuper) {
+  if (this.options.ecmaVersion < 8 || (
+    this.type != tt.name && !this.type.keyword && this.type != this.privateNameToken &&
+    this.type != tt.bracketL && this.type != tt.string && this.type != tt.num
+  ))
+    return super$.parseClassElement.apply(this, arguments)
+
+  var branch = this._branch()
+  if (branch.type == tt.bracketL) {
+    var count = 0
+    do {
+      branch.eat(tt.bracketL) ? ++count : branch.eat(tt.bracketR) ? --count : branch.next()
+    } while (count > 0)
+  } else branch.next()
+  if (branch.type != tt.eq && !branch.canInsertSemicolon() && branch.type != tt.semi)
+    return super$.parseClassElement.apply(this, arguments)
+
+  var node = this.startNode()
+  this.type == this.privateNameToken ? this.parsePrivateClassElementName(node) : this.parsePropertyName(node)
+
+  ;((node.key.type === "Identifier" && node.key.name === "constructor") ||
+    (node.key.type === "Literal" && node.key.value === "constructor")) &&
+    this.raise(node.key.start, "Classes may not have a field called constructor")
+
+  this.enterScope(67)
+  this._maybeParseFieldValue(node)
+  this.exitScope()
+  this.finishNode(node, "FieldDefinition")
+  this.semicolon()
+  return node
+}
+
+pp.parseIdent = function(liberal, _isBinding) {
+  var ident = super$.parseIdent.apply(this, arguments)
+  this._inFieldValue && ident.name == "arguments" &&
+    this.raise(ident.start, "A class field initializer may not contain arguments")
+
+  return ident
+}
+
+return Parser
+
+}
+function staticClassFeatures(Parser) {
+
+var tt = Parser.acorn.tokTypes,
+
+  pp, super$ = (Parser = privateClassElements(Parser)).prototype
+pp = Parser.prototype = Object.create(super$)
+
+pp._maybeParseStaticField = function(field) {
+  if (this.eat(tt.eq)) {
+    var oldInFieldValue = this._inStaticFieldScope
+    this._inStaticFieldScope = this.currentThisScope()
+    field.value = this.parseExpression()
+    this._inStaticFieldScope = oldInFieldValue
+  } else field.value = null
+}
+
+pp.parseClassElement = function(_constructorAllowsSuper) {
+  if (this.options.ecmaVersion < 8 || !this.isContextual("static"))
+    return super$.parseClassElement.apply(this, arguments)
+
+  var branch = this._branch()
+  branch.next()
+  if ([tt.name, tt.bracketL, tt.string, tt.num, this.privateNameToken].indexOf(branch.type) < 0)
+    return super$.parseClassElement.apply(this, arguments)
+
+  if (branch.type == tt.bracketL) {
+    var count = 0
+    do {
+      branch.eat(tt.bracketL) ? ++count : branch.eat(tt.bracketR) ? --count : branch.next()
+    } while (count > 0)
+  } else branch.next()
+  if (branch.type != tt.eq && !branch.canInsertSemicolon() && branch.type != tt.semi)
+    return super$.parseClassElement.apply(this, arguments)
+
+  var node = this.startNode()
+  node.static = this.eatContextual("static")
+  this.type == this.privateNameToken ? this.parsePrivateClassElementName(node) : this.parsePropertyName(node)
+
+  ;((node.key.type === "Identifier" && node.key.name === "constructor") ||
+    (node.key.type === "Literal" && !node.computed && node.key.value === "constructor")) &&
+    this.raise(node.key.start, "Classes may not have a field called constructor")
+
+  ;(node.key.name || node.key.value) !== "prototype" || node.computed ||
+    this.raise(node.key.start, "Classes may not have a static property named prototype")
+
+  this._maybeParseStaticField(node)
+  this.finishNode(node, "FieldDefinition")
+  this.semicolon()
+  return node
+}
+
+pp.parsePropertyName = function(prop) {
+  prop.static && this.type == this.privateNameToken
+    ? this.parsePrivateClassElementName(prop)
+    : super$.parsePropertyName.apply(this, arguments)
+}
+
+pp.parseIdent = function(liberal, _isBinding) {
+  var ident = super$.parseIdent.apply(this, arguments)
+  this._inStaticFieldScope && this.currentThisScope() === this._inStaticFieldScope && ident.name == "arguments" &&
+    this.raise(ident.start, "A static class field initializer may not contain arguments")
+
+  return ident
+}
+
+return Parser
+
+}
+function exportNsFrom(Parser) {
+
+var tt = Parser.acorn.tokTypes,
+
+  super$ = Parser.prototype
+
+;(Parser.prototype = Object.create(super$)).parseExport = function(node, exports) {
+  skipWhiteSpace.lastIndex = this.pos
+  var skip = skipWhiteSpace.exec(this.input)
+  if (this.input.charAt(this.pos + skip[0].length) !== "*") return super$.parseExport.apply(this, arguments)
+
+  this.next()
+  this.expect(tt.star)
+  if (this.eatContextual("as")) {
+    node.exported = this.parseIdent(true)
+    this.checkExport(exports, node.exported.name, node.exported.start)
+  } else node.exported = null
+  this.expectContextual("from")
+  this.type === tt.string || this.unexpected()
+  node.source = this.parseExprAtom()
+  this.semicolon()
+  return this.finishNode(node, "ExportAllDeclaration")
+}
+
+return Parser
+
+}
+Parser.extend(classFields, staticClassFeatures, exportNsFrom);

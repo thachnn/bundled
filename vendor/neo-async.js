@@ -3648,7 +3648,7 @@ function baseQueue(isQueue, worker, concurrency, payload) {
       var task = q._tasks.shift();
       workers++;
       workersList.push(task);
-      q._tasks.length !== 0 || q.empty();
+      q._tasks.length > 0 || q.empty();
 
       workers !== q.concurrency || q.saturated();
 
@@ -3666,7 +3666,7 @@ function baseQueue(isQueue, worker, concurrency, payload) {
 
       workers++;
       nativePush.apply(workersList, tasks);
-      q._tasks.length !== 0 || q.empty();
+      q._tasks.length > 0 || q.empty();
 
       workers !== q.concurrency || q.saturated();
 

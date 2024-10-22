@@ -405,12 +405,12 @@ function parse(uriString) {
     if (isNaN(components.port)) components.port = matches[5];
   } else {
     components.scheme = matches[1] || void 0;
-    components.userinfo = uriString.indexOf("@") !== -1 ? matches[3] : void 0;
-    components.host = uriString.indexOf("//") !== -1 ? matches[4] : void 0;
+    components.userinfo = uriString.indexOf("@") > -1 ? matches[3] : void 0;
+    components.host = uriString.indexOf("//") > -1 ? matches[4] : void 0;
     components.port = parseInt(matches[5], 10);
     components.path = matches[6] || "";
-    components.query = uriString.indexOf("?") !== -1 ? matches[7] : void 0;
-    components.fragment = uriString.indexOf("#") !== -1 ? matches[8] : void 0;
+    components.query = uriString.indexOf("?") > -1 ? matches[7] : void 0;
+    components.fragment = uriString.indexOf("#") > -1 ? matches[8] : void 0;
     if (isNaN(components.port)) components.port = uriString.match(/\/\/(?:.|\n)*:(?:\/|\?|#|$)/) ? matches[4] : void 0;
   }
   if (components.host) components.host = _normalizeIPv6(_normalizeIPv4(components.host, protocol), protocol);

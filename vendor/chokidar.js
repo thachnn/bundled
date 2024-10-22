@@ -1659,7 +1659,7 @@ module.exports = (ast, options = {}) => {
       let args = utils.reduce(node.nodes),
         range = fill(...args, { ...options, wrap: false, toRegex: true });
 
-      if (range.length !== 0)
+      if (range.length > 0)
         return args.length > 1 && range.length > 1 ? `(${range})` : range;
     }
 
