@@ -3166,11 +3166,11 @@ module.exports.defaults = defaultOptions;
 
 },
 // 20
-function (module, exports, __webpack_require__) {
+function (module) {
 
 module.exports = function (exported) {
-  for (var mod, i = 0, files = Object.keys(__webpack_require__.c); i < files.length; i++)
-    if ((mod = __webpack_require__.c[files[i]]).exports === exported) return mod
+  for (var mod, i = 0, files = Object.keys(require.cache); i < files.length; i++)
+    if ((mod = require.cache[files[i]]).exports === exported) return mod
 
   return null
 }
