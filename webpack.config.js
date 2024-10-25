@@ -22,7 +22,7 @@ const baseTerserOpts = require('./scripts/terser.config.json');
  * @returns {Configuration}
  */
 const webpackConfig = (name, config, clean = name.charAt(0) !== '/') => {
-  config = {
+  const defaults = {
     mode: 'production',
     name: clean ? name : name.substring(1),
     output: { path: path.join(__dirname, 'dist', clean ? name : '') },
@@ -38,28 +38,31 @@ const webpackConfig = (name, config, clean = name.charAt(0) !== '/') => {
     },
     plugins: [
       new ReplaceCodePlugin({
-        search: /(\n\/\*{6}\/[ \t]*__webpack_require__)\.d *= *function\b[\s\S]*?\1\.p *= *"";/,
-        replace: '',
+        search: /((\n\/\*{6}\/[ \t]*)__webpack_require__)\.d *= *function\b[\s\S]*?\1\.p *= *"";/,
+        replace:
+          '$1.d = function(exports, definition) {$2\tfor (var key in definition)$2\t\t' +
+          'Object.defineProperty(exports, key, { enumerable: true, get: definition[key] });$2};',
       }),
     ],
-  }.mergeDeep(config);
+  };
+  config = mergeDeep(defaults, config);
 
   config.optimization.minimizer.length > 1 && config.optimization.minimizer.shift();
   return config;
 };
 
-const newTerserPlugin = (opts = {}) =>
-  new TerserPlugin(
-    {
-      cache: true,
-      extractComments: { condition: /(^|\n)[\s*]*@(preserve|lic(ense)?|cc_on)\b|^\**\s*!(?!\s*\**$)/i, banner: false },
-      // parallel: true,
-      terserOptions: { output: { comments: /^\s*\d+\s*$/ } }.mergeDeep(baseTerserOpts),
-    }.mergeDeep(opts)
-  );
+const newTerserPlugin = (opts = {}) => {
+  const defaults = {
+    cache: true,
+    extractComments: { condition: /(^|\n)[\s*]*@(preserve|lic(ense)?|cc_on)\b|^\**\s*!\s*\S/i, banner: false },
+    // parallel: true,
+    terserOptions: mergeDeep({ output: { comments: /^\s*\d+\s*$/ } }, baseTerserOpts),
+  };
+  return new TerserPlugin(mergeDeep(defaults, opts));
+};
 
 const minifyContent = (content, opts = null) =>
-  minify(String(content), mergeDeep(baseTerserOpts, typeof opts == 'object' ? opts : null)).code;
+  minify(String(content), mergeDeep({}, baseTerserOpts, typeof opts == 'object' ? opts : null)).code;
 
 /** @param {(Array.<(ObjectPattern|string)>|ObjectPattern)} patterns */
 const newCopyPlugin = (patterns) => new CopyPlugin([].concat(patterns));
@@ -68,7 +71,7 @@ const newCopyPlugin = (patterns) => new CopyPlugin([].concat(patterns));
 
 Object.defineProperty(String.prototype, 'replaceBulk', {
   value: /** @param {...Array.<(string|RegExp)>} _args */ function (_args) {
-    return Array.prototype.reduce.call(arguments, (s, i) => s.replace(i[0], i[1]), this);
+    return Array.prototype.slice.call(arguments).reduce((s, i) => s.replace(i[0], i[1]), this);
   },
 });
 
@@ -96,12 +99,11 @@ const commonjs1Patches = [
 const generateLibsIndex = () => {
   const yarnDeps = require('./scripts/yarn-deps.json');
   return (
-    'module.exports = {\n  __proto__: null,\n' +
+    '__webpack_require__.d(exports, {\n' +
     yarnDeps
-      .map((p) => [p.replace(/^@[^/]*\//, ''), p])
-      .map(([k, v]) => `  get ${/\W/.test(k) ? `'${k}'` : k}() { return require('${v}'); }`)
+      .map((v, k) => `  ${/\W/.test((k = v.replace(/^@[^/]*\//, ''))) ? `'${k}'` : k}: () => require('${v}')`)
       .join(',\n') +
-    '\n};'
+    '\n});\nObject.defineProperty(exports, "__wpreq__", { value: __webpack_require__ });'
   );
 };
 
@@ -111,11 +113,11 @@ const usedRxjsFn = (
 ).replace(/\s+/g, '|');
 
 const usedLodashFn = (
-  'assign assignIn constant defaults filter flatten keys keysIn map memoize omit property set uniq extend clone eq ' +
-  'find findIndex get hasIn identity isArguments isArray isArrayLike isBoolean isBuffer isFunction isLength isMap ' +
-  'isNumber isObject isObjectLike isPlainObject isSet isString isSymbol isTypedArray last stubArray stubFalse noop ' +
-  'sum toFinite toInteger toNumber toString'
-).split(/\s+/);
+  'assign assignIn constant defaults filter flatten keys keysIn map memoize omit property set toArray uniq values ' +
+  'extend clone eq find findIndex get hasIn identity isArguments isArray isArrayLike isBoolean isBuffer isFunction ' +
+  'isLength isMap isNumber isObject isObjectLike isPlainObject isSet isString isSymbol isTypedArray last stubArray ' +
+  'stubFalse noop sum toFinite toInteger toNumber toString'
+).replace(/\s+/g, '|');
 
 //
 module.exports = [
@@ -124,8 +126,10 @@ module.exports = [
     output: { libraryTarget: 'commonjs2' },
     externals: {
       'os-tmpdir': ['os', 'tmpdir'],
-      'string_decoder/': 'string_decoder',
+      'lodash.clone': 'var __webpack_require__("./node_modules/lodash/lodash.js").clone',
+      'lodash.toarray': 'var __webpack_require__("./node_modules/lodash/lodash.js").toArray',
       inherits: ['util', 'inherits'],
+      'path-parse': ['path', 'parse'],
     },
     module: {
       rules: [
@@ -146,12 +150,9 @@ module.exports = [
           options: { search: new RegExp(`^export *{[^{}]*\\b(?!(${usedRxjsFn})\\b)\\w+ *}`, 'gm'), replace: '//$&' },
         },
         {
-          test: /\bnode_modules[\\/]lodash\b.index\.js$/i,
+          test: /\bnode_modules[\\/]lodash\b.lodash\.js$/i,
           loader: 'webpack/lib/replace-loader',
-          options: {
-            search: /[\s\S]*/,
-            replace: `module.exports = {\n${usedLodashFn.map((f) => `  ${f}: require('./${f}')`).join(',\n')}\n};`,
-          },
+          options: { search: new RegExp(`^export *{[^{}]*\\b(?!(${usedLodashFn})\\b)\\w+ *}`, 'gm'), replace: '//$&' },
         },
         {
           test: /\bnode_modules[\\/]jsprim\b.lib.jsprim\.js$/i,
@@ -166,6 +167,34 @@ module.exports = [
           test: /\bnode_modules[\\/](mz\b.fs|thenify\b.index)\.js$/i,
           loader: 'webpack/lib/replace-loader',
           options: { search: /^var Promise *= *require\(['"]any-promise\b/m, replace: '//$&' },
+        },
+        {
+          test: /\bnode_modules[\\/]currently-unhandled\b.core\.js$/i,
+          loader: 'webpack/lib/replace-loader',
+          options: { search: /\brequire\(['"]array-find-index['"]\)/, replace: 'Function.call.bind([].findIndex)' },
+        },
+        {
+          test: /\bnode_modules[\\/](cli-table3|query-string)\b.*\.js$/i,
+          loader: 'webpack/lib/replace-loader',
+          options: { search: /\brequire\(['"]object-assign['"]\)/, replace: 'Object.assign' },
+        },
+        {
+          test: /\bnode_modules[\\/]readable-stream\b.lib\b.*\.js$/i,
+          loader: 'webpack/lib/replace-loader',
+          options: {
+            multiple: [
+              { search: /^(var (\w+) *=).*['"]core-util-is\b.*\n\2\.inherits *=.*/m, replace: "$1 require('util');" },
+              { search: /\b(internal|debug)Util\b(?! *=)/g, replace: 'util' },
+              { search: /\brequire\(['"]process-nextick-args\b.*?\)/, replace: 'process' },
+              { search: /=\s*Object\.keys\s*\|\|/, replace: '$& null &&' },
+              { search: /\b(require)\([^()]*\/stream\b.*?\)/, replace: "$1('stream')" },
+            ],
+          },
+        },
+        {
+          test: /\bnode_modules[\\/]fill-range\b.index\.js$/i,
+          loader: 'webpack/lib/replace-loader',
+          options: { search: /\brequire\(['"](\w+)-string['"]\)/, replace: 'Function.call.bind(String.prototype.$1)' },
         },
         // Output optimization
         {
@@ -184,8 +213,8 @@ module.exports = [
               {
                 search: /^Object\.defineProperty\(exports\b/m,
                 replace: (m) =>
-                  m.replaceWithFile(/^/, 'tslib', (s) =>
-                    s.match(/^([ \t]*)var extendStatics *=[\s\S]*?\n\1};$/m)[0].replace(/;(\s+__extends *=)/, ',$1')
+                  m.replaceWithFile(/^/, 'tslib/tslib.es6', (s) =>
+                    s.replace(/^[\s\S]*\n(var extendStatics *=[\s\S]*?\n)export +([\s\S]*?\n};?)[\s\S]*/, '$1$2\n')
                   ),
               },
               { search: /\b\w+Error_1\./g, replace: '' },
@@ -204,6 +233,51 @@ module.exports = [
           loader: 'webpack/lib/replace-loader',
           options: { search: /^(module\.)?exports\.(file|dir)\w* *=/gm, replace: '//$&' },
         },
+        /*{
+          test: /\bnode_modules[\\/]mime-types\b.index\.js$/i,
+          loader: 'webpack/lib/replace-loader',
+          options: { search: /^exports\.(charsets?|contentType|extension) *=/gm, replace: '//$&' },
+        },*/
+        {
+          test: /\bnode_modules[\\/]har-validator\b.lib.promise\.js$/i,
+          loader: 'webpack/lib/replace-loader',
+          options: {
+            multiple: [
+              {
+                search: /^exports\.(\w+) *=\s*function ?\(data\) *{\s*return validate\(('|")\1\2, *data\);?\s*};?\n+/gm,
+                replace: '',
+              },
+              {
+                search: /$/,
+                replace: 'Object.keys(schemas).forEach(name => {\n  exports[name] = data => validate(name, data)\n})\n',
+              },
+            ],
+          },
+        },
+        {
+          test: /\bnode_modules[\\/]har-schema\b.lib.index\.js$/i,
+          loader: 'webpack/lib/replace-loader',
+          options: { search: /^[ \t]*(?!(request|cookie|header|query|postData)\b)\w+: *require\b/gm, replace: '//$&' },
+        },
+        {
+          test: /\bnode_modules[\\/]sshpk\b.lib.((private-)?key|formats.dnssec)\.js$/i,
+          loader: 'webpack/lib/replace-loader',
+          options: {
+            multiple: [
+              { search: /= *(require\(['"]\.+\/dhe\b.*?\)|Key\.prototype\.createDiff\w+)/gm, replace: '= {}' },
+              { search: /^(PrivateKey\.generate|Key\.\w+\.createDiff\w+) *=.*{\n[\s\S]*?\n};?$/m, replace: '/*$&*/' },
+            ],
+          },
+        },
+        {
+          test: /\bnode_modules[\\/]http-signature\b.lib.(signer|utils)\.js$/i,
+          loader: 'webpack/lib/replace-loader',
+          options: {
+            search:
+              /^([ \t]*)(((is|create)Signer|(sshKey|finger|pemTo)\w+) *:|RequestSigner(\.\w+)+ *=).*{\n[\s\S]*?\n\1}[,;]?$/gm,
+            replace: '/*$&*/',
+          },
+        },
       ],
     },
     resolve: {
@@ -211,11 +285,16 @@ module.exports = [
       alias: {
         retry$: path.resolve(__dirname, 'node_modules/retry/lib/retry.js'),
         'node-emoji$': path.resolve(__dirname, 'node_modules/node-emoji/lib/emoji.js'),
-        lodash$: path.resolve(__dirname, 'node_modules/lodash/index.js'),
+        //
         'cli-table3$': path.resolve(__dirname, 'node_modules/cli-table3/src/table.js'),
-        'mime-db$': path.resolve(__dirname, 'node_modules/mime-db/db.json'),
         'colors/safe$': path.resolve(__dirname, 'node_modules/colors/lib/colors.js'),
+        'mime-db$': path.resolve(__dirname, 'node_modules/mime-db/db.json'),
         'http-signature$': path.resolve(__dirname, 'node_modules/http-signature/lib/signer.js'),
+        //
+        debug$: path.resolve(__dirname, 'node_modules/debug/src/node.js'),
+        uuid$: path.resolve(__dirname, 'node_modules/uuid/v4.js'),
+        resolve$: path.resolve(__dirname, 'node_modules/resolve/lib/sync.js'),
+        sshpk$: path.resolve(__dirname, 'node_modules/sshpk/lib/private-key.js'),
       },
     },
     stats: { modulesSort: 'index' },
@@ -243,14 +322,56 @@ module.exports = [
           to: 'bin/[name].js',
           transform: (s) => minifyContent(String(s).replace(/__dirname *\+ *('|")\//g, '$1')),
         },
-        { from: 'node_modules/v8-compile-cache/v8-compile-cache.js', to: 'lib/', transform: minifyContent },
+        { from: 'node_modules/webpack-cli/vendor/v8-compile-cache.js', to: 'lib/' },
       ]),
-      // __wpreq__
+      // Correct the bundled
+      new ReplaceCodePlugin({
+        search: /\b__webpack_require__\.r\((.*?)\)/g,
+        replace: 'Object.defineProperty($1, "__esModule", { value: true })',
+      }),
+      new ReplaceCodePlugin({
+        search: /^(.*\b__webpack_require__\.d\(.*?,).*\);(\n\1.*\);)*$/gm,
+        replace: (m, p1) =>
+          `${p1} {${m.replace(/^.*, ['"](.*?)['"], function ?\(\) ?{ return (.*?); }\);$/gm, ' $1: () => $2,')} });`,
+      }),
+      // Reduce the bundled size
+      new ReplaceCodePlugin([
+        { search: /^(\/\*{3}\/ )".*\b(lodash|_?esm?\d*)\b.*":[\s\S]*?\n\1}\),?$/gm, replace: renameEsmVars },
+      ]),
       /*new ReplaceCodePlugin({
         search: /(^\/\*{3}\/ |\b__webpack_require__\(.*?)"\.\/node_modules\/([^\n"]+)/gm,
         replace: (_, p1, p2) =>
           p1 + '"' + p2.replace(/(\/index\.js(on)?|\.js)$/, '').replace(/^([\w.-]+)\/(lib\/)?(?!request$)\1$/, '$1'),
       }),*/
+      //new ReplaceCodePlugin({ search: /^(\/\*{3}\/ \()function ?(\(module\b.*?\))/gm, replace: '$1$2 =>' }),
+      new ReplaceCodePlugin({ search: /\b__webpack_(exports)__\b/g, replace: '$1' }),
+      //new ReplaceCodePlugin({ search: /\b__webpack_require__\b/g, replace: '__wpreq__' }),
     ],
   }),
 ];
+
+// Optimize concatenated ESM
+function renameEsmVars(s) {
+  new Set(s.match(/\b_\w+__WEBPACK_IMPORTED_MODULE_\d+__\b/g)).forEach((m) => {
+    const p1 = m.replace(/^_(?:[a-z]+_)*(\w+)__WEBPACK_IMPORTED_MODULE(_\d+).*/, '$1$2');
+
+    new RegExp(`\\b${p1}\\b`).test(s) ? console.warn('>>', m) : (s = s.replace(new RegExp(`\\b${m}\\b`, 'g'), p1));
+  });
+
+  const count = new Map();
+
+  new Set(s.match(/\b(?:_[0-9a-z]+|[a-z][0-9a-z]*)_[a-z][0-9a-z]*\b/gi)).forEach((m) => {
+    if (m === 'node_modules' || m === m.toUpperCase()) return;
+
+    const p0 = m.replace(/^.*_/, '');
+    let i = count.get(p0),
+      p1 = i === undefined ? ((i = 0), p0) : p0 + '_' + ++i;
+
+    while (i < 50 && new RegExp(`^(?!([ \t]*//|/\\*{3}/ )).*\\b${p1}\\b(?![^'"]*['"][^'"]*$)`, 'm').test(s))
+      p1 = p0 + '_' + ++i;
+
+    i < 50 ? (count.set(p0, i), (s = s.replace(new RegExp(`\\b${m}\\b`, 'g'), p1))) : console.warn('>>', m);
+  });
+
+  return s;
+}

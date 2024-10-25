@@ -6,6 +6,11 @@
 -	get: assembleStyles
 -});
 +module.exports = assembleStyles();
+--- a/node_modules/chardet/index.js
++++ b/node_modules/chardet/index.js
+@@ -10 +10 @@ var utf8  = require('./encoding/utf8'),
+-var self = this;
++var self = module.exports;
 --- a/node_modules/form-data/lib/form_data.js
 +++ b/node_modules/form-data/lib/form_data.js
 @@ -9 +9 @@ var mime = require('mime-types');
@@ -49,21 +54,9 @@
 +  if (true) {
 @@ -1357 +1356,0 @@
 -}).call(this);
---- a/node_modules/lodash.clone/index.js
-+++ b/node_modules/lodash.clone/index.js
-@@ -89 +89 @@ var root = freeGlobal || freeSelf || Function('return this')();
--/** Detect free variable `exports`. */
-+/** Detect free variable `exports`.
-@@ -92 +92,0 @@ var freeExports = typeof exports == 'object' && exports && !exports.nodeType &&
--/** Detect free variable `module`. */
-@@ -95 +94,0 @@ var freeModule = freeExports && typeof module == 'object' && module && !module.n
--/** Detect the popular CommonJS extension `module.exports`. */
-@@ -323 +321 @@ var reIsNative = RegExp('^' +
--var Buffer = moduleExports ? root.Buffer : undefined,
-+var Buffer = true ? root.Buffer : undefined,
 --- a/node_modules/lodash/_cloneBuffer.js
 +++ b/node_modules/lodash/_cloneBuffer.js
-@@ -3 +3 @@ var root = require('./_root');
+@@ -3 +3 @@ import root from './_root.js';
 -/** Detect free variable `exports`. */
 +/** Detect free variable `exports`.
 @@ -6 +6,0 @@ var freeExports = typeof exports == 'object' && exports && !exports.nodeType &&
@@ -75,7 +68,7 @@
 +var Buffer = true ? root.Buffer : undefined,
 --- a/node_modules/lodash/_nodeUtil.js
 +++ b/node_modules/lodash/_nodeUtil.js
-@@ -3 +3 @@ var freeGlobal = require('./_freeGlobal');
+@@ -3 +3 @@ import freeGlobal from './_freeGlobal.js';
 -/** Detect free variable `exports`. */
 +/** Detect free variable `exports`.
 @@ -6 +6,0 @@ var freeExports = typeof exports == 'object' && exports && !exports.nodeType &&
@@ -90,7 +83,7 @@
 +    var types = /*freeModule && freeModule.require &&*/ module.require('util').types;
 --- a/node_modules/lodash/isBuffer.js
 +++ b/node_modules/lodash/isBuffer.js
-@@ -4 +4 @@ var root = require('./_root'),
+@@ -4 +4 @@ import stubFalse from './stubFalse.js';
 -/** Detect free variable `exports`. */
 +/** Detect free variable `exports`.
 @@ -7 +7,0 @@ var freeExports = typeof exports == 'object' && exports && !exports.nodeType &&
@@ -121,6 +114,18 @@
 -      values[_key - 1] = arguments[_key];
 -    }
 +    var values = Array.prototype.slice.call(arguments, 1);
+--- a/node_modules/resolve/lib/sync.js
++++ b/node_modules/resolve/lib/sync.js
+@@ -133,0 +133,2 @@ module.exports = function (x, options) {
++module.exports.core = core;
++module.exports.sync = module.exports;
+\ No newline at end of file
+--- a/node_modules/sshpk/lib/private-key.js
++++ b/node_modules/sshpk/lib/private-key.js
+@@ -254,0 +254,2 @@ PrivateKey._oldVersionDetect = function (obj) {
++PrivateKey.PrivateKey = PrivateKey;
++PrivateKey.parsePrivateKey = PrivateKey.parse;
+\ No newline at end of file
 --- a/node_modules/ssri/index.js
 +++ b/node_modules/ssri/index.js
 @@ -3 +3 @@
@@ -139,6 +144,11 @@
 +/*(function(nacl) {*/ var nacl = module.exports;
 @@ -2388 +2388,0 @@ nacl.setPRNG = function(fn) {
 -})(typeof module !== 'undefined' && module.exports ? module.exports : (self.nacl = self.nacl || {}));
+--- a/node_modules/uuid/v4.js
++++ b/node_modules/uuid/v4.js
+@@ -29 +29 @@ function v4(options, buf, offset) {
+-module.exports = v4;
++module.exports = v4.v4 = v4;
 --- a/node_modules/yarn/src/cli/commands/config.js
 +++ b/node_modules/yarn/src/cli/commands/config.js
 @@ -41 +41,3 @@ const CONFIG_KEYS = [
@@ -154,7 +164,7 @@
 +++ b/node_modules/yarn/src/cli/index.js
 @@ -29 +29 @@ import {ProcessTermError} from '../errors';
 -process.stdout.prependListener('error', err => {
-+(process.stdout.prependListener || process.stdout.on)('error', err => {
++process.stdout[typeof process.stdout.prependListener == 'function' ? 'prependListener' : 'on']('error', err => {
 @@ -137 +137,2 @@ export async function main({
    commander.option('--otp <otpcode>', 'one-time password for two factor authentication');
 +  commander.option('--package-date-limit <time>', 'only install package version that have release date before this');
@@ -325,3 +335,116 @@
            err = null;
 +        } else {
 +          res = arguments.length <= 2 ? arguments[1] : Array.prototype.slice.call(arguments, 1);
+--- a/node_modules/micromatch/index.js
++++ b/node_modules/micromatch/index.js
+@@ -63 +63 @@ function match(files, pattern, opts) {
+-  if (utils.typeOf(files) !== 'string' && !Array.isArray(files)) {
++  if (typeof files != 'string' && !Array.isArray(files)) {
+@@ -191 +191 @@ function isMatch(fp, pattern, opts) {
+-  if (utils.typeOf(pattern) === 'object') {
++  if (typeof pattern == 'object' && utils.toStr(pattern) === '[object Object]') {
+@@ -255 +255 @@ function matchKeys(obj, glob, options) {
+-  if (utils.typeOf(obj) !== 'object') {
++  if (obj == null || typeof obj != 'object') {
+@@ -386 +386 @@ function makeRe(glob, opts) {
+-  if (utils.typeOf(glob) !== 'string') {
++  if (typeof glob != 'string') {
+--- a/node_modules/micromatch/lib/utils.js
++++ b/node_modules/micromatch/lib/utils.js
+@@ -19 +19 @@ utils.isGlob = require('is-glob');
+-utils.typeOf = require('kind-of');
++utils.toStr = Function.call.bind(Object.prototype.toString);
+--- a/node_modules/performance-now/lib/performance-now.js
++++ b/node_modules/performance-now/lib/performance-now.js
+@@ -2 +2,0 @@
+-(function() {
+@@ -34 +33,0 @@
+-}).call(this);
+--- a/node_modules/randomatic/index.js
++++ b/node_modules/randomatic/index.js
+@@ -11 +11,0 @@ var isNumber = require('is-number');
+-var typeOf = require('kind-of');
+@@ -62 +61 @@ function randomatic(pattern, length, options) {
+-  if (typeOf(length) === 'object' && length.hasOwnProperty('chars')) {
++  if (length != null && typeof length == 'object' && length.hasOwnProperty('chars')) {
+--- a/node_modules/readable-stream/lib/_stream_readable.js
++++ b/node_modules/readable-stream/lib/_stream_readable.js
+@@ -626,2 +626,2 @@ Readable.prototype.pipe = function (dest, pipeOpts) {
+-        debug('false write response, pause', src._readableState.awaitDrain);
+-        src._readableState.awaitDrain++;
++        debug('false write response, pause', state.awaitDrain);
++        state.awaitDrain++;
+@@ -721 +721 @@ Readable.prototype.unpipe = function (dest) {
+-      dests[i].emit('unpipe', this, unpipeInfo);
++      dests[i].emit('unpipe', this, { hasUnpiped: false });
+--- a/node_modules/readable-stream/lib/_stream_writable.js
++++ b/node_modules/readable-stream/lib/_stream_writable.js
+@@ -352 +352 @@ Writable.prototype.uncork = function () {
+-    if (!state.writing && !state.corked && !state.finished && !state.bufferProcessing && state.bufferedRequest) clearBuffer(this, state);
++    if (!state.writing && !state.corked && !state.bufferProcessing && state.bufferedRequest) clearBuffer(this, state);
+@@ -594 +594 @@ Writable.prototype.end = function (chunk, encoding, cb) {
+-  if (!state.ending && !state.finished) endWritable(this, state, cb);
++  if (!state.ending) endWritable(this, state, cb);
+@@ -655,5 +655,2 @@ function onCorkedFinish(corkReq, state, err) {
+-  if (state.corkedRequestsFree) {
++  // reuse the free corkReq.
+     state.corkedRequestsFree.next = corkReq;
+-  } else {
+-    state.corkedRequestsFree = corkReq;
+-  }
+--- a/node_modules/readable-stream/lib/internal/streams/BufferList.js
++++ b/node_modules/readable-stream/lib/internal/streams/BufferList.js
+@@ -59 +59,0 @@ module.exports = function () {
+-    if (this.length === 1) return this.head.data;
+--- a/node_modules/readable-stream/lib/internal/streams/destroy.js
++++ b/node_modules/readable-stream/lib/internal/streams/destroy.js
+@@ -18,2 +18,3 @@ function destroy(err, cb) {
+     } else if (err && (!this._writableState || !this._writableState.errorEmitted)) {
++      if (this._writableState) this._writableState.errorEmitted = true;
+       pna.nextTick(emitErrorNT, this, err);
+@@ -37,7 +38,7 @@ function destroy(err, cb) {
+-    if (!cb && err) {
+-      pna.nextTick(emitErrorNT, _this, err);
++    if (cb) {
++      cb(err);
++    } else if (err && (!_this._writableState || !_this._writableState.errorEmitted)) {
+       if (_this._writableState) {
+         _this._writableState.errorEmitted = true;
+       }
+-    } else if (cb) {
+-      cb(err);
++      pna.nextTick(emitErrorNT, _this, err);
+@@ -62 +63,3 @@ function undestroy() {
++    this._writableState.finalCalled = false;
++    this._writableState.prefinished = false;
+     this._writableState.finished = false;
+--- a/node_modules/resolve/lib/core.json
++++ b/node_modules/resolve/lib/core.json
+@@ -18 +18,3 @@
+-    "fs/promises": ">= 10 && < 10.1",
++    "_debug_agent": ">= 1 && < 8",
++    "diagnostics_channel": [">= 14.17 && < 15", ">= 15.1"],
++    "fs/promises": [">= 10 && < 10.1", ">= 14"],
+@@ -32,3 +34,3 @@
+-    "node-inspect/lib/_inspect": ">= 7.6.0",
+-    "node-inspect/lib/internal/inspect_client": ">= 7.6.0",
+-    "node-inspect/lib/internal/inspect_repl": ">= 7.6.0",
++    "node-inspect/lib/_inspect": ">= 7.6 && < 12",
++    "node-inspect/lib/internal/inspect_client": ">= 7.6 && < 12",
++    "node-inspect/lib/internal/inspect_repl": ">= 7.6 && < 12",
+@@ -62,7 +64,8 @@
+-    "v8/tools/arguments": ">= 10",
+-    "v8/tools/codemap": [">= 4.4.0 && < 5", ">= 5.2.0"],
+-    "v8/tools/consarray": [">= 4.4.0 && < 5", ">= 5.2.0"],
+-    "v8/tools/csvparser": [">= 4.4.0 && < 5", ">= 5.2.0"],
+-    "v8/tools/logreader": [">= 4.4.0 && < 5", ">= 5.2.0"],
+-    "v8/tools/profile_view": [">= 4.4.0 && < 5", ">= 5.2.0"],
+-    "v8/tools/splaytree": [">= 4.4.0 && < 5", ">= 5.2.0"],
++    "v8/tools/arguments": ">= 10 && < 12",
++    "v8/tools/codemap": [">= 4.4 && < 5", ">= 5.2 && < 12"],
++    "v8/tools/consarray": [">= 4.4 && < 5", ">= 5.2 && < 12"],
++    "v8/tools/csvparser": [">= 4.4 && < 5", ">= 5.2 && < 12"],
++    "v8/tools/logreader": [">= 4.4 && < 5", ">= 5.2 && < 12"],
++    "v8/tools/profile_view": [">= 4.4 && < 5", ">= 5.2 && < 12"],
++    "v8/tools/splaytree": [">= 4.4 && < 5", ">= 5.2 && < 12"],
++    "worker_threads": ">= 11.7",

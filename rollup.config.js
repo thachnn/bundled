@@ -29,7 +29,7 @@ const terserPlugin = (options = {}) => ({
     outputOpts.format !== 'es' || (opts.module = true);
     // outputOpts.format !== 'cjs' || (opts.toplevel = true);
 
-    opts = mergeDeep(baseTerserOpts, opts, options);
+    opts = mergeDeep({}, baseTerserOpts, opts, options);
     if (opts.transform) code = replaceBulk(code, opts.transform);
 
     return minify(code, (delete opts.transform, opts));
@@ -61,11 +61,12 @@ const nodeResolve = () => ({
  * @returns {(RollupOptions|{name?: string})}
  */
 const buildConfig = (name, config) => {
-  config = {
+  const defaults = {
     name,
     output: { format: 'cjs', interop: false },
     plugins: [nodeResolve(), terserPlugin()],
-  }.mergeDeep(config);
+  };
+  config = mergeDeep(defaults, config);
 
   config.plugins = Object.values(config.plugins.reduce((o, p) => ((o[p.name] = p), o), {}));
   return config;
@@ -209,7 +210,7 @@ const configSet = [
   //
   buildConfig('cli', {
     input: 'node_modules/yarn/src/cli/index.js',
-    output: { file: 'dist/lib/cli.js', esModule: false, banner: '#!/usr/bin/env node' },
+    output: { file: 'dist/lib/cli.js', esModule: false, banner: '#!/usr/bin/env node', freeze: false },
     external: yarnDeps.concat(
       'path fs http net util url os string_decoder tty crypto stream events child_process zlib readline'.split(' '),
       ['./lockfile', '../lockfile', '../../lockfile']
@@ -231,6 +232,7 @@ const configSet = [
         ignoreUninitializedFields: true,
         test: /\byarn[\\/](?!(.*\.tpl|src\b.config)\.).*\.js$/i,
         transform: [
+          { search: /^import\b.* getGlobalBinFolder,.* globalRun\b.*\bfrom\b/m, replace: '//$&' }, // circular deps
           { search: /^(.*)\brequire *\( *(['"](\w+)['"]) *\)(\s*\.\w+ *\()/gm, replace: 'import $3 from $2;\n$1$3$4' },
         ],
       }),
@@ -246,6 +248,13 @@ const configSet = [
             replace: (_, p1) => '_libs' + (/\W/.test((p1 = p1.replace(/^@[^/]*\//, ''))) ? `['${p1}']` : '.' + p1),
           },
           { search: /^.*\s_libs\b/m, replace: "var _libs = require('./vendors');\n$&" },
+          // Circular dependencies
+          { search: ' getGlobalBinFolder(', replace: ' getBinFolder(' },
+          {
+            search: / globalRun(\([\s\S]*{\s*run: *([\w$]+)[^{}]*} *= *buildSubCommands\(['"]global['"])/,
+            replace: ' $2$1',
+          },
+          // Optimize output
           {
             search: /^([ \t]+)([\w$]+ *\+=).*;(?:\n+\1\2.*;)+/gm,
             replace: (m, p1) => m.replace(new RegExp(`;(\\n+${p1})[\\w$]+ *\\+=`, 'g'), ' +$1 '),
