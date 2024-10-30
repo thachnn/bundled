@@ -6,11 +6,6 @@
 -	get: assembleStyles
 -});
 +module.exports = assembleStyles();
---- a/node_modules/chardet/index.js
-+++ b/node_modules/chardet/index.js
-@@ -10 +10 @@ var utf8  = require('./encoding/utf8'),
--var self = this;
-+var self = module.exports;
 --- a/node_modules/form-data/lib/form_data.js
 +++ b/node_modules/form-data/lib/form_data.js
 @@ -9 +9 @@ var mime = require('mime-types');

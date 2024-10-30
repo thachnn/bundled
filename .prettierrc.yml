@@ -10,17 +10,20 @@ overrides:
     options:
       parser: 'babel'
     #
-  - files: 'dist/**/{lockfile,acorn}.js'
+  - files: 'dist/**/{lockfile,acorn,vendors}.js'
     options:
       preserveQuote: true
-  - files: 'dist/**/{lockfile,cli,acorn}.js'
+  - files: 'dist/**/{lockfile,cli,acorn,v8-*,vendors}.js'
     options:
       bracketSpacing: false
-  - files: 'dist/**/{cli,acorn}.js'
+  - files: 'dist/**/{cli,acorn,v8-*,vendors}.js'
     options:
       spaceAfterAnonFunc: false
     #
-  - files: 'dist/**/{lockfile,cli}.js'
+  - files: 'dist/**/preinstall.js'
+    options:
+      tabWidth: 4
+  - files: 'dist/**/{lockfile,cli,preinstall,v8-*}.js'
     options:
       trailingComma: 'es5'
       printWidth: 115
@@ -32,3 +35,9 @@ overrides:
       singleQuote: false
       dedentSwitchLabels: true
       printWidth: 135
+  - files: 'dist/**/v8-compile-cache.js'
+    options:
+      printWidth: 89
+  - files: 'dist/**/vendors.js'
+    options:
+      printWidth: 125

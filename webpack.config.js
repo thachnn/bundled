@@ -40,7 +40,7 @@ const webpackConfig = (name, config, clean = name.charAt(0) !== '/') => {
       new ReplaceCodePlugin({
         search: /((\n\/\*{6}\/[ \t]*)__webpack_require__)\.d *= *function\b[\s\S]*?\1\.p *= *"";/,
         replace:
-          '$1.d = function(exports, definition) {$2\tfor (var key in definition)$2\t\t' +
+          '$1.d = function(exports, definition) {$2\tfor (var key of Object.keys(definition))$2\t\t' +
           'Object.defineProperty(exports, key, { enumerable: true, get: definition[key] });$2};',
       }),
     ],
@@ -338,17 +338,26 @@ module.exports = [
       new ReplaceCodePlugin([
         { search: /^(\/\*{3}\/ )".*\b(lodash|_?esm?\d*)\b.*":[\s\S]*?\n\1}\),?$/gm, replace: renameEsmVars },
       ]),
-      /*new ReplaceCodePlugin({
-        search: /(^\/\*{3}\/ |\b__webpack_require__\(.*?)"\.\/node_modules\/([^\n"]+)/gm,
-        replace: (_, p1, p2) =>
-          p1 + '"' + p2.replace(/(\/index\.js(on)?|\.js)$/, '').replace(/^([\w.-]+)\/(lib\/)?(?!request$)\1$/, '$1'),
-      }),*/
+      new ReplaceCodePlugin({
+        search: /(^\/\*{3}\/ |\b__webpack_require__ *\(.*?)"\.\/node_modules\/([^\n"]+)/gm,
+        replace: (_, p1, p2) => p1 + '"' + shortenModIds(p2),
+      }),
       //new ReplaceCodePlugin({ search: /^(\/\*{3}\/ \()function ?(\(module\b.*?\))/gm, replace: '$1$2 =>' }),
       new ReplaceCodePlugin({ search: /\b__webpack_(exports)__\b/g, replace: '$1' }),
-      //new ReplaceCodePlugin({ search: /\b__webpack_require__\b/g, replace: '__wpreq__' }),
+      new ReplaceCodePlugin({ search: /\b__webpack_require__\b/g, replace: '__wpreq__' }),
     ],
   }),
 ];
+
+function shortenModIds(p) {
+  const alias = { 'node-emoji': '/lib/emoji.js', 'cli-table3': '/src/table.js', 'mime-db': '/db.json' };
+  if (p === 'yarn/src/api.js') return 0;
+
+  let m = p.match(/^(.*\bnode_modules\/)?(@[^/]*\/)?[^/]+/)[0];
+  return (alias[m] ? '/' + m + alias[m] : require.resolve(m).replace(/\\/g, '/')).endsWith('/' + p)
+    ? m // .replace(/string_decoder$/, '$&/')
+    : p.replaceBulk([/\/_esm\d*\b/, ''], [/(\/index\.js(on)?|\.js)$/, ''], [/^([^/]+)\/(lib\/)?(?!request$)\1$/, '$1']);
+}
 
 // Optimize concatenated ESM
 function renameEsmVars(s) {
@@ -360,17 +369,17 @@ function renameEsmVars(s) {
 
   const count = new Map();
 
-  new Set(s.match(/\b(?:_[0-9a-z]+|[a-z][0-9a-z]*)_[a-z][0-9a-z]*\b/gi)).forEach((m) => {
+  new Set(s.match(/\b(?:_[a-z\d]+|[a-z][a-z\d]*)_[a-z]\w*\b(?![^\n'"]*['"][^\n'"]*$)/gim)).forEach((m) => {
     if (m === 'node_modules' || m === m.toUpperCase()) return;
 
-    const p0 = m.replace(/^.*_/, '');
+    const p0 = m.replace(/^.+?_/, '');
     let i = count.get(p0),
       p1 = i === undefined ? ((i = 0), p0) : p0 + '_' + ++i;
 
-    while (i < 50 && new RegExp(`^(?!([ \t]*//|/\\*{3}/ )).*\\b${p1}\\b(?![^'"]*['"][^'"]*$)`, 'm').test(s))
+    while (i < 20 && new RegExp(`^(?!([ \\t]*//|/\\*{3}/ )).*\\b${p1}\\b(?![^\\n'"]*['"][^\\n'"]*$)`, 'm').test(s))
       p1 = p0 + '_' + ++i;
 
-    i < 50 ? (count.set(p0, i), (s = s.replace(new RegExp(`\\b${m}\\b`, 'g'), p1))) : console.warn('>>', m);
+    i < 20 ? (count.set(p0, i), (s = s.replace(new RegExp(`\\b${m}\\b`, 'g'), p1))) : console.warn('>>', m);
   });
 
   return s;
