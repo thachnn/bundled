@@ -38,10 +38,8 @@ const webpackConfig = (name, config, clean = name.charAt(0) !== '/') => {
     },
     plugins: [
       new ReplaceCodePlugin({
-        search: /((\n\/\*{6}\/[ \t]*)__webpack_require__)\.d *= *function\b[\s\S]*?\1\.p *= *"";/,
-        replace:
-          '$1.d = function(exports, definition) {$2\tfor (var key of Object.keys(definition))$2\t\t' +
-          'Object.defineProperty(exports, key, { enumerable: true, get: definition[key] });$2};',
+        search: /(\n\/\*{6}\/[ \t]*__webpack_require__)\.d *= *function\b[\s\S]*?\1\.p *= *"";/,
+        replace: '',
       }),
     ],
   };
@@ -99,25 +97,13 @@ const commonjs1Patches = [
 const generateLibsIndex = () => {
   const yarnDeps = require('./scripts/yarn-deps.json');
   return (
-    '__webpack_require__.d(exports, {\n' +
+    'module.exports = {\n  __proto__: null,\n' +
     yarnDeps
-      .map((v, k) => `  ${/\W/.test((k = v.replace(/^@[^/]*\//, ''))) ? `'${k}'` : k}: () => require('${v}')`)
+      .map((v, k) => `  get ${/\W/.test((k = v.replace(/^@[^/]*\//, ''))) ? `'${k}'` : k}() { return require('${v}') }`)
       .join(',\n') +
-    '\n});\nObject.defineProperty(exports, "__wpreq__", { value: __webpack_require__ });'
+    '\n};\nObject.defineProperty(module.exports, "__wpreq__", {value: __webpack_require__});'
   );
 };
-
-const usedRxjsFn = (
-  'Observable observable Subject Subscription Subscriber pipe defer empty from fromEvent of EMPTY config ' +
-  'concatMap filter map flatMap publish reduce share take takeUntil'
-).replace(/\s+/g, '|');
-
-const usedLodashFn = (
-  'assign assignIn constant defaults filter flatten keys keysIn map memoize omit property set toArray uniq values ' +
-  'extend clone eq find findIndex get hasIn identity isArguments isArray isArrayLike isBoolean isBuffer isFunction ' +
-  'isLength isMap isNumber isObject isObjectLike isPlainObject isSet isString isSymbol isTypedArray last stubArray ' +
-  'stubFalse noop sum toFinite toInteger toNumber toString'
-).replace(/\s+/g, '|');
 
 //
 module.exports = [
@@ -126,10 +112,11 @@ module.exports = [
     output: { libraryTarget: 'commonjs2' },
     externals: {
       'os-tmpdir': ['os', 'tmpdir'],
-      'lodash.clone': 'var __webpack_require__("./node_modules/lodash/lodash.js").clone',
-      'lodash.toarray': 'var __webpack_require__("./node_modules/lodash/lodash.js").toArray',
+      'lodash.clone': 'var __webpack_require__("./node_modules/lodash/index.js").clone',
+      'lodash.toarray': 'var __webpack_require__("./node_modules/lodash/index.js").toArray',
       inherits: ['util', 'inherits'],
       'path-parse': ['path', 'parse'],
+      'rxjs/operators': 'var __webpack_require__("./node_modules/rxjs/index.js").operators',
     },
     module: {
       rules: [
@@ -144,16 +131,6 @@ module.exports = [
           options: { search: /[\s\S]*/, replace: (m) => `{ ${m.match(/^  "(name|version|desc\w+)":.*"/gm).join()} }` },
         },
         // Optimize dependencies
-        {
-          test: /\bnode_modules[\\/]rxjs\b._esm\d*.(operators\b.)?index\.js$/i,
-          loader: 'webpack/lib/replace-loader',
-          options: { search: new RegExp(`^export *{[^{}]*\\b(?!(${usedRxjsFn})\\b)\\w+ *}`, 'gm'), replace: '//$&' },
-        },
-        {
-          test: /\bnode_modules[\\/]lodash\b.lodash\.js$/i,
-          loader: 'webpack/lib/replace-loader',
-          options: { search: new RegExp(`^export *{[^{}]*\\b(?!(${usedLodashFn})\\b)\\w+ *}`, 'gm'), replace: '//$&' },
-        },
         {
           test: /\bnode_modules[\\/]jsprim\b.lib.jsprim\.js$/i,
           loader: 'webpack/lib/replace-loader',
@@ -281,11 +258,10 @@ module.exports = [
       ],
     },
     resolve: {
-      mainFields: ['es2015', 'module', 'main'],
       alias: {
         retry$: path.resolve(__dirname, 'node_modules/retry/lib/retry.js'),
         'node-emoji$': path.resolve(__dirname, 'node_modules/node-emoji/lib/emoji.js'),
-        //
+        lodash$: path.resolve(__dirname, 'node_modules/lodash/index.js'),
         'cli-table3$': path.resolve(__dirname, 'node_modules/cli-table3/src/table.js'),
         'colors/safe$': path.resolve(__dirname, 'node_modules/colors/lib/colors.js'),
         'mime-db$': path.resolve(__dirname, 'node_modules/mime-db/db.json'),
@@ -324,63 +300,23 @@ module.exports = [
         },
         { from: 'node_modules/webpack-cli/vendor/v8-compile-cache.js', to: 'lib/' },
       ]),
-      // Correct the bundled
-      new ReplaceCodePlugin({
-        search: /\b__webpack_require__\.r\((.*?)\)/g,
-        replace: 'Object.defineProperty($1, "__esModule", { value: true })',
-      }),
-      new ReplaceCodePlugin({
-        search: /^(.*\b__webpack_require__\.d\(.*?,).*\);(\n\1.*\);)*$/gm,
-        replace: (m, p1) =>
-          `${p1} {${m.replace(/^.*, ['"](.*?)['"], function ?\(\) ?{ return (.*?); }\);$/gm, ' $1: () => $2,')} });`,
-      }),
       // Reduce the bundled size
-      new ReplaceCodePlugin([
-        { search: /^(\/\*{3}\/ )".*\b(lodash|_?esm?\d*)\b.*":[\s\S]*?\n\1}\),?$/gm, replace: renameEsmVars },
-      ]),
       new ReplaceCodePlugin({
         search: /(^\/\*{3}\/ |\b__webpack_require__ *\(.*?)"\.\/node_modules\/([^\n"]+)/gm,
         replace: (_, p1, p2) => p1 + '"' + shortenModIds(p2),
       }),
       //new ReplaceCodePlugin({ search: /^(\/\*{3}\/ \()function ?(\(module\b.*?\))/gm, replace: '$1$2 =>' }),
-      new ReplaceCodePlugin({ search: /\b__webpack_(exports)__\b/g, replace: '$1' }),
       new ReplaceCodePlugin({ search: /\b__webpack_require__\b/g, replace: '__wpreq__' }),
     ],
   }),
 ];
 
 function shortenModIds(p) {
-  const alias = { 'node-emoji': '/lib/emoji.js', 'cli-table3': '/src/table.js', 'mime-db': '/db.json' };
+  const alias = { 'node-emoji': 'lib/emoji.js', 'cli-table3': 'src/table.js', 'mime-db': 'db.json' };
   if (p === 'yarn/src/api.js') return 0;
 
   let m = p.match(/^(.*\bnode_modules\/)?(@[^/]*\/)?[^/]+/)[0];
-  return (alias[m] ? '/' + m + alias[m] : require.resolve(m).replace(/\\/g, '/')).endsWith('/' + p)
+  return (alias[m] ? `/${m}/${alias[m]}` : require.resolve(m).replace(/\\/g, '/')).endsWith('/' + p)
     ? m // .replace(/string_decoder$/, '$&/')
     : p.replaceBulk([/\/_esm\d*\b/, ''], [/(\/index\.js(on)?|\.js)$/, ''], [/^([^/]+)\/(lib\/)?(?!request$)\1$/, '$1']);
-}
-
-// Optimize concatenated ESM
-function renameEsmVars(s) {
-  new Set(s.match(/\b_\w+__WEBPACK_IMPORTED_MODULE_\d+__\b/g)).forEach((m) => {
-    const p1 = m.replace(/^_(?:[a-z]+_)*(\w+)__WEBPACK_IMPORTED_MODULE(_\d+).*/, '$1$2');
-
-    new RegExp(`\\b${p1}\\b`).test(s) ? console.warn('>>', m) : (s = s.replace(new RegExp(`\\b${m}\\b`, 'g'), p1));
-  });
-
-  const count = new Map();
-
-  new Set(s.match(/\b(?:_[a-z\d]+|[a-z][a-z\d]*)_[a-z]\w*\b(?![^\n'"]*['"][^\n'"]*$)/gim)).forEach((m) => {
-    if (m === 'node_modules' || m === m.toUpperCase()) return;
-
-    const p0 = m.replace(/^.+?_/, '');
-    let i = count.get(p0),
-      p1 = i === undefined ? ((i = 0), p0) : p0 + '_' + ++i;
-
-    while (i < 20 && new RegExp(`^(?!([ \\t]*//|/\\*{3}/ )).*\\b${p1}\\b(?![^\\n'"]*['"][^\\n'"]*$)`, 'm').test(s))
-      p1 = p0 + '_' + ++i;
-
-    i < 20 ? (count.set(p0, i), (s = s.replace(new RegExp(`\\b${m}\\b`, 'g'), p1))) : console.warn('>>', m);
-  });
-
-  return s;
 }

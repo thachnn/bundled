@@ -27,6 +27,7 @@
     "test": "grep -r --include=*.js -E \"[\\[,] ,|__webpack_require__\\.[a-z]|_WEBPACK_|webpackPoly|\\b_(iterator|interop)\" dist"
   },
   "dependencies": {
+    "lodash-es": "^4.17.10",
     "yarn": "yarnpkg/yarn#v1.22.19"
   },
   "devDependencies": {
@@ -39,7 +40,6 @@
   "resolutions": {
     "**/dnscache/lodash.clone": "^4.5.0",
     "**/fill-range/is-number": "^4.0.0",
-    "**/inquirer/lodash": "npm:lodash-es@4.17.10",
     "**/tar-fs/pump": "^2.0.0",
     "yarn/babel-runtime": "npm:blank-package@7.0.0",
     "yarn/cli-table3": "^0.5.0",

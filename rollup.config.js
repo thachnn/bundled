@@ -163,6 +163,18 @@ const flowPlugin = ({ name, test, transform, ...opts } = {}) =>
 
 const yarnDeps = require('./scripts/yarn-deps.json');
 
+const usedRxjsFn = (
+  'Observable observable Subject Subscription Subscriber pipe defer empty from fromEvent of EMPTY config ' +
+  'concatMap filter map flatMap publish reduce share take takeUntil'
+).replace(/\s+/g, '|');
+
+const usedLodashFn = (
+  'assign assignIn constant defaults filter flatten keys keysIn map memoize omit property set toArray uniq values ' +
+  'extend clone eq find findIndex get hasIn identity isArguments isArray isArrayLike isBoolean isBuffer isFunction ' +
+  'isLength isMap isNumber isObject isObjectLike isPlainObject isSet isString isSymbol isTypedArray last stubArray ' +
+  'stubFalse noop sum toFinite toInteger toNumber toString'
+).replace(/\s+/g, '|');
+
 //
 const configSet = [
   buildConfig('lockfile', {
@@ -260,6 +272,32 @@ const configSet = [
             replace: (m, p1) => m.replace(new RegExp(`;(\\n+${p1})[\\w$]+ *\\+=`, 'g'), ' +$1 '),
           },
         ],
+      }),
+    ],
+  }),
+  //
+  buildConfig('rxjs', {
+    input: 'node_modules/rxjs/_esm2015/index.js',
+    output: { file: 'node_modules/rxjs/_esm5/index.js', esModule: true },
+    plugins: [
+      transformCode({
+        name: 'unused-exports',
+        test: /\brxjs[\\/]_esm\d*.(operators\b.)?index\.js$/i,
+        patterns: { search: new RegExp(`^export *{[^{}]*\\b(?!(${usedRxjsFn})\\b)\\w+ *}`, 'gm'), replace: '//$&' },
+      }),
+      transformCode({
+        test: /\brxjs[\\/]_esm\d*.index\.js$/i,
+        patterns: { search: /$/, replace: "\nexport * as operators from './operators';\n" },
+      }),
+    ],
+  }),
+  buildConfig('lodash', {
+    input: 'node_modules/lodash-es/lodash.js',
+    output: { file: 'node_modules/lodash/index.js', esModule: false, strict: false },
+    plugins: [
+      transformCode({
+        test: /\blodash-es[\\/]lodash\.js$/i,
+        patterns: { search: new RegExp(`^export *{[^{}]*\\b(?!(${usedLodashFn})\\b)\\w+ *}`, 'gm'), replace: '//$&' },
       }),
     ],
   }),

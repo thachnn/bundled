@@ -49,8 +49,14 @@
 +  if (true) {
 @@ -1357 +1356,0 @@
 -}).call(this);
---- a/node_modules/lodash/_cloneBuffer.js
-+++ b/node_modules/lodash/_cloneBuffer.js
+--- a/node_modules/lodash-es/_baseClone.js
++++ b/node_modules/lodash-es/_baseClone.js
+@@ -21,2 +21,3 @@ import isSet from './isSet.js';
+ import keys from './keys.js';
++import keysIn from './keysIn.js';
+ 
+--- a/node_modules/lodash-es/_cloneBuffer.js
++++ b/node_modules/lodash-es/_cloneBuffer.js
 @@ -3 +3 @@ import root from './_root.js';
 -/** Detect free variable `exports`. */
 +/** Detect free variable `exports`.
@@ -61,8 +67,8 @@
 @@ -13 +11 @@ var moduleExports = freeModule && freeModule.exports === freeExports;
 -var Buffer = moduleExports ? root.Buffer : undefined,
 +var Buffer = true ? root.Buffer : undefined,
---- a/node_modules/lodash/_nodeUtil.js
-+++ b/node_modules/lodash/_nodeUtil.js
+--- a/node_modules/lodash-es/_nodeUtil.js
++++ b/node_modules/lodash-es/_nodeUtil.js
 @@ -3 +3 @@ import freeGlobal from './_freeGlobal.js';
 -/** Detect free variable `exports`. */
 +/** Detect free variable `exports`.
@@ -76,8 +82,8 @@
 @@ -19 +17 @@ var nodeUtil = (function() {
 -    var types = freeModule && freeModule.require && freeModule.require('util').types;
 +    var types = /*freeModule && freeModule.require &&*/ module.require('util').types;
---- a/node_modules/lodash/isBuffer.js
-+++ b/node_modules/lodash/isBuffer.js
+--- a/node_modules/lodash-es/isBuffer.js
++++ b/node_modules/lodash-es/isBuffer.js
 @@ -4 +4 @@ import stubFalse from './stubFalse.js';
 -/** Detect free variable `exports`. */
 +/** Detect free variable `exports`.
