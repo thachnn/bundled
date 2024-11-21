@@ -40,20 +40,33 @@ const terserPlugin = (options = {}) => ({
 const fileExists = (p) => { try { return statSync(p).isFile(); } catch (_) {} };
 
 /** @returns {RollupPlugin} */
-const nodeResolve = () => ({
+const nodeResolve = (exts = ['.js', '.json']) => ({
   name: 'node-resolve',
   resolveId(source, importer) {
     if (/\0/.test(source) || !importer) return null;
 
-    let p;
+    let p, o;
     return source[0] === '.'
-      ? [(p = resolve(dirname(importer), source)), p + '.js', p + sep + 'index.js'].find(fileExists) || null
-      : (p = source.match(/[\\/]/g)) && (source[0] !== '@' || p.length > 1)
-      ? require.resolve(source)
-      : // prettier-ignore
-        resolve(dirname(require.resolve((source += '/package.json'))), (p = require(source)).module || p.main || 'index.js');
+      ? [(p = resolve(dirname(importer), source))]
+          .concat(exts.concat(exts.map((e) => sep + 'index' + e)).map((e) => p + e))
+          .find(fileExists) || null
+      : (o = { paths: [importer] }) && (p = source.match(/[\\/]/g)) && (source[0] !== '@' || p.length > 1)
+      ? require.resolve(source, o)
+      : resolve(
+          dirname((p = require.resolve(source + '/package.json', o))),
+          (p = require(p)).module || ((o = p.exports) && findImport(o['.'] || o)) || p.main || 'index.js'
+        );
   },
+  load: (id) => (console.log(id), null),
 });
+
+const findImport = (o) => {
+  if (o == null || typeof o != 'object') return o;
+  if (!Array.isArray(o)) return findImport(o.import || o.node || o.require || o.default);
+
+  for (let v of o) if ((v = findImport(v))) return v;
+  return null;
+};
 
 /**
  * @param {string} name

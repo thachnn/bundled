@@ -31,6 +31,7 @@
     "yarn": "yarnpkg/yarn#v1.22.19"
   },
   "devDependencies": {
+    "@babel/standalone": "thachnn/bundled#babel-standalone-7.22-node",
     "@types/node": "4",
     "flow-remove-types": "thachnn/bundled#flow-remove-types-2.168.0",
     "rollup": "^2.0.6",

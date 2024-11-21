@@ -2,6 +2,10 @@
 # yarn lockfile v1
 
 
+"@babel/standalone@thachnn/bundled#babel-standalone-7.22-node":
+  version "7.22.20-node.0"
+  resolved "https://codeload.github.com/thachnn/bundled/tar.gz/refs/tags/babel-standalone-7.22-node"
+
 "@types/node@4":
   version "4.9.4"
   resolved "https://registry.yarnpkg.com/@types/node/-/node-4.9.4.tgz#75ef91733afaa856b01e12da6ecf48aa9d5e221f"
