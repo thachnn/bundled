@@ -1,37 +1,19 @@
-# Purpose
+# @babel/standalone
 
-Bundle NPM packages with `webpack`, `rollup`,... and provide them :-)
+> Standalone build of Babel for use in Node.js environments.
 
-## Usage
+See our website [@babel/standalone](https://babeljs.io/docs/babel-standalone) for more information or the [issues](https://github.com/babel/babel/issues?utf8=%E2%9C%93&q=is%3Aissue+label%3A%22pkg%3A%20standalone%22+is%3Aopen) associated with this package.
 
-Override dependency version in your `package.json` file like:
+## Install
 
-```json
-{
-  "dependencies": {
-    "webpack": "thachnn/bundled#webpack-4.46.0",
-    "webpack-cli": "^3.3.0"
-  },
-  "resolutions": {
-    "webpack-cli": "thachnn/bundled#webpack-cli-3.3.12"
-  },
-  "overrides": {
-    "webpack-cli": "thachnn/bundled#webpack-cli-3.3.12"
-  }
-}
+Using npm:
+
+```sh
+npm install --save-dev @babel/standalone@7.22.20-node.0
 ```
 
-Or install bundled packages directly:
+or using yarn:
 
-```bash
-npm install -g thachnn/bundled#terser-4.8.1
+```sh
+yarn add @babel/standalone@7.22.20-node.0 --dev
 ```
-
-## Bundled packages
-
-- `webpack` v4.46.0 -> [thachnn/bundled#webpack-4.46.0](../../releases/tag/webpack-4.46.0)
-- `terser` v4.8.1 -> [thachnn/bundled#terser-4.8.1](../../releases/tag/terser-4.8.1)
-- `webpack-cli` v3.3.12 -> [thachnn/bundled#webpack-cli-3.3.12](../../releases/tag/webpack-cli-3.3.12)
-- ...
-
-Take a look at [`Tags` list](../../tags) for more provided packages
