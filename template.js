@@ -109,7 +109,7 @@ var jsTokens = {};
 
 Object.defineProperty(jsTokens, "__esModule", { value: true });
 jsTokens.default =
-  /((['"])(?:(?!\2|\\).|\\(?:\r\n|[\s\S]))*(\2)?|`(?:[^`\\$]|\\[\s\S]|\$(?!\{)|\$\{(?:[^{}]|\{[^}]*\}?)*\}?)*(`)?)|(\/\/.*)|(\/\*(?:[^*]|\*(?!\/))*(\*\/)?)|(\/(?!\*)(?:\[(?:(?![\]\\]).|\\.)*\]|(?![\/\]\\]).|\\.)+\/(?:(?!\s*(?:\b|[\u0080-\uFFFF$\\'"~({]|[+\-!](?!=)|\.?\d))|[gmiyus]{1,6}\b(?![\u0080-\uFFFF$\\]|\s*(?:[+\-*%&|^<>!=?({]|\/(?![\/*])))))|(0[xX][\da-fA-F]+|0[oO][0-7]+|0[bB][01]+|(?:\d*\.\d+|\d+\.?)(?:[eE][+-]?\d+)?)|((?!\d)(?:(?!\s)[$\w\u0080-\uFFFF]|\\u[\da-fA-F]{4}|\\u\{[\da-fA-F]+\})+)|(--|\+\+|&&|\|\||=>|\.{3}|(?:[+\-\/%&|^]|\*{1,2}|<{1,2}|>{1,3}|!=?|={1,2})=?|[?~.,:;[\](){}])|(\s+)|(^$|[\s\S])/g;
+  /((['"])(?:(?!\2|\\).|\\(?:\r\n|[\s\S]))*(\2)?|`(?:[^`\\$]|\\[\s\S]|\$(?!{)|\${(?:[^{}]|{[^}]*}?)*}?)*(`)?)|(\/\/.*)|(\/\*(?:[^*]|\*(?!\/))*(\*\/)?)|(\/(?!\*)(?:\[(?:(?![\]\\]).|\\.)*]|(?![\/\]\\]).|\\.)+\/(?:(?!\s*(?:\b|[\u0080-\uFFFF$\\'"~({]|[+\-!](?!=)|\.?\d))|[gmiyus]{1,6}\b(?![\u0080-\uFFFF$\\]|\s*(?:[+\-*%&|^<>!=?({]|\/(?![\/*])))))|(0[xX][\da-fA-F]+|0[oO][0-7]+|0[bB][01]+|(?:\d*\.\d+|\d+\.?)(?:[eE][+-]?\d+)?)|((?!\d)(?:(?!\s)[$\w\u0080-\uFFFF]|\\u[\da-fA-F]{4}|\\u{[\da-fA-F]+})+)|(--|\+\+|&&|\|\||=>|\.{3}|(?:[+\-\/%&|^]|\*{1,2}|<{1,2}|>{1,3}|!=?|={1,2})=?|[?~.,:;[\](){}])|(\s+)|(^$|[\s\S])/g;
 jsTokens.matchToToken = function (match) {
   var token = { type: "invalid", value: match[0], closed: void 0 };
   if (match[1]) {
@@ -375,7 +375,7 @@ convert$1.rgb.hwb = function (rgb) {
   return [
     convert$1.rgb.hsl(rgb)[0],
     (1 / 255) * Math.min(r, g, b) * 100,
-    100 * (b = 1 - (1 / 255) * Math.max(r, g, b))
+    100 * (1 - (1 / 255) * Math.max(r, g, b))
   ];
 };
 convert$1.rgb.cmyk = function (rgb) {
@@ -427,17 +427,8 @@ convert$1.rgb.xyz = function (rgb) {
   ];
 };
 convert$1.rgb.lab = function (rgb) {
-  var xyz = convert$1.rgb.xyz(rgb),
-    x = xyz[0],
-    y = xyz[1],
-    z = xyz[2];
-  x /= 95.047;
-  y /= 100;
-  z /= 108.883;
-  x = x > 0.008856 ? Math.pow(x, 1 / 3) : 7.787 * x + 16 / 116;
-  y = y > 0.008856 ? Math.pow(y, 1 / 3) : 7.787 * y + 16 / 116;
-  z = z > 0.008856 ? Math.pow(z, 1 / 3) : 7.787 * z + 16 / 116;
-  return [116 * y - 16, 500 * (x - y), 200 * (y - z)];
+  var xyz = convert$1.rgb.xyz(rgb);
+  return convert$1.xyz.lab(xyz);
 };
 convert$1.hsl.rgb = function (hsl) {
   var h = hsl[0] / 360,
@@ -506,7 +497,7 @@ convert$1.hsv.hsl = function (hsv) {
   var lmin, sl, l;
   l = (2 - s) * v;
   sl = s * vmin;
-  return [h, (sl = (sl /= (lmin = (2 - s) * vmin) <= 1 ? lmin : 2 - lmin) || 0) * 100, 100 * (l /= 2)];
+  return [h, ((sl / ((lmin = (2 - s) * vmin) <= 1 ? lmin : 2 - lmin)) || 0) * 100, 100 * (l / 2)];
 };
 convert$1.hwb.rgb = function (hwb) {
   var h = hwb[0] / 360,
@@ -581,9 +572,9 @@ convert$1.xyz.rgb = function (xyz) {
   g = g > 0.0031308 ? 1.055 * Math.pow(g, 1.0 / 2.4) - 0.055 : g * 12.92;
   b = b > 0.0031308 ? 1.055 * Math.pow(b, 1.0 / 2.4) - 0.055 : b * 12.92;
   return [
-    (r = Math.min(Math.max(0, r), 1)) * 255,
-    (g = Math.min(Math.max(0, g), 1)) * 255,
-    (b = Math.min(Math.max(0, b), 1)) * 255
+    Math.min(Math.max(0, r), 1) * 255,
+    Math.min(Math.max(0, g), 1) * 255,
+    Math.min(Math.max(0, b), 1) * 255
   ];
 };
 convert$1.xyz.lab = function (xyz) {
@@ -609,7 +600,7 @@ convert$1.lab.xyz = function (lab) {
   y = y2 > 0.008856 ? y2 : (y - 16 / 116) / 7.787;
   x = x2 > 0.008856 ? x2 : (x - 16 / 116) / 7.787;
   z = z2 > 0.008856 ? z2 : (z - 16 / 116) / 7.787;
-  return [(x *= 95.047), (y *= 100), (z *= 108.883)];
+  return [x * 95.047, y * 100, z * 108.883];
 };
 convert$1.lab.lch = function (lab) {
   var l = lab[0],
@@ -676,7 +667,7 @@ convert$1.rgb.hex = function (args) {
   ).toString(16).toUpperCase();
   return '000000'.substring(string.length) + string;
 };
-convert$1.hex.rgb = function (args) {
+convert$1.hex.rgb = function (/** number */ args) {
   var match = args.toString(16).match(/[a-f0-9]{6}|[a-f0-9]{3}/i);
   if (!match) return [0, 0, 0];
 
@@ -703,7 +694,7 @@ convert$1.rgb.hcg = function (rgb) {
     : 4 + (r - g) / chroma + 4;
 
   hue /= 6;
-  return [360 * (hue %= 1), chroma * 100, 100 * (chroma < 1 ? min / (1 - chroma) : 0)];
+  return [360 * (hue % 1), chroma * 100, 100 * (chroma < 1 ? min / (1 - chroma) : 0)];
 };
 convert$1.hsl.hcg = function (hsl) {
   var s = hsl[1] / 100,
@@ -734,7 +725,7 @@ convert$1.hcg.rgb = function (hcg) {
     hi = (h % 1) * 6,
     v = hi % 1,
     w = 1 - v,
-    mg = 0;
+    mg; //= 0
   switch (Math.floor(hi)) {
     case 0:
       pure[0] = 1;
@@ -927,9 +918,8 @@ models.forEach(function (fromModel) {
     convert[fromModel][toModel].raw = wrapRaw(fn);
   });
 });
-var colorConvert$1 = convert;
 
-const colorConvert = colorConvert$1;
+const colorConvert = convert;
 const wrapAnsi16 = (fn, offset) => function () {
   return `\x1B[${fn.apply(colorConvert, arguments) + offset}m`;
 };
@@ -1042,7 +1032,7 @@ var supportsColor_1 = {
 };
 
 const TEMPLATE_REGEX =
-    /(?:\\(u[a-f\d]{4}|x[a-f\d]{2}|.))|(?:\{(~)?(\w+(?:\([^)]*\))?(?:\.\w+(?:\([^)]*\))?)*)(?:[ \t]|(?=\r?\n)))|(\})|((?:.|[\r\n\f])+?)/gi,
+    /(?:\\(u[a-f\d]{4}|x[a-f\d]{2}|.))|(?:{(~)?(\w+(?:\([^)]*\))?(?:\.\w+(?:\([^)]*\))?)*)(?:[ \t]|(?=\r?\n)))|(})|((?:.|[\r\n\f])+?)/gi,
   STYLE_REGEX = /(?:^|\.)(\w+)(?:\(([^)]*)\))?/g,
   STRING_REGEX = /^(['"])((?:\\.|(?!\1)[^\\])*)\1$/,
   ESCAPE_REGEX = /\\(u[a-f\d]{4}|x[a-f\d]{2}|.)|([^\\])/gi;
@@ -1067,7 +1057,7 @@ function parseArguments(name, args) {
   const results = [],
     chunks = args.trim().split(/\s*,\s*/g);
   let matches;
-  for (const chunk of chunks)
+  for (const /** @type {(string|number)} */ chunk of chunks)
     if (!isNaN(chunk)) results.push(Number(chunk));
     else if ((matches = chunk.match(STRING_REGEX)))
       results.push(matches[2].replace(ESCAPE_REGEX, (m, escape, chr) => (escape ? unescape(escape) : chr)));
@@ -1265,6 +1255,7 @@ function chalkTag(chalk, strings) {
   return template(chalk, parts.join(''));
 }
 Object.defineProperties(Chalk.prototype, styles);
+// noinspection JSPotentiallyInvalidConstructorUsage
 var _chalk = Chalk();
 _chalk.supportsColor = stdoutColor;
 var chalk = (_chalk.default = _chalk);
@@ -1326,7 +1317,7 @@ function highlightTokens(defs, text) {
   }
   return highlighted;
 }
-function shouldHighlight(options) {
+function shouldHighlight(/** @prop {boolean} forceColor */ options) {
   return chalk.level > 0 || options.forceColor;
 }
 let chalkWithForcedColor = void 0;
@@ -1727,6 +1718,7 @@ function createTemplateBuilder(formatter, defaultOpts) {
 function extendedTrace(fn) {
   let rootStack = "";
   try {
+    // noinspection ExceptionCaughtLocallyJS
     throw new Error();
   } catch (error) {
     if (error.stack) rootStack = error.stack.split("\n").slice(3).join("\n");

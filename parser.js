@@ -168,6 +168,7 @@ var StandardErrors = {
   ModuleAttributeDifferentFromType: "The only accepted module attribute is `type`.",
   ModuleAttributeInvalidValue: "Only string literals are allowed as module attribute values.",
   ModuleAttributesWithDuplicateKeys: ({ key }) => `Duplicate key "${key}" is not allowed in module attributes.`,
+  /** @param {{ surrogateCharCode: number }} _ */
   ModuleExportNameHasLoneSurrogate: ({ surrogateCharCode }) =>
     `An export name cannot include a lone surrogate, found '\\u${surrogateCharCode.toString(16)}'.`,
   ModuleExportUndefined: ({ localName }) => `Export '${localName}' is not defined.`,
@@ -357,6 +358,7 @@ function toESTreeLocation(node) {
   node.loc.end && toUnenumerable(node.loc.end, "index");
   return node;
 }
+// noinspection JSUnusedGlobalSymbols
 var estree = superClass => class extends superClass {
   parse() {
     const file = toESTreeLocation(super.parse());
@@ -458,7 +460,7 @@ var estree = superClass => class extends superClass {
   }
   convertPrivateNameToPrivateIdentifier(node) {
     const name = super.getPrivateNameSV(node);
-    delete (node = node).id; // as any
+    delete node.id; // as any
     node.name = name;
     node.type = "PrivateIdentifier";
     return node;
@@ -1241,7 +1243,7 @@ function setInnerComments(node, comments) {
   node.innerComments === void 0 ? (node.innerComments = comments) : node.innerComments.unshift(...comments);
 }
 function adjustInnerComments(node, elements, commentWS) {
-  let lastElement = null;
+  let lastElement = /** @type {*} */ null;
   for (let i = elements.length; lastElement === null && i > 0; ) lastElement = elements[--i];
 
   lastElement === null || lastElement.start > commentWS.start
@@ -1542,7 +1544,7 @@ class Tokenizer extends CommentsParser {
     return this.state.type === type;
   }
   createLookaheadState(state) {
-    return {
+    return /** @type {State} */ {
       pos: state.pos,
       value: null,
       type: state.type,
@@ -2116,6 +2118,7 @@ class Tokenizer extends CommentsParser {
     this.state.pos = pos;
     this.finishToken(135, { pattern: content, flags: mods });
   }
+  /** @returns {?number} */
   readInt(radix, len, forceLen = false, allowNumSeparator = true) {
     const { n, pos } = common.readInt(
       this.input,
@@ -2219,6 +2222,7 @@ class Tokenizer extends CommentsParser {
     const val = isOctal ? parseInt(str, 8) : parseFloat(str);
     this.finishToken(132, val);
   }
+  /** @returns {?number} */
   readCodePoint(throwOnInvalid) {
     const { code, pos } = common.readCodePoint(
       this.input,
@@ -2347,6 +2351,7 @@ class Tokenizer extends CommentsParser {
     }
     return this.raise(toParseError, raiseProperties);
   }
+  /** @param {number} [prevType] */
   updateContext(prevType) {}
   unexpected(loc, type) {
     throw this.raise(Errors.UnexpectedToken, {
@@ -2486,7 +2491,7 @@ class ExpressionScopeHandler {
       origin = { at: node.loc.start };
     if (scope.isCertainlyParameterDeclaration()) this.parser.raise(error, origin);
     else if (scope.canBeArrowParameterDeclaration()) scope.recordDeclarationError(error, origin);
-    else return;
+    //else return;
   }
   recordAsyncArrowParametersError({ at }) {
     const { stack } = this;
@@ -2560,6 +2565,13 @@ function functionFlags(isAsync, isGenerator) {
 class UtilParser extends Tokenizer {
   addExtra(node, key, value, enumerable = true) {
     if (!node) return;
+    /**
+     * @prop {*} expressionValue
+     * @prop {*} rawValue
+     * @prop {*} parenthesized
+     * @prop {*} trailingCommaLoc
+     * @prop {*} trailingComma
+     */
     const extra = (node.extra = node.extra || {});
     enumerable ? (extra[key] = value) : Object.defineProperty(extra, key, { enumerable, value });
   }
@@ -2921,6 +2933,8 @@ function partition(list, test) {
   return [list1, list2];
 }
 const FLOW_PRAGMA_REGEX = /\*?\s*@((?:no)?flow)\b/;
+// noinspection JSUnusedGlobalSymbols
+/** @prop {?string} flowPragma */
 var flow = superClass => class extends superClass {
   constructor(...args) {
     super(...args);
@@ -3575,7 +3589,7 @@ var flow = superClass => class extends superClass {
   flowParseFunctionTypeParam(first) {
     let name = null,
       optional = false,
-      typeAnnotation = null;
+      typeAnnotation; //= null
     const node = this.startNode(),
       lh = this.lookahead(),
       isThis = this.state.type === 78;
@@ -4231,6 +4245,7 @@ var flow = superClass => class extends superClass {
 
     if (this.isContextual(111)) {
       this.next();
+      // noinspection JSMismatchedCollectionQueryUpdate
       const implemented = (node.implements = []);
       do {
         const node = this.startNode();
@@ -4333,7 +4348,7 @@ var flow = superClass => class extends superClass {
       node.importKind = phase === "type" || phase === "typeof" ? phase : "value";
     }
   }
-  parseImportSpecifier(specifier, importedIsString, isInTypeOnlyImport, isMaybeTypeOnly, bindingType) {
+  parseImportSpecifier(specifier, importedIsString, isInTypeOnlyImport, isMaybeTypeOnly, _bindingType) {
     const firstIdent = specifier.imported;
     let specifierTypeKind = null;
     if (firstIdent.type === "Identifier")
@@ -4430,7 +4445,7 @@ var flow = superClass => class extends superClass {
     if (((_jsx = jsx) != null && _jsx.error) || this.match(47)) {
       var _jsx2, _jsx3;
       state = state || this.state.clone();
-      let typeParameters;
+      let typeParameters = void 0;
       const arrow = this.tryParse(abort => {
         var _arrowExpression$extr;
         typeParameters = this.flowParseTypeParameterDeclaration();
@@ -4513,6 +4528,7 @@ var flow = superClass => class extends superClass {
       this.next();
       const node = this.startNodeAt(startLoc);
       node.callee = base;
+      // noinspection JSAnnotator
       node.arguments = super.parseCallExpressionArguments(11, false);
       base = this.finishNode(node, "CallExpression");
     } else if (base.type === "Identifier" && base.name === "async" && this.match(47)) {
@@ -4545,6 +4561,7 @@ var flow = superClass => class extends superClass {
       node.callee = base;
       node.typeArguments = this.flowParseTypeParameterInstantiation();
       this.expect(10);
+      // noinspection JSAnnotator
       node.arguments = this.parseCallExpressionArguments(11, false);
       node.optional = true;
       return this.finishCallExpression(node, true);
@@ -4555,6 +4572,7 @@ var flow = superClass => class extends superClass {
       const result = this.tryParse(() => {
         node.typeArguments = this.flowParseTypeParameterInstantiationCallOrNew();
         this.expect(10);
+        // noinspection JSAnnotator
         node.arguments = super.parseCallExpressionArguments(11, false);
         if (subscriptState.optionalChainMember) node.optional = false;
 
@@ -4864,6 +4882,7 @@ var flow = superClass => class extends superClass {
   }
 };
 
+// noinspection SpellCheckingInspection
 const entities = {
   __proto__: null,
   quot: '"',
@@ -5321,10 +5340,8 @@ var jsx = superClass => class extends superClass {
   }
   jsxParseExpressionContainer(node, previousContext) {
     if (this.match(8)) node.expression = this.jsxParseEmptyExpression();
-    else {
-      const expression = this.parseExpression();
-      node.expression = expression;
-    }
+    else node.expression = this.parseExpression();
+
     this.setContext(previousContext);
     this.state.canStartJSXElement = true;
     this.expect(8);
@@ -5404,6 +5421,7 @@ var jsx = superClass => class extends superClass {
             this.unexpected();
         }
 
+      // noinspection JSObjectNullOrUndefined
       isFragment(openingElement) && !isFragment(closingElement) && closingElement !== null
         ? this.raise(JsxErrors.MissingClosingTagFragment, { at: closingElement })
         : !isFragment(openingElement) && isFragment(closingElement)
@@ -5448,6 +5466,7 @@ var jsx = superClass => class extends superClass {
     }
     return super.parseExprAtom(refExpressionErrors);
   }
+  // noinspection JSUnusedGlobalSymbols
   skipSpace() {
     this.curContext().preserveSpace || super.skipSpace();
   }
@@ -5720,7 +5739,7 @@ class LValParser extends NodeUtils {
         return false;
     }
   }
-  toReferencedList(exprList, isParenthesizedExpr) {
+  toReferencedList(exprList, _isParenthesizedExpr) {
     return exprList;
   }
   toReferencedListDeep(exprList, isParenthesizedExpr) {
@@ -5806,7 +5825,7 @@ class LValParser extends NodeUtils {
 
     return elt;
   }
-  parseAssignableListItemTypes(param, flags) {
+  parseAssignableListItemTypes(param, _flags) {
     return param;
   }
   parseMaybeDefault(startLoc, left) {
@@ -5819,7 +5838,7 @@ class LValParser extends NodeUtils {
     node.right = this.parseMaybeAssignAllowIn();
     return this.finishNode(node, "AssignmentPattern");
   }
-  isValidLVal(type, isUnparenthesizedInAssign, binding) {
+  isValidLVal(type, isUnparenthesizedInAssign, _binding) {
     return getOwn$1({
       AssignmentPattern: "left",
       RestElement: "argument",
@@ -5934,6 +5953,7 @@ function nonNull(x) {
 function assert(x) {
   if (!x) throw new Error("Assert fail");
 }
+// noinspection JSUnusedGlobalSymbols
 const TSErrors = ParseErrorEnum`typescript`({
   AbstractMethodHasImplementation: ({ methodName }) =>
     `Method '${methodName}' cannot have an implementation because it is marked abstract.`,
@@ -5950,7 +5970,7 @@ const TSErrors = ParseErrorEnum`typescript`({
   DeclareAccessor: ({ kind }) => `'declare' is not allowed in ${kind}ters.`,
   DeclareClassFieldHasInitializer: "Initializers are not allowed in ambient contexts.",
   DeclareFunctionHasImplementation: "An implementation cannot be declared in ambient contexts.",
-  DuplicateAccessibilityModifier: ({ modifier }) => "Accessibility modifier already seen.",
+  DuplicateAccessibilityModifier: ({ modifier: _ }) => "Accessibility modifier already seen.",
   DuplicateModifier: ({ modifier }) => `Duplicate modifier: '${modifier}'.`,
   EmptyHeritageClauseType: ({ token }) => `'${token}' list cannot be empty.`,
   EmptyTypeArguments: "Type argument list cannot be empty.",
@@ -6050,6 +6070,12 @@ function tsIsAccessModifier(modifier) {
 function tsIsVarianceAnnotations(modifier) {
   return modifier === "in" || modifier === "out";
 }
+// noinspection JSUnusedGlobalSymbols
+/**
+ * @prop {Function} tsParseInOutModifiers
+ * @prop {Function} tsParseConstModifier
+ * @prop {Function} tsParseInOutConstModifiers
+ */
 var typescript = superClass => class extends superClass {
   constructor(...args) {
     super(...args);
@@ -7088,6 +7114,7 @@ var typescript = superClass => class extends superClass {
     return this.finishNode(node, "TSExternalModuleReference");
   }
   tsLookAhead(f) {
+    // noinspection UnnecessaryLocalVariableJS
     const state = this.state.clone(),
       res = f();
     this.state = state;
@@ -7316,7 +7343,7 @@ var typescript = superClass => class extends superClass {
         this.raise(TSErrors.UnexpectedTypeAnnotation, { at: node.typeAnnotation });
     });
   }
-  toReferencedList(exprList, isInParens) {
+  toReferencedList(exprList, _isInParens) {
     this.tsCheckForInvalidTypeCasts(exprList);
     return exprList;
   }
@@ -7364,8 +7391,8 @@ var typescript = superClass => class extends superClass {
         if (!noCalls && this.eat(10)) {
           const node = this.startNodeAt(startLoc);
           node.callee = base;
-          node.arguments = this.parseCallExpressionArguments(11, false);
-          this.tsCheckForInvalidTypeCasts(node.arguments);
+          // noinspection JSAnnotator
+          this.tsCheckForInvalidTypeCasts((node.arguments = this.parseCallExpressionArguments(11, false)));
           node.typeParameters = typeArguments;
           if (state.optionalChainMember) node.optional = isOptionalCall;
 
@@ -7664,7 +7691,7 @@ var typescript = superClass => class extends superClass {
     }
     return declaration;
   }
-  parseClassId(node, isStatement, optionalId, bindingType) {
+  parseClassId(node, isStatement, optionalId, _bindingType) {
     if ((!isStatement || optionalId) && this.isContextual(111)) return;
 
     super.parseClassId(
@@ -8110,7 +8137,7 @@ var typescript = superClass => class extends superClass {
     node.exportKind = "value";
     return super.parseExportSpecifier(node, isString, isInTypeExport, isMaybeTypeOnly);
   }
-  parseImportSpecifier(specifier, importedIsString, isInTypeOnlyImport, isMaybeTypeOnly, bindingType) {
+  parseImportSpecifier(specifier, importedIsString, isInTypeOnlyImport, isMaybeTypeOnly, _bindingType) {
     if (!importedIsString && isMaybeTypeOnly) {
       this.parseTypeOnlyImportExportSpecifier(specifier, true, isInTypeOnlyImport);
       return this.finishNode(specifier, "ImportSpecifier");
@@ -8231,6 +8258,7 @@ const PlaceholderErrors = ParseErrorEnum`placeholders`({
   ClassNameIsRequired: "A class name is required.",
   UnexpectedSpace: "Unexpected space in placeholder."
 });
+// noinspection JSUnusedGlobalSymbols
 var placeholders = superClass => class extends superClass {
   parsePlaceholder(expectedNode) {
     if (this.match(142)) {
@@ -8424,6 +8452,7 @@ function hasPlugin(plugins, expectedConfig) {
     return true;
   });
 }
+/** @returns {?string} */
 function getPluginOption(plugins, name, option) {
   const plugin = plugins.find(plugin => (Array.isArray(plugin) ? plugin[0] === name : plugin === name));
   return plugin && Array.isArray(plugin) && plugin.length > 1 ? plugin[1][option] : null;
@@ -8631,9 +8660,8 @@ class ExpressionParser extends LValParser {
     if (afterLeftParse) left = afterLeftParse.call(this, left, startLoc);
 
     if (tokenIsAssignment(this.state.type)) {
-      const node = this.startNodeAt(startLoc),
-        operator = this.state.value;
-      node.operator = operator;
+      const node = this.startNodeAt(startLoc);
+      node.operator = this.state.value;
       if (this.match(29)) {
         this.toAssignable(left, true);
         node.left = left;
@@ -8670,7 +8698,7 @@ class ExpressionParser extends LValParser {
       ? expr
       : this.parseConditional(expr, startLoc, refExpressionErrors);
   }
-  parseConditional(expr, startLoc, refExpressionErrors) {
+  parseConditional(expr, startLoc, _refExpressionErrors) {
     if (this.eat(17)) {
       const node = this.startNodeAt(startLoc);
       node.test = expr;
@@ -9414,13 +9442,14 @@ class ExpressionParser extends LValParser {
     parenExpression.expression = expression;
     return this.finishNode(parenExpression, "ParenthesizedExpression");
   }
+  /** @param {Array} params */
   shouldParseArrow(params) {
     return !this.canInsertSemicolon();
   }
   parseArrow(node) {
     if (this.eat(19)) return node;
   }
-  parseParenItem(node, startLoc) {
+  parseParenItem(node, _startLoc) {
     return node;
   }
   parseNewOrNewTarget() {
@@ -9872,7 +9901,7 @@ class ExpressionParser extends LValParser {
     else if (word === "yield") {
       if (this.prodParam.hasYield) {
         this.raise(Errors.YieldBindingIdentifier, { at: startLoc });
-        return;
+        //return;
       }
     } else if (word === "await") {
       if (this.prodParam.hasAwait) {
@@ -10065,6 +10094,7 @@ class ExpressionParser extends LValParser {
     }
     return this.finishNode(node, "ModuleExpression");
   }
+  /** @param {*} prop */
   parsePropertyNamePrefixOperator(prop) {}
 }
 
@@ -10198,11 +10228,9 @@ class StatementParser extends ExpressionParser {
       for (const [localName, at] of Array.from(this.scope.undefinedExports))
         this.raise(Errors.ModuleExportUndefined, { at, localName });
 
-    let finishedProgram = end === 137
+    return end === 137
       ? this.finishNode(program, "Program")
       : this.finishNodeAt(program, "Program", createPositionWithColumnOffset(this.state.startLoc, -1));
-
-    return finishedProgram;
   }
   stmtToDirective(stmt) {
     const directive = stmt;
@@ -10658,6 +10686,7 @@ class StatementParser extends ExpressionParser {
   parseSwitchStatement(node) {
     this.next();
     node.discriminant = this.parseHeaderExpression();
+    // noinspection JSMismatchedCollectionQueryUpdate
     const cases = (node.cases = []);
     this.expect(5);
     this.state.labels.push(switchLabel);
@@ -10771,7 +10800,7 @@ class StatementParser extends ExpressionParser {
     node.label = expr;
     return this.finishNode(node, "LabeledStatement");
   }
-  parseExpressionStatement(node, expr, decorators) {
+  parseExpressionStatement(node, expr, _decorators) {
     node.expression = expr;
     this.semicolon();
     return this.finishNode(node, "ExpressionStatement");
@@ -10864,6 +10893,7 @@ class StatementParser extends ExpressionParser {
     return this.finishNode(node, isForIn ? "ForInStatement" : "ForOfStatement");
   }
   parseVar(node, isFor, kind, allowMissingInitializer = false) {
+    // noinspection JSMismatchedCollectionQueryUpdate
     const declarations = (node.declarations = []);
     node.kind = kind;
     for (;;) {
@@ -11206,6 +11236,7 @@ class StatementParser extends ExpressionParser {
   declareClassPrivateMethodInScope(node, kind) {
     this.classScope.declarePrivateName(this.getPrivateNameSV(node.key), kind, node.key.loc.start);
   }
+  /** @param {*} methodOrProp */
   parsePostMemberNameModifiers(methodOrProp) {}
   parseClassPrivateProperty(node) {
     this.parseInitializer(node);
@@ -11294,6 +11325,7 @@ class StatementParser extends ExpressionParser {
     }
     this.unexpected(null, 5);
   }
+  /** @param {*} node */
   eatExportStar(node) {
     return this.eat(55);
   }
@@ -11380,6 +11412,7 @@ class StatementParser extends ExpressionParser {
     this.semicolon();
     return res;
   }
+  /** @param {*} node */
   parseExportDeclaration(node) {
     return this.match(80) ? this.parseClass(this.startNode(), true, false) : this.parseStatementListItem();
   }
@@ -11505,7 +11538,7 @@ class StatementParser extends ExpressionParser {
     }
     return nodes;
   }
-  parseExportSpecifier(node, isString, isInTypeExport, isMaybeTypeOnly) {
+  parseExportSpecifier(node, isString, isInTypeExport, _isMaybeTypeOnly) {
     this.eatContextual(93)
       ? (node.exported = this.parseModuleExportName())
       : isString
@@ -11590,7 +11623,8 @@ class StatementParser extends ExpressionParser {
     this.applyImportPhase(node, isExport, null);
     return phaseIdentifier;
   }
-  isPrecedingIdImportPhase(phase) {
+  // noinspection JSUnusedGlobalSymbols
+  isPrecedingIdImportPhase(_phase) {
     const { type } = this.state;
     return tokenIsIdentifier(type) ? type !== 97 || this.lookaheadCharCode() === 102 : type !== 12;
   }

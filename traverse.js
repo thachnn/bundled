@@ -267,7 +267,7 @@ var s = 1000,
   d = h * 24,
   w = d * 7,
   y = d * 365.25;
-var ms = function (val, options) {
+var ms = function (val, /** Object.<string, *> */ options) {
   options = options || {};
   var type = typeof val;
   if (type === 'string' && val.length > 0) return parse(val);
@@ -388,9 +388,8 @@ function setup$1(env) {
       if (!debug.enabled) return;
 
       const self = debug,
-        curr = Number(new Date()),
-        ms = curr - (prevTime || curr);
-      self.diff = ms;
+        curr = Number(new Date());
+      self.diff = curr - (prevTime || curr);
       self.prev = prevTime;
       self.curr = curr;
       prevTime = curr;
@@ -582,6 +581,7 @@ _debug.colors = [
   '#FFCC33'
 ];
 function useColors() {
+  // noinspection JSUnresolvedVariable
   return !(
     typeof window == 'undefined' || !window.process || (window.process.type !== 'renderer' && !window.process.__nwjs)
   ) || (
@@ -810,6 +810,7 @@ class Binding {
 
     this.clearValue();
   }
+  // noinspection JSUnusedGlobalSymbols
   deoptValue() {
     this.clearValue();
     this.hasDeoptedValue = true;
@@ -2670,6 +2671,7 @@ const collectorVisitor = {
   }
 };
 let uid = 0;
+// noinspection JSUnusedGlobalSymbols
 class Scope {
   constructor(path) {
     this.uid = void 0;
@@ -3142,7 +3144,7 @@ class Scope {
     return this.getBindingIdentifier(name) === node;
   }
   getBinding(name) {
-    let previousPath,
+    let previousPath = void 0,
       scope = this;
     do {
       const binding = scope.getOwnBinding(name);
@@ -3246,7 +3248,7 @@ function getStatementParent() {
 }
 function getEarliestCommonAncestorFrom(paths) {
   return this.getDeepestCommonAncestorFrom(paths, function (deepest, i, ancestries) {
-    let earliest;
+    let earliest = void 0;
     const keys = VISITOR_KEYS$4[deepest.type];
     for (const ancestry of ancestries) {
       const path = ancestry[i + 1];
@@ -3322,7 +3324,7 @@ var NodePath_ancestry = Object.freeze({
   isDescendant
 });
 
-const { createFlowUnionType, createTSUnionType, createUnionTypeAnnotation, isFlowType, isTSType } = _t;
+const { createFlowUnionType, createTSUnionType, createUnionTypeAnnotation, isFlowType /*, isTSType */ } = _t;
 function createUnionType(types) {
   return isFlowType(types[0])
     ? createFlowUnionType
@@ -4126,6 +4128,7 @@ function _evaluate(path, state) {
     return obj;
   }
   if (path.isLogicalExpression()) {
+    // noinspection UnnecessaryLocalVariableJS
     const wasConfident = state.confident,
       left = evaluateCached(path.get("left"), state),
       leftConfident = state.confident;
@@ -6254,6 +6257,7 @@ Object.assign(
   NodePath_family,
   NodePath_comments
 );
+// noinspection JSUnusedGlobalSymbols
 NodePath.prototype._guessExecutionStatusRelativeToDifferentFunctions = _guessExecutionStatusRelativeTo;
 
 for (const type of _t.TYPES) {

@@ -2058,7 +2058,7 @@ const BLOCK_SCOPED_SYMBOL = Symbol.for("var used to be block scoped"),
 
   VISITOR_KEYS = {},
   ALIAS_KEYS = {},
-  FLIPPED_ALIAS_KEYS = {},
+  FLIPPED_ALIAS_KEYS = /** @type {Object.<string, *>} */ {},
   NODE_FIELDS = {},
   BUILDER_KEYS = {},
   DEPRECATED_KEYS = {},
@@ -2584,6 +2584,7 @@ defineType$4("StringLiteral", {
   fields: { value: { validate: assertValueType("string") } },
   aliases: ["Expression", "Pureish", "Literal", "Immutable"]
 });
+// noinspection JSUnusedLocalSymbols
 defineType$4("NumericLiteral", {
   builder: ["value"],
   deprecatedAlias: "NumberLiteral",
@@ -2808,7 +2809,7 @@ defineType$4("RestElement", {
   }),
   validate(parent, key) {
     if (!process.env.BABEL_TYPES_8_BREAKING) return;
-    const match = /(\w+)\[(\d+)\]/.exec(key);
+    const match = /(\w+)\[(\d+)]/.exec(key);
     if (!match) throw new Error("Internal Babel error: malformed key.");
     const [, listKey, index] = match;
     if (parent[listKey].length > +index + 1) throw new TypeError("RestElement must be last element of " + listKey);
@@ -6662,7 +6663,7 @@ const STANDARDIZED_TYPES = FLIPPED_ALIAS_KEYS.Standardized,
 function toBlock(node, parent) {
   if (isBlockStatement(node)) return node;
 
-  let blockNodes = [];
+  let blockNodes; //= []
   if (isEmptyStatement(node)) blockNodes = [];
   else {
     isStatement(node) || (node = isFunction(parent) ? returnStatement(node) : expressionStatement(node));
@@ -7175,6 +7176,7 @@ function isVar(node) {
 
 const react = { isReactComponent, isCompatTag, buildChildren };
 
+// noinspection JSUnusedGlobalSymbols
 module.exports = {
   ACCESSOR_TYPES,
   ALIAS_KEYS,

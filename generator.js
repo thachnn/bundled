@@ -595,13 +595,12 @@ function addMappingInternal(skipable, map, mapping) {
   if (!source)
     return addSegmentInternal(skipable, map, generated.line - 1, generated.column, null, null, null, null, null);
 
-  const s = source;
   return addSegmentInternal(
     skipable,
     map,
     generated.line - 1,
     generated.column,
-    s,
+    source,
     original.line - 1,
     original.column,
     name,
@@ -723,6 +722,7 @@ let Buffer$1 = class {
     item.filename = filename;
     this._queueCursor++;
   }
+  // noinspection JSUnusedGlobalSymbols
   _popQueue() {
     if (this._queueCursor === 0) throw new Error("Cannot pop from empty queue");
 
@@ -814,6 +814,7 @@ let Buffer$1 = class {
       position = this._position;
     this._last = str.charCodeAt(len - 1);
     if (++this._appendCount > 4096) {
+      // noinspection BadExpressionStatementJS
       +this._str; // huge performance boost
       this._buf += this._str;
       this._str = str;
@@ -1454,6 +1455,7 @@ function needsParens$1(node, parent, printStack) {
   );
 }
 
+// noinspection JSUnusedGlobalSymbols
 var n = Object.freeze({
   __proto__: null,
   needsParens: needsParens$1,
@@ -1853,6 +1855,7 @@ function LabeledStatement(node) {
   this.space();
   this.print(node.body, node);
 }
+/** @param {({handlers: ?Array}|*)} node */
 function TryStatement(node) {
   this.word("try");
   this.space();
@@ -2520,8 +2523,8 @@ const singleEscapes = {
 };
 const regexSingleEscape = /["'\\\b\f\n\r\t]/,
   regexDigit = /[0-9]/,
-  regexWhitelist = /[ !#-&\(-\[\]-_a-~]/;
-const jsesc = (argument, options) => {
+  regexWhitelist = /[ !#-&(-\[\]-_a-~]/;
+const jsesc = (/** (number|*) */ argument, options) => {
   const increaseIndentation = () => {
     oldIndent = indent;
     ++options.indentLevel;
@@ -2690,7 +2693,7 @@ const jsesc = (argument, options) => {
     result += escaped;
   }
   if (options.wrap) result = quote + result + quote;
-  if (quote == '`') result = result.replace(/\$\{/g, '\\${');
+  if (quote == '`') result = result.replace(/\${/g, '\\${');
 
   return options.isScriptContext
     ? result.replace(/<\/(script|style)/gi, '<\\/$1').replace(/<!--/g, json ? '\\u003C!--' : '\\x3C!--')
@@ -4414,6 +4417,7 @@ const { isFunction, isStatement, isClassBody, isTSInterfaceBody, isTSEnumDeclara
   HAS_NEWLINE = /[\n\r\u2028\u2029]/,
   HAS_BlOCK_COMMENT_END = /\*\//,
   { needsParens } = n;
+// noinspection JSUnusedGlobalSymbols
 class Printer {
   constructor(format, map) {
     this.inForStatementInitCounter = 0;
@@ -4617,7 +4621,7 @@ class Printer {
     if (!parenPushNewlineState) return;
     const len = str.length;
     let i;
-    for (i = 0; i < len && str.charCodeAt(i) === 32; i++) continue;
+    for (i = 0; i < len && str.charCodeAt(i) === 32; i++); //continue
     if (i === len) return;
 
     const cha = str.charCodeAt(i);
@@ -4988,7 +4992,7 @@ class Generator extends Printer {
     return super.generate(this.ast);
   }
 }
-function normalizeOptions(code, opts) {
+function normalizeOptions(code, /** Object.<string, *> */ opts) {
   var _opts$recordAndTupleS;
   const format = {
     auxiliaryCommentBefore: opts.auxiliaryCommentBefore,

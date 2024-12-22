@@ -1,21 +1,27 @@
 "use strict";
 
+// noinspection NodeCoreCodingAssistance,NpmUsedModulesInstalled
 var traverse = require('./traverse'),
   t$5 = require('./types'),
   template$1 = require('./template'),
   assert = require('assert'),
   vendors = require('./vendors.js'),
   generate = require('./generator'),
-  path = require('path'),
-  fs = require('fs'),
+  /** @prop {Function} toNamespacedPath */ path = require('path'),
+  /** @prop {Function} Stats */ fs = require('fs'),
+  /**
+   * @prop {Function} fileURLToPath
+   * @prop {Function} pathToFileURL
+   */
   url = require('url'),
-  module$1 = require('module'),
+  module$1 = /** @type {Object.<string, *>} */ require('module'),
   parser$1 = require('./parser'),
   common = require('./common.js'),
   process$1 = require('process'),
-  v8 = require('v8'),
+  v8 = /** @type {{startupSnapshot: Object.<string, *>}} */ require('v8'),
   util = require('util');
 
+// noinspection JSUnusedGlobalSymbols
 var _babel = Object.freeze({
   __proto__: null,
   get DEFAULT_EXTENSIONS() { return DEFAULT_EXTENSIONS; },
@@ -1432,7 +1438,7 @@ function getHelperMetadata(file) {
   const globals = new Set(),
     localBindingNames = new Set(),
     dependencies = new Map();
-  let exportName, exportPath;
+  let exportName = void 0, exportPath;
   const exportBindingAssignments = [],
     importPaths = [],
     importBindingsReferences = [];
@@ -1580,6 +1586,7 @@ function loadHelper(name) {
     helperData[name] = {
       minVersion: helper.minVersion,
       build(getDependency, id, localBindings) {
+        /** @type {*} */
         const file = fn();
         metadata || (metadata = getHelperMetadata(file));
         permuteHelperAST(file, metadata, id, localBindings, getDependency);
@@ -1751,6 +1758,7 @@ class ImportInjector {
   addNamespace(importedSourceIn, opts) {
     return this._generateImport(this._applyDefaults(importedSourceIn, opts), null);
   }
+  // noinspection JSUnusedGlobalSymbols
   addSideEffect(importedSourceIn, opts) {
     return this._generateImport(this._applyDefaults(importedSourceIn, opts), void 0);
   }
@@ -2016,7 +2024,7 @@ simpleAssignmentVisitor.UpdateExpression = {
 
 function simplifyAccess(path, bindingNames) {
   var _arguments$;
-  path.traverse(simpleAssignmentVisitor, {
+  path.traverse(simpleAssignmentVisitor, /** @lends simpleAssignmentVisitor */ {
     scope: path.scope,
     bindingNames,
     seen: new WeakSet(),
@@ -3077,10 +3085,11 @@ class File {
     });
     return uid;
   }
+  // noinspection JSUnusedGlobalSymbols
   addTemplateObject() {
     throw new Error("This function has been moved into the template literal transform itself.");
   }
-  buildCodeFrameError(node, msg, _Error = SyntaxError) {
+  buildCodeFrameError(/** Object.<string, *> */ node, msg, _Error = SyntaxError) {
     let loc = node && (node.loc || node._loc);
     if (!loc && node) {
       const state = { loc: null };
@@ -3223,7 +3232,7 @@ const GENSYNC_START = Symbol.for("gensync:v1:start"),
   GENSYNC_RACE_NONEMPTY = "GENSYNC_RACE_NONEMPTY",
   GENSYNC_ERRBACK_NO_CALLBACK = "GENSYNC_ERRBACK_NO_CALLBACK";
 var gensync = Object.assign(function (optsOrFn) {
-  let genFn = optsOrFn;
+  let genFn; //= optsOrFn
   genFn = typeof optsOrFn != "function" ? newGenerator(optsOrFn) : wrapGenerator(optsOrFn);
 
   return Object.assign(genFn, makeFunctionAPI(genFn));
@@ -3737,6 +3746,7 @@ const START_HIDING = "startHiding - secret - don't use this - v1",
   expectedErrors = new WeakSet(),
   virtualFrames = new WeakMap();
 function CallSite(filename) {
+  // noinspection JSUnusedGlobalSymbols
   return Object.create({
     isNative: () => false,
     isConstructor: () => false,
@@ -3942,9 +3952,11 @@ function once(fn) {
     try {
       result = yield* fn();
       resultP = null;
+      // noinspection JSUnusedAssignment
       resolve(result);
       return result;
     } catch (error) {
+      // noinspection JSUnusedAssignment
       reject(error);
       throw error;
     }
@@ -4336,7 +4348,9 @@ const Yallist = yallist,
   CACHE = Symbol('cache'),
   UPDATE_AGE_ON_GET = Symbol('updateAgeOnGet'),
   naiveLength = () => 1;
+// noinspection JSUnusedGlobalSymbols
 class LRUCache {
+  /** @param {Object.<string, *>} options */
   constructor(options) {
     if (typeof options == 'number') options = { max: options };
     options || (options = {});
@@ -5462,6 +5476,7 @@ function isRequired(name, targets, { compatData = plugins$1, includes, excludes 
     ((includes == null || !includes.has(name)) && targetsSupported(targets, compatData[name]))
   );
 }
+/** @returns {Set.<string>} */
 function filterItems(list, includes, excludes, targets, defaultIncludes, defaultExcludes, pluginSyntaxMap) {
   const result = new Set(),
     options = { compatData: list, includes, excludes };
@@ -5745,6 +5760,7 @@ function* createDescriptor(pair, dirname, { type, alias, ownPass }) {
 
     const resolver = type === "plugin" ? loadPlugin : loadPreset,
       request = value;
+    // noinspection JSValidateTypes
     ({ filepath, value } = yield* resolver(value, dirname));
     file = { request, resolved: filepath };
   }
@@ -6377,7 +6393,7 @@ const buildPresetChainWalker = makeChainWalker({
   overridesEnv: (preset, index, envName) => loadPresetOverridesEnvDescriptors(preset)(index)(envName),
   createLogger: () => () => {}
 });
-const loadPresetDescriptors = makeWeakCacheSync(preset =>
+const loadPresetDescriptors = makeWeakCacheSync(/** @prop {string} alias */ preset =>
   buildRootDescriptors(preset, preset.alias, createUncachedDescriptors)
 );
 const loadPresetEnvDescriptors = makeWeakCacheSync(preset =>
@@ -6789,8 +6805,8 @@ function _objectWithoutPropertiesLoose(source, excluded) {
   }, {});
 }
 
-function getEnv(defaultValue = "development") {
-  return process.env.BABEL_ENV || "production"; // || defaultValue
+function getEnv(defaultValue = "production") { // "development"
+  return process.env.BABEL_ENV || defaultValue;
 }
 
 function resolveRootMode(rootDir, rootMode) {
@@ -6889,6 +6905,7 @@ function* loadPartialConfig$1(opts) {
     files
   );
 }
+// noinspection JSUnusedGlobalSymbols
 class PartialConfig {
   constructor(options, babelrc, ignore, config, fileHandling, files) {
     this.options = void 0;
@@ -7002,7 +7019,7 @@ function enhanceError(context, fn) {
     try {
       return yield* fn(arg1, arg2);
     } catch (e) {
-      if (!/^\[BABEL\]/.test(e.message)) {
+      if (!/^\[BABEL]/.test(e.message)) {
         var _context$filename = context.filename;
         e.message = `[BABEL] ${_context$filename != null ? _context$filename : "unknown file"}: ${e.message}`;
       }
@@ -7171,6 +7188,7 @@ class PluginPass {
     this.cwd = void 0;
     this.filename = void 0;
     this.key = key;
+    /** @member {File} */
     this.file = file;
     this.opts = options || {};
     this.cwd = file.opts.cwd;
@@ -7193,9 +7211,11 @@ class PluginPass {
   }
 }
 
+/** @memberof PluginPass# */
 PluginPass.prototype.getModuleName = function () {
   return this.file.getModuleName();
 };
+/** @memberof PluginPass# */
 PluginPass.prototype.addImport = function () {
   this.file.addImport();
 };
@@ -7622,12 +7642,14 @@ function* parser(pluginPasses, { parserOpts, highlightCode = true, filename = "u
     if (results.length === 1) {
       yield* [];
       if (typeof results[0].then == "function")
+        // noinspection ExceptionCaughtLocallyJS
         throw new Error(
           "You appear to be using an async parser plugin, which your current version of Babel does not support. If you're using a published plugin, you may need to upgrade your @babel/core version."
         );
 
       return results[0];
     }
+    // noinspection ExceptionCaughtLocallyJS
     throw new Error("More than one plugin attempted to override parsing.");
   } catch (err) {
     if (err.code === "BABEL_PARSER_SOURCETYPE_MODULE_REQUIRED")
@@ -8134,6 +8156,10 @@ class TraceMap {
     this._bySourceMemos = void 0;
   }
 }
+/**
+ * @see TraceMap#_bySources
+ * @see TraceMap#_bySourceMemos
+ */
 (() => {
   decodedMappings = map => map._decoded || (map._decoded = decode(map._encoded));
   traceSegment = (map, line, column) => {
@@ -8180,6 +8206,10 @@ class GenMapping {
     this.sourceRoot = sourceRoot;
   }
 }
+/**
+ * @see GenMapping#_sourcesContent
+ * @see GenMapping#_mappings
+ */
 (() => {
   addSegment = (map, genLine, genColumn, source, sourceLine, sourceColumn, name) => {
     const { _mappings: mappings, _sources: sources, _sourcesContent: sourcesContent, _names: names } = map,
@@ -8807,7 +8837,7 @@ const handle$1 = {
         baseNeedsMemoised = scope.maybeGenerateMemoised(startingNode),
         baseRef = baseNeedsMemoised != null ? baseNeedsMemoised : startingNode,
         parentIsOptionalCall = parentPath.isOptionalCallExpression({ callee: node }),
-        isOptionalCall = parent => parentIsOptionalCall,
+        isOptionalCall = _parent => parentIsOptionalCall,
         parentIsCall = parentPath.isCallExpression({ callee: node });
       startingOptional.replaceWith(toNonOptional(startingOptional, baseRef));
       isOptionalCall()
@@ -8948,7 +8978,7 @@ const handle$1 = {
   }
 };
 function memberExpressionToFunctions(path, visitor, state) {
-  path.traverse(visitor, Object.assign({}, handle$1, state, { memoiser: new AssignmentMemoiser() }));
+  path.traverse(visitor, Object.assign({}, handle$1, state, /** @lends specHandlers */ { memoiser: new AssignmentMemoiser() }));
 }
 
 const {
@@ -9890,6 +9920,7 @@ function buildDecoratedClass(ref, path, elements, file) {
       ${superClass}
     )
   `;
+  // noinspection JSAnnotator
   isStrict || wrapperCall.arguments[1].body.directives.push(t$5.directive(t$5.directiveLiteral("use strict")));
 
   let replacement = wrapperCall,
@@ -10004,7 +10035,7 @@ function enableFeature$1(file, feature, loose) {
       file.set(looseLowPriorityKey, file.get(looseLowPriorityKey) | feature);
     } else setLoose(file, feature, loose);
   }
-  let resolvedLoose, higherPriorityPluginName;
+  let resolvedLoose = void 0, higherPriorityPluginName;
   for (const [mask, name] of featuresSameLoose) {
     if (!hasFeature$1(file, mask)) continue;
     const loose = isLoose(file, mask);
@@ -10043,8 +10074,8 @@ function canIgnoreLoose(file, feature) {
 function shouldTransform$2(path, file) {
   let decoratorPath = null,
     publicFieldPath = null,
-    privateFieldPath = null,
-    privateMethodPath = null,
+    /** @type {?NodePath} */ privateFieldPath = null,
+    /** @type {?NodePath} */ privateMethodPath = null,
     staticBlockPath = null;
   if (hasOwnDecorators(path.node)) decoratorPath = path.get("decorators.0");
 
@@ -11109,7 +11140,7 @@ var transformModulesCommonjs = declare((api, options) => {
     strictMode,
     noInterop,
     importInterop,
-    lazy = false,
+    /** @type {(boolean|string[]|Function)} */ lazy = false,
     allowCommonJSExports = true,
     loose = false
   } = options;
@@ -11389,7 +11420,7 @@ function loadCtsDefault(filepath) {
         }]
       ]
     };
-    handler = function (m, filename) {
+    handler = function (/** (*|{_compile: Function}) */ m, filename) {
       if (handler && filename.endsWith(ext))
         try {
           return m._compile(transformFileSync(filename, Object.assign({}, opts, { filename })).code, filename);
@@ -11438,7 +11469,7 @@ function loadMjsDefault(filepath) {
         new ConfigError("Internal error: Native ECMAScript modules aren't supported by this platform.\n", filepath)
       );
 }
-function getTSPreset(filepath) {
+function getTSPreset(_filepath) {
   return presetTypescript;
 }
 
@@ -11508,6 +11539,7 @@ const packageToBabelConfig = makeWeakCacheSync(file => {
   return { filepath: file.filepath, dirname: file.dirname, options: babel };
 });
 const readConfigJSON5 = makeStaticFileCache((filepath, content) => {
+  /** @type {Object.<*, *>} */
   let options;
   try {
     options = vendors.json5parse(content);
@@ -11593,6 +11625,7 @@ function* loadConfig(name, dirname, envName, caller) {
   debug$1("Loaded config %o from %o.", name, dirname);
   return conf;
 }
+/** @returns {Generator.<*, *, *>} */
 function readConfig(filepath, envName, caller) {
   switch (path.extname(filepath)) {
     case ".js":
@@ -11896,10 +11929,9 @@ function getPackageConfig(path, specifier, base) {
   try {
     packageJson = JSON.parse(source);
   } catch (error) {
-    const exception = error;
     throw new ERR_INVALID_PACKAGE_CONFIG$1(path,
       (base ? `"${specifier}" from ` : '') + url.fileURLToPath(base || specifier),
-      exception.message);
+      error.message);
   }
   const { exports, imports, main, name, type } = packageJson;
   const packageConfig = {
@@ -12058,7 +12090,7 @@ function emitLegacyIndexDeprecation(url$1, packageJsonUrl, base, main) {
           main
         )}, excluding the full filename and extension to the resolved file at "${path.slice(
           pkgPath.length
-        )}", imported from ${basePath}.\n Automatic extension resolution of the "main" field isdeprecated for ES modules.`,
+        )}", imported from ${basePath}.\n Automatic extension resolution of the "main" field is deprecated for ES modules.`,
         'DeprecationWarning', 'DEP0151'
       )
     : process$1.emitWarning(
@@ -12553,7 +12585,7 @@ function throwIfUnsupportedURLScheme(parsed, experimentalNetworkImports) {
       parsed, ['file', 'data'].concat(experimentalNetworkImports ? ['https', 'http'] : [])
     );
 }
-function defaultResolve(specifier, context = {}) {
+function defaultResolve(specifier, /** Object.<*, *> */ context = {}) {
   const { parentURL } = context;
   assert(parentURL !== void 0, 'expected `parentURL` to be defined');
   throwIfInvalidParentURL(parentURL);
@@ -12581,7 +12613,7 @@ function defaultResolve(specifier, context = {}) {
   return { url: url$1.href, format: defaultGetFormatWithoutErrors(url$1, { parentURL }) };
 }
 function resolve$1(specifier, parent) {
-  if (!parent) throw new Error('Please pass `parent`: `import-meta-resolve` cannot ponyfill that');
+  if (!parent) throw new Error('Please pass `parent`: `import-meta-resolve` cannot polyfill that');
 
   try {
     return defaultResolve(specifier, { parentURL: parent }).url;
@@ -12655,6 +12687,7 @@ to your top-level package.json.
 `;
   throw error;
 }
+/** @returns {*} */
 function tryRequireResolve(id, dirname) {
   try {
     return dirname
@@ -12664,6 +12697,7 @@ function tryRequireResolve(id, dirname) {
     return { error, value: null };
   }
 }
+/** @returns {*} */
 function tryImportMetaResolve(id, options) {
   try {
     return { error: null, value: resolve$1(id, options) };
@@ -12804,7 +12838,7 @@ function makeNoopPlugin() {
 
 var externalHelpers = declare((api, options) => {
   api.assertVersion(7);
-  const { helperVersion = "7.0.0-beta.0", whitelist = false } = options;
+  const { helperVersion = "7.0.0-beta.0", whitelist = /** @type {?Array} */ false } = options;
   if (whitelist !== false && (!Array.isArray(whitelist) || whitelist.some(w => typeof w != "string")))
     throw new Error(".whitelist must be undefined, false, or an array of strings");
 
@@ -13093,7 +13127,7 @@ function classOrObjectMethod(path, callId) {
 function plainFunction(inPath, callId, noNewArrows, ignoreFunctionLength, loose) {
   let node,
     path = inPath,
-    functionId = null;
+    functionId = /** @type {*} */ null;
   const nodeParams = inPath.node.params;
   if (path.isArrowFunctionExpression()) {
     var _path$arrowFunctionTo = path.arrowFunctionToExpression({ noNewArrows });
@@ -14212,6 +14246,7 @@ class DestructuringTransformer {
     this.useBuiltIns = opts.useBuiltIns;
     this.addHelper = opts.addHelper;
   }
+  // noinspection JSUnusedGlobalSymbols
   getExtendsHelper() {
     return this.useBuiltIns
       ? t$5.memberExpression(t$5.identifier("Object"), t$5.identifier("assign"))
@@ -14414,8 +14449,7 @@ function buildObjectExcludingKeys(excludedKeys, objRef, scope, addHelper, object
       keys.push(t$5.cloneNode(key));
       hasTemplateLiteral = true;
     } else if (t$5.isLiteral(key)) keys.push(t$5.stringLiteral(String(key.value)));
-    else if (t$5.isPrivateName(key));
-    else {
+    else if (!t$5.isPrivateName(key)) { // else
       keys.push(t$5.cloneNode(key));
       allLiteral = false;
     }
@@ -14481,7 +14515,7 @@ function convertVariableDeclaration(
       +i == node.declarations.length - 1 || t$5.inherits(nodes[nodes.length - 1], declar);
     } else nodes.push(t$5.inherits(destructuring.buildVariableAssignment(pattern, patternId), declar));
   }
-  let tail = null,
+  let tail = /** @type {*} */ null,
     nodesOut = [];
   for (const node of nodes) {
     if (t$5.isVariableDeclaration(node)) {
@@ -14559,7 +14593,7 @@ function variableDeclarationHasPattern(node) {
 
   return false;
 }
-var transformDestructuring = declare((api, options) => {
+var transformDestructuring = declare((api, /** Object.<string, *> */ options) => {
   var _api$assumption, _options$allowArrayLi, _api$assumption2;
   api.assertVersion(7);
   const { useBuiltIns = false } = options;
@@ -15737,7 +15771,7 @@ var proposalFunctionSent = declare(api => {
         if (!fnPath.node.generator) throw new Error("Parent generator function not found");
 
         const sentId = path.scope.generateUid("function.sent");
-        fnPath.traverse(yieldVisitor, { sentId });
+        fnPath.traverse(yieldVisitor, /** @lends yieldVisitor */ { sentId });
         fnPath.node.body.body.unshift(
           t$5.variableDeclaration("let", [t$5.variableDeclarator(t$5.identifier(sentId), t$5.yieldExpression())])
         );
@@ -18184,7 +18218,7 @@ var proposalObjectRestSpread = declare((api, opts) => {
           }
           let ref = originalPath.node.init;
           const refPropertyPath = [];
-          let kind;
+          let kind = void 0;
           path.findParent(path => {
             if (path.isObjectProperty()) refPropertyPath.unshift(path);
             else if (path.isVariableDeclarator()) {
@@ -18308,6 +18342,7 @@ var proposalObjectRestSpread = declare((api, opts) => {
           const hadProps = props.length > 0,
             obj = t$5.objectExpression(props);
           props = [];
+          // noinspection JSAnnotator
           !exp
             ? (exp = t$5.callExpression(helper, [obj]))
             : pureGetters
@@ -18319,6 +18354,7 @@ var proposalObjectRestSpread = declare((api, opts) => {
         for (const prop of path.node.properties)
           if (t$5.isSpreadElement(prop)) {
             make();
+            // noinspection JSAnnotator
             exp.arguments.push(prop.argument);
           } else props.push(prop);
 
@@ -18549,8 +18585,7 @@ const buildOptimizedSequenceExpression = ({ call, path, placeholder }) => {
       return t$5.sequenceExpression([assign, calledExpression.body]);
     }
   } else if (t$5.isIdentifier(calledExpression, { name: "eval" })) {
-    const evalSequence = t$5.sequenceExpression([t$5.numericLiteral(0), calledExpression]);
-    call.callee = evalSequence;
+    call.callee = t$5.sequenceExpression([t$5.numericLiteral(0), calledExpression]);
   }
   path.scope.push({ id: t$5.cloneNode(placeholder) });
   return t$5.sequenceExpression([assign, call]);
@@ -18641,7 +18676,7 @@ const smartVisitor = {
     scope.push({ id: placeholder });
     let call;
     if (t$5.isPipelineTopicExpression(right)) {
-      path.get("right").traverse(updateTopicReferenceVisitor, { topicId: placeholder });
+      path.get("right").traverse(updateTopicReferenceVisitor, /** @lends updateTopicReferenceVisitor */ { topicId: placeholder });
       call = right.expression;
     } else {
       let callee = right.callee;
@@ -18778,7 +18813,7 @@ var proposalPrivatePropertyInObject = declare((api, opt) => {
 });
 
 const v$1 = new OptionValidator("@babel/plugin-proposal-record-and-tuple");
-var proposalRecordAndTuple = declare((api, options) => {
+var proposalRecordAndTuple = declare((api, /** Object.<string, *> */ options) => {
   api.assertVersion(7);
   const polyfillModuleName = v$1.validateStringOption(
     "polyfillModuleName", options.polyfillModuleName, "@bloomberg/record-tuple-polyfill"
@@ -19550,6 +19585,7 @@ function buildConstructor(classRef, constructorBody, node) {
   return func;
 }
 function transformClass(path, file, builtinClasses, isLoose, assumptions, supportUnicodeId) {
+  /** @type {Object.<string, *>} */
   const classState = {
     parent: void 0,
     scope: void 0,
@@ -20681,7 +20717,7 @@ function buildLoopBody(path, declar, newBody) {
   }
   return block;
 }
-var transformForOf = declare((api, options) => {
+var transformForOf = declare((api, /** Object.<string, *> */ options) => {
   var _options$assumeArray, _options$allowArrayLi, _api$assumption;
   api.assertVersion(7);
   {
@@ -21140,6 +21176,7 @@ var transformModulesSystemjs = declare((api, options) => {
   api.assertVersion(7);
   const { systemGlobal = "System", allowTopLevelThis = false } = options,
     reassignmentVisited = new WeakSet();
+  /** @prop {Function} buildCall */
   const reassignmentVisitor = {
     "AssignmentExpression|UpdateExpression"(path) {
       if (reassignmentVisited.has(path.node)) return;
@@ -21699,6 +21736,7 @@ function pushAccessor(mutatorMap, node) {
 function toDefineObject(mutatorMap) {
   const objExpr = t$5.objectExpression([]);
   Object.keys(mutatorMap).forEach(function (mutatorMapKey) {
+    /** @type {Object.<*, *>} */
     const map = mutatorMap[mutatorMapKey];
     map.configurable = t$5.booleanLiteral(true);
     map.enumerable = t$5.booleanLiteral(true);
@@ -22465,7 +22503,7 @@ function createPlugin({ name, development }) {
       const openingPath = path.get("openingElement"),
         args = [getTag(openingPath)],
         attribsArray = [],
-        extracted = Object.create(null);
+        extracted = /** @type {Object.<*, *>} */ Object.create(null);
       for (const attr of openingPath.get("attributes"))
         if (attr.isJSXAttribute() && t$5.isJSXIdentifier(attr.node.name)) {
           const { name } = attr.node.name;
@@ -22875,6 +22913,7 @@ function Entry() {
 function FunctionEntry(returnLoc) {
   Entry.call(this);
   getTypes().assertLiteral(returnLoc);
+  // noinspection JSUnusedGlobalSymbols
   this.returnLoc = returnLoc;
 }
 util.inherits(FunctionEntry, Entry);
@@ -22915,6 +22954,7 @@ function CatchEntry(firstLoc, paramId) {
   t.assertLiteral(firstLoc);
   t.assertIdentifier(paramId);
   this.firstLoc = firstLoc;
+  // noinspection JSUnusedGlobalSymbols
   this.paramId = paramId;
 }
 util.inherits(CatchEntry, Entry);
@@ -23468,7 +23508,7 @@ Ep.explodeExpression = function (path, ignoreResult) {
 
   t.assertExpression(expr);
 
-  let result,
+  let result = void 0,
     after,
     self = this;
   function finish(expr) {
@@ -23756,7 +23796,7 @@ const getVisitor = ({ types: t }) => ({
     })
   }
 });
-function shouldRegenerate(node, state) {
+function shouldRegenerate(node, /** @prop {Object.<*, *>} opts */ state) {
   return node.generator
     ? node.async
       ? state.opts.asyncGenerators !== false
@@ -23985,6 +24025,7 @@ function hoist(node) {
 function createUtilsGetter(cache) {
   return path => {
     const prog = path.findParent(p => p.isProgram());
+    // noinspection JSUnusedGlobalSymbols
     return {
       injectGlobalImport(url) {
         cache.storeAnonymous(prog, url, (isScript, source) =>
@@ -24086,7 +24127,7 @@ function buildUnusedError(label, unused) {
         unused.map(original => `    ${String(original)}\n`).join("")
     : "";
 }
-function buldDuplicatesError(duplicates) {
+function buildDuplicatesError(duplicates) {
   return duplicates.size
     ? '  - The following polyfills were matched both by "include" and "exclude" patterns:\n' +
         Array.from(duplicates, name => `    ${name}\n`).join("")
@@ -24116,7 +24157,7 @@ function validateIncludeExclude(provider, polyfills, includePatterns, excludePat
       `Error while validating the "${provider}" provider options:\n` +
         buildUnusedError("include", unusedInclude) +
         buildUnusedError("exclude", unusedExclude) +
-        buldDuplicatesError(duplicates)
+        buildDuplicatesError(duplicates)
     );
 
   return { include, exclude };
@@ -24409,7 +24450,7 @@ function definePolyfillProvider(factory) {
     const { traverse } = babelApi;
     let debugLog;
     const missingDependencies = applyMissingDependenciesDefaults(options, babelApi);
-    const { debug, method, targets, provider, providerName, callProvider } = instantiateProvider(
+    const { /** @type {(boolean|string)} */ debug, method, targets, provider, providerName, callProvider } = instantiateProvider(
       factory,
       options,
       missingDependencies,
@@ -24484,7 +24525,7 @@ function definePolyfillProvider(factory) {
           if ((_debugLog$polyfillsSu2 = debugLog.polyfillsSupport) != null && _debugLog$polyfillsSu2[name]) {
             const filteredTargets = getInclusionReasons(name, targets, debugLog.polyfillsSupport);
             const formattedTargets = JSON.stringify(filteredTargets)
-              .replace(/,/g, ", ").replace(/^\{"/, '{ "').replace(/"\}$/, '" }');
+              .replace(/,/g, ", ").replace(/^{"/, '{ "').replace(/"}$/, '" }');
             console.log(`  ${name} ${formattedTargets}`);
           } else console.log("  " + name);
         }
@@ -31130,7 +31171,9 @@ var data = require$$0$3;
 const has$1 = Object.hasOwn || Function.call.bind({}.hasOwnProperty);
 function semver$1(input) {
   if (input instanceof semver$1) return input;
-  if (!(this instanceof semver$1)) return new semver$1(input);
+  if (!(this instanceof semver$1))
+    // noinspection JSPotentiallyInvalidConstructorUsage
+    return new semver$1(input);
   const match = /(\d+)(?:\.(\d+))?(?:\.(\d+))?/.exec(input);
   if (!match) throw TypeError('Invalid version: ' + input);
   const [, $major, $minor, $patch] = match;
@@ -31138,6 +31181,7 @@ function semver$1(input) {
   this.minor = $minor ? +$minor : 0;
   this.patch = $patch ? +$patch : 0;
 }
+// noinspection JSPotentiallyInvalidConstructorUsage
 semver$1.prototype.toString = function () {
   return `${this.major}.${this.minor}.${this.patch}`;
 };
@@ -31167,6 +31211,7 @@ function sortObjectByKey(object, fn) {
     return memo;
   }, {});
 }
+// noinspection JSUnusedGlobalSymbols
 var helpers = {
   compare: compare$1,
   filterOutStabilizedProposals,
@@ -45590,7 +45635,7 @@ var transformRuntime = declare((api, options, dirname) => {
   api.assertVersion(7);
   const {
     helpers: useRuntimeHelpers = true,
-    useESModules = false,
+    /** @type {(?string|boolean)} */ useESModules = false,
     version: runtimeVersion = "7.0.0-beta.0",
     absoluteRuntime = false
   } = options;
@@ -45613,14 +45658,14 @@ var transformRuntime = declare((api, options, dirname) => {
     throw options.useBuiltIns
       ? new Error("The 'useBuiltIns' option has been removed. The @babel/runtime module now uses builtins by default.")
       : new Error(
-          "The 'useBuiltIns' option has been removed. Use the 'corejs'option to polyfill with `core-js` via @babel/runtime."
+          "The 'useBuiltIns' option has been removed. Use the 'corejs' option to polyfill with `core-js` via @babel/runtime."
         );
 
   if (has(options, "polyfill"))
     throw options.polyfill === false
       ? new Error("The 'polyfill' option has been removed. The @babel/runtime module now skips polyfilling by default.")
       : new Error(
-          "The 'polyfill' option has been removed. Use the 'corejs'option to polyfill with `core-js` via @babel/runtime."
+          "The 'polyfill' option has been removed. Use the 'corejs' option to polyfill with `core-js` via @babel/runtime."
         );
 
   if (has(options, "moduleName"))
@@ -45703,7 +45748,7 @@ var transformShorthandProperties = declare(api => {
   };
 });
 
-var transformSpread = declare((api, options) => {
+var transformSpread = declare((api, /** Object.<string, *> */ options) => {
   var _api$assumption, _options$allowArrayLi;
   api.assertVersion(7);
   const iterableIsArray =
@@ -45970,7 +46015,8 @@ var transformTypeofSymbol = declare(api => {
 var transformUnicodeEscapes = declare(api => {
   api.assertVersion(7);
   const surrogate = /[\ud800-\udfff]/g,
-    unicodeEscape = /(\\+)u\{([0-9a-fA-F]+)\}/g;
+    unicodeEscape = /(\\+)u{([0-9a-fA-F]+)}/g;
+  /** @param {number} code */
   function escape(code) {
     let str = code.toString(16);
     while (str.length < 4) str = "0" + str;
@@ -46961,7 +47007,7 @@ var require$$0$1 = {
 
 var pluginBugfixes = require$$0$1;
 
-var require$$0 = {
+var overlappingPlugins$1 = {
   "transform-async-to-generator": ["bugfix/transform-async-arrows-in-class"],
   "transform-parameters": [
     "bugfix/transform-edge-default-parameters",
@@ -46973,8 +47019,6 @@ var require$$0 = {
   "transform-optional-chaining": ["bugfix/transform-v8-spread-parameters-in-optional-chaining"],
   "proposal-optional-chaining": ["bugfix/transform-v8-spread-parameters-in-optional-chaining"]
 };
-
-var overlappingPlugins$1 = require$$0;
 
 const keys = Object.keys,
   plugins = filterAvailable(plugins$1),
@@ -47389,13 +47433,13 @@ function getLocalTargets(optionsTargets, ignoreBrowserslistConfig, configPath, b
 
   return getTargets$1(optionsTargets, { ignoreBrowserslistConfig, configPath, browserslistEnv });
 }
-function supportsStaticESM(caller) {
+function supportsStaticESM(/** @prop {boolean} supportsStaticESM */ caller) {
   return !(caller == null || !caller.supportsStaticESM);
 }
-function supportsDynamicImport(caller) {
+function supportsDynamicImport(/** @prop {boolean} supportsDynamicImport */ caller) {
   return !(caller == null || !caller.supportsDynamicImport);
 }
-function supportsExportNamespaceFrom(caller) {
+function supportsExportNamespaceFrom(/** @prop {boolean} supportsExportNamespaceFrom */ caller) {
   return !(caller == null || !caller.supportsExportNamespaceFrom);
 }
 var presetEnv = declare((api, opts) => {
@@ -47413,7 +47457,7 @@ var presetEnv = declare((api, opts) => {
     modules,
     shippedProposals,
     spec,
-    targets: optionsTargets,
+    /** @type {Object.<string, *>} */ targets: optionsTargets,
     useBuiltIns,
     corejs: { version: corejs, proposals },
     browserslistEnv
@@ -47672,8 +47716,12 @@ function processOptions(options = {}) {
   });
   return Object.assign({}, options, { presets, plugins });
 }
-function transform(code, options) {
-  return transformSync(code, processOptions(options));
+function transform(code, options = {}, callback = void 0) {
+  if (typeof options == "function") {
+    callback = options;
+    options = {};
+  }
+  return transform$2(code, processOptions(options), callback);
 }
 function transformFromAst(ast, code, options) {
   return transformFromAstSync(ast, code, processOptions(options));
@@ -47684,8 +47732,13 @@ function transformAsync(code, options) {
 function transformFromAstAsync(ast, code, options) {
   return transformFromAstAsync$1(ast, code, processOptions(options));
 }
-function transformFile(filename, options) {
-  return transformFileSync(filename, processOptions(options));
+function transformFile(filename, options = {}, callback = void 0) {
+  if (typeof options == "function") {
+    callback = options;
+    options = {};
+  }
+  options = processOptions(options);
+  return callback === void 0 ? transformFileSync(filename, options) : transformFile$1(filename, options, callback);
 }
 function transformFileAsync(filename, options) {
   return transformFileAsync$1(filename, processOptions(options));
@@ -47713,7 +47766,8 @@ function registerPresets(newPresets) {
 }
 const version = "7.22.20";
 
-module.exports = {
+// noinspection JSUnusedGlobalSymbols
+module.exports = Object.assign({}, _babel, {
   availablePlugins,
   availablePresets,
   buildExternalHelpers,
@@ -47728,4 +47782,4 @@ module.exports = {
   transformFromAst,
   transformFromAstAsync,
   version
-};
+});
