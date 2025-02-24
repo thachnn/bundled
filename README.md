@@ -1,5 +1,5 @@
 <p align="center">
-  <a href="https://yarnpkg.com/">
+  <a href="https://classic.yarnpkg.com/">
     <img alt="Yarn" src="https://github.com/yarnpkg/assets/blob/master/yarn-kitten-full.png?raw=true" width="546">
   </a>
 </p>
@@ -35,17 +35,17 @@
 
 ## Installing Yarn
 
-Read the [Installation Guide](https://yarnpkg.com/en/docs/install) on our website for detailed instructions on how to install Yarn.
+Read the [Installation Guide](https://classic.yarnpkg.com/en/docs/install) on our website for detailed instructions on how to install Yarn.
 
 ## Using Yarn
 
-Read the [Usage Guide](https://yarnpkg.com/en/docs/usage) on our website for detailed instructions on how to use Yarn.
+Read the [Usage Guide](https://classic.yarnpkg.com/en/docs/usage) on our website for detailed instructions on how to use Yarn.
 
 ## Contributing to Yarn
 
-Contributions are always welcome, no matter how large or small. Substantial feature requests should be proposed as an [RFC](https://github.com/yarnpkg/rfcs). Before contributing, please read the [code of conduct](CODE_OF_CONDUCT.md).
+Contributions are always welcome, no matter how large or small. Substantial feature requests should be proposed as an [RFC](https://github.com/yarnpkg/rfcs). Before contributing, please read the [code of conduct](https://classic.yarnpkg.com/org/code-of-conduct).
 
-See [Contributing](https://yarnpkg.com/org/contributing/).
+See [Contributing](https://classic.yarnpkg.com/org/contributing/).
 
 ## Prior art
 
