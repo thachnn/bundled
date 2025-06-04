@@ -3,9 +3,7 @@
   "version": "2.7.16",
   "description": "template compiler for Vue 2.0",
   "main": "index.js",
-  "unpkg": "browser.js",
-  "jsdelivr": "browser.js",
-  "browser": "browser.js",
+  "browser": "build.js",
   "types": "types/index.d.ts",
   "files": [
     "types/*.d.ts",
