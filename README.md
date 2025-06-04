@@ -6,11 +6,11 @@ This package can be used to pre-compile Vue 2.0 templates into render functions 
 
 ## Installation
 
-``` bash
+```bash
 npm install vue-template-compiler
 ```
 
-``` js
+```js
 const compiler = require('vue-template-compiler')
 ```
 
@@ -20,7 +20,7 @@ const compiler = require('vue-template-compiler')
 
 Compiles a template string and returns compiled JavaScript code. The returned result is an object of the following format:
 
-``` js
+```js
 {
   ast: ?ASTElement, // parsed template elements to AST
   render: string, // main render function code
@@ -34,12 +34,14 @@ Note the returned function code uses `with` and thus cannot be used in strict mo
 #### Options
 
 - `outputSourceRange` *new in 2.6*
+
   - Type: `boolean`
   - Default: `false`
 
   Set this to true will cause the `errors` returned in the compiled result become objects in the form of `{ msg, start, end }`. The `start` and `end` properties are numbers that mark the code range of the error source in the template. This can be passed on to the `compiler.generateCodeFrame` API to generate a code frame for the error.
 
 - `whitespace`
+
   - Type: `string`
   - Valid values: `'preserve' | 'condense'`
   - Default: `'preserve'`
@@ -60,7 +62,7 @@ Note the returned function code uses `with` and thus cannot be used in strict mo
 
   Example:
 
-  ``` html
+  ```html
   <!-- source -->
   <div>
     <span>
@@ -87,10 +89,10 @@ Note the returned function code uses `with` and thus cannot be used in strict mo
 
   An object where the key is the directive name and the value is a function that transforms an template AST node. For example:
 
-  ``` js
+  ```js
   compiler.compile('<div v-test></div>', {
     directives: {
-      test (node, directiveMeta) {
+      test(node, directiveMeta) {
         // transform node based on directiveMeta
       }
     }
@@ -102,6 +104,7 @@ Note the returned function code uses `with` and thus cannot be used in strict mo
   Refer to the implementation of some [built-in compile-time directives](https://github.com/vuejs/vue/tree/dev/src/platforms/web/compiler/directives).
 
 - `preserveWhitespace` **Deprecated since 2.6**
+
   - Type: `boolean`
   - Default: `true`
 
@@ -113,7 +116,7 @@ Note the returned function code uses `with` and thus cannot be used in strict mo
 
 Similar to `compiler.compile`, but directly returns instantiated functions:
 
-``` js
+```js
 {
   render: Function,
   staticRenderFns: Array<Function>
