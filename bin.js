@@ -68,7 +68,7 @@ function parseArgs(args) {
     else if ((arg === '-' || arg[0] !== '-') && !opts.file)
       opts.file = arg !== '-' ? arg : false // STDIN
     else if (arg === '--help' || arg === '-h' || arg === '-?') return help()
-    else if (arg === '--output' || arg === '-o') opts.output = args.shift()
+    else if (arg === '--output' || arg === '-o') opts.output = args.shift() || help(1)
     else if (/^--condense\b/.test(arg)) opts.values.whitespace = 'condense'
     else if ((match = arg.match(/^--(no-)?([a-z][a-z_-]*)$/)))
       opts.values[toCamelCase(match[2])] = !match[1]
@@ -96,13 +96,13 @@ function main(args) {
   var opts = parseArgs(args)
   if (opts.file) run(fs.readFileSync(opts.file, 'utf8'), opts)
   else {
-    var data = ''
+    var data = []
     process.stdin.resume()
     process.stdin.on('data', function (chunk) {
-      data += chunk
+      data.push(chunk)
     })
     process.stdin.on('end', function () {
-      run(data, opts)
+      run(data.join(''), opts)
     })
   }
 }
