@@ -9,6 +9,7 @@ interface CompilerOptions {
   preserveWhitespace?: boolean
   whitespace?: 'preserve' | 'condense'
   outputSourceRange?: any
+  stripWith?: boolean
 }
 
 interface CompilerOptionsWithSourceRange extends CompilerOptions {
@@ -187,6 +188,11 @@ export interface ASTText {
 interface SFCParserOptions {
   pad?: true | 'line' | 'space'
   deindent?: boolean
+  outputSourceRange?: any
+}
+
+interface SFCParserOptionsWithSourceRange extends SFCParserOptions {
+  outputSourceRange: true
 }
 
 export interface SFCBlock {
@@ -201,11 +207,13 @@ export interface SFCBlock {
   module?: string | boolean
 }
 
-export interface SFCDescriptor {
+export interface SFCDescriptor<ErrorType> {
   template: SFCBlock | undefined
   script: SFCBlock | undefined
   styles: SFCBlock[]
   customBlocks: SFCBlock[]
+  scriptSetup: SFCBlock | undefined
+  errors: ErrorType[]
 }
 
 /*
@@ -237,8 +245,13 @@ export function ssrCompileToFunctions(template: string): CompiledResultFunctions
 
 export function parseComponent(
   file: string,
+  options?: SFCParserOptionsWithSourceRange
+): SFCDescriptor<ErrorWithRange>
+
+export function parseComponent(
+  file: string,
   options?: SFCParserOptions
-): SFCDescriptor
+): SFCDescriptor<string>
 
 export function generateCodeFrame(
   template: string,
