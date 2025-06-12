@@ -59,6 +59,7 @@ var test = require('node:test'),
   }
 ].forEach(function (t) {
   test(t.description, function () {
+    // noinspection JSUnresolvedFunction
     var result = compiler.stripWithStatement(t.input);
     assert.strictEqual(result, t.output);
   });
@@ -130,6 +131,7 @@ var test = require('node:test'),
     assert.ok(!result.errors || !result.errors.length);
 
     var code = `function render(){${result.render}\n}`;
+    // noinspection NpmUsedModulesInstalled
     code = require('prettier').format(code, { semi: false, parser: 'babel' });
     assert.strictEqual(code, t.output);
   });

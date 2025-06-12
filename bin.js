@@ -1,8 +1,7 @@
 #!/usr/bin/env node
 'use strict'
 
-var fs = require('fs'),
-  compiler = require('.'),
+var compiler = require('.'),
   package_ = require('./package.json'),
   //
   packageName = package_.name,
@@ -87,6 +86,7 @@ function toCamelCase(str) {
 
 /** @param {string[]} args */
 function main(args) {
+  var fs = require('fs')
   try {
     ensureVersion()
   } catch (err) {
@@ -94,7 +94,13 @@ function main(args) {
   }
 
   var opts = parseArgs(args)
-  if (opts.file) run(fs.readFileSync(opts.file, 'utf8'), opts)
+  function run(source) {
+    source = transform(source, opts.values)
+
+    opts.output ? fs.writeFileSync(opts.output, source) : console.log(source)
+  }
+
+  if (opts.file) run(fs.readFileSync(opts.file, 'utf8'))
   else {
     var data = []
     process.stdin.resume()
@@ -102,16 +108,16 @@ function main(args) {
       data.push(chunk)
     })
     process.stdin.on('end', function () {
-      run(data.join(''), opts)
+      run(data.join(''))
     })
   }
 }
 
-function run(source, opts) {
-  var sfc = compiler.parseComponent(source, opts.values)
+function transform(source, options) {
+  var sfc = compiler.parseComponent(source, options)
   if (sfc.errors && sfc.errors.length) return console.error(sfc.errors)
 
-  var res = compiler.compile(sfc.template.content, opts.values)
+  var res = compiler.compile(sfc.template.content, options)
   if (res.errors && res.errors.length) return console.error(res.errors)
   source =
     'render: ' +
@@ -124,10 +130,9 @@ function run(source, opts) {
     found = code.match(/(?:^|\s)(?:export\s+default|new\s+Vue\s*\(|__sfc__\s*=)\s*{/)
   if (found) {
     var i = found.index + found[0].length
-    source = code.substring(0, i) + source + code.substring(i)
-  } else source = 'var __sfc__ = {\n' + source + '}\n' + code
-
-  opts.output ? fs.writeFileSync(opts.output, source) : console.log(source)
+    return code.substring(0, i) + source + code.substring(i)
+  }
+  return 'var __sfc__ = {\n' + source + '}\n' + code
 }
 
 function toFunction(code) {

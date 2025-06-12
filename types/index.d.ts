@@ -9,6 +9,9 @@ interface CompilerOptions {
   preserveWhitespace?: boolean
   whitespace?: 'preserve' | 'condense'
   outputSourceRange?: any
+  optimize?: boolean // not for ssr
+  bindings?: Record<string, any>
+  scopeId?: string // for ssr only
   stripWith?: boolean
 }
 

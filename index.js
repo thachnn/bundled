@@ -60,7 +60,7 @@
     return s.join('')
   }
 
-  function doNotPrefix() {
+  function doNotPrefix(_name) {
     var names =
       'Infinity,undefined,NaN,isFinite,isNaN,' +
       'parseFloat,parseInt,decodeURI,decodeURIComponent,encodeURI,encodeURIComponent,' +

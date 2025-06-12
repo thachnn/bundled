@@ -20,7 +20,7 @@ const compiler = require('vue-template-compiler')
 
 Compiles a template string and returns compiled JavaScript code. The returned result is an object of the following format:
 
-```js
+```jsdoc
 {
   ast: ?ASTElement, // parsed template elements to AST
   render: string, // main render function code
@@ -116,7 +116,7 @@ Note the returned function code uses `with` and thus cannot be used in strict mo
 
 Similar to `compiler.compile`, but directly returns instantiated functions:
 
-```js
+```jsdoc
 {
   render: Function,
   staticRenderFns: Array<Function>
