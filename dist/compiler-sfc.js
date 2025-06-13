@@ -1,12 +1,15 @@
 'use strict';
 
-var parser$1 = require('@babel/parser');
-var url = require('url');
-var path = require('path');
-var fs$1 = require('fs');
-var util$2 = require('util');
+const parser$1 = require('@babel/parser');
+const url = require('url');
+const path = require('path');
+const fs$1 = require('fs');
+const util$2 = require('util');
 
-var sourceMap$0 = () => require('source-map');
+function sourceMap$0() {
+	const mod = require('source-map-js');
+	return (sourceMap$0 = () => mod)();
+}
 
 var splitRE$2 = /\r?\n/g;
 var emptyRE$1 = /^\s*$/;
@@ -348,7 +351,7 @@ function def(obj, key, val, enumerable) {
  * Not type-checking this file because it's mostly vendor code.
  */
 // Regular Expressions for parsing tags and attributes
-const attribute$2 = /^\s*([^\s"'<>\/=]+)(?:\s*(=)\s*(?:"([^"]*)"+|'([^']*)'+|([^\s"'=<>`]+)))?/;
+const attribute$1 = /^\s*([^\s"'<>\/=]+)(?:\s*(=)\s*(?:"([^"]*)"+|'([^']*)'+|([^\s"'=<>`]+)))?/;
 const dynamicArgAttribute = /^\s*((?:v-[\w-]+:|@|:|#)\[[^=]+?\][^\s"'<>\/=]*)(?:\s*(=)\s*(?:"([^"]*)"+|'([^']*)'+|([^\s"'=<>`]+)))?/;
 const ncname = `[a-zA-Z_][\\-\\.0-9_a-zA-Z${unicodeRegExp.source}]*`;
 const qnameCapture = `((?:${ncname}\\:)?${ncname})`;
@@ -357,7 +360,7 @@ const startTagClose = /^\s*(\/?)>/;
 const endTag = new RegExp(`^<\\/${qnameCapture}[^>]*>`);
 const doctype = /^<!DOCTYPE [^>]+>/i;
 // #7298: escape - to avoid being passed as HTML comment when inlined in page
-const comment$3 = /^<!\--/;
+const comment$2 = /^<!\--/;
 const conditionalComment = /^<!\[/;
 // Special Elements (can contain anything)
 const isPlainTextElement = makeMap('script,style,textarea', true);
@@ -394,7 +397,7 @@ function parseHTML(html, options) {
             let textEnd = html.indexOf('<');
             if (textEnd === 0) {
                 // Comment:
-                if (comment$3.test(html)) {
+                if (comment$2.test(html)) {
                     const commentEnd = html.indexOf('-->');
                     if (commentEnd >= 0) {
                         if (options.shouldKeepComment && options.comment) {
@@ -441,7 +444,7 @@ function parseHTML(html, options) {
                 rest = html.slice(textEnd);
                 while (!endTag.test(rest) &&
                     !startTagOpen.test(rest) &&
-                    !comment$3.test(rest) &&
+                    !comment$2.test(rest) &&
                     !conditionalComment.test(rest)) {
                     // < in plain text, be forgiving and treat it as text
                     next = rest.indexOf('<', 1);
@@ -513,7 +516,7 @@ function parseHTML(html, options) {
             advance(start[0].length);
             let end, attr;
             while (!(end = html.match(startTagClose)) &&
-                (attr = html.match(dynamicArgAttribute) || html.match(attribute$2))) {
+                (attr = html.match(dynamicArgAttribute) || html.match(attribute$1))) {
                 attr.start = index;
                 advance(attr[0].length);
                 attr.end = index;
@@ -824,25 +827,9 @@ function sum (o) {
 
 var hashSum = sum;
 
-var iterator;
-var hasRequiredIterator;
-
-function requireIterator () {
-	if (hasRequiredIterator) return iterator;
-	hasRequiredIterator = 1;
-	iterator = function (Yallist) {
-	  Yallist.prototype[Symbol.iterator] = function* () {
-	    for (let walker = this.head; walker; walker = walker.next) {
-	      yield walker.value;
-	    }
-	  };
-	};
-	return iterator;
-}
-
 var yallist = Yallist$1;
 
-Yallist$1.Node = Node;
+Yallist$1.Node = Node$1;
 Yallist$1.create = Yallist$1;
 
 function Yallist$1 (list) {
@@ -1207,8 +1194,8 @@ Yallist$1.prototype.reverse = function () {
 
 function insert (self, node, value) {
   var inserted = node === self.head ?
-    new Node(value, null, node, self) :
-    new Node(value, node, node.next, self);
+    new Node$1(value, null, node, self) :
+    new Node$1(value, node, node.next, self);
 
   if (inserted.next === null) {
     self.tail = inserted;
@@ -1223,7 +1210,7 @@ function insert (self, node, value) {
 }
 
 function push (self, item) {
-  self.tail = new Node(item, self.tail, null, self);
+  self.tail = new Node$1(item, self.tail, null, self);
   if (!self.head) {
     self.head = self.tail;
   }
@@ -1231,16 +1218,16 @@ function push (self, item) {
 }
 
 function unshift (self, item) {
-  self.head = new Node(item, null, self.head, self);
+  self.head = new Node$1(item, null, self.head, self);
   if (!self.tail) {
     self.tail = self.head;
   }
   self.length++;
 }
 
-function Node (value, prev, next, list) {
-  if (!(this instanceof Node)) {
-    return new Node(value, prev, next, list)
+function Node$1 (value, prev, next, list) {
+  if (!(this instanceof Node$1)) {
+    return new Node$1(value, prev, next, list)
   }
 
   this.list = list;
@@ -1263,7 +1250,12 @@ function Node (value, prev, next, list) {
 
 try {
   // add if support for Symbol.iterator is present
-  requireIterator()(Yallist$1);
+  //_('./iterator.js')(Yallist)
+  Yallist$1.prototype[Symbol.iterator] = function* () {
+    for (let walker = this.head; walker; walker = walker.next) {
+      yield walker.value;
+    }
+  };
 } catch (er) {}
 
 // A linked list to keep track of recently-used-ness
@@ -3336,7 +3328,7 @@ const LIFECYCLE_HOOKS = [
     'renderTriggered'
 ];
 
-var config = {
+const config = {
     /**
      * Option merge strategies (used in core/util/options)
      */
@@ -6410,7 +6402,7 @@ function genData$2(el) {
     }
     return data;
 }
-var klass = {
+const klass = {
     staticKeys: ['staticClass'],
     transformNode: transformNode$1,
     genData: genData$2
@@ -6460,7 +6452,7 @@ function genData$1(el) {
     }
     return data;
 }
-var style = {
+const style = {
     staticKeys: ['staticStyle'],
     transformNode,
     genData: genData$1
@@ -7773,11 +7765,11 @@ function preTransformNode(el, options) {
 function cloneASTElement(el) {
     return createASTElement(el.tag, el.attrsList.slice(), el.parent);
 }
-var model$1 = {
+const model$1 = {
     preTransformNode
 };
 
-var modules = [klass, style, model$1];
+const modules = [klass, style, model$1];
 
 let warn$1;
 // in some cases, the event used has to be determined at runtime
@@ -7906,7 +7898,7 @@ function html(el, dir) {
     }
 }
 
-var directives = {
+const directives = {
     model,
     text,
     html
@@ -9747,7 +9739,7 @@ const defaultOptions = {
     image: ['xlink:href', 'href'],
     use: ['xlink:href', 'href']
 };
-var assetUrlsModule = (userOptions, transformAssetUrlsOption) => {
+const assetUrlsModule = (userOptions, transformAssetUrlsOption) => {
     const options = userOptions
         ? Object.assign({}, defaultOptions, userOptions)
         : defaultOptions;
@@ -9785,7 +9777,7 @@ function rewrite(attr, name, transformAssetUrlsOption) {
 }
 
 // vue compiler module for transforming `img:srcset` to a number of `require`s
-var srcsetModule = (transformAssetUrlsOptions) => ({
+const srcsetModule = (transformAssetUrlsOptions) => ({
     postTransformNode: (node) => {
         transform(node, transformAssetUrlsOptions);
     }
@@ -9857,14 +9849,14 @@ var consolidate$1 = {exports: {}};
 	 */
 
 	var fs = fs$1;
-	var path = path;
+	var path$1 = path;
 	var util = util$2;
 
-	var join = path.join;
-	var resolve = path.resolve;
-	var extname = path.extname;
-	var dirname = path.dirname;
-	var isAbsolute = path.isAbsolute;
+	var join = path$1.join;
+	var resolve = path$1.resolve;
+	var extname = path$1.extname;
+	var dirname = path$1.dirname;
+	var isAbsolute = path$1.isAbsolute;
 
 	var readCache = {};
 
@@ -10014,7 +10006,7 @@ var consolidate$1 = {exports: {}};
 
 	    return promisify(cb, function(cb) {
 	      readPartials(path, options, function(err, partials) {
-	        var extend = (requires.extend || (requires.extend = util$2._extend));
+	        var extend = (requires.extend || (requires.extend = util._extend));
 	        var opts = extend({}, options);
 	        opts.partials = partials;
 	        if (err) return cb(err);
@@ -10110,8 +10102,8 @@ var consolidate$1 = {exports: {}};
 	  var includeDir = options.includeDir || process.cwd();
 
 	  context.onInclude(function(name, callback) {
-	    var extname = path.extname(name) ? '' : '.liquid';
-	    var filename = path.resolve(includeDir, name + extname);
+	    var extname = path$1.extname(name) ? '' : '.liquid';
+	    var filename = path$1.resolve(includeDir, name + extname);
 
 	    fs.readFile(filename, {encoding: 'utf8'}, function(err, data) {
 	      if (err) return callback(err);
@@ -11071,7 +11063,7 @@ var consolidate$1 = {exports: {}};
 	exports.dot.render = function(str, options, cb) {
 	  return promisify(cb, function(cb) {
 	    var engine = requires.dot || (requires.dot = require('dot'));
-	    var extend = (requires.extend || (requires.extend = util$2._extend));
+	    var extend = (requires.extend || (requires.extend = util._extend));
 	    try {
 	      var settings = {};
 	      settings = extend(settings, engine.templateSettings);
@@ -11124,7 +11116,7 @@ var consolidate$1 = {exports: {}};
 	    options.template = template;
 
 	    if (options.data === null || options.data === undefined) {
-	      var extend = (requires.extend || (requires.extend = util$2._extend));
+	      var extend = (requires.extend || (requires.extend = util._extend));
 
 	      // Shallow clone the options object
 	      options.data = extend({}, options);
@@ -11635,7 +11627,7 @@ var consolidate$1 = {exports: {}};
 	exports.requires = requires;
 } (consolidate$1, consolidate$1.exports));
 
-var consolidate = consolidate$1.exports;
+const consolidate = consolidate$1.exports;
 
 let isStaticKey;
 let isPlatformReservedTag$1;
@@ -11915,7 +11907,7 @@ function bind(el, dir) {
     };
 }
 
-var baseDirectives = {
+const baseDirectives = {
     on,
     bind,
     cloak: noop
@@ -13161,7 +13153,7 @@ const createCompiler = createCompilerCreator(function baseCompile(template, opti
 
 const { compile, compileToFunctions } = createCompiler(baseOptions);
 
-var _compiler = /*#__PURE__*/Object.freeze({
+const _compiler = /*#__PURE__*/Object.freeze({
 	__proto__: null,
 	parseComponent: parseComponent,
 	compile: compile$1,
@@ -13298,790 +13290,673 @@ const trimPlugin = () => {
 };
 trimPlugin.postcss = true;
 
-var dist = {exports: {}};
+// Many thanks for this post which made this migration much easier.
+// https://mathiasbynens.be/notes/css-escapes
 
-var processor = {exports: {}};
+/**
+ * @param {string} str
+ * @returns {[string, number]|undefined}
+ */
+function gobbleHex (str) {
+    const lower = str.toLowerCase();
+    let hex = '';
+    let spaceTerminated = false;
+    for (let i = 0; i < 6 && lower[i] !== undefined; i++) {
+        const code =  lower.charCodeAt(i);
+        // check to see if we are dealing with a valid hex char [a-f|0-9]
+        const valid = (code >= 97 && code <= 102) || (code >= 48 && code <= 57);
+        // https://drafts.csswg.org/css-syntax/#consume-escaped-code-point
+        spaceTerminated = code === 32;
+        if (!valid) {
+            break;
+        }
+        hex += lower[i];
+    }
 
-var parser = {exports: {}};
+    if (hex.length === 0) {
+        return undefined;
+    }
+    const codePoint = parseInt(hex, 16);
 
-var root$1 = {exports: {}};
+    const isSurrogate = codePoint >= 0xD800 && codePoint <= 0xDFFF;
+    // Add special case for
+    // "If this number is zero, or is for a surrogate, or is greater than the maximum allowed code point"
+    // https://drafts.csswg.org/css-syntax/#maximum-allowed-code-point
+    if (isSurrogate || codePoint === 0x0000 || codePoint > 0x10FFFF) {
+        return ['\uFFFD', hex.length + (spaceTerminated ? 1 : 0)];
+    }
 
-var container = {exports: {}};
+    return [
+        String.fromCodePoint(codePoint),
+        hex.length + (spaceTerminated ? 1 : 0),
+    ];
+}
 
-var node$1 = {exports: {}};
+const CONTAINS_ESCAPE = /\\/;
 
-var util = {};
+function unesc (str) {
+    let needToProcess = CONTAINS_ESCAPE.test(str);
+    if (!needToProcess) {
+        return str;
+    }
+    let ret = "";
 
-var unesc = {exports: {}};
+    for (let i = 0; i < str.length; i++) {
+        if ((str[i] === "\\")) {
+            const gobbled = gobbleHex(str.slice(i + 1, i + 7));
+            if (gobbled !== undefined) {
+                ret += gobbled[0];
+                i += gobbled[1];
+                continue;
+            }
 
-(function (module, exports) {
+            // Retain a pair of \\ if double escaped `\\\\`
+            // https://github.com/postcss/postcss-selector-parser/commit/268c9a7656fb53f543dc620aa5b73a30ec3ff20e
+            if (str[i + 1] === "\\") {
+                ret += "\\";
+                i++;
+                continue;
+            }
 
-	exports.__esModule = true;
-	exports["default"] = unesc;
-	// Many thanks for this post which made this migration much easier.
-	// https://mathiasbynens.be/notes/css-escapes
+            // if \\ is at the end of the string retain it
+            // https://github.com/postcss/postcss-selector-parser/commit/01a6b346e3612ce1ab20219acc26abdc259ccefb
+            if (str.length === i + 1) {
+                ret += str[i];
+            }
+            continue;
+        }
 
-	/**
-	 * @param {string} str
-	 * @returns {[string, number]|undefined}
-	 */
-	function gobbleHex(str) {
-	  var lower = str.toLowerCase();
-	  var hex = '';
-	  var spaceTerminated = false;
-	  for (var i = 0; i < 6 && lower[i] !== undefined; i++) {
-	    var code = lower.charCodeAt(i);
-	    // check to see if we are dealing with a valid hex char [a-f|0-9]
-	    var valid = code >= 97 && code <= 102 || code >= 48 && code <= 57;
-	    // https://drafts.csswg.org/css-syntax/#consume-escaped-code-point
-	    spaceTerminated = code === 32;
-	    if (!valid) {
-	      break;
-	    }
-	    hex += lower[i];
-	  }
-	  if (hex.length === 0) {
-	    return undefined;
-	  }
-	  var codePoint = parseInt(hex, 16);
-	  var isSurrogate = codePoint >= 0xD800 && codePoint <= 0xDFFF;
-	  // Add special case for
-	  // "If this number is zero, or is for a surrogate, or is greater than the maximum allowed code point"
-	  // https://drafts.csswg.org/css-syntax/#maximum-allowed-code-point
-	  if (isSurrogate || codePoint === 0x0000 || codePoint > 0x10FFFF) {
-	    return ["\uFFFD", hex.length + (spaceTerminated ? 1 : 0)];
-	  }
-	  return [String.fromCodePoint(codePoint), hex.length + (spaceTerminated ? 1 : 0)];
-	}
-	var CONTAINS_ESCAPE = /\\/;
-	function unesc(str) {
-	  var needToProcess = CONTAINS_ESCAPE.test(str);
-	  if (!needToProcess) {
-	    return str;
-	  }
-	  var ret = "";
-	  for (var i = 0; i < str.length; i++) {
-	    if (str[i] === "\\") {
-	      var gobbled = gobbleHex(str.slice(i + 1, i + 7));
-	      if (gobbled !== undefined) {
-	        ret += gobbled[0];
-	        i += gobbled[1];
-	        continue;
-	      }
+        ret += str[i];
+    }
 
-	      // Retain a pair of \\ if double escaped `\\\\`
-	      // https://github.com/postcss/postcss-selector-parser/commit/268c9a7656fb53f543dc620aa5b73a30ec3ff20e
-	      if (str[i + 1] === "\\") {
-	        ret += "\\";
-	        i++;
-	        continue;
-	      }
+    return ret;
+}
 
-	      // if \\ is at the end of the string retain it
-	      // https://github.com/postcss/postcss-selector-parser/commit/01a6b346e3612ce1ab20219acc26abdc259ccefb
-	      if (str.length === i + 1) {
-	        ret += str[i];
-	      }
-	      continue;
-	    }
-	    ret += str[i];
-	  }
-	  return ret;
-	}
-	module.exports = exports.default;
-} (unesc, unesc.exports));
+function getProp (obj, ...props) {
+    while (props.length > 0) {
+        const prop = props.shift();
 
-var getProp = {exports: {}};
+        if (!obj[prop]) {
+            return undefined;
+        }
 
-(function (module, exports) {
+        obj = obj[prop];
+    }
 
-	exports.__esModule = true;
-	exports["default"] = getProp;
-	function getProp(obj) {
-	  for (var _len = arguments.length, props = new Array(_len > 1 ? _len - 1 : 0), _key = 1; _key < _len; _key++) {
-	    props[_key - 1] = arguments[_key];
-	  }
-	  while (props.length > 0) {
-	    var prop = props.shift();
-	    if (!obj[prop]) {
-	      return undefined;
-	    }
-	    obj = obj[prop];
-	  }
-	  return obj;
-	}
-	module.exports = exports.default;
-} (getProp, getProp.exports));
+    return obj;
+}
 
-var ensureObject = {exports: {}};
+function ensureObject (obj, ...props) {
+    while (props.length > 0) {
+        const prop = props.shift();
 
-(function (module, exports) {
+        if (!obj[prop]) {
+            obj[prop] = {};
+        }
 
-	exports.__esModule = true;
-	exports["default"] = ensureObject;
-	function ensureObject(obj) {
-	  for (var _len = arguments.length, props = new Array(_len > 1 ? _len - 1 : 0), _key = 1; _key < _len; _key++) {
-	    props[_key - 1] = arguments[_key];
-	  }
-	  while (props.length > 0) {
-	    var prop = props.shift();
-	    if (!obj[prop]) {
-	      obj[prop] = {};
-	    }
-	    obj = obj[prop];
-	  }
-	}
-	module.exports = exports.default;
-} (ensureObject, ensureObject.exports));
+        obj = obj[prop];
+    }
+}
 
-var stripComments = {exports: {}};
+let cloneNode = function (obj, parent) {
+    if (typeof obj !== 'object' || obj === null) {
+        return obj;
+    }
 
-(function (module, exports) {
+    let cloned = new obj.constructor();
 
-	exports.__esModule = true;
-	exports["default"] = stripComments;
-	function stripComments(str) {
-	  var s = "";
-	  var commentStart = str.indexOf("/*");
-	  var lastEnd = 0;
-	  while (commentStart >= 0) {
-	    s = s + str.slice(lastEnd, commentStart);
-	    var commentEnd = str.indexOf("*/", commentStart + 2);
-	    if (commentEnd < 0) {
-	      return s;
-	    }
-	    lastEnd = commentEnd + 2;
-	    commentStart = str.indexOf("/*", lastEnd);
-	  }
-	  s = s + str.slice(lastEnd);
-	  return s;
-	}
-	module.exports = exports.default;
-} (stripComments, stripComments.exports));
+    for ( let i in obj ) {
+        if ( !obj.hasOwnProperty(i) ) {
+            continue;
+        }
+        let value = obj[i];
+        let type  = typeof value;
 
-util.__esModule = true;
-util.unesc = util.stripComments = util.getProp = util.ensureObject = void 0;
-var _unesc = _interopRequireDefault$1(unesc.exports);
-util.unesc = _unesc["default"];
-var _getProp = _interopRequireDefault$1(getProp.exports);
-util.getProp = _getProp["default"];
-var _ensureObject = _interopRequireDefault$1(ensureObject.exports);
-util.ensureObject = _ensureObject["default"];
-var _stripComments = _interopRequireDefault$1(stripComments.exports);
-util.stripComments = _stripComments["default"];
-function _interopRequireDefault$1(obj) { return obj && obj.__esModule ? obj : { "default": obj }; }
+        if ( i === 'parent' && type === 'object' ) {
+            if (parent) {
+                cloned[i] = parent;
+            }
+        } else if ( value instanceof Array ) {
+            cloned[i] = value.map( j => cloneNode(j, cloned) );
+        } else {
+            cloned[i] = cloneNode(value, cloned);
+        }
+    }
 
-(function (module, exports) {
+    return cloned;
+};
 
-	exports.__esModule = true;
-	exports["default"] = void 0;
-	var _util = util;
-	function _defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } }
-	function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _defineProperties(Constructor.prototype, protoProps); if (staticProps) _defineProperties(Constructor, staticProps); Object.defineProperty(Constructor, "prototype", { writable: false }); return Constructor; }
-	var cloneNode = function cloneNode(obj, parent) {
-	  if (typeof obj !== 'object' || obj === null) {
-	    return obj;
-	  }
-	  var cloned = new obj.constructor();
-	  for (var i in obj) {
-	    if (!obj.hasOwnProperty(i)) {
-	      continue;
-	    }
-	    var value = obj[i];
-	    var type = typeof value;
-	    if (i === 'parent' && type === 'object') {
-	      if (parent) {
-	        cloned[i] = parent;
-	      }
-	    } else if (value instanceof Array) {
-	      cloned[i] = value.map(function (j) {
-	        return cloneNode(j, cloned);
-	      });
-	    } else {
-	      cloned[i] = cloneNode(value, cloned);
-	    }
-	  }
-	  return cloned;
-	};
-	var Node = /*#__PURE__*/function () {
-	  function Node(opts) {
-	    if (opts === void 0) {
-	      opts = {};
-	    }
-	    Object.assign(this, opts);
-	    this.spaces = this.spaces || {};
-	    this.spaces.before = this.spaces.before || '';
-	    this.spaces.after = this.spaces.after || '';
-	  }
-	  var _proto = Node.prototype;
-	  _proto.remove = function remove() {
-	    if (this.parent) {
-	      this.parent.removeChild(this);
-	    }
-	    this.parent = undefined;
-	    return this;
-	  };
-	  _proto.replaceWith = function replaceWith() {
-	    if (this.parent) {
-	      for (var index in arguments) {
-	        this.parent.insertBefore(this, arguments[index]);
-	      }
-	      this.remove();
-	    }
-	    return this;
-	  };
-	  _proto.next = function next() {
-	    return this.parent.at(this.parent.index(this) + 1);
-	  };
-	  _proto.prev = function prev() {
-	    return this.parent.at(this.parent.index(this) - 1);
-	  };
-	  _proto.clone = function clone(overrides) {
-	    if (overrides === void 0) {
-	      overrides = {};
-	    }
-	    var cloned = cloneNode(this);
-	    for (var name in overrides) {
-	      cloned[name] = overrides[name];
-	    }
-	    return cloned;
-	  }
+class Node {
+    constructor (opts = {}) {
+        Object.assign(this, opts);
+        this.spaces = this.spaces || {};
+        this.spaces.before = this.spaces.before || '';
+        this.spaces.after = this.spaces.after || '';
+    }
 
-	  /**
-	   * Some non-standard syntax doesn't follow normal escaping rules for css.
-	   * This allows non standard syntax to be appended to an existing property
-	   * by specifying the escaped value. By specifying the escaped value,
-	   * illegal characters are allowed to be directly inserted into css output.
-	   * @param {string} name the property to set
-	   * @param {any} value the unescaped value of the property
-	   * @param {string} valueEscaped optional. the escaped value of the property.
-	   */;
-	  _proto.appendToPropertyAndEscape = function appendToPropertyAndEscape(name, value, valueEscaped) {
-	    if (!this.raws) {
-	      this.raws = {};
-	    }
-	    var originalValue = this[name];
-	    var originalEscaped = this.raws[name];
-	    this[name] = originalValue + value; // this may trigger a setter that updates raws, so it has to be set first.
-	    if (originalEscaped || valueEscaped !== value) {
-	      this.raws[name] = (originalEscaped || originalValue) + valueEscaped;
-	    } else {
-	      delete this.raws[name]; // delete any escaped value that was created by the setter.
-	    }
-	  }
+    remove () {
+        if (this.parent) {
+            this.parent.removeChild(this);
+        }
+        this.parent = undefined;
+        return this;
+    }
 
-	  /**
-	   * Some non-standard syntax doesn't follow normal escaping rules for css.
-	   * This allows the escaped value to be specified directly, allowing illegal
-	   * characters to be directly inserted into css output.
-	   * @param {string} name the property to set
-	   * @param {any} value the unescaped value of the property
-	   * @param {string} valueEscaped the escaped value of the property.
-	   */;
-	  _proto.setPropertyAndEscape = function setPropertyAndEscape(name, value, valueEscaped) {
-	    if (!this.raws) {
-	      this.raws = {};
-	    }
-	    this[name] = value; // this may trigger a setter that updates raws, so it has to be set first.
-	    this.raws[name] = valueEscaped;
-	  }
+    replaceWith () {
+        if (this.parent) {
+            for (let index in arguments) {
+                this.parent.insertBefore(this, arguments[index]);
+            }
+            this.remove();
+        }
+        return this;
+    }
 
-	  /**
-	   * When you want a value to passed through to CSS directly. This method
-	   * deletes the corresponding raw value causing the stringifier to fallback
-	   * to the unescaped value.
-	   * @param {string} name the property to set.
-	   * @param {any} value The value that is both escaped and unescaped.
-	   */;
-	  _proto.setPropertyWithoutEscape = function setPropertyWithoutEscape(name, value) {
-	    this[name] = value; // this may trigger a setter that updates raws, so it has to be set first.
-	    if (this.raws) {
-	      delete this.raws[name];
-	    }
-	  }
+    next () {
+        return this.parent.at(this.parent.index(this) + 1);
+    }
 
-	  /**
-	   *
-	   * @param {number} line The number (starting with 1)
-	   * @param {number} column The column number (starting with 1)
-	   */;
-	  _proto.isAtPosition = function isAtPosition(line, column) {
-	    if (this.source && this.source.start && this.source.end) {
-	      if (this.source.start.line > line) {
-	        return false;
-	      }
-	      if (this.source.end.line < line) {
-	        return false;
-	      }
-	      if (this.source.start.line === line && this.source.start.column > column) {
-	        return false;
-	      }
-	      if (this.source.end.line === line && this.source.end.column < column) {
-	        return false;
-	      }
-	      return true;
-	    }
-	    return undefined;
-	  };
-	  _proto.stringifyProperty = function stringifyProperty(name) {
-	    return this.raws && this.raws[name] || this[name];
-	  };
-	  _proto.valueToString = function valueToString() {
-	    return String(this.stringifyProperty("value"));
-	  };
-	  _proto.toString = function toString() {
-	    return [this.rawSpaceBefore, this.valueToString(), this.rawSpaceAfter].join('');
-	  };
-	  _createClass(Node, [{
-	    key: "rawSpaceBefore",
-	    get: function get() {
-	      var rawSpace = this.raws && this.raws.spaces && this.raws.spaces.before;
-	      if (rawSpace === undefined) {
-	        rawSpace = this.spaces && this.spaces.before;
-	      }
-	      return rawSpace || "";
-	    },
-	    set: function set(raw) {
-	      (0, _util.ensureObject)(this, "raws", "spaces");
-	      this.raws.spaces.before = raw;
-	    }
-	  }, {
-	    key: "rawSpaceAfter",
-	    get: function get() {
-	      var rawSpace = this.raws && this.raws.spaces && this.raws.spaces.after;
-	      if (rawSpace === undefined) {
-	        rawSpace = this.spaces.after;
-	      }
-	      return rawSpace || "";
-	    },
-	    set: function set(raw) {
-	      (0, _util.ensureObject)(this, "raws", "spaces");
-	      this.raws.spaces.after = raw;
-	    }
-	  }]);
-	  return Node;
-	}();
-	exports["default"] = Node;
-	module.exports = exports.default;
-} (node$1, node$1.exports));
+    prev () {
+        return this.parent.at(this.parent.index(this) - 1);
+    }
 
-var types = {};
+    clone (overrides = {}) {
+        let cloned = cloneNode(this);
+        for (let name in overrides) {
+            cloned[name] = overrides[name];
+        }
+        return cloned;
+    }
 
-types.__esModule = true;
-types.UNIVERSAL = types.TAG = types.STRING = types.SELECTOR = types.ROOT = types.PSEUDO = types.NESTING = types.ID = types.COMMENT = types.COMBINATOR = types.CLASS = types.ATTRIBUTE = void 0;
-var TAG = 'tag';
-types.TAG = TAG;
-var STRING = 'string';
-types.STRING = STRING;
-var SELECTOR = 'selector';
-types.SELECTOR = SELECTOR;
-var ROOT = 'root';
-types.ROOT = ROOT;
-var PSEUDO = 'pseudo';
-types.PSEUDO = PSEUDO;
-var NESTING = 'nesting';
-types.NESTING = NESTING;
-var ID = 'id';
-types.ID = ID;
-var COMMENT = 'comment';
-types.COMMENT = COMMENT;
-var COMBINATOR = 'combinator';
-types.COMBINATOR = COMBINATOR;
-var CLASS = 'class';
-types.CLASS = CLASS;
-var ATTRIBUTE = 'attribute';
-types.ATTRIBUTE = ATTRIBUTE;
-var UNIVERSAL = 'universal';
-types.UNIVERSAL = UNIVERSAL;
+    /**
+     * Some non-standard syntax doesn't follow normal escaping rules for css.
+     * This allows non standard syntax to be appended to an existing property
+     * by specifying the escaped value. By specifying the escaped value,
+     * illegal characters are allowed to be directly inserted into css output.
+     * @param {string} name the property to set
+     * @param {any} value the unescaped value of the property
+     * @param {string} valueEscaped optional. the escaped value of the property.
+     */
+    appendToPropertyAndEscape (name, value, valueEscaped) {
+        if (!this.raws) {
+            this.raws = {};
+        }
+        let originalValue = this[name];
+        let originalEscaped = this.raws[name];
+        this[name] = originalValue + value; // this may trigger a setter that updates raws, so it has to be set first.
+        if (originalEscaped || valueEscaped !== value) {
+            this.raws[name] = (originalEscaped || originalValue) + valueEscaped;
+        } else {
+            delete this.raws[name]; // delete any escaped value that was created by the setter.
+        }
+    }
 
-(function (module, exports) {
+    /**
+     * Some non-standard syntax doesn't follow normal escaping rules for css.
+     * This allows the escaped value to be specified directly, allowing illegal
+     * characters to be directly inserted into css output.
+     * @param {string} name the property to set
+     * @param {any} value the unescaped value of the property
+     * @param {string} valueEscaped the escaped value of the property.
+     */
+    setPropertyAndEscape (name, value, valueEscaped) {
+        if (!this.raws) {
+            this.raws = {};
+        }
+        this[name] = value; // this may trigger a setter that updates raws, so it has to be set first.
+        this.raws[name] = valueEscaped;
+    }
 
-	exports.__esModule = true;
-	exports["default"] = void 0;
-	var _node = _interopRequireDefault(node$1.exports);
-	var types$1 = _interopRequireWildcard(types);
-	function _getRequireWildcardCache(nodeInterop) { if (typeof WeakMap !== "function") return null; var cacheBabelInterop = new WeakMap(); var cacheNodeInterop = new WeakMap(); return (_getRequireWildcardCache = function _getRequireWildcardCache(nodeInterop) { return nodeInterop ? cacheNodeInterop : cacheBabelInterop; })(nodeInterop); }
-	function _interopRequireWildcard(obj, nodeInterop) { if (!nodeInterop && obj && obj.__esModule) { return obj; } if (obj === null || typeof obj !== "object" && typeof obj !== "function") { return { "default": obj }; } var cache = _getRequireWildcardCache(nodeInterop); if (cache && cache.has(obj)) { return cache.get(obj); } var newObj = {}; var hasPropertyDescriptor = Object.defineProperty && Object.getOwnPropertyDescriptor; for (var key in obj) { if (key !== "default" && Object.prototype.hasOwnProperty.call(obj, key)) { var desc = hasPropertyDescriptor ? Object.getOwnPropertyDescriptor(obj, key) : null; if (desc && (desc.get || desc.set)) { Object.defineProperty(newObj, key, desc); } else { newObj[key] = obj[key]; } } } newObj["default"] = obj; if (cache) { cache.set(obj, newObj); } return newObj; }
-	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "default": obj }; }
-	function _createForOfIteratorHelperLoose(o, allowArrayLike) { var it = typeof Symbol !== "undefined" && o[Symbol.iterator] || o["@@iterator"]; if (it) return (it = it.call(o)).next.bind(it); if (Array.isArray(o) || (it = _unsupportedIterableToArray(o)) || allowArrayLike && o && typeof o.length === "number") { if (it) o = it; var i = 0; return function () { if (i >= o.length) return { done: true }; return { done: false, value: o[i++] }; }; } throw new TypeError("Invalid attempt to iterate non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); }
-	function _unsupportedIterableToArray(o, minLen) { if (!o) return; if (typeof o === "string") return _arrayLikeToArray(o, minLen); var n = Object.prototype.toString.call(o).slice(8, -1); if (n === "Object" && o.constructor) n = o.constructor.name; if (n === "Map" || n === "Set") return Array.from(o); if (n === "Arguments" || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(n)) return _arrayLikeToArray(o, minLen); }
-	function _arrayLikeToArray(arr, len) { if (len == null || len > arr.length) len = arr.length; for (var i = 0, arr2 = new Array(len); i < len; i++) { arr2[i] = arr[i]; } return arr2; }
-	function _defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } }
-	function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _defineProperties(Constructor.prototype, protoProps); if (staticProps) _defineProperties(Constructor, staticProps); Object.defineProperty(Constructor, "prototype", { writable: false }); return Constructor; }
-	function _inheritsLoose(subClass, superClass) { subClass.prototype = Object.create(superClass.prototype); subClass.prototype.constructor = subClass; _setPrototypeOf(subClass, superClass); }
-	function _setPrototypeOf(o, p) { _setPrototypeOf = Object.setPrototypeOf ? Object.setPrototypeOf.bind() : function _setPrototypeOf(o, p) { o.__proto__ = p; return o; }; return _setPrototypeOf(o, p); }
-	var Container = /*#__PURE__*/function (_Node) {
-	  _inheritsLoose(Container, _Node);
-	  function Container(opts) {
-	    var _this;
-	    _this = _Node.call(this, opts) || this;
-	    if (!_this.nodes) {
-	      _this.nodes = [];
-	    }
-	    return _this;
-	  }
-	  var _proto = Container.prototype;
-	  _proto.append = function append(selector) {
-	    selector.parent = this;
-	    this.nodes.push(selector);
-	    return this;
-	  };
-	  _proto.prepend = function prepend(selector) {
-	    selector.parent = this;
-	    this.nodes.unshift(selector);
-	    return this;
-	  };
-	  _proto.at = function at(index) {
-	    return this.nodes[index];
-	  };
-	  _proto.index = function index(child) {
-	    if (typeof child === 'number') {
-	      return child;
-	    }
-	    return this.nodes.indexOf(child);
-	  };
-	  _proto.removeChild = function removeChild(child) {
-	    child = this.index(child);
-	    this.at(child).parent = undefined;
-	    this.nodes.splice(child, 1);
-	    var index;
-	    for (var id in this.indexes) {
-	      index = this.indexes[id];
-	      if (index >= child) {
-	        this.indexes[id] = index - 1;
-	      }
-	    }
-	    return this;
-	  };
-	  _proto.removeAll = function removeAll() {
-	    for (var _iterator = _createForOfIteratorHelperLoose(this.nodes), _step; !(_step = _iterator()).done;) {
-	      var node = _step.value;
-	      node.parent = undefined;
-	    }
-	    this.nodes = [];
-	    return this;
-	  };
-	  _proto.empty = function empty() {
-	    return this.removeAll();
-	  };
-	  _proto.insertAfter = function insertAfter(oldNode, newNode) {
-	    newNode.parent = this;
-	    var oldIndex = this.index(oldNode);
-	    this.nodes.splice(oldIndex + 1, 0, newNode);
-	    newNode.parent = this;
-	    var index;
-	    for (var id in this.indexes) {
-	      index = this.indexes[id];
-	      if (oldIndex <= index) {
-	        this.indexes[id] = index + 1;
-	      }
-	    }
-	    return this;
-	  };
-	  _proto.insertBefore = function insertBefore(oldNode, newNode) {
-	    newNode.parent = this;
-	    var oldIndex = this.index(oldNode);
-	    this.nodes.splice(oldIndex, 0, newNode);
-	    newNode.parent = this;
-	    var index;
-	    for (var id in this.indexes) {
-	      index = this.indexes[id];
-	      if (index <= oldIndex) {
-	        this.indexes[id] = index + 1;
-	      }
-	    }
-	    return this;
-	  };
-	  _proto._findChildAtPosition = function _findChildAtPosition(line, col) {
-	    var found = undefined;
-	    this.each(function (node) {
-	      if (node.atPosition) {
-	        var foundChild = node.atPosition(line, col);
-	        if (foundChild) {
-	          found = foundChild;
-	          return false;
-	        }
-	      } else if (node.isAtPosition(line, col)) {
-	        found = node;
-	        return false;
-	      }
-	    });
-	    return found;
-	  }
+    /**
+     * When you want a value to passed through to CSS directly. This method
+     * deletes the corresponding raw value causing the stringifier to fallback
+     * to the unescaped value.
+     * @param {string} name the property to set.
+     * @param {any} value The value that is both escaped and unescaped.
+     */
+    setPropertyWithoutEscape (name, value) {
+        this[name] = value; // this may trigger a setter that updates raws, so it has to be set first.
+        if (this.raws) {
+            delete this.raws[name];
+        }
+    }
 
-	  /**
-	   * Return the most specific node at the line and column number given.
-	   * The source location is based on the original parsed location, locations aren't
-	   * updated as selector nodes are mutated.
-	   *
-	   * Note that this location is relative to the location of the first character
-	   * of the selector, and not the location of the selector in the overall document
-	   * when used in conjunction with postcss.
-	   *
-	   * If not found, returns undefined.
-	   * @param {number} line The line number of the node to find. (1-based index)
-	   * @param {number} col  The column number of the node to find. (1-based index)
-	   */;
-	  _proto.atPosition = function atPosition(line, col) {
-	    if (this.isAtPosition(line, col)) {
-	      return this._findChildAtPosition(line, col) || this;
-	    } else {
-	      return undefined;
-	    }
-	  };
-	  _proto._inferEndPosition = function _inferEndPosition() {
-	    if (this.last && this.last.source && this.last.source.end) {
-	      this.source = this.source || {};
-	      this.source.end = this.source.end || {};
-	      Object.assign(this.source.end, this.last.source.end);
-	    }
-	  };
-	  _proto.each = function each(callback) {
-	    if (!this.lastEach) {
-	      this.lastEach = 0;
-	    }
-	    if (!this.indexes) {
-	      this.indexes = {};
-	    }
-	    this.lastEach++;
-	    var id = this.lastEach;
-	    this.indexes[id] = 0;
-	    if (!this.length) {
-	      return undefined;
-	    }
-	    var index, result;
-	    while (this.indexes[id] < this.length) {
-	      index = this.indexes[id];
-	      result = callback(this.at(index), index);
-	      if (result === false) {
-	        break;
-	      }
-	      this.indexes[id] += 1;
-	    }
-	    delete this.indexes[id];
-	    if (result === false) {
-	      return false;
-	    }
-	  };
-	  _proto.walk = function walk(callback) {
-	    return this.each(function (node, i) {
-	      var result = callback(node, i);
-	      if (result !== false && node.length) {
-	        result = node.walk(callback);
-	      }
-	      if (result === false) {
-	        return false;
-	      }
-	    });
-	  };
-	  _proto.walkAttributes = function walkAttributes(callback) {
-	    var _this2 = this;
-	    return this.walk(function (selector) {
-	      if (selector.type === types$1.ATTRIBUTE) {
-	        return callback.call(_this2, selector);
-	      }
-	    });
-	  };
-	  _proto.walkClasses = function walkClasses(callback) {
-	    var _this3 = this;
-	    return this.walk(function (selector) {
-	      if (selector.type === types$1.CLASS) {
-	        return callback.call(_this3, selector);
-	      }
-	    });
-	  };
-	  _proto.walkCombinators = function walkCombinators(callback) {
-	    var _this4 = this;
-	    return this.walk(function (selector) {
-	      if (selector.type === types$1.COMBINATOR) {
-	        return callback.call(_this4, selector);
-	      }
-	    });
-	  };
-	  _proto.walkComments = function walkComments(callback) {
-	    var _this5 = this;
-	    return this.walk(function (selector) {
-	      if (selector.type === types$1.COMMENT) {
-	        return callback.call(_this5, selector);
-	      }
-	    });
-	  };
-	  _proto.walkIds = function walkIds(callback) {
-	    var _this6 = this;
-	    return this.walk(function (selector) {
-	      if (selector.type === types$1.ID) {
-	        return callback.call(_this6, selector);
-	      }
-	    });
-	  };
-	  _proto.walkNesting = function walkNesting(callback) {
-	    var _this7 = this;
-	    return this.walk(function (selector) {
-	      if (selector.type === types$1.NESTING) {
-	        return callback.call(_this7, selector);
-	      }
-	    });
-	  };
-	  _proto.walkPseudos = function walkPseudos(callback) {
-	    var _this8 = this;
-	    return this.walk(function (selector) {
-	      if (selector.type === types$1.PSEUDO) {
-	        return callback.call(_this8, selector);
-	      }
-	    });
-	  };
-	  _proto.walkTags = function walkTags(callback) {
-	    var _this9 = this;
-	    return this.walk(function (selector) {
-	      if (selector.type === types$1.TAG) {
-	        return callback.call(_this9, selector);
-	      }
-	    });
-	  };
-	  _proto.walkUniversals = function walkUniversals(callback) {
-	    var _this10 = this;
-	    return this.walk(function (selector) {
-	      if (selector.type === types$1.UNIVERSAL) {
-	        return callback.call(_this10, selector);
-	      }
-	    });
-	  };
-	  _proto.split = function split(callback) {
-	    var _this11 = this;
-	    var current = [];
-	    return this.reduce(function (memo, node, index) {
-	      var split = callback.call(_this11, node);
-	      current.push(node);
-	      if (split) {
-	        memo.push(current);
-	        current = [];
-	      } else if (index === _this11.length - 1) {
-	        memo.push(current);
-	      }
-	      return memo;
-	    }, []);
-	  };
-	  _proto.map = function map(callback) {
-	    return this.nodes.map(callback);
-	  };
-	  _proto.reduce = function reduce(callback, memo) {
-	    return this.nodes.reduce(callback, memo);
-	  };
-	  _proto.every = function every(callback) {
-	    return this.nodes.every(callback);
-	  };
-	  _proto.some = function some(callback) {
-	    return this.nodes.some(callback);
-	  };
-	  _proto.filter = function filter(callback) {
-	    return this.nodes.filter(callback);
-	  };
-	  _proto.sort = function sort(callback) {
-	    return this.nodes.sort(callback);
-	  };
-	  _proto.toString = function toString() {
-	    return this.map(String).join('');
-	  };
-	  _createClass(Container, [{
-	    key: "first",
-	    get: function get() {
-	      return this.at(0);
-	    }
-	  }, {
-	    key: "last",
-	    get: function get() {
-	      return this.at(this.length - 1);
-	    }
-	  }, {
-	    key: "length",
-	    get: function get() {
-	      return this.nodes.length;
-	    }
-	  }]);
-	  return Container;
-	}(_node["default"]);
-	exports["default"] = Container;
-	module.exports = exports.default;
-} (container, container.exports));
+    /**
+     *
+     * @param {number} line The number (starting with 1)
+     * @param {number} column The column number (starting with 1)
+     */
+    isAtPosition (line, column) {
+        if (this.source && this.source.start && this.source.end) {
+            if (this.source.start.line > line) {
+                return false;
+            }
+            if (this.source.end.line < line) {
+                return false;
+            }
+            if (this.source.start.line === line && this.source.start.column > column) {
+                return false;
+            }
+            if (this.source.end.line === line && this.source.end.column < column) {
+                return false;
+            }
+            return true;
+        }
+        return undefined;
+    }
 
-(function (module, exports) {
+    stringifyProperty (name) {
+        return (this.raws && this.raws[name]) || this[name];
+    }
 
-	exports.__esModule = true;
-	exports["default"] = void 0;
-	var _container = _interopRequireDefault(container.exports);
-	var _types = types;
-	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "default": obj }; }
-	function _defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } }
-	function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _defineProperties(Constructor.prototype, protoProps); if (staticProps) _defineProperties(Constructor, staticProps); Object.defineProperty(Constructor, "prototype", { writable: false }); return Constructor; }
-	function _inheritsLoose(subClass, superClass) { subClass.prototype = Object.create(superClass.prototype); subClass.prototype.constructor = subClass; _setPrototypeOf(subClass, superClass); }
-	function _setPrototypeOf(o, p) { _setPrototypeOf = Object.setPrototypeOf ? Object.setPrototypeOf.bind() : function _setPrototypeOf(o, p) { o.__proto__ = p; return o; }; return _setPrototypeOf(o, p); }
-	var Root = /*#__PURE__*/function (_Container) {
-	  _inheritsLoose(Root, _Container);
-	  function Root(opts) {
-	    var _this;
-	    _this = _Container.call(this, opts) || this;
-	    _this.type = _types.ROOT;
-	    return _this;
-	  }
-	  var _proto = Root.prototype;
-	  _proto.toString = function toString() {
-	    var str = this.reduce(function (memo, selector) {
-	      memo.push(String(selector));
-	      return memo;
-	    }, []).join(',');
-	    return this.trailingComma ? str + ',' : str;
-	  };
-	  _proto.error = function error(message, options) {
-	    if (this._error) {
-	      return this._error(message, options);
-	    } else {
-	      return new Error(message);
-	    }
-	  };
-	  _createClass(Root, [{
-	    key: "errorGenerator",
-	    set: function set(handler) {
-	      this._error = handler;
-	    }
-	  }]);
-	  return Root;
-	}(_container["default"]);
-	exports["default"] = Root;
-	module.exports = exports.default;
-} (root$1, root$1.exports));
+    get rawSpaceBefore () {
+        let rawSpace = this.raws && this.raws.spaces && this.raws.spaces.before;
+        if (rawSpace === undefined) {
+            rawSpace = this.spaces && this.spaces.before;
+        }
+        return rawSpace || "";
+    }
 
-var selector$1 = {exports: {}};
+    set rawSpaceBefore (raw) {
+        ensureObject(this, "raws", "spaces");
+        this.raws.spaces.before = raw;
+    }
 
-(function (module, exports) {
+    get rawSpaceAfter () {
+        let rawSpace = this.raws && this.raws.spaces && this.raws.spaces.after;
+        if (rawSpace === undefined) {
+            rawSpace = this.spaces.after;
+        }
+        return rawSpace || "";
+    }
 
-	exports.__esModule = true;
-	exports["default"] = void 0;
-	var _container = _interopRequireDefault(container.exports);
-	var _types = types;
-	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "default": obj }; }
-	function _inheritsLoose(subClass, superClass) { subClass.prototype = Object.create(superClass.prototype); subClass.prototype.constructor = subClass; _setPrototypeOf(subClass, superClass); }
-	function _setPrototypeOf(o, p) { _setPrototypeOf = Object.setPrototypeOf ? Object.setPrototypeOf.bind() : function _setPrototypeOf(o, p) { o.__proto__ = p; return o; }; return _setPrototypeOf(o, p); }
-	var Selector = /*#__PURE__*/function (_Container) {
-	  _inheritsLoose(Selector, _Container);
-	  function Selector(opts) {
-	    var _this;
-	    _this = _Container.call(this, opts) || this;
-	    _this.type = _types.SELECTOR;
-	    return _this;
-	  }
-	  return Selector;
-	}(_container["default"]);
-	exports["default"] = Selector;
-	module.exports = exports.default;
-} (selector$1, selector$1.exports));
+    set rawSpaceAfter (raw) {
+        ensureObject(this, "raws", "spaces");
+        this.raws.spaces.after = raw;
+    }
 
-var className$1 = {exports: {}};
+    valueToString () {
+        return String(this.stringifyProperty("value"));
+    }
+
+    toString () {
+        return [
+            this.rawSpaceBefore,
+            this.valueToString(),
+            this.rawSpaceAfter,
+        ].join('');
+    }
+}
+
+const TAG = 'tag';
+const STRING = 'string';
+const SELECTOR = 'selector';
+const ROOT = 'root';
+const PSEUDO = 'pseudo';
+const NESTING = 'nesting';
+const ID$1 = 'id';
+const COMMENT = 'comment';
+const COMBINATOR = 'combinator';
+const CLASS = 'class';
+const ATTRIBUTE = 'attribute';
+const UNIVERSAL = 'universal';
+
+class Container extends Node {
+    constructor (opts) {
+        super(opts);
+        if (!this.nodes) {
+            this.nodes = [];
+        }
+    }
+
+    append (selector) {
+        selector.parent = this;
+        this.nodes.push(selector);
+        return this;
+    }
+
+    prepend (selector) {
+        selector.parent = this;
+        this.nodes.unshift(selector);
+        return this;
+    }
+
+    at (index) {
+        return this.nodes[index];
+    }
+
+    index (child) {
+        if (typeof child === 'number') {
+            return child;
+        }
+        return this.nodes.indexOf(child);
+    }
+
+    get first () {
+        return this.at(0);
+    }
+
+    get last () {
+        return this.at(this.length - 1);
+    }
+
+    get length () {
+        return this.nodes.length;
+    }
+
+    removeChild (child) {
+        child = this.index(child);
+        this.at(child).parent = undefined;
+        this.nodes.splice(child, 1);
+
+        let index;
+        for ( let id in this.indexes ) {
+            index = this.indexes[id];
+            if ( index >= child ) {
+                this.indexes[id] = index - 1;
+            }
+        }
+
+        return this;
+    }
+
+    removeAll () {
+        for (let node of this.nodes) {
+            node.parent = undefined;
+        }
+        this.nodes = [];
+        return this;
+    }
+
+    empty () {
+        return this.removeAll();
+    }
+
+    insertAfter (oldNode, newNode) {
+        newNode.parent = this;
+        let oldIndex = this.index(oldNode);
+        this.nodes.splice(oldIndex + 1, 0, newNode);
+
+        newNode.parent = this;
+
+        let index;
+        for ( let id in this.indexes ) {
+            index = this.indexes[id];
+            if ( oldIndex <= index ) {
+                this.indexes[id] = index + 1;
+            }
+        }
+
+        return this;
+    }
+
+    insertBefore (oldNode, newNode) {
+        newNode.parent = this;
+        let oldIndex = this.index(oldNode);
+        this.nodes.splice(oldIndex, 0, newNode);
+
+        newNode.parent = this;
+
+        let index;
+        for ( let id in this.indexes ) {
+            index = this.indexes[id];
+            if ( index <= oldIndex ) {
+                this.indexes[id] = index + 1;
+            }
+        }
+
+        return this;
+    }
+
+    _findChildAtPosition (line, col) {
+        let found = undefined;
+        this.each(node => {
+            if (node.atPosition) {
+                let foundChild = node.atPosition(line, col);
+                if (foundChild) {
+                    found = foundChild;
+                    return false;
+                }
+            } else if (node.isAtPosition(line, col)) {
+                found = node;
+                return false;
+            }
+        });
+        return found;
+    }
+
+    /**
+     * Return the most specific node at the line and column number given.
+     * The source location is based on the original parsed location, locations aren't
+     * updated as selector nodes are mutated.
+     *
+     * Note that this location is relative to the location of the first character
+     * of the selector, and not the location of the selector in the overall document
+     * when used in conjunction with postcss.
+     *
+     * If not found, returns undefined.
+     * @param {number} line The line number of the node to find. (1-based index)
+     * @param {number} col  The column number of the node to find. (1-based index)
+     */
+    atPosition (line, col) {
+        if (this.isAtPosition(line, col)) {
+            return this._findChildAtPosition(line, col) || this;
+        } else {
+            return undefined;
+        }
+    }
+
+    _inferEndPosition () {
+        if (this.last && this.last.source && this.last.source.end) {
+            this.source = this.source || {};
+            this.source.end = this.source.end || {};
+            Object.assign(this.source.end, this.last.source.end);
+        }
+    }
+
+    each (callback) {
+        if (!this.lastEach) {
+            this.lastEach = 0;
+        }
+        if (!this.indexes) {
+            this.indexes = {};
+        }
+
+        this.lastEach ++;
+        let id = this.lastEach;
+        this.indexes[id] = 0;
+
+        if (!this.length) {
+            return undefined;
+        }
+
+        let index, result;
+        while (this.indexes[id] < this.length) {
+            index = this.indexes[id];
+            result = callback(this.at(index), index);
+            if (result === false) {
+                break;
+            }
+
+            this.indexes[id] += 1;
+        }
+
+        delete this.indexes[id];
+
+        if (result === false) {
+            return false;
+        }
+    }
+
+    walk (callback) {
+        return this.each((node, i) => {
+            let result = callback(node, i);
+
+            if (result !== false && node.length) {
+                result = node.walk(callback);
+            }
+
+            if (result === false) {
+                return false;
+            }
+        });
+    }
+
+    walkAttributes (callback) {
+        return this.walk((selector) => {
+            if (selector.type === ATTRIBUTE) {
+                return callback.call(this, selector);
+            }
+        });
+    }
+
+    walkClasses (callback) {
+        return this.walk((selector) => {
+            if (selector.type === CLASS) {
+                return callback.call(this, selector);
+            }
+        });
+    }
+
+    walkCombinators (callback) {
+        return this.walk((selector) => {
+            if (selector.type === COMBINATOR) {
+                return callback.call(this, selector);
+            }
+        });
+    }
+
+    walkComments (callback) {
+        return this.walk((selector) => {
+            if (selector.type === COMMENT) {
+                return callback.call(this, selector);
+            }
+        });
+    }
+
+    walkIds (callback) {
+        return this.walk((selector) => {
+            if (selector.type === ID$1) {
+                return callback.call(this, selector);
+            }
+        });
+    }
+
+    walkNesting (callback) {
+        return this.walk(selector => {
+            if (selector.type === NESTING) {
+                return callback.call(this, selector);
+            }
+        });
+    }
+
+    walkPseudos (callback) {
+        return this.walk((selector) => {
+            if (selector.type === PSEUDO) {
+                return callback.call(this, selector);
+            }
+        });
+    }
+
+    walkTags (callback) {
+        return this.walk((selector) => {
+            if (selector.type === TAG) {
+                return callback.call(this, selector);
+            }
+        });
+    }
+
+    walkUniversals (callback) {
+        return this.walk((selector) => {
+            if (selector.type === UNIVERSAL) {
+                return callback.call(this, selector);
+            }
+        });
+    }
+
+    split (callback) {
+        let current = [];
+        return this.reduce((memo, node, index) => {
+            let split = callback.call(this, node);
+            current.push(node);
+            if (split) {
+                memo.push(current);
+                current = [];
+            } else if (index === this.length - 1) {
+                memo.push(current);
+            }
+            return memo;
+        }, []);
+    }
+
+    map (callback) {
+        return this.nodes.map(callback);
+    }
+
+    reduce (callback, memo) {
+        return this.nodes.reduce(callback, memo);
+    }
+
+    every (callback) {
+        return this.nodes.every(callback);
+    }
+
+    some (callback) {
+        return this.nodes.some(callback);
+    }
+
+    filter (callback) {
+        return this.nodes.filter(callback);
+    }
+
+    sort (callback) {
+        return this.nodes.sort(callback);
+    }
+
+    toString () {
+        return this.map(String).join('');
+    }
+}
+
+class Root extends Container {
+    constructor (opts) {
+        super(opts);
+        this.type = ROOT;
+    }
+
+    toString () {
+        let str = this.reduce((memo, selector) => {
+            memo.push(String(selector));
+            return memo;
+        }, []).join(',');
+        return this.trailingComma ? str + ',' : str;
+    }
+
+    error (message, options) {
+        if (this._error) {
+            return this._error(message, options);
+        } else {
+            return new Error(message);
+        }
+    }
+
+    set errorGenerator (handler) {
+        this._error = handler;
+    }
+}
+
+class Selector extends Container {
+    constructor (opts) {
+        super(opts);
+        this.type = SELECTOR;
+    }
+}
 
 /*! https://mths.be/cssesc v3.0.0 by @mathias */
 
 var object = {};
 var hasOwnProperty = object.hasOwnProperty;
-var merge$1 = function merge(options, defaults) {
+function merge$1(options, defaults) {
 	if (!options) {
 		return defaults;
 	}
@@ -14092,14 +13967,14 @@ var merge$1 = function merge(options, defaults) {
 		result[key] = hasOwnProperty.call(options, key) ? options[key] : defaults[key];
 	}
 	return result;
-};
+}
 
 var regexAnySingleEscape = /[ -,\.\/:-@\[-\^`\{-~]/;
 var regexSingleEscape = /[ -,\.\/:-@\[\]\^`\{-~]/;
 var regexExcessiveSpaces = /(^|\\+)?(\\[A-F0-9]{1,6})\x20(?![a-fA-F0-9\x20])/g;
 
 // https://mathiasbynens.be/notes/css-escapes#css
-var cssesc = function cssesc(string, options) {
+function cssesc(string, options) {
 	options = merge$1(options, cssesc.options);
 	if (options.quotes != 'single' && options.quotes != 'double') {
 		options.quotes = 'single';
@@ -14172,7 +14047,7 @@ var cssesc = function cssesc(string, options) {
 		return quote + output + quote;
 	}
 	return output;
-};
+}
 
 // Expose default options (so they can be overridden globally).
 cssesc.options = {
@@ -14186,2490 +14061,2231 @@ cssesc.version = '3.0.0';
 
 var cssesc_1 = cssesc;
 
-(function (module, exports) {
+class ClassName extends Node {
+    constructor (opts) {
+        super(opts);
+        this.type = CLASS;
+        this._constructed = true;
+    }
 
-	exports.__esModule = true;
-	exports["default"] = void 0;
-	var _cssesc = _interopRequireDefault(cssesc_1);
-	var _util = util;
-	var _node = _interopRequireDefault(node$1.exports);
-	var _types = types;
-	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "default": obj }; }
-	function _defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } }
-	function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _defineProperties(Constructor.prototype, protoProps); if (staticProps) _defineProperties(Constructor, staticProps); Object.defineProperty(Constructor, "prototype", { writable: false }); return Constructor; }
-	function _inheritsLoose(subClass, superClass) { subClass.prototype = Object.create(superClass.prototype); subClass.prototype.constructor = subClass; _setPrototypeOf(subClass, superClass); }
-	function _setPrototypeOf(o, p) { _setPrototypeOf = Object.setPrototypeOf ? Object.setPrototypeOf.bind() : function _setPrototypeOf(o, p) { o.__proto__ = p; return o; }; return _setPrototypeOf(o, p); }
-	var ClassName = /*#__PURE__*/function (_Node) {
-	  _inheritsLoose(ClassName, _Node);
-	  function ClassName(opts) {
-	    var _this;
-	    _this = _Node.call(this, opts) || this;
-	    _this.type = _types.CLASS;
-	    _this._constructed = true;
-	    return _this;
-	  }
-	  var _proto = ClassName.prototype;
-	  _proto.valueToString = function valueToString() {
-	    return '.' + _Node.prototype.valueToString.call(this);
-	  };
-	  _createClass(ClassName, [{
-	    key: "value",
-	    get: function get() {
-	      return this._value;
-	    },
-	    set: function set(v) {
-	      if (this._constructed) {
-	        var escaped = (0, _cssesc["default"])(v, {
-	          isIdentifier: true
-	        });
-	        if (escaped !== v) {
-	          (0, _util.ensureObject)(this, "raws");
-	          this.raws.value = escaped;
-	        } else if (this.raws) {
-	          delete this.raws.value;
-	        }
-	      }
-	      this._value = v;
-	    }
-	  }]);
-	  return ClassName;
-	}(_node["default"]);
-	exports["default"] = ClassName;
-	module.exports = exports.default;
-} (className$1, className$1.exports));
+    set value (v) {
+        if (this._constructed) {
+            let escaped = cssesc_1(v, {isIdentifier: true});
+            if (escaped !== v) {
+                ensureObject(this, "raws");
+                this.raws.value = escaped;
+            } else if (this.raws) {
+                delete this.raws.value;
+            }
+        }
+        this._value = v;
+    }
 
-var comment$2 = {exports: {}};
+    get value () {
+        return this._value;
+    }
 
-(function (module, exports) {
+    valueToString () {
+        return '.' + super.valueToString();
+    }
+}
 
-	exports.__esModule = true;
-	exports["default"] = void 0;
-	var _node = _interopRequireDefault(node$1.exports);
-	var _types = types;
-	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "default": obj }; }
-	function _inheritsLoose(subClass, superClass) { subClass.prototype = Object.create(superClass.prototype); subClass.prototype.constructor = subClass; _setPrototypeOf(subClass, superClass); }
-	function _setPrototypeOf(o, p) { _setPrototypeOf = Object.setPrototypeOf ? Object.setPrototypeOf.bind() : function _setPrototypeOf(o, p) { o.__proto__ = p; return o; }; return _setPrototypeOf(o, p); }
-	var Comment = /*#__PURE__*/function (_Node) {
-	  _inheritsLoose(Comment, _Node);
-	  function Comment(opts) {
-	    var _this;
-	    _this = _Node.call(this, opts) || this;
-	    _this.type = _types.COMMENT;
-	    return _this;
-	  }
-	  return Comment;
-	}(_node["default"]);
-	exports["default"] = Comment;
-	module.exports = exports.default;
-} (comment$2, comment$2.exports));
+class Comment extends Node {
+    constructor (opts) {
+        super(opts);
+        this.type = COMMENT;
+    }
+}
 
-var id$1 = {exports: {}};
+class ID extends Node {
+    constructor (opts) {
+        super(opts);
+        this.type = ID$1;
+    }
 
-(function (module, exports) {
+    valueToString () {
+        return '#' + super.valueToString();
+    }
+}
 
-	exports.__esModule = true;
-	exports["default"] = void 0;
-	var _node = _interopRequireDefault(node$1.exports);
-	var _types = types;
-	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "default": obj }; }
-	function _inheritsLoose(subClass, superClass) { subClass.prototype = Object.create(superClass.prototype); subClass.prototype.constructor = subClass; _setPrototypeOf(subClass, superClass); }
-	function _setPrototypeOf(o, p) { _setPrototypeOf = Object.setPrototypeOf ? Object.setPrototypeOf.bind() : function _setPrototypeOf(o, p) { o.__proto__ = p; return o; }; return _setPrototypeOf(o, p); }
-	var ID = /*#__PURE__*/function (_Node) {
-	  _inheritsLoose(ID, _Node);
-	  function ID(opts) {
-	    var _this;
-	    _this = _Node.call(this, opts) || this;
-	    _this.type = _types.ID;
-	    return _this;
-	  }
-	  var _proto = ID.prototype;
-	  _proto.valueToString = function valueToString() {
-	    return '#' + _Node.prototype.valueToString.call(this);
-	  };
-	  return ID;
-	}(_node["default"]);
-	exports["default"] = ID;
-	module.exports = exports.default;
-} (id$1, id$1.exports));
+class Namespace extends Node {
+    get namespace () {
+        return this._namespace;
+    }
+    set namespace (namespace) {
+        if (namespace === true || namespace === "*" || namespace === "&") {
+            this._namespace = namespace;
+            if (this.raws) {
+                delete this.raws.namespace;
+            }
+            return;
+        }
 
-var tag$1 = {exports: {}};
+        let escaped = cssesc_1(namespace, {isIdentifier: true});
+        this._namespace = namespace;
+        if (escaped !== namespace) {
+            ensureObject(this, "raws");
+            this.raws.namespace = escaped;
+        } else if (this.raws) {
+            delete this.raws.namespace;
+        }
+    }
+    get ns () {
+        return this._namespace;
+    }
+    set ns (namespace) {
+        this.namespace = namespace;
+    }
 
-var namespace = {exports: {}};
+    get namespaceString () {
+        if (this.namespace) {
+            let ns = this.stringifyProperty("namespace");
+            if (ns === true) {
+                return '';
+            } else {
+                return ns;
+            }
+        } else {
+            return '';
+        }
+    }
 
-(function (module, exports) {
+    qualifiedName (value) {
+        if (this.namespace) {
+            return `${this.namespaceString}|${value}`;
+        } else {
+            return value;
+        }
+    }
 
-	exports.__esModule = true;
-	exports["default"] = void 0;
-	var _cssesc = _interopRequireDefault(cssesc_1);
-	var _util = util;
-	var _node = _interopRequireDefault(node$1.exports);
-	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "default": obj }; }
-	function _defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } }
-	function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _defineProperties(Constructor.prototype, protoProps); if (staticProps) _defineProperties(Constructor, staticProps); Object.defineProperty(Constructor, "prototype", { writable: false }); return Constructor; }
-	function _inheritsLoose(subClass, superClass) { subClass.prototype = Object.create(superClass.prototype); subClass.prototype.constructor = subClass; _setPrototypeOf(subClass, superClass); }
-	function _setPrototypeOf(o, p) { _setPrototypeOf = Object.setPrototypeOf ? Object.setPrototypeOf.bind() : function _setPrototypeOf(o, p) { o.__proto__ = p; return o; }; return _setPrototypeOf(o, p); }
-	var Namespace = /*#__PURE__*/function (_Node) {
-	  _inheritsLoose(Namespace, _Node);
-	  function Namespace() {
-	    return _Node.apply(this, arguments) || this;
-	  }
-	  var _proto = Namespace.prototype;
-	  _proto.qualifiedName = function qualifiedName(value) {
-	    if (this.namespace) {
-	      return this.namespaceString + "|" + value;
-	    } else {
-	      return value;
-	    }
-	  };
-	  _proto.valueToString = function valueToString() {
-	    return this.qualifiedName(_Node.prototype.valueToString.call(this));
-	  };
-	  _createClass(Namespace, [{
-	    key: "namespace",
-	    get: function get() {
-	      return this._namespace;
-	    },
-	    set: function set(namespace) {
-	      if (namespace === true || namespace === "*" || namespace === "&") {
-	        this._namespace = namespace;
-	        if (this.raws) {
-	          delete this.raws.namespace;
-	        }
-	        return;
-	      }
-	      var escaped = (0, _cssesc["default"])(namespace, {
-	        isIdentifier: true
-	      });
-	      this._namespace = namespace;
-	      if (escaped !== namespace) {
-	        (0, _util.ensureObject)(this, "raws");
-	        this.raws.namespace = escaped;
-	      } else if (this.raws) {
-	        delete this.raws.namespace;
-	      }
-	    }
-	  }, {
-	    key: "ns",
-	    get: function get() {
-	      return this._namespace;
-	    },
-	    set: function set(namespace) {
-	      this.namespace = namespace;
-	    }
-	  }, {
-	    key: "namespaceString",
-	    get: function get() {
-	      if (this.namespace) {
-	        var ns = this.stringifyProperty("namespace");
-	        if (ns === true) {
-	          return '';
-	        } else {
-	          return ns;
-	        }
-	      } else {
-	        return '';
-	      }
-	    }
-	  }]);
-	  return Namespace;
-	}(_node["default"]);
-	exports["default"] = Namespace;
-	module.exports = exports.default;
-} (namespace, namespace.exports));
+    valueToString () {
+        return this.qualifiedName(super.valueToString());
+    }
+}
 
-(function (module, exports) {
+class Tag extends Namespace {
+    constructor (opts) {
+        super(opts);
+        this.type = TAG;
+    }
+}
 
-	exports.__esModule = true;
-	exports["default"] = void 0;
-	var _namespace = _interopRequireDefault(namespace.exports);
-	var _types = types;
-	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "default": obj }; }
-	function _inheritsLoose(subClass, superClass) { subClass.prototype = Object.create(superClass.prototype); subClass.prototype.constructor = subClass; _setPrototypeOf(subClass, superClass); }
-	function _setPrototypeOf(o, p) { _setPrototypeOf = Object.setPrototypeOf ? Object.setPrototypeOf.bind() : function _setPrototypeOf(o, p) { o.__proto__ = p; return o; }; return _setPrototypeOf(o, p); }
-	var Tag = /*#__PURE__*/function (_Namespace) {
-	  _inheritsLoose(Tag, _Namespace);
-	  function Tag(opts) {
-	    var _this;
-	    _this = _Namespace.call(this, opts) || this;
-	    _this.type = _types.TAG;
-	    return _this;
-	  }
-	  return Tag;
-	}(_namespace["default"]);
-	exports["default"] = Tag;
-	module.exports = exports.default;
-} (tag$1, tag$1.exports));
+class String$1 extends Node {
+    constructor (opts) {
+        super(opts);
+        this.type = STRING;
+    }
+}
 
-var string$1 = {exports: {}};
+class Pseudo extends Container {
+    constructor (opts) {
+        super(opts);
+        this.type = PSEUDO;
+    }
 
-(function (module, exports) {
+    toString () {
+        let params = this.length ? '(' + this.map(String).join(',') + ')' : '';
+        return [
+            this.rawSpaceBefore,
+            this.stringifyProperty("value"),
+            params,
+            this.rawSpaceAfter,
+        ].join('');
+    }
+}
 
-	exports.__esModule = true;
-	exports["default"] = void 0;
-	var _node = _interopRequireDefault(node$1.exports);
-	var _types = types;
-	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "default": obj }; }
-	function _inheritsLoose(subClass, superClass) { subClass.prototype = Object.create(superClass.prototype); subClass.prototype.constructor = subClass; _setPrototypeOf(subClass, superClass); }
-	function _setPrototypeOf(o, p) { _setPrototypeOf = Object.setPrototypeOf ? Object.setPrototypeOf.bind() : function _setPrototypeOf(o, p) { o.__proto__ = p; return o; }; return _setPrototypeOf(o, p); }
-	var String = /*#__PURE__*/function (_Node) {
-	  _inheritsLoose(String, _Node);
-	  function String(opts) {
-	    var _this;
-	    _this = _Node.call(this, opts) || this;
-	    _this.type = _types.STRING;
-	    return _this;
-	  }
-	  return String;
-	}(_node["default"]);
-	exports["default"] = String;
-	module.exports = exports.default;
-} (string$1, string$1.exports));
+const WRAPPED_IN_QUOTES = /^('|")([^]*)\1$/;
 
-var pseudo$1 = {exports: {}};
+const warnOfDeprecatedValueAssignment = util$2.deprecate(() => {},
+    "Assigning an attribute a value containing characters that might need to be escaped is deprecated. " +
+    "Call attribute.setValue() instead.");
 
-(function (module, exports) {
+const warnOfDeprecatedQuotedAssignment = util$2.deprecate(() => {},
+    "Assigning attr.quoted is deprecated and has no effect. Assign to attr.quoteMark instead.");
 
-	exports.__esModule = true;
-	exports["default"] = void 0;
-	var _container = _interopRequireDefault(container.exports);
-	var _types = types;
-	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "default": obj }; }
-	function _inheritsLoose(subClass, superClass) { subClass.prototype = Object.create(superClass.prototype); subClass.prototype.constructor = subClass; _setPrototypeOf(subClass, superClass); }
-	function _setPrototypeOf(o, p) { _setPrototypeOf = Object.setPrototypeOf ? Object.setPrototypeOf.bind() : function _setPrototypeOf(o, p) { o.__proto__ = p; return o; }; return _setPrototypeOf(o, p); }
-	var Pseudo = /*#__PURE__*/function (_Container) {
-	  _inheritsLoose(Pseudo, _Container);
-	  function Pseudo(opts) {
-	    var _this;
-	    _this = _Container.call(this, opts) || this;
-	    _this.type = _types.PSEUDO;
-	    return _this;
-	  }
-	  var _proto = Pseudo.prototype;
-	  _proto.toString = function toString() {
-	    var params = this.length ? '(' + this.map(String).join(',') + ')' : '';
-	    return [this.rawSpaceBefore, this.stringifyProperty("value"), params, this.rawSpaceAfter].join('');
-	  };
-	  return Pseudo;
-	}(_container["default"]);
-	exports["default"] = Pseudo;
-	module.exports = exports.default;
-} (pseudo$1, pseudo$1.exports));
+const warnOfDeprecatedConstructor = util$2.deprecate(() => {},
+    "Constructing an Attribute selector with a value without specifying quoteMark is deprecated. Note: The value should be unescaped now.");
 
-var attribute$1 = {};
+function unescapeValue (value) {
+    let deprecatedUsage = false;
+    let quoteMark = null;
+    let unescaped = value;
+    let m = unescaped.match(WRAPPED_IN_QUOTES);
+    if (m) {
+        quoteMark = m[1];
+        unescaped = m[2];
+    }
+    unescaped = unesc(unescaped);
+    if (unescaped !== value) {
+        deprecatedUsage = true;
+    }
+    return {
+        deprecatedUsage,
+        unescaped,
+        quoteMark,
+    };
+}
 
-/**
- * For Node.js, simply re-export the core `util.deprecate` function.
- */
+function handleDeprecatedContructorOpts (opts) {
+    if (opts.quoteMark !== undefined) {
+        return opts;
+    }
+    if (opts.value === undefined) {
+        return opts;
+    }
+    warnOfDeprecatedConstructor();
+    let {quoteMark, unescaped} = unescapeValue(opts.value);
+    if (!opts.raws) {
+        opts.raws = {};
+    }
+    if (opts.raws.value === undefined) {
+        opts.raws.value = opts.value;
+    }
+    opts.value = unescaped;
+    opts.quoteMark = quoteMark;
+    return opts;
+}
 
-var node = util$2.deprecate;
+class Attribute extends Namespace {
+    static NO_QUOTE = null;
+    static SINGLE_QUOTE = "'";
+    static DOUBLE_QUOTE = '"';
+    constructor (opts = {}) {
+        super(handleDeprecatedContructorOpts(opts));
+        this.type = ATTRIBUTE;
+        this.raws = this.raws || {};
+        Object.defineProperty(this.raws, 'unquoted', {
+            get: util$2.deprecate(() => this.value,
+                "attr.raws.unquoted is deprecated. Call attr.value instead."),
+            set: util$2.deprecate(() => this.value,
+                "Setting attr.raws.unquoted is deprecated and has no effect. attr.value is unescaped by default now."),
+        });
+        this._constructed = true;
+    }
 
-(function (exports) {
+    /**
+     * Returns the Attribute's value quoted such that it would be legal to use
+     * in the value of a css file. The original value's quotation setting
+     * used for stringification is left unchanged. See `setValue(value, options)`
+     * if you want to control the quote settings of a new value for the attribute.
+     *
+     * You can also change the quotation used for the current value by setting quoteMark.
+     *
+     * Options:
+     *   * quoteMark {'"' | "'" | null} - Use this value to quote the value. If this
+     *     option is not set, the original value for quoteMark will be used. If
+     *     indeterminate, a double quote is used. The legal values are:
+     *     * `null` - the value will be unquoted and characters will be escaped as necessary.
+     *     * `'` - the value will be quoted with a single quote and single quotes are escaped.
+     *     * `"` - the value will be quoted with a double quote and double quotes are escaped.
+     *   * preferCurrentQuoteMark {boolean} - if true, prefer the source quote mark
+     *     over the quoteMark option value.
+     *   * smart {boolean} - if true, will select a quote mark based on the value
+     *     and the other options specified here. See the `smartQuoteMark()`
+     *     method.
+     **/
+    getQuotedValue (options = {}) {
+        let quoteMark = this._determineQuoteMark(options);
+        let cssescopts = CSSESC_QUOTE_OPTIONS[quoteMark];
+        let escaped = cssesc_1(this._value, cssescopts);
+        return escaped;
+    }
 
-	exports.__esModule = true;
-	exports["default"] = void 0;
-	exports.unescapeValue = unescapeValue;
-	var _cssesc = _interopRequireDefault(cssesc_1);
-	var _unesc = _interopRequireDefault(unesc.exports);
-	var _namespace = _interopRequireDefault(namespace.exports);
-	var _types = types;
-	var _CSSESC_QUOTE_OPTIONS;
-	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "default": obj }; }
-	function _defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } }
-	function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _defineProperties(Constructor.prototype, protoProps); if (staticProps) _defineProperties(Constructor, staticProps); Object.defineProperty(Constructor, "prototype", { writable: false }); return Constructor; }
-	function _inheritsLoose(subClass, superClass) { subClass.prototype = Object.create(superClass.prototype); subClass.prototype.constructor = subClass; _setPrototypeOf(subClass, superClass); }
-	function _setPrototypeOf(o, p) { _setPrototypeOf = Object.setPrototypeOf ? Object.setPrototypeOf.bind() : function _setPrototypeOf(o, p) { o.__proto__ = p; return o; }; return _setPrototypeOf(o, p); }
-	var deprecate = node;
-	var WRAPPED_IN_QUOTES = /^('|")([^]*)\1$/;
-	var warnOfDeprecatedValueAssignment = deprecate(function () {}, "Assigning an attribute a value containing characters that might need to be escaped is deprecated. " + "Call attribute.setValue() instead.");
-	var warnOfDeprecatedQuotedAssignment = deprecate(function () {}, "Assigning attr.quoted is deprecated and has no effect. Assign to attr.quoteMark instead.");
-	var warnOfDeprecatedConstructor = deprecate(function () {}, "Constructing an Attribute selector with a value without specifying quoteMark is deprecated. Note: The value should be unescaped now.");
-	function unescapeValue(value) {
-	  var deprecatedUsage = false;
-	  var quoteMark = null;
-	  var unescaped = value;
-	  var m = unescaped.match(WRAPPED_IN_QUOTES);
-	  if (m) {
-	    quoteMark = m[1];
-	    unescaped = m[2];
-	  }
-	  unescaped = (0, _unesc["default"])(unescaped);
-	  if (unescaped !== value) {
-	    deprecatedUsage = true;
-	  }
-	  return {
-	    deprecatedUsage: deprecatedUsage,
-	    unescaped: unescaped,
-	    quoteMark: quoteMark
-	  };
-	}
-	function handleDeprecatedContructorOpts(opts) {
-	  if (opts.quoteMark !== undefined) {
-	    return opts;
-	  }
-	  if (opts.value === undefined) {
-	    return opts;
-	  }
-	  warnOfDeprecatedConstructor();
-	  var _unescapeValue = unescapeValue(opts.value),
-	    quoteMark = _unescapeValue.quoteMark,
-	    unescaped = _unescapeValue.unescaped;
-	  if (!opts.raws) {
-	    opts.raws = {};
-	  }
-	  if (opts.raws.value === undefined) {
-	    opts.raws.value = opts.value;
-	  }
-	  opts.value = unescaped;
-	  opts.quoteMark = quoteMark;
-	  return opts;
-	}
-	var Attribute = /*#__PURE__*/function (_Namespace) {
-	  _inheritsLoose(Attribute, _Namespace);
-	  function Attribute(opts) {
-	    var _this;
-	    if (opts === void 0) {
-	      opts = {};
-	    }
-	    _this = _Namespace.call(this, handleDeprecatedContructorOpts(opts)) || this;
-	    _this.type = _types.ATTRIBUTE;
-	    _this.raws = _this.raws || {};
-	    Object.defineProperty(_this.raws, 'unquoted', {
-	      get: deprecate(function () {
-	        return _this.value;
-	      }, "attr.raws.unquoted is deprecated. Call attr.value instead."),
-	      set: deprecate(function () {
-	        return _this.value;
-	      }, "Setting attr.raws.unquoted is deprecated and has no effect. attr.value is unescaped by default now.")
-	    });
-	    _this._constructed = true;
-	    return _this;
-	  }
+    _determineQuoteMark (options) {
+        return (options.smart) ? this.smartQuoteMark(options) : this.preferredQuoteMark(options);
+    }
 
-	  /**
-	   * Returns the Attribute's value quoted such that it would be legal to use
-	   * in the value of a css file. The original value's quotation setting
-	   * used for stringification is left unchanged. See `setValue(value, options)`
-	   * if you want to control the quote settings of a new value for the attribute.
-	   *
-	   * You can also change the quotation used for the current value by setting quoteMark.
-	   *
-	   * Options:
-	   *   * quoteMark {'"' | "'" | null} - Use this value to quote the value. If this
-	   *     option is not set, the original value for quoteMark will be used. If
-	   *     indeterminate, a double quote is used. The legal values are:
-	   *     * `null` - the value will be unquoted and characters will be escaped as necessary.
-	   *     * `'` - the value will be quoted with a single quote and single quotes are escaped.
-	   *     * `"` - the value will be quoted with a double quote and double quotes are escaped.
-	   *   * preferCurrentQuoteMark {boolean} - if true, prefer the source quote mark
-	   *     over the quoteMark option value.
-	   *   * smart {boolean} - if true, will select a quote mark based on the value
-	   *     and the other options specified here. See the `smartQuoteMark()`
-	   *     method.
-	   **/
-	  var _proto = Attribute.prototype;
-	  _proto.getQuotedValue = function getQuotedValue(options) {
-	    if (options === void 0) {
-	      options = {};
-	    }
-	    var quoteMark = this._determineQuoteMark(options);
-	    var cssescopts = CSSESC_QUOTE_OPTIONS[quoteMark];
-	    var escaped = (0, _cssesc["default"])(this._value, cssescopts);
-	    return escaped;
-	  };
-	  _proto._determineQuoteMark = function _determineQuoteMark(options) {
-	    return options.smart ? this.smartQuoteMark(options) : this.preferredQuoteMark(options);
-	  }
+    /**
+     * Set the unescaped value with the specified quotation options. The value
+     * provided must not include any wrapping quote marks -- those quotes will
+     * be interpreted as part of the value and escaped accordingly.
+     */
+    setValue (value, options = {}) {
+        this._value = value;
+        this._quoteMark = this._determineQuoteMark(options);
+        this._syncRawValue();
+    }
 
-	  /**
-	   * Set the unescaped value with the specified quotation options. The value
-	   * provided must not include any wrapping quote marks -- those quotes will
-	   * be interpreted as part of the value and escaped accordingly.
-	   */;
-	  _proto.setValue = function setValue(value, options) {
-	    if (options === void 0) {
-	      options = {};
-	    }
-	    this._value = value;
-	    this._quoteMark = this._determineQuoteMark(options);
-	    this._syncRawValue();
-	  }
+    /**
+     * Intelligently select a quoteMark value based on the value's contents. If
+     * the value is a legal CSS ident, it will not be quoted. Otherwise a quote
+     * mark will be picked that minimizes the number of escapes.
+     *
+     * If there's no clear winner, the quote mark from these options is used,
+     * then the source quote mark (this is inverted if `preferCurrentQuoteMark` is
+     * true). If the quoteMark is unspecified, a double quote is used.
+     *
+     * @param options This takes the quoteMark and preferCurrentQuoteMark options
+     * from the quoteValue method.
+     */
+    smartQuoteMark (options) {
+        let v = this.value;
+        let numSingleQuotes = v.replace(/[^']/g, '').length;
+        let numDoubleQuotes = v.replace(/[^"]/g, '').length;
+        if (numSingleQuotes + numDoubleQuotes === 0) {
+            let escaped = cssesc_1(v, {isIdentifier: true});
+            if (escaped === v) {
+                return Attribute.NO_QUOTE;
+            } else {
+                let pref = this.preferredQuoteMark(options);
+                if (pref === Attribute.NO_QUOTE) {
+                    // pick a quote mark that isn't none and see if it's smaller
+                    let quote = this.quoteMark || options.quoteMark || Attribute.DOUBLE_QUOTE;
+                    let opts = CSSESC_QUOTE_OPTIONS[quote];
+                    let quoteValue = cssesc_1(v, opts);
+                    if (quoteValue.length < escaped.length) {
+                        return quote;
+                    }
+                }
+                return pref;
+            }
+        } else if (numDoubleQuotes === numSingleQuotes) {
+            return this.preferredQuoteMark(options);
+        } else if ( numDoubleQuotes < numSingleQuotes) {
+            return Attribute.DOUBLE_QUOTE;
+        } else {
+            return Attribute.SINGLE_QUOTE;
+        }
+    }
 
-	  /**
-	   * Intelligently select a quoteMark value based on the value's contents. If
-	   * the value is a legal CSS ident, it will not be quoted. Otherwise a quote
-	   * mark will be picked that minimizes the number of escapes.
-	   *
-	   * If there's no clear winner, the quote mark from these options is used,
-	   * then the source quote mark (this is inverted if `preferCurrentQuoteMark` is
-	   * true). If the quoteMark is unspecified, a double quote is used.
-	   *
-	   * @param options This takes the quoteMark and preferCurrentQuoteMark options
-	   * from the quoteValue method.
-	   */;
-	  _proto.smartQuoteMark = function smartQuoteMark(options) {
-	    var v = this.value;
-	    var numSingleQuotes = v.replace(/[^']/g, '').length;
-	    var numDoubleQuotes = v.replace(/[^"]/g, '').length;
-	    if (numSingleQuotes + numDoubleQuotes === 0) {
-	      var escaped = (0, _cssesc["default"])(v, {
-	        isIdentifier: true
-	      });
-	      if (escaped === v) {
-	        return Attribute.NO_QUOTE;
-	      } else {
-	        var pref = this.preferredQuoteMark(options);
-	        if (pref === Attribute.NO_QUOTE) {
-	          // pick a quote mark that isn't none and see if it's smaller
-	          var quote = this.quoteMark || options.quoteMark || Attribute.DOUBLE_QUOTE;
-	          var opts = CSSESC_QUOTE_OPTIONS[quote];
-	          var quoteValue = (0, _cssesc["default"])(v, opts);
-	          if (quoteValue.length < escaped.length) {
-	            return quote;
-	          }
-	        }
-	        return pref;
-	      }
-	    } else if (numDoubleQuotes === numSingleQuotes) {
-	      return this.preferredQuoteMark(options);
-	    } else if (numDoubleQuotes < numSingleQuotes) {
-	      return Attribute.DOUBLE_QUOTE;
-	    } else {
-	      return Attribute.SINGLE_QUOTE;
-	    }
-	  }
+    /**
+     * Selects the preferred quote mark based on the options and the current quote mark value.
+     * If you want the quote mark to depend on the attribute value, call `smartQuoteMark(opts)`
+     * instead.
+     */
+    preferredQuoteMark (options) {
+        let quoteMark = (options.preferCurrentQuoteMark) ? this.quoteMark : options.quoteMark;
 
-	  /**
-	   * Selects the preferred quote mark based on the options and the current quote mark value.
-	   * If you want the quote mark to depend on the attribute value, call `smartQuoteMark(opts)`
-	   * instead.
-	   */;
-	  _proto.preferredQuoteMark = function preferredQuoteMark(options) {
-	    var quoteMark = options.preferCurrentQuoteMark ? this.quoteMark : options.quoteMark;
-	    if (quoteMark === undefined) {
-	      quoteMark = options.preferCurrentQuoteMark ? options.quoteMark : this.quoteMark;
-	    }
-	    if (quoteMark === undefined) {
-	      quoteMark = Attribute.DOUBLE_QUOTE;
-	    }
-	    return quoteMark;
-	  };
-	  _proto._syncRawValue = function _syncRawValue() {
-	    var rawValue = (0, _cssesc["default"])(this._value, CSSESC_QUOTE_OPTIONS[this.quoteMark]);
-	    if (rawValue === this._value) {
-	      if (this.raws) {
-	        delete this.raws.value;
-	      }
-	    } else {
-	      this.raws.value = rawValue;
-	    }
-	  };
-	  _proto._handleEscapes = function _handleEscapes(prop, value) {
-	    if (this._constructed) {
-	      var escaped = (0, _cssesc["default"])(value, {
-	        isIdentifier: true
-	      });
-	      if (escaped !== value) {
-	        this.raws[prop] = escaped;
-	      } else {
-	        delete this.raws[prop];
-	      }
-	    }
-	  };
-	  _proto._spacesFor = function _spacesFor(name) {
-	    var attrSpaces = {
-	      before: '',
-	      after: ''
-	    };
-	    var spaces = this.spaces[name] || {};
-	    var rawSpaces = this.raws.spaces && this.raws.spaces[name] || {};
-	    return Object.assign(attrSpaces, spaces, rawSpaces);
-	  };
-	  _proto._stringFor = function _stringFor(name, spaceName, concat) {
-	    if (spaceName === void 0) {
-	      spaceName = name;
-	    }
-	    if (concat === void 0) {
-	      concat = defaultAttrConcat;
-	    }
-	    var attrSpaces = this._spacesFor(spaceName);
-	    return concat(this.stringifyProperty(name), attrSpaces);
-	  }
+        if (quoteMark === undefined) {
+            quoteMark = (options.preferCurrentQuoteMark) ? options.quoteMark : this.quoteMark;
+        }
 
-	  /**
-	   * returns the offset of the attribute part specified relative to the
-	   * start of the node of the output string.
-	   *
-	   * * "ns" - alias for "namespace"
-	   * * "namespace" - the namespace if it exists.
-	   * * "attribute" - the attribute name
-	   * * "attributeNS" - the start of the attribute or its namespace
-	   * * "operator" - the match operator of the attribute
-	   * * "value" - The value (string or identifier)
-	   * * "insensitive" - the case insensitivity flag;
-	   * @param part One of the possible values inside an attribute.
-	   * @returns -1 if the name is invalid or the value doesn't exist in this attribute.
-	   */;
-	  _proto.offsetOf = function offsetOf(name) {
-	    var count = 1;
-	    var attributeSpaces = this._spacesFor("attribute");
-	    count += attributeSpaces.before.length;
-	    if (name === "namespace" || name === "ns") {
-	      return this.namespace ? count : -1;
-	    }
-	    if (name === "attributeNS") {
-	      return count;
-	    }
-	    count += this.namespaceString.length;
-	    if (this.namespace) {
-	      count += 1;
-	    }
-	    if (name === "attribute") {
-	      return count;
-	    }
-	    count += this.stringifyProperty("attribute").length;
-	    count += attributeSpaces.after.length;
-	    var operatorSpaces = this._spacesFor("operator");
-	    count += operatorSpaces.before.length;
-	    var operator = this.stringifyProperty("operator");
-	    if (name === "operator") {
-	      return operator ? count : -1;
-	    }
-	    count += operator.length;
-	    count += operatorSpaces.after.length;
-	    var valueSpaces = this._spacesFor("value");
-	    count += valueSpaces.before.length;
-	    var value = this.stringifyProperty("value");
-	    if (name === "value") {
-	      return value ? count : -1;
-	    }
-	    count += value.length;
-	    count += valueSpaces.after.length;
-	    var insensitiveSpaces = this._spacesFor("insensitive");
-	    count += insensitiveSpaces.before.length;
-	    if (name === "insensitive") {
-	      return this.insensitive ? count : -1;
-	    }
-	    return -1;
-	  };
-	  _proto.toString = function toString() {
-	    var _this2 = this;
-	    var selector = [this.rawSpaceBefore, '['];
-	    selector.push(this._stringFor('qualifiedAttribute', 'attribute'));
-	    if (this.operator && (this.value || this.value === '')) {
-	      selector.push(this._stringFor('operator'));
-	      selector.push(this._stringFor('value'));
-	      selector.push(this._stringFor('insensitiveFlag', 'insensitive', function (attrValue, attrSpaces) {
-	        if (attrValue.length > 0 && !_this2.quoted && attrSpaces.before.length === 0 && !(_this2.spaces.value && _this2.spaces.value.after)) {
-	          attrSpaces.before = " ";
-	        }
-	        return defaultAttrConcat(attrValue, attrSpaces);
-	      }));
-	    }
-	    selector.push(']');
-	    selector.push(this.rawSpaceAfter);
-	    return selector.join('');
-	  };
-	  _createClass(Attribute, [{
-	    key: "quoted",
-	    get: function get() {
-	      var qm = this.quoteMark;
-	      return qm === "'" || qm === '"';
-	    },
-	    set: function set(value) {
-	      warnOfDeprecatedQuotedAssignment();
-	    }
+        if (quoteMark === undefined) {
+            quoteMark = Attribute.DOUBLE_QUOTE;
+        }
 
-	    /**
-	     * returns a single (`'`) or double (`"`) quote character if the value is quoted.
-	     * returns `null` if the value is not quoted.
-	     * returns `undefined` if the quotation state is unknown (this can happen when
-	     * the attribute is constructed without specifying a quote mark.)
-	     */
-	  }, {
-	    key: "quoteMark",
-	    get: function get() {
-	      return this._quoteMark;
-	    }
+        return quoteMark;
+    }
 
-	    /**
-	     * Set the quote mark to be used by this attribute's value.
-	     * If the quote mark changes, the raw (escaped) value at `attr.raws.value` of the attribute
-	     * value is updated accordingly.
-	     *
-	     * @param {"'" | '"' | null} quoteMark The quote mark or `null` if the value should be unquoted.
-	     */,
-	    set: function set(quoteMark) {
-	      if (!this._constructed) {
-	        this._quoteMark = quoteMark;
-	        return;
-	      }
-	      if (this._quoteMark !== quoteMark) {
-	        this._quoteMark = quoteMark;
-	        this._syncRawValue();
-	      }
-	    }
-	  }, {
-	    key: "qualifiedAttribute",
-	    get: function get() {
-	      return this.qualifiedName(this.raws.attribute || this.attribute);
-	    }
-	  }, {
-	    key: "insensitiveFlag",
-	    get: function get() {
-	      return this.insensitive ? 'i' : '';
-	    }
-	  }, {
-	    key: "value",
-	    get: function get() {
-	      return this._value;
-	    },
-	    set:
-	    /**
-	     * Before 3.0, the value had to be set to an escaped value including any wrapped
-	     * quote marks. In 3.0, the semantics of `Attribute.value` changed so that the value
-	     * is unescaped during parsing and any quote marks are removed.
-	     *
-	     * Because the ambiguity of this semantic change, if you set `attr.value = newValue`,
-	     * a deprecation warning is raised when the new value contains any characters that would
-	     * require escaping (including if it contains wrapped quotes).
-	     *
-	     * Instead, you should call `attr.setValue(newValue, opts)` and pass options that describe
-	     * how the new value is quoted.
-	     */
-	    function set(v) {
-	      if (this._constructed) {
-	        var _unescapeValue2 = unescapeValue(v),
-	          deprecatedUsage = _unescapeValue2.deprecatedUsage,
-	          unescaped = _unescapeValue2.unescaped,
-	          quoteMark = _unescapeValue2.quoteMark;
-	        if (deprecatedUsage) {
-	          warnOfDeprecatedValueAssignment();
-	        }
-	        if (unescaped === this._value && quoteMark === this._quoteMark) {
-	          return;
-	        }
-	        this._value = unescaped;
-	        this._quoteMark = quoteMark;
-	        this._syncRawValue();
-	      } else {
-	        this._value = v;
-	      }
-	    }
-	  }, {
-	    key: "insensitive",
-	    get: function get() {
-	      return this._insensitive;
-	    }
+    get quoted () {
+        let qm = this.quoteMark;
+        return qm === "'" || qm === '"';
+    }
 
-	    /**
-	     * Set the case insensitive flag.
-	     * If the case insensitive flag changes, the raw (escaped) value at `attr.raws.insensitiveFlag`
-	     * of the attribute is updated accordingly.
-	     *
-	     * @param {true | false} insensitive true if the attribute should match case-insensitively.
-	     */,
-	    set: function set(insensitive) {
-	      if (!insensitive) {
-	        this._insensitive = false;
+    set quoted (value) {
+        warnOfDeprecatedQuotedAssignment();
+    }
 
-	        // "i" and "I" can be used in "this.raws.insensitiveFlag" to store the original notation.
-	        // When setting `attr.insensitive = false` both should be erased to ensure correct serialization.
-	        if (this.raws && (this.raws.insensitiveFlag === 'I' || this.raws.insensitiveFlag === 'i')) {
-	          this.raws.insensitiveFlag = undefined;
-	        }
-	      }
-	      this._insensitive = insensitive;
-	    }
-	  }, {
-	    key: "attribute",
-	    get: function get() {
-	      return this._attribute;
-	    },
-	    set: function set(name) {
-	      this._handleEscapes("attribute", name);
-	      this._attribute = name;
-	    }
-	  }]);
-	  return Attribute;
-	}(_namespace["default"]);
-	exports["default"] = Attribute;
-	Attribute.NO_QUOTE = null;
-	Attribute.SINGLE_QUOTE = "'";
-	Attribute.DOUBLE_QUOTE = '"';
-	var CSSESC_QUOTE_OPTIONS = (_CSSESC_QUOTE_OPTIONS = {
-	  "'": {
-	    quotes: 'single',
-	    wrap: true
-	  },
-	  '"': {
-	    quotes: 'double',
-	    wrap: true
-	  }
-	}, _CSSESC_QUOTE_OPTIONS[null] = {
-	  isIdentifier: true
-	}, _CSSESC_QUOTE_OPTIONS);
-	function defaultAttrConcat(attrValue, attrSpaces) {
-	  return "" + attrSpaces.before + attrValue + attrSpaces.after;
-	}
-} (attribute$1));
+    /**
+     * returns a single (`'`) or double (`"`) quote character if the value is quoted.
+     * returns `null` if the value is not quoted.
+     * returns `undefined` if the quotation state is unknown (this can happen when
+     * the attribute is constructed without specifying a quote mark.)
+     */
+    get quoteMark () {
+        return this._quoteMark;
+    }
 
-var universal$1 = {exports: {}};
+    /**
+     * Set the quote mark to be used by this attribute's value.
+     * If the quote mark changes, the raw (escaped) value at `attr.raws.value` of the attribute
+     * value is updated accordingly.
+     *
+     * @param {"'" | '"' | null} quoteMark The quote mark or `null` if the value should be unquoted.
+     */
+    set quoteMark (quoteMark) {
+        if (!this._constructed) {
+            this._quoteMark = quoteMark;
+            return;
+        }
+        if (this._quoteMark !== quoteMark) {
+            this._quoteMark = quoteMark;
+            this._syncRawValue();
+        }
+    }
 
-(function (module, exports) {
+    _syncRawValue () {
+        let rawValue = cssesc_1(this._value, CSSESC_QUOTE_OPTIONS[this.quoteMark]);
+        if (rawValue === this._value) {
+            if (this.raws) {
+                delete this.raws.value;
+            }
+        } else {
+            this.raws.value = rawValue;
+        }
+    }
 
-	exports.__esModule = true;
-	exports["default"] = void 0;
-	var _namespace = _interopRequireDefault(namespace.exports);
-	var _types = types;
-	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "default": obj }; }
-	function _inheritsLoose(subClass, superClass) { subClass.prototype = Object.create(superClass.prototype); subClass.prototype.constructor = subClass; _setPrototypeOf(subClass, superClass); }
-	function _setPrototypeOf(o, p) { _setPrototypeOf = Object.setPrototypeOf ? Object.setPrototypeOf.bind() : function _setPrototypeOf(o, p) { o.__proto__ = p; return o; }; return _setPrototypeOf(o, p); }
-	var Universal = /*#__PURE__*/function (_Namespace) {
-	  _inheritsLoose(Universal, _Namespace);
-	  function Universal(opts) {
-	    var _this;
-	    _this = _Namespace.call(this, opts) || this;
-	    _this.type = _types.UNIVERSAL;
-	    _this.value = '*';
-	    return _this;
-	  }
-	  return Universal;
-	}(_namespace["default"]);
-	exports["default"] = Universal;
-	module.exports = exports.default;
-} (universal$1, universal$1.exports));
+    get qualifiedAttribute () {
+        return this.qualifiedName(this.raws.attribute || this.attribute);
+    }
 
-var combinator$2 = {exports: {}};
+    get insensitiveFlag () {
+        return this.insensitive ? 'i' : '';
+    }
 
-(function (module, exports) {
+    get value () {
+        return this._value;
+    }
 
-	exports.__esModule = true;
-	exports["default"] = void 0;
-	var _node = _interopRequireDefault(node$1.exports);
-	var _types = types;
-	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "default": obj }; }
-	function _inheritsLoose(subClass, superClass) { subClass.prototype = Object.create(superClass.prototype); subClass.prototype.constructor = subClass; _setPrototypeOf(subClass, superClass); }
-	function _setPrototypeOf(o, p) { _setPrototypeOf = Object.setPrototypeOf ? Object.setPrototypeOf.bind() : function _setPrototypeOf(o, p) { o.__proto__ = p; return o; }; return _setPrototypeOf(o, p); }
-	var Combinator = /*#__PURE__*/function (_Node) {
-	  _inheritsLoose(Combinator, _Node);
-	  function Combinator(opts) {
-	    var _this;
-	    _this = _Node.call(this, opts) || this;
-	    _this.type = _types.COMBINATOR;
-	    return _this;
-	  }
-	  return Combinator;
-	}(_node["default"]);
-	exports["default"] = Combinator;
-	module.exports = exports.default;
-} (combinator$2, combinator$2.exports));
+    get insensitive () {
+        return this._insensitive;
+    }
 
-var nesting$1 = {exports: {}};
+    /**
+     * Set the case insensitive flag.
+     * If the case insensitive flag changes, the raw (escaped) value at `attr.raws.insensitiveFlag`
+     * of the attribute is updated accordingly.
+     *
+     * @param {true | false} insensitive true if the attribute should match case-insensitively.
+     */
+    set insensitive (insensitive) {
+        if (!insensitive) {
+            this._insensitive = false;
 
-(function (module, exports) {
+            // "i" and "I" can be used in "this.raws.insensitiveFlag" to store the original notation.
+            // When setting `attr.insensitive = false` both should be erased to ensure correct serialization.
+            if (this.raws && (this.raws.insensitiveFlag === 'I' || this.raws.insensitiveFlag === 'i')) {
+                this.raws.insensitiveFlag = undefined;
+            }
+        }
 
-	exports.__esModule = true;
-	exports["default"] = void 0;
-	var _node = _interopRequireDefault(node$1.exports);
-	var _types = types;
-	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "default": obj }; }
-	function _inheritsLoose(subClass, superClass) { subClass.prototype = Object.create(superClass.prototype); subClass.prototype.constructor = subClass; _setPrototypeOf(subClass, superClass); }
-	function _setPrototypeOf(o, p) { _setPrototypeOf = Object.setPrototypeOf ? Object.setPrototypeOf.bind() : function _setPrototypeOf(o, p) { o.__proto__ = p; return o; }; return _setPrototypeOf(o, p); }
-	var Nesting = /*#__PURE__*/function (_Node) {
-	  _inheritsLoose(Nesting, _Node);
-	  function Nesting(opts) {
-	    var _this;
-	    _this = _Node.call(this, opts) || this;
-	    _this.type = _types.NESTING;
-	    _this.value = '&';
-	    return _this;
-	  }
-	  return Nesting;
-	}(_node["default"]);
-	exports["default"] = Nesting;
-	module.exports = exports.default;
-} (nesting$1, nesting$1.exports));
+        this._insensitive = insensitive;
+    }
 
-var sortAscending = {exports: {}};
+    /**
+     * Before 3.0, the value had to be set to an escaped value including any wrapped
+     * quote marks. In 3.0, the semantics of `Attribute.value` changed so that the value
+     * is unescaped during parsing and any quote marks are removed.
+     *
+     * Because the ambiguity of this semantic change, if you set `attr.value = newValue`,
+     * a deprecation warning is raised when the new value contains any characters that would
+     * require escaping (including if it contains wrapped quotes).
+     *
+     * Instead, you should call `attr.setValue(newValue, opts)` and pass options that describe
+     * how the new value is quoted.
+     */
+    set value (v) {
+        if (this._constructed) {
+            let {
+                deprecatedUsage,
+                unescaped,
+                quoteMark,
+            } = unescapeValue(v);
+            if (deprecatedUsage) {
+                warnOfDeprecatedValueAssignment();
+            }
+            if (unescaped === this._value && quoteMark === this._quoteMark) {
+                return;
+            }
+            this._value = unescaped;
+            this._quoteMark = quoteMark;
+            this._syncRawValue();
+        } else {
+            this._value = v;
+        }
+    }
 
-(function (module, exports) {
+    get attribute () {
+        return this._attribute;
+    }
 
-	exports.__esModule = true;
-	exports["default"] = sortAscending;
-	function sortAscending(list) {
-	  return list.sort(function (a, b) {
-	    return a - b;
-	  });
-	}
-	module.exports = exports.default;
-} (sortAscending, sortAscending.exports));
+    set attribute (name) {
+        this._handleEscapes("attribute", name);
+        this._attribute = name;
+    }
 
-var tokenize = {};
+    _handleEscapes (prop, value) {
+        if (this._constructed) {
+            let escaped = cssesc_1(value, {isIdentifier: true});
+            if (escaped !== value) {
+                this.raws[prop] = escaped;
+            } else {
+                delete this.raws[prop];
+            }
+        }
+    }
 
-var tokenTypes = {};
+    _spacesFor (name) {
+        let attrSpaces = {before: '', after: ''};
+        let spaces = this.spaces[name] || {};
+        let rawSpaces = (this.raws.spaces && this.raws.spaces[name]) || {};
+        return Object.assign(attrSpaces, spaces, rawSpaces);
+    }
 
-tokenTypes.__esModule = true;
-tokenTypes.word = tokenTypes.tilde = tokenTypes.tab = tokenTypes.str = tokenTypes.space = tokenTypes.slash = tokenTypes.singleQuote = tokenTypes.semicolon = tokenTypes.plus = tokenTypes.pipe = tokenTypes.openSquare = tokenTypes.openParenthesis = tokenTypes.newline = tokenTypes.greaterThan = tokenTypes.feed = tokenTypes.equals = tokenTypes.doubleQuote = tokenTypes.dollar = tokenTypes.cr = tokenTypes.comment = tokenTypes.comma = tokenTypes.combinator = tokenTypes.colon = tokenTypes.closeSquare = tokenTypes.closeParenthesis = tokenTypes.caret = tokenTypes.bang = tokenTypes.backslash = tokenTypes.at = tokenTypes.asterisk = tokenTypes.ampersand = void 0;
-var ampersand = 38; // `&`.charCodeAt(0);
-tokenTypes.ampersand = ampersand;
-var asterisk = 42; // `*`.charCodeAt(0);
-tokenTypes.asterisk = asterisk;
-var at = 64; // `@`.charCodeAt(0);
-tokenTypes.at = at;
-var comma = 44; // `,`.charCodeAt(0);
-tokenTypes.comma = comma;
-var colon = 58; // `:`.charCodeAt(0);
-tokenTypes.colon = colon;
-var semicolon = 59; // `;`.charCodeAt(0);
-tokenTypes.semicolon = semicolon;
-var openParenthesis = 40; // `(`.charCodeAt(0);
-tokenTypes.openParenthesis = openParenthesis;
-var closeParenthesis = 41; // `)`.charCodeAt(0);
-tokenTypes.closeParenthesis = closeParenthesis;
-var openSquare = 91; // `[`.charCodeAt(0);
-tokenTypes.openSquare = openSquare;
-var closeSquare = 93; // `]`.charCodeAt(0);
-tokenTypes.closeSquare = closeSquare;
-var dollar = 36; // `$`.charCodeAt(0);
-tokenTypes.dollar = dollar;
-var tilde = 126; // `~`.charCodeAt(0);
-tokenTypes.tilde = tilde;
-var caret = 94; // `^`.charCodeAt(0);
-tokenTypes.caret = caret;
-var plus = 43; // `+`.charCodeAt(0);
-tokenTypes.plus = plus;
-var equals = 61; // `=`.charCodeAt(0);
-tokenTypes.equals = equals;
-var pipe = 124; // `|`.charCodeAt(0);
-tokenTypes.pipe = pipe;
-var greaterThan = 62; // `>`.charCodeAt(0);
-tokenTypes.greaterThan = greaterThan;
-var space = 32; // ` `.charCodeAt(0);
-tokenTypes.space = space;
-var singleQuote = 39; // `'`.charCodeAt(0);
-tokenTypes.singleQuote = singleQuote;
-var doubleQuote = 34; // `"`.charCodeAt(0);
-tokenTypes.doubleQuote = doubleQuote;
-var slash = 47; // `/`.charCodeAt(0);
-tokenTypes.slash = slash;
-var bang = 33; // `!`.charCodeAt(0);
-tokenTypes.bang = bang;
-var backslash = 92; // '\\'.charCodeAt(0);
-tokenTypes.backslash = backslash;
-var cr = 13; // '\r'.charCodeAt(0);
-tokenTypes.cr = cr;
-var feed = 12; // '\f'.charCodeAt(0);
-tokenTypes.feed = feed;
-var newline = 10; // '\n'.charCodeAt(0);
-tokenTypes.newline = newline;
-var tab = 9; // '\t'.charCodeAt(0);
+    _stringFor (name, spaceName = name, concat = defaultAttrConcat) {
+        let attrSpaces = this._spacesFor(spaceName);
+        return concat(this.stringifyProperty(name), attrSpaces);
+    }
+
+    /**
+     * returns the offset of the attribute part specified relative to the
+     * start of the node of the output string.
+     *
+     * * "ns" - alias for "namespace"
+     * * "namespace" - the namespace if it exists.
+     * * "attribute" - the attribute name
+     * * "attributeNS" - the start of the attribute or its namespace
+     * * "operator" - the match operator of the attribute
+     * * "value" - The value (string or identifier)
+     * * "insensitive" - the case insensitivity flag;
+     * @param part One of the possible values inside an attribute.
+     * @returns -1 if the name is invalid or the value doesn't exist in this attribute.
+     */
+    offsetOf (name) {
+        let count = 1;
+        let attributeSpaces = this._spacesFor("attribute");
+        count += attributeSpaces.before.length;
+        if (name === "namespace" || name === "ns") {
+            return (this.namespace) ? count : -1;
+        }
+        if (name === "attributeNS") {
+            return count;
+        }
+
+        count += this.namespaceString.length;
+        if (this.namespace) {
+            count += 1;
+        }
+        if (name === "attribute") {
+            return count;
+        }
+
+        count += this.stringifyProperty("attribute").length;
+        count += attributeSpaces.after.length;
+        let operatorSpaces = this._spacesFor("operator");
+        count += operatorSpaces.before.length;
+        let operator = this.stringifyProperty("operator");
+        if (name === "operator") {
+            return operator ? count : -1;
+        }
+
+        count += operator.length;
+        count += operatorSpaces.after.length;
+        let valueSpaces = this._spacesFor("value");
+        count += valueSpaces.before.length;
+        let value = this.stringifyProperty("value");
+        if (name === "value") {
+            return value ? count : -1;
+        }
+
+        count += value.length;
+        count += valueSpaces.after.length;
+        let insensitiveSpaces = this._spacesFor("insensitive");
+        count += insensitiveSpaces.before.length;
+        if (name === "insensitive") {
+            return (this.insensitive) ? count : -1;
+        }
+        return -1;
+    }
+
+    toString () {
+        let selector = [
+            this.rawSpaceBefore,
+            '[',
+        ];
+
+        selector.push(this._stringFor('qualifiedAttribute', 'attribute'));
+
+        if (this.operator && (this.value || this.value === '')) {
+            selector.push(this._stringFor('operator'));
+            selector.push(this._stringFor('value'));
+            selector.push(this._stringFor('insensitiveFlag', 'insensitive', (attrValue, attrSpaces) => {
+                if (attrValue.length > 0
+                    && !this.quoted
+                    && attrSpaces.before.length === 0
+                    && !(this.spaces.value && this.spaces.value.after)) {
+
+                    attrSpaces.before = " ";
+                }
+                return defaultAttrConcat(attrValue, attrSpaces);
+            }));
+        }
+
+        selector.push(']');
+        selector.push(this.rawSpaceAfter);
+        return selector.join('');
+    }
+}
+
+const CSSESC_QUOTE_OPTIONS = {
+    "'": {quotes: 'single', wrap: true},
+    '"': {quotes: 'double', wrap: true},
+    [null]: {isIdentifier: true},
+};
+
+function defaultAttrConcat (attrValue, attrSpaces) {
+    return `${attrSpaces.before}${attrValue}${attrSpaces.after}`;
+}
+
+class Universal extends Namespace {
+    constructor (opts) {
+        super(opts);
+        this.type = UNIVERSAL;
+        this.value = '*';
+    }
+}
+
+class Combinator extends Node {
+    constructor (opts) {
+        super(opts);
+        this.type = COMBINATOR;
+    }
+}
+
+class Nesting extends Node {
+    constructor (opts) {
+        super(opts);
+        this.type = NESTING;
+        this.value = '&';
+    }
+}
+
+function sortAscending (list) {
+    return list.sort((a, b) => a - b);
+}
+
+const ampersand        = 38; // `&`.charCodeAt(0);
+const asterisk         = 42; // `*`.charCodeAt(0);
+const comma            = 44; // `,`.charCodeAt(0);
+const colon            = 58; // `:`.charCodeAt(0);
+const semicolon        = 59; // `;`.charCodeAt(0);
+const openParenthesis  = 40; // `(`.charCodeAt(0);
+const closeParenthesis = 41; // `)`.charCodeAt(0);
+const openSquare       = 91; // `[`.charCodeAt(0);
+const closeSquare      = 93; // `]`.charCodeAt(0);
+const dollar           = 36; // `$`.charCodeAt(0);
+const tilde            = 126; // `~`.charCodeAt(0);
+const caret            = 94; // `^`.charCodeAt(0);
+const plus             = 43; // `+`.charCodeAt(0);
+const equals           = 61; // `=`.charCodeAt(0);
+const pipe             = 124; // `|`.charCodeAt(0);
+const greaterThan      = 62; // `>`.charCodeAt(0);
+const space            = 32; // ` `.charCodeAt(0);
+const singleQuote      = 39; // `'`.charCodeAt(0);
+const doubleQuote      = 34; // `"`.charCodeAt(0);
+const slash            = 47; // `/`.charCodeAt(0);
+const bang             = 33; // `!`.charCodeAt(0);
+
+const backslash        = 92; // '\\'.charCodeAt(0);
+const cr               = 13; // '\r'.charCodeAt(0);
+const feed             = 12; // '\f'.charCodeAt(0);
+const newline          = 10; // '\n'.charCodeAt(0);
+const tab              = 9; // '\t'.charCodeAt(0);
 
 // Expose aliases primarily for readability.
-tokenTypes.tab = tab;
-var str = singleQuote;
+const str              = singleQuote;
 
 // No good single character representation!
-tokenTypes.str = str;
-var comment$1 = -1;
-tokenTypes.comment = comment$1;
-var word = -2;
-tokenTypes.word = word;
-var combinator$1 = -3;
-tokenTypes.combinator = combinator$1;
+const comment$1          = -1;
+const word             = -2;
+const combinator$1       = -3;
 
-(function (exports) {
-
-	exports.__esModule = true;
-	exports.FIELDS = void 0;
-	exports["default"] = tokenize;
-	var t = _interopRequireWildcard(tokenTypes);
-	var _unescapable, _wordDelimiters;
-	function _getRequireWildcardCache(nodeInterop) { if (typeof WeakMap !== "function") return null; var cacheBabelInterop = new WeakMap(); var cacheNodeInterop = new WeakMap(); return (_getRequireWildcardCache = function _getRequireWildcardCache(nodeInterop) { return nodeInterop ? cacheNodeInterop : cacheBabelInterop; })(nodeInterop); }
-	function _interopRequireWildcard(obj, nodeInterop) { if (!nodeInterop && obj && obj.__esModule) { return obj; } if (obj === null || typeof obj !== "object" && typeof obj !== "function") { return { "default": obj }; } var cache = _getRequireWildcardCache(nodeInterop); if (cache && cache.has(obj)) { return cache.get(obj); } var newObj = {}; var hasPropertyDescriptor = Object.defineProperty && Object.getOwnPropertyDescriptor; for (var key in obj) { if (key !== "default" && Object.prototype.hasOwnProperty.call(obj, key)) { var desc = hasPropertyDescriptor ? Object.getOwnPropertyDescriptor(obj, key) : null; if (desc && (desc.get || desc.set)) { Object.defineProperty(newObj, key, desc); } else { newObj[key] = obj[key]; } } } newObj["default"] = obj; if (cache) { cache.set(obj, newObj); } return newObj; }
-	var unescapable = (_unescapable = {}, _unescapable[t.tab] = true, _unescapable[t.newline] = true, _unescapable[t.cr] = true, _unescapable[t.feed] = true, _unescapable);
-	var wordDelimiters = (_wordDelimiters = {}, _wordDelimiters[t.space] = true, _wordDelimiters[t.tab] = true, _wordDelimiters[t.newline] = true, _wordDelimiters[t.cr] = true, _wordDelimiters[t.feed] = true, _wordDelimiters[t.ampersand] = true, _wordDelimiters[t.asterisk] = true, _wordDelimiters[t.bang] = true, _wordDelimiters[t.comma] = true, _wordDelimiters[t.colon] = true, _wordDelimiters[t.semicolon] = true, _wordDelimiters[t.openParenthesis] = true, _wordDelimiters[t.closeParenthesis] = true, _wordDelimiters[t.openSquare] = true, _wordDelimiters[t.closeSquare] = true, _wordDelimiters[t.singleQuote] = true, _wordDelimiters[t.doubleQuote] = true, _wordDelimiters[t.plus] = true, _wordDelimiters[t.pipe] = true, _wordDelimiters[t.tilde] = true, _wordDelimiters[t.greaterThan] = true, _wordDelimiters[t.equals] = true, _wordDelimiters[t.dollar] = true, _wordDelimiters[t.caret] = true, _wordDelimiters[t.slash] = true, _wordDelimiters);
-	var hex = {};
-	var hexChars = "0123456789abcdefABCDEF";
-	for (var i = 0; i < hexChars.length; i++) {
-	  hex[hexChars.charCodeAt(i)] = true;
-	}
-
-	/**
-	 *  Returns the last index of the bar css word
-	 * @param {string} css The string in which the word begins
-	 * @param {number} start The index into the string where word's first letter occurs
-	 */
-	function consumeWord(css, start) {
-	  var next = start;
-	  var code;
-	  do {
-	    code = css.charCodeAt(next);
-	    if (wordDelimiters[code]) {
-	      return next - 1;
-	    } else if (code === t.backslash) {
-	      next = consumeEscape(css, next) + 1;
-	    } else {
-	      // All other characters are part of the word
-	      next++;
-	    }
-	  } while (next < css.length);
-	  return next - 1;
-	}
-
-	/**
-	 *  Returns the last index of the escape sequence
-	 * @param {string} css The string in which the sequence begins
-	 * @param {number} start The index into the string where escape character (`\`) occurs.
-	 */
-	function consumeEscape(css, start) {
-	  var next = start;
-	  var code = css.charCodeAt(next + 1);
-	  if (unescapable[code]) ; else if (hex[code]) {
-	    var hexDigits = 0;
-	    // consume up to 6 hex chars
-	    do {
-	      next++;
-	      hexDigits++;
-	      code = css.charCodeAt(next + 1);
-	    } while (hex[code] && hexDigits < 6);
-	    // if fewer than 6 hex chars, a trailing space ends the escape
-	    if (hexDigits < 6 && code === t.space) {
-	      next++;
-	    }
-	  } else {
-	    // the next char is part of the current word
-	    next++;
-	  }
-	  return next;
-	}
-	var FIELDS = {
-	  TYPE: 0,
-	  START_LINE: 1,
-	  START_COL: 2,
-	  END_LINE: 3,
-	  END_COL: 4,
-	  START_POS: 5,
-	  END_POS: 6
-	};
-	exports.FIELDS = FIELDS;
-	function tokenize(input) {
-	  var tokens = [];
-	  var css = input.css.valueOf();
-	  var _css = css,
-	    length = _css.length;
-	  var offset = -1;
-	  var line = 1;
-	  var start = 0;
-	  var end = 0;
-	  var code, content, endColumn, endLine, escaped, escapePos, last, lines, next, nextLine, nextOffset, quote, tokenType;
-	  function unclosed(what, fix) {
-	    if (input.safe) {
-	      // fyi: this is never set to true.
-	      css += fix;
-	      next = css.length - 1;
-	    } else {
-	      throw input.error('Unclosed ' + what, line, start - offset, start);
-	    }
-	  }
-	  while (start < length) {
-	    code = css.charCodeAt(start);
-	    if (code === t.newline) {
-	      offset = start;
-	      line += 1;
-	    }
-	    switch (code) {
-	      case t.space:
-	      case t.tab:
-	      case t.newline:
-	      case t.cr:
-	      case t.feed:
-	        next = start;
-	        do {
-	          next += 1;
-	          code = css.charCodeAt(next);
-	          if (code === t.newline) {
-	            offset = next;
-	            line += 1;
-	          }
-	        } while (code === t.space || code === t.newline || code === t.tab || code === t.cr || code === t.feed);
-	        tokenType = t.space;
-	        endLine = line;
-	        endColumn = next - offset - 1;
-	        end = next;
-	        break;
-	      case t.plus:
-	      case t.greaterThan:
-	      case t.tilde:
-	      case t.pipe:
-	        next = start;
-	        do {
-	          next += 1;
-	          code = css.charCodeAt(next);
-	        } while (code === t.plus || code === t.greaterThan || code === t.tilde || code === t.pipe);
-	        tokenType = t.combinator;
-	        endLine = line;
-	        endColumn = start - offset;
-	        end = next;
-	        break;
-
-	      // Consume these characters as single tokens.
-	      case t.asterisk:
-	      case t.ampersand:
-	      case t.bang:
-	      case t.comma:
-	      case t.equals:
-	      case t.dollar:
-	      case t.caret:
-	      case t.openSquare:
-	      case t.closeSquare:
-	      case t.colon:
-	      case t.semicolon:
-	      case t.openParenthesis:
-	      case t.closeParenthesis:
-	        next = start;
-	        tokenType = code;
-	        endLine = line;
-	        endColumn = start - offset;
-	        end = next + 1;
-	        break;
-	      case t.singleQuote:
-	      case t.doubleQuote:
-	        quote = code === t.singleQuote ? "'" : '"';
-	        next = start;
-	        do {
-	          escaped = false;
-	          next = css.indexOf(quote, next + 1);
-	          if (next === -1) {
-	            unclosed('quote', quote);
-	          }
-	          escapePos = next;
-	          while (css.charCodeAt(escapePos - 1) === t.backslash) {
-	            escapePos -= 1;
-	            escaped = !escaped;
-	          }
-	        } while (escaped);
-	        tokenType = t.str;
-	        endLine = line;
-	        endColumn = start - offset;
-	        end = next + 1;
-	        break;
-	      default:
-	        if (code === t.slash && css.charCodeAt(start + 1) === t.asterisk) {
-	          next = css.indexOf('*/', start + 2) + 1;
-	          if (next === 0) {
-	            unclosed('comment', '*/');
-	          }
-	          content = css.slice(start, next + 1);
-	          lines = content.split('\n');
-	          last = lines.length - 1;
-	          if (last > 0) {
-	            nextLine = line + last;
-	            nextOffset = next - lines[last].length;
-	          } else {
-	            nextLine = line;
-	            nextOffset = offset;
-	          }
-	          tokenType = t.comment;
-	          line = nextLine;
-	          endLine = nextLine;
-	          endColumn = next - nextOffset;
-	        } else if (code === t.slash) {
-	          next = start;
-	          tokenType = code;
-	          endLine = line;
-	          endColumn = start - offset;
-	          end = next + 1;
-	        } else {
-	          next = consumeWord(css, start);
-	          tokenType = t.word;
-	          endLine = line;
-	          endColumn = next - offset;
-	        }
-	        end = next + 1;
-	        break;
-	    }
-
-	    // Ensure that the token structure remains consistent
-	    tokens.push([tokenType,
-	    // [0] Token type
-	    line,
-	    // [1] Starting line
-	    start - offset,
-	    // [2] Starting column
-	    endLine,
-	    // [3] Ending line
-	    endColumn,
-	    // [4] Ending column
-	    start,
-	    // [5] Start position / Source index
-	    end // [6] End position
-	    ]);
-
-	    // Reset offset for the next token
-	    if (nextOffset) {
-	      offset = nextOffset;
-	      nextOffset = null;
-	    }
-	    start = end;
-	  }
-	  return tokens;
-	}
-} (tokenize));
-
-(function (module, exports) {
-
-	exports.__esModule = true;
-	exports["default"] = void 0;
-	var _root = _interopRequireDefault(root$1.exports);
-	var _selector = _interopRequireDefault(selector$1.exports);
-	var _className = _interopRequireDefault(className$1.exports);
-	var _comment = _interopRequireDefault(comment$2.exports);
-	var _id = _interopRequireDefault(id$1.exports);
-	var _tag = _interopRequireDefault(tag$1.exports);
-	var _string = _interopRequireDefault(string$1.exports);
-	var _pseudo = _interopRequireDefault(pseudo$1.exports);
-	var _attribute = _interopRequireWildcard(attribute$1);
-	var _universal = _interopRequireDefault(universal$1.exports);
-	var _combinator = _interopRequireDefault(combinator$2.exports);
-	var _nesting = _interopRequireDefault(nesting$1.exports);
-	var _sortAscending = _interopRequireDefault(sortAscending.exports);
-	var _tokenize = _interopRequireWildcard(tokenize);
-	var tokens = _interopRequireWildcard(tokenTypes);
-	var types$1 = _interopRequireWildcard(types);
-	var _util = util;
-	var _WHITESPACE_TOKENS, _Object$assign;
-	function _getRequireWildcardCache(nodeInterop) { if (typeof WeakMap !== "function") return null; var cacheBabelInterop = new WeakMap(); var cacheNodeInterop = new WeakMap(); return (_getRequireWildcardCache = function _getRequireWildcardCache(nodeInterop) { return nodeInterop ? cacheNodeInterop : cacheBabelInterop; })(nodeInterop); }
-	function _interopRequireWildcard(obj, nodeInterop) { if (!nodeInterop && obj && obj.__esModule) { return obj; } if (obj === null || typeof obj !== "object" && typeof obj !== "function") { return { "default": obj }; } var cache = _getRequireWildcardCache(nodeInterop); if (cache && cache.has(obj)) { return cache.get(obj); } var newObj = {}; var hasPropertyDescriptor = Object.defineProperty && Object.getOwnPropertyDescriptor; for (var key in obj) { if (key !== "default" && Object.prototype.hasOwnProperty.call(obj, key)) { var desc = hasPropertyDescriptor ? Object.getOwnPropertyDescriptor(obj, key) : null; if (desc && (desc.get || desc.set)) { Object.defineProperty(newObj, key, desc); } else { newObj[key] = obj[key]; } } } newObj["default"] = obj; if (cache) { cache.set(obj, newObj); } return newObj; }
-	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "default": obj }; }
-	function _defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } }
-	function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _defineProperties(Constructor.prototype, protoProps); if (staticProps) _defineProperties(Constructor, staticProps); Object.defineProperty(Constructor, "prototype", { writable: false }); return Constructor; }
-	var WHITESPACE_TOKENS = (_WHITESPACE_TOKENS = {}, _WHITESPACE_TOKENS[tokens.space] = true, _WHITESPACE_TOKENS[tokens.cr] = true, _WHITESPACE_TOKENS[tokens.feed] = true, _WHITESPACE_TOKENS[tokens.newline] = true, _WHITESPACE_TOKENS[tokens.tab] = true, _WHITESPACE_TOKENS);
-	var WHITESPACE_EQUIV_TOKENS = Object.assign({}, WHITESPACE_TOKENS, (_Object$assign = {}, _Object$assign[tokens.comment] = true, _Object$assign));
-	function tokenStart(token) {
-	  return {
-	    line: token[_tokenize.FIELDS.START_LINE],
-	    column: token[_tokenize.FIELDS.START_COL]
-	  };
-	}
-	function tokenEnd(token) {
-	  return {
-	    line: token[_tokenize.FIELDS.END_LINE],
-	    column: token[_tokenize.FIELDS.END_COL]
-	  };
-	}
-	function getSource(startLine, startColumn, endLine, endColumn) {
-	  return {
-	    start: {
-	      line: startLine,
-	      column: startColumn
-	    },
-	    end: {
-	      line: endLine,
-	      column: endColumn
-	    }
-	  };
-	}
-	function getTokenSource(token) {
-	  return getSource(token[_tokenize.FIELDS.START_LINE], token[_tokenize.FIELDS.START_COL], token[_tokenize.FIELDS.END_LINE], token[_tokenize.FIELDS.END_COL]);
-	}
-	function getTokenSourceSpan(startToken, endToken) {
-	  if (!startToken) {
-	    return undefined;
-	  }
-	  return getSource(startToken[_tokenize.FIELDS.START_LINE], startToken[_tokenize.FIELDS.START_COL], endToken[_tokenize.FIELDS.END_LINE], endToken[_tokenize.FIELDS.END_COL]);
-	}
-	function unescapeProp(node, prop) {
-	  var value = node[prop];
-	  if (typeof value !== "string") {
-	    return;
-	  }
-	  if (value.indexOf("\\") !== -1) {
-	    (0, _util.ensureObject)(node, 'raws');
-	    node[prop] = (0, _util.unesc)(value);
-	    if (node.raws[prop] === undefined) {
-	      node.raws[prop] = value;
-	    }
-	  }
-	  return node;
-	}
-	function indexesOf(array, item) {
-	  var i = -1;
-	  var indexes = [];
-	  while ((i = array.indexOf(item, i + 1)) !== -1) {
-	    indexes.push(i);
-	  }
-	  return indexes;
-	}
-	function uniqs() {
-	  var list = Array.prototype.concat.apply([], arguments);
-	  return list.filter(function (item, i) {
-	    return i === list.indexOf(item);
-	  });
-	}
-	var Parser = /*#__PURE__*/function () {
-	  function Parser(rule, options) {
-	    if (options === void 0) {
-	      options = {};
-	    }
-	    this.rule = rule;
-	    this.options = Object.assign({
-	      lossy: false,
-	      safe: false
-	    }, options);
-	    this.position = 0;
-	    this.css = typeof this.rule === 'string' ? this.rule : this.rule.selector;
-	    this.tokens = (0, _tokenize["default"])({
-	      css: this.css,
-	      error: this._errorGenerator(),
-	      safe: this.options.safe
-	    });
-	    var rootSource = getTokenSourceSpan(this.tokens[0], this.tokens[this.tokens.length - 1]);
-	    this.root = new _root["default"]({
-	      source: rootSource
-	    });
-	    this.root.errorGenerator = this._errorGenerator();
-	    var selector = new _selector["default"]({
-	      source: {
-	        start: {
-	          line: 1,
-	          column: 1
-	        }
-	      }
-	    });
-	    this.root.append(selector);
-	    this.current = selector;
-	    this.loop();
-	  }
-	  var _proto = Parser.prototype;
-	  _proto._errorGenerator = function _errorGenerator() {
-	    var _this = this;
-	    return function (message, errorOptions) {
-	      if (typeof _this.rule === 'string') {
-	        return new Error(message);
-	      }
-	      return _this.rule.error(message, errorOptions);
-	    };
-	  };
-	  _proto.attribute = function attribute() {
-	    var attr = [];
-	    var startingToken = this.currToken;
-	    this.position++;
-	    while (this.position < this.tokens.length && this.currToken[_tokenize.FIELDS.TYPE] !== tokens.closeSquare) {
-	      attr.push(this.currToken);
-	      this.position++;
-	    }
-	    if (this.currToken[_tokenize.FIELDS.TYPE] !== tokens.closeSquare) {
-	      return this.expected('closing square bracket', this.currToken[_tokenize.FIELDS.START_POS]);
-	    }
-	    var len = attr.length;
-	    var node = {
-	      source: getSource(startingToken[1], startingToken[2], this.currToken[3], this.currToken[4]),
-	      sourceIndex: startingToken[_tokenize.FIELDS.START_POS]
-	    };
-	    if (len === 1 && !~[tokens.word].indexOf(attr[0][_tokenize.FIELDS.TYPE])) {
-	      return this.expected('attribute', attr[0][_tokenize.FIELDS.START_POS]);
-	    }
-	    var pos = 0;
-	    var spaceBefore = '';
-	    var commentBefore = '';
-	    var lastAdded = null;
-	    var spaceAfterMeaningfulToken = false;
-	    while (pos < len) {
-	      var token = attr[pos];
-	      var content = this.content(token);
-	      var next = attr[pos + 1];
-	      switch (token[_tokenize.FIELDS.TYPE]) {
-	        case tokens.space:
-	          // if (
-	          //     len === 1 ||
-	          //     pos === 0 && this.content(next) === '|'
-	          // ) {
-	          //     return this.expected('attribute', token[TOKEN.START_POS], content);
-	          // }
-	          spaceAfterMeaningfulToken = true;
-	          if (this.options.lossy) {
-	            break;
-	          }
-	          if (lastAdded) {
-	            (0, _util.ensureObject)(node, 'spaces', lastAdded);
-	            var prevContent = node.spaces[lastAdded].after || '';
-	            node.spaces[lastAdded].after = prevContent + content;
-	            var existingComment = (0, _util.getProp)(node, 'raws', 'spaces', lastAdded, 'after') || null;
-	            if (existingComment) {
-	              node.raws.spaces[lastAdded].after = existingComment + content;
-	            }
-	          } else {
-	            spaceBefore = spaceBefore + content;
-	            commentBefore = commentBefore + content;
-	          }
-	          break;
-	        case tokens.asterisk:
-	          if (next[_tokenize.FIELDS.TYPE] === tokens.equals) {
-	            node.operator = content;
-	            lastAdded = 'operator';
-	          } else if ((!node.namespace || lastAdded === "namespace" && !spaceAfterMeaningfulToken) && next) {
-	            if (spaceBefore) {
-	              (0, _util.ensureObject)(node, 'spaces', 'attribute');
-	              node.spaces.attribute.before = spaceBefore;
-	              spaceBefore = '';
-	            }
-	            if (commentBefore) {
-	              (0, _util.ensureObject)(node, 'raws', 'spaces', 'attribute');
-	              node.raws.spaces.attribute.before = spaceBefore;
-	              commentBefore = '';
-	            }
-	            node.namespace = (node.namespace || "") + content;
-	            var rawValue = (0, _util.getProp)(node, 'raws', 'namespace') || null;
-	            if (rawValue) {
-	              node.raws.namespace += content;
-	            }
-	            lastAdded = 'namespace';
-	          }
-	          spaceAfterMeaningfulToken = false;
-	          break;
-	        case tokens.dollar:
-	          if (lastAdded === "value") {
-	            var oldRawValue = (0, _util.getProp)(node, 'raws', 'value');
-	            node.value += "$";
-	            if (oldRawValue) {
-	              node.raws.value = oldRawValue + "$";
-	            }
-	            break;
-	          }
-	        // Falls through
-	        case tokens.caret:
-	          if (next[_tokenize.FIELDS.TYPE] === tokens.equals) {
-	            node.operator = content;
-	            lastAdded = 'operator';
-	          }
-	          spaceAfterMeaningfulToken = false;
-	          break;
-	        case tokens.combinator:
-	          if (content === '~' && next[_tokenize.FIELDS.TYPE] === tokens.equals) {
-	            node.operator = content;
-	            lastAdded = 'operator';
-	          }
-	          if (content !== '|') {
-	            spaceAfterMeaningfulToken = false;
-	            break;
-	          }
-	          if (next[_tokenize.FIELDS.TYPE] === tokens.equals) {
-	            node.operator = content;
-	            lastAdded = 'operator';
-	          } else if (!node.namespace && !node.attribute) {
-	            node.namespace = true;
-	          }
-	          spaceAfterMeaningfulToken = false;
-	          break;
-	        case tokens.word:
-	          if (next && this.content(next) === '|' && attr[pos + 2] && attr[pos + 2][_tokenize.FIELDS.TYPE] !== tokens.equals &&
-	          // this look-ahead probably fails with comment nodes involved.
-	          !node.operator && !node.namespace) {
-	            node.namespace = content;
-	            lastAdded = 'namespace';
-	          } else if (!node.attribute || lastAdded === "attribute" && !spaceAfterMeaningfulToken) {
-	            if (spaceBefore) {
-	              (0, _util.ensureObject)(node, 'spaces', 'attribute');
-	              node.spaces.attribute.before = spaceBefore;
-	              spaceBefore = '';
-	            }
-	            if (commentBefore) {
-	              (0, _util.ensureObject)(node, 'raws', 'spaces', 'attribute');
-	              node.raws.spaces.attribute.before = commentBefore;
-	              commentBefore = '';
-	            }
-	            node.attribute = (node.attribute || "") + content;
-	            var _rawValue = (0, _util.getProp)(node, 'raws', 'attribute') || null;
-	            if (_rawValue) {
-	              node.raws.attribute += content;
-	            }
-	            lastAdded = 'attribute';
-	          } else if (!node.value && node.value !== "" || lastAdded === "value" && !(spaceAfterMeaningfulToken || node.quoteMark)) {
-	            var _unescaped = (0, _util.unesc)(content);
-	            var _oldRawValue = (0, _util.getProp)(node, 'raws', 'value') || '';
-	            var oldValue = node.value || '';
-	            node.value = oldValue + _unescaped;
-	            node.quoteMark = null;
-	            if (_unescaped !== content || _oldRawValue) {
-	              (0, _util.ensureObject)(node, 'raws');
-	              node.raws.value = (_oldRawValue || oldValue) + content;
-	            }
-	            lastAdded = 'value';
-	          } else {
-	            var insensitive = content === 'i' || content === "I";
-	            if ((node.value || node.value === '') && (node.quoteMark || spaceAfterMeaningfulToken)) {
-	              node.insensitive = insensitive;
-	              if (!insensitive || content === "I") {
-	                (0, _util.ensureObject)(node, 'raws');
-	                node.raws.insensitiveFlag = content;
-	              }
-	              lastAdded = 'insensitive';
-	              if (spaceBefore) {
-	                (0, _util.ensureObject)(node, 'spaces', 'insensitive');
-	                node.spaces.insensitive.before = spaceBefore;
-	                spaceBefore = '';
-	              }
-	              if (commentBefore) {
-	                (0, _util.ensureObject)(node, 'raws', 'spaces', 'insensitive');
-	                node.raws.spaces.insensitive.before = commentBefore;
-	                commentBefore = '';
-	              }
-	            } else if (node.value || node.value === '') {
-	              lastAdded = 'value';
-	              node.value += content;
-	              if (node.raws.value) {
-	                node.raws.value += content;
-	              }
-	            }
-	          }
-	          spaceAfterMeaningfulToken = false;
-	          break;
-	        case tokens.str:
-	          if (!node.attribute || !node.operator) {
-	            return this.error("Expected an attribute followed by an operator preceding the string.", {
-	              index: token[_tokenize.FIELDS.START_POS]
-	            });
-	          }
-	          var _unescapeValue = (0, _attribute.unescapeValue)(content),
-	            unescaped = _unescapeValue.unescaped,
-	            quoteMark = _unescapeValue.quoteMark;
-	          node.value = unescaped;
-	          node.quoteMark = quoteMark;
-	          lastAdded = 'value';
-	          (0, _util.ensureObject)(node, 'raws');
-	          node.raws.value = content;
-	          spaceAfterMeaningfulToken = false;
-	          break;
-	        case tokens.equals:
-	          if (!node.attribute) {
-	            return this.expected('attribute', token[_tokenize.FIELDS.START_POS], content);
-	          }
-	          if (node.value) {
-	            return this.error('Unexpected "=" found; an operator was already defined.', {
-	              index: token[_tokenize.FIELDS.START_POS]
-	            });
-	          }
-	          node.operator = node.operator ? node.operator + content : content;
-	          lastAdded = 'operator';
-	          spaceAfterMeaningfulToken = false;
-	          break;
-	        case tokens.comment:
-	          if (lastAdded) {
-	            if (spaceAfterMeaningfulToken || next && next[_tokenize.FIELDS.TYPE] === tokens.space || lastAdded === 'insensitive') {
-	              var lastComment = (0, _util.getProp)(node, 'spaces', lastAdded, 'after') || '';
-	              var rawLastComment = (0, _util.getProp)(node, 'raws', 'spaces', lastAdded, 'after') || lastComment;
-	              (0, _util.ensureObject)(node, 'raws', 'spaces', lastAdded);
-	              node.raws.spaces[lastAdded].after = rawLastComment + content;
-	            } else {
-	              var lastValue = node[lastAdded] || '';
-	              var rawLastValue = (0, _util.getProp)(node, 'raws', lastAdded) || lastValue;
-	              (0, _util.ensureObject)(node, 'raws');
-	              node.raws[lastAdded] = rawLastValue + content;
-	            }
-	          } else {
-	            commentBefore = commentBefore + content;
-	          }
-	          break;
-	        default:
-	          return this.error("Unexpected \"" + content + "\" found.", {
-	            index: token[_tokenize.FIELDS.START_POS]
-	          });
-	      }
-	      pos++;
-	    }
-	    unescapeProp(node, "attribute");
-	    unescapeProp(node, "namespace");
-	    this.newNode(new _attribute["default"](node));
-	    this.position++;
-	  }
-
-	  /**
-	   * return a node containing meaningless garbage up to (but not including) the specified token position.
-	   * if the token position is negative, all remaining tokens are consumed.
-	   *
-	   * This returns an array containing a single string node if all whitespace,
-	   * otherwise an array of comment nodes with space before and after.
-	   *
-	   * These tokens are not added to the current selector, the caller can add them or use them to amend
-	   * a previous node's space metadata.
-	   *
-	   * In lossy mode, this returns only comments.
-	   */;
-	  _proto.parseWhitespaceEquivalentTokens = function parseWhitespaceEquivalentTokens(stopPosition) {
-	    if (stopPosition < 0) {
-	      stopPosition = this.tokens.length;
-	    }
-	    var startPosition = this.position;
-	    var nodes = [];
-	    var space = "";
-	    var lastComment = undefined;
-	    do {
-	      if (WHITESPACE_TOKENS[this.currToken[_tokenize.FIELDS.TYPE]]) {
-	        if (!this.options.lossy) {
-	          space += this.content();
-	        }
-	      } else if (this.currToken[_tokenize.FIELDS.TYPE] === tokens.comment) {
-	        var spaces = {};
-	        if (space) {
-	          spaces.before = space;
-	          space = "";
-	        }
-	        lastComment = new _comment["default"]({
-	          value: this.content(),
-	          source: getTokenSource(this.currToken),
-	          sourceIndex: this.currToken[_tokenize.FIELDS.START_POS],
-	          spaces: spaces
-	        });
-	        nodes.push(lastComment);
-	      }
-	    } while (++this.position < stopPosition);
-	    if (space) {
-	      if (lastComment) {
-	        lastComment.spaces.after = space;
-	      } else if (!this.options.lossy) {
-	        var firstToken = this.tokens[startPosition];
-	        var lastToken = this.tokens[this.position - 1];
-	        nodes.push(new _string["default"]({
-	          value: '',
-	          source: getSource(firstToken[_tokenize.FIELDS.START_LINE], firstToken[_tokenize.FIELDS.START_COL], lastToken[_tokenize.FIELDS.END_LINE], lastToken[_tokenize.FIELDS.END_COL]),
-	          sourceIndex: firstToken[_tokenize.FIELDS.START_POS],
-	          spaces: {
-	            before: space,
-	            after: ''
-	          }
-	        }));
-	      }
-	    }
-	    return nodes;
-	  }
-
-	  /**
-	   *
-	   * @param {*} nodes
-	   */;
-	  _proto.convertWhitespaceNodesToSpace = function convertWhitespaceNodesToSpace(nodes, requiredSpace) {
-	    var _this2 = this;
-	    if (requiredSpace === void 0) {
-	      requiredSpace = false;
-	    }
-	    var space = "";
-	    var rawSpace = "";
-	    nodes.forEach(function (n) {
-	      var spaceBefore = _this2.lossySpace(n.spaces.before, requiredSpace);
-	      var rawSpaceBefore = _this2.lossySpace(n.rawSpaceBefore, requiredSpace);
-	      space += spaceBefore + _this2.lossySpace(n.spaces.after, requiredSpace && spaceBefore.length === 0);
-	      rawSpace += spaceBefore + n.value + _this2.lossySpace(n.rawSpaceAfter, requiredSpace && rawSpaceBefore.length === 0);
-	    });
-	    if (rawSpace === space) {
-	      rawSpace = undefined;
-	    }
-	    var result = {
-	      space: space,
-	      rawSpace: rawSpace
-	    };
-	    return result;
-	  };
-	  _proto.isNamedCombinator = function isNamedCombinator(position) {
-	    if (position === void 0) {
-	      position = this.position;
-	    }
-	    return this.tokens[position + 0] && this.tokens[position + 0][_tokenize.FIELDS.TYPE] === tokens.slash && this.tokens[position + 1] && this.tokens[position + 1][_tokenize.FIELDS.TYPE] === tokens.word && this.tokens[position + 2] && this.tokens[position + 2][_tokenize.FIELDS.TYPE] === tokens.slash;
-	  };
-	  _proto.namedCombinator = function namedCombinator() {
-	    if (this.isNamedCombinator()) {
-	      var nameRaw = this.content(this.tokens[this.position + 1]);
-	      var name = (0, _util.unesc)(nameRaw).toLowerCase();
-	      var raws = {};
-	      if (name !== nameRaw) {
-	        raws.value = "/" + nameRaw + "/";
-	      }
-	      var node = new _combinator["default"]({
-	        value: "/" + name + "/",
-	        source: getSource(this.currToken[_tokenize.FIELDS.START_LINE], this.currToken[_tokenize.FIELDS.START_COL], this.tokens[this.position + 2][_tokenize.FIELDS.END_LINE], this.tokens[this.position + 2][_tokenize.FIELDS.END_COL]),
-	        sourceIndex: this.currToken[_tokenize.FIELDS.START_POS],
-	        raws: raws
-	      });
-	      this.position = this.position + 3;
-	      return node;
-	    } else {
-	      this.unexpected();
-	    }
-	  };
-	  _proto.combinator = function combinator() {
-	    var _this3 = this;
-	    if (this.content() === '|') {
-	      return this.namespace();
-	    }
-	    // We need to decide between a space that's a descendant combinator and meaningless whitespace at the end of a selector.
-	    var nextSigTokenPos = this.locateNextMeaningfulToken(this.position);
-	    if (nextSigTokenPos < 0 || this.tokens[nextSigTokenPos][_tokenize.FIELDS.TYPE] === tokens.comma) {
-	      var nodes = this.parseWhitespaceEquivalentTokens(nextSigTokenPos);
-	      if (nodes.length > 0) {
-	        var last = this.current.last;
-	        if (last) {
-	          var _this$convertWhitespa = this.convertWhitespaceNodesToSpace(nodes),
-	            space = _this$convertWhitespa.space,
-	            rawSpace = _this$convertWhitespa.rawSpace;
-	          if (rawSpace !== undefined) {
-	            last.rawSpaceAfter += rawSpace;
-	          }
-	          last.spaces.after += space;
-	        } else {
-	          nodes.forEach(function (n) {
-	            return _this3.newNode(n);
-	          });
-	        }
-	      }
-	      return;
-	    }
-	    var firstToken = this.currToken;
-	    var spaceOrDescendantSelectorNodes = undefined;
-	    if (nextSigTokenPos > this.position) {
-	      spaceOrDescendantSelectorNodes = this.parseWhitespaceEquivalentTokens(nextSigTokenPos);
-	    }
-	    var node;
-	    if (this.isNamedCombinator()) {
-	      node = this.namedCombinator();
-	    } else if (this.currToken[_tokenize.FIELDS.TYPE] === tokens.combinator) {
-	      node = new _combinator["default"]({
-	        value: this.content(),
-	        source: getTokenSource(this.currToken),
-	        sourceIndex: this.currToken[_tokenize.FIELDS.START_POS]
-	      });
-	      this.position++;
-	    } else if (WHITESPACE_TOKENS[this.currToken[_tokenize.FIELDS.TYPE]]) ; else if (!spaceOrDescendantSelectorNodes) {
-	      this.unexpected();
-	    }
-	    if (node) {
-	      if (spaceOrDescendantSelectorNodes) {
-	        var _this$convertWhitespa2 = this.convertWhitespaceNodesToSpace(spaceOrDescendantSelectorNodes),
-	          _space = _this$convertWhitespa2.space,
-	          _rawSpace = _this$convertWhitespa2.rawSpace;
-	        node.spaces.before = _space;
-	        node.rawSpaceBefore = _rawSpace;
-	      }
-	    } else {
-	      // descendant combinator
-	      var _this$convertWhitespa3 = this.convertWhitespaceNodesToSpace(spaceOrDescendantSelectorNodes, true),
-	        _space2 = _this$convertWhitespa3.space,
-	        _rawSpace2 = _this$convertWhitespa3.rawSpace;
-	      if (!_rawSpace2) {
-	        _rawSpace2 = _space2;
-	      }
-	      var spaces = {};
-	      var raws = {
-	        spaces: {}
-	      };
-	      if (_space2.endsWith(' ') && _rawSpace2.endsWith(' ')) {
-	        spaces.before = _space2.slice(0, _space2.length - 1);
-	        raws.spaces.before = _rawSpace2.slice(0, _rawSpace2.length - 1);
-	      } else if (_space2.startsWith(' ') && _rawSpace2.startsWith(' ')) {
-	        spaces.after = _space2.slice(1);
-	        raws.spaces.after = _rawSpace2.slice(1);
-	      } else {
-	        raws.value = _rawSpace2;
-	      }
-	      node = new _combinator["default"]({
-	        value: ' ',
-	        source: getTokenSourceSpan(firstToken, this.tokens[this.position - 1]),
-	        sourceIndex: firstToken[_tokenize.FIELDS.START_POS],
-	        spaces: spaces,
-	        raws: raws
-	      });
-	    }
-	    if (this.currToken && this.currToken[_tokenize.FIELDS.TYPE] === tokens.space) {
-	      node.spaces.after = this.optionalSpace(this.content());
-	      this.position++;
-	    }
-	    return this.newNode(node);
-	  };
-	  _proto.comma = function comma() {
-	    if (this.position === this.tokens.length - 1) {
-	      this.root.trailingComma = true;
-	      this.position++;
-	      return;
-	    }
-	    this.current._inferEndPosition();
-	    var selector = new _selector["default"]({
-	      source: {
-	        start: tokenStart(this.tokens[this.position + 1])
-	      }
-	    });
-	    this.current.parent.append(selector);
-	    this.current = selector;
-	    this.position++;
-	  };
-	  _proto.comment = function comment() {
-	    var current = this.currToken;
-	    this.newNode(new _comment["default"]({
-	      value: this.content(),
-	      source: getTokenSource(current),
-	      sourceIndex: current[_tokenize.FIELDS.START_POS]
-	    }));
-	    this.position++;
-	  };
-	  _proto.error = function error(message, opts) {
-	    throw this.root.error(message, opts);
-	  };
-	  _proto.missingBackslash = function missingBackslash() {
-	    return this.error('Expected a backslash preceding the semicolon.', {
-	      index: this.currToken[_tokenize.FIELDS.START_POS]
-	    });
-	  };
-	  _proto.missingParenthesis = function missingParenthesis() {
-	    return this.expected('opening parenthesis', this.currToken[_tokenize.FIELDS.START_POS]);
-	  };
-	  _proto.missingSquareBracket = function missingSquareBracket() {
-	    return this.expected('opening square bracket', this.currToken[_tokenize.FIELDS.START_POS]);
-	  };
-	  _proto.unexpected = function unexpected() {
-	    return this.error("Unexpected '" + this.content() + "'. Escaping special characters with \\ may help.", this.currToken[_tokenize.FIELDS.START_POS]);
-	  };
-	  _proto.unexpectedPipe = function unexpectedPipe() {
-	    return this.error("Unexpected '|'.", this.currToken[_tokenize.FIELDS.START_POS]);
-	  };
-	  _proto.namespace = function namespace() {
-	    var before = this.prevToken && this.content(this.prevToken) || true;
-	    if (this.nextToken[_tokenize.FIELDS.TYPE] === tokens.word) {
-	      this.position++;
-	      return this.word(before);
-	    } else if (this.nextToken[_tokenize.FIELDS.TYPE] === tokens.asterisk) {
-	      this.position++;
-	      return this.universal(before);
-	    }
-	    this.unexpectedPipe();
-	  };
-	  _proto.nesting = function nesting() {
-	    if (this.nextToken) {
-	      var nextContent = this.content(this.nextToken);
-	      if (nextContent === "|") {
-	        this.position++;
-	        return;
-	      }
-	    }
-	    var current = this.currToken;
-	    this.newNode(new _nesting["default"]({
-	      value: this.content(),
-	      source: getTokenSource(current),
-	      sourceIndex: current[_tokenize.FIELDS.START_POS]
-	    }));
-	    this.position++;
-	  };
-	  _proto.parentheses = function parentheses() {
-	    var last = this.current.last;
-	    var unbalanced = 1;
-	    this.position++;
-	    if (last && last.type === types$1.PSEUDO) {
-	      var selector = new _selector["default"]({
-	        source: {
-	          start: tokenStart(this.tokens[this.position - 1])
-	        }
-	      });
-	      var cache = this.current;
-	      last.append(selector);
-	      this.current = selector;
-	      while (this.position < this.tokens.length && unbalanced) {
-	        if (this.currToken[_tokenize.FIELDS.TYPE] === tokens.openParenthesis) {
-	          unbalanced++;
-	        }
-	        if (this.currToken[_tokenize.FIELDS.TYPE] === tokens.closeParenthesis) {
-	          unbalanced--;
-	        }
-	        if (unbalanced) {
-	          this.parse();
-	        } else {
-	          this.current.source.end = tokenEnd(this.currToken);
-	          this.current.parent.source.end = tokenEnd(this.currToken);
-	          this.position++;
-	        }
-	      }
-	      this.current = cache;
-	    } else {
-	      // I think this case should be an error. It's used to implement a basic parse of media queries
-	      // but I don't think it's a good idea.
-	      var parenStart = this.currToken;
-	      var parenValue = "(";
-	      var parenEnd;
-	      while (this.position < this.tokens.length && unbalanced) {
-	        if (this.currToken[_tokenize.FIELDS.TYPE] === tokens.openParenthesis) {
-	          unbalanced++;
-	        }
-	        if (this.currToken[_tokenize.FIELDS.TYPE] === tokens.closeParenthesis) {
-	          unbalanced--;
-	        }
-	        parenEnd = this.currToken;
-	        parenValue += this.parseParenthesisToken(this.currToken);
-	        this.position++;
-	      }
-	      if (last) {
-	        last.appendToPropertyAndEscape("value", parenValue, parenValue);
-	      } else {
-	        this.newNode(new _string["default"]({
-	          value: parenValue,
-	          source: getSource(parenStart[_tokenize.FIELDS.START_LINE], parenStart[_tokenize.FIELDS.START_COL], parenEnd[_tokenize.FIELDS.END_LINE], parenEnd[_tokenize.FIELDS.END_COL]),
-	          sourceIndex: parenStart[_tokenize.FIELDS.START_POS]
-	        }));
-	      }
-	    }
-	    if (unbalanced) {
-	      return this.expected('closing parenthesis', this.currToken[_tokenize.FIELDS.START_POS]);
-	    }
-	  };
-	  _proto.pseudo = function pseudo() {
-	    var _this4 = this;
-	    var pseudoStr = '';
-	    var startingToken = this.currToken;
-	    while (this.currToken && this.currToken[_tokenize.FIELDS.TYPE] === tokens.colon) {
-	      pseudoStr += this.content();
-	      this.position++;
-	    }
-	    if (!this.currToken) {
-	      return this.expected(['pseudo-class', 'pseudo-element'], this.position - 1);
-	    }
-	    if (this.currToken[_tokenize.FIELDS.TYPE] === tokens.word) {
-	      this.splitWord(false, function (first, length) {
-	        pseudoStr += first;
-	        _this4.newNode(new _pseudo["default"]({
-	          value: pseudoStr,
-	          source: getTokenSourceSpan(startingToken, _this4.currToken),
-	          sourceIndex: startingToken[_tokenize.FIELDS.START_POS]
-	        }));
-	        if (length > 1 && _this4.nextToken && _this4.nextToken[_tokenize.FIELDS.TYPE] === tokens.openParenthesis) {
-	          _this4.error('Misplaced parenthesis.', {
-	            index: _this4.nextToken[_tokenize.FIELDS.START_POS]
-	          });
-	        }
-	      });
-	    } else {
-	      return this.expected(['pseudo-class', 'pseudo-element'], this.currToken[_tokenize.FIELDS.START_POS]);
-	    }
-	  };
-	  _proto.space = function space() {
-	    var content = this.content();
-	    // Handle space before and after the selector
-	    if (this.position === 0 || this.prevToken[_tokenize.FIELDS.TYPE] === tokens.comma || this.prevToken[_tokenize.FIELDS.TYPE] === tokens.openParenthesis || this.current.nodes.every(function (node) {
-	      return node.type === 'comment';
-	    })) {
-	      this.spaces = this.optionalSpace(content);
-	      this.position++;
-	    } else if (this.position === this.tokens.length - 1 || this.nextToken[_tokenize.FIELDS.TYPE] === tokens.comma || this.nextToken[_tokenize.FIELDS.TYPE] === tokens.closeParenthesis) {
-	      this.current.last.spaces.after = this.optionalSpace(content);
-	      this.position++;
-	    } else {
-	      this.combinator();
-	    }
-	  };
-	  _proto.string = function string() {
-	    var current = this.currToken;
-	    this.newNode(new _string["default"]({
-	      value: this.content(),
-	      source: getTokenSource(current),
-	      sourceIndex: current[_tokenize.FIELDS.START_POS]
-	    }));
-	    this.position++;
-	  };
-	  _proto.universal = function universal(namespace) {
-	    var nextToken = this.nextToken;
-	    if (nextToken && this.content(nextToken) === '|') {
-	      this.position++;
-	      return this.namespace();
-	    }
-	    var current = this.currToken;
-	    this.newNode(new _universal["default"]({
-	      value: this.content(),
-	      source: getTokenSource(current),
-	      sourceIndex: current[_tokenize.FIELDS.START_POS]
-	    }), namespace);
-	    this.position++;
-	  };
-	  _proto.splitWord = function splitWord(namespace, firstCallback) {
-	    var _this5 = this;
-	    var nextToken = this.nextToken;
-	    var word = this.content();
-	    while (nextToken && ~[tokens.dollar, tokens.caret, tokens.equals, tokens.word].indexOf(nextToken[_tokenize.FIELDS.TYPE])) {
-	      this.position++;
-	      var current = this.content();
-	      word += current;
-	      if (current.lastIndexOf('\\') === current.length - 1) {
-	        var next = this.nextToken;
-	        if (next && next[_tokenize.FIELDS.TYPE] === tokens.space) {
-	          word += this.requiredSpace(this.content(next));
-	          this.position++;
-	        }
-	      }
-	      nextToken = this.nextToken;
-	    }
-	    var hasClass = indexesOf(word, '.').filter(function (i) {
-	      // Allow escaped dot within class name
-	      var escapedDot = word[i - 1] === '\\';
-	      // Allow decimal numbers percent in @keyframes
-	      var isKeyframesPercent = /^\d+\.\d+%$/.test(word);
-	      return !escapedDot && !isKeyframesPercent;
-	    });
-	    var hasId = indexesOf(word, '#').filter(function (i) {
-	      return word[i - 1] !== '\\';
-	    });
-	    // Eliminate Sass interpolations from the list of id indexes
-	    var interpolations = indexesOf(word, '#{');
-	    if (interpolations.length) {
-	      hasId = hasId.filter(function (hashIndex) {
-	        return !~interpolations.indexOf(hashIndex);
-	      });
-	    }
-	    var indices = (0, _sortAscending["default"])(uniqs([0].concat(hasClass, hasId)));
-	    indices.forEach(function (ind, i) {
-	      var index = indices[i + 1] || word.length;
-	      var value = word.slice(ind, index);
-	      if (i === 0 && firstCallback) {
-	        return firstCallback.call(_this5, value, indices.length);
-	      }
-	      var node;
-	      var current = _this5.currToken;
-	      var sourceIndex = current[_tokenize.FIELDS.START_POS] + indices[i];
-	      var source = getSource(current[1], current[2] + ind, current[3], current[2] + (index - 1));
-	      if (~hasClass.indexOf(ind)) {
-	        var classNameOpts = {
-	          value: value.slice(1),
-	          source: source,
-	          sourceIndex: sourceIndex
-	        };
-	        node = new _className["default"](unescapeProp(classNameOpts, "value"));
-	      } else if (~hasId.indexOf(ind)) {
-	        var idOpts = {
-	          value: value.slice(1),
-	          source: source,
-	          sourceIndex: sourceIndex
-	        };
-	        node = new _id["default"](unescapeProp(idOpts, "value"));
-	      } else {
-	        var tagOpts = {
-	          value: value,
-	          source: source,
-	          sourceIndex: sourceIndex
-	        };
-	        unescapeProp(tagOpts, "value");
-	        node = new _tag["default"](tagOpts);
-	      }
-	      _this5.newNode(node, namespace);
-	      // Ensure that the namespace is used only once
-	      namespace = null;
-	    });
-	    this.position++;
-	  };
-	  _proto.word = function word(namespace) {
-	    var nextToken = this.nextToken;
-	    if (nextToken && this.content(nextToken) === '|') {
-	      this.position++;
-	      return this.namespace();
-	    }
-	    return this.splitWord(namespace);
-	  };
-	  _proto.loop = function loop() {
-	    while (this.position < this.tokens.length) {
-	      this.parse(true);
-	    }
-	    this.current._inferEndPosition();
-	    return this.root;
-	  };
-	  _proto.parse = function parse(throwOnParenthesis) {
-	    switch (this.currToken[_tokenize.FIELDS.TYPE]) {
-	      case tokens.space:
-	        this.space();
-	        break;
-	      case tokens.comment:
-	        this.comment();
-	        break;
-	      case tokens.openParenthesis:
-	        this.parentheses();
-	        break;
-	      case tokens.closeParenthesis:
-	        if (throwOnParenthesis) {
-	          this.missingParenthesis();
-	        }
-	        break;
-	      case tokens.openSquare:
-	        this.attribute();
-	        break;
-	      case tokens.dollar:
-	      case tokens.caret:
-	      case tokens.equals:
-	      case tokens.word:
-	        this.word();
-	        break;
-	      case tokens.colon:
-	        this.pseudo();
-	        break;
-	      case tokens.comma:
-	        this.comma();
-	        break;
-	      case tokens.asterisk:
-	        this.universal();
-	        break;
-	      case tokens.ampersand:
-	        this.nesting();
-	        break;
-	      case tokens.slash:
-	      case tokens.combinator:
-	        this.combinator();
-	        break;
-	      case tokens.str:
-	        this.string();
-	        break;
-	      // These cases throw; no break needed.
-	      case tokens.closeSquare:
-	        this.missingSquareBracket();
-	      case tokens.semicolon:
-	        this.missingBackslash();
-	      default:
-	        this.unexpected();
-	    }
-	  }
-
-	  /**
-	   * Helpers
-	   */;
-	  _proto.expected = function expected(description, index, found) {
-	    if (Array.isArray(description)) {
-	      var last = description.pop();
-	      description = description.join(', ') + " or " + last;
-	    }
-	    var an = /^[aeiou]/.test(description[0]) ? 'an' : 'a';
-	    if (!found) {
-	      return this.error("Expected " + an + " " + description + ".", {
-	        index: index
-	      });
-	    }
-	    return this.error("Expected " + an + " " + description + ", found \"" + found + "\" instead.", {
-	      index: index
-	    });
-	  };
-	  _proto.requiredSpace = function requiredSpace(space) {
-	    return this.options.lossy ? ' ' : space;
-	  };
-	  _proto.optionalSpace = function optionalSpace(space) {
-	    return this.options.lossy ? '' : space;
-	  };
-	  _proto.lossySpace = function lossySpace(space, required) {
-	    if (this.options.lossy) {
-	      return required ? ' ' : '';
-	    } else {
-	      return space;
-	    }
-	  };
-	  _proto.parseParenthesisToken = function parseParenthesisToken(token) {
-	    var content = this.content(token);
-	    if (token[_tokenize.FIELDS.TYPE] === tokens.space) {
-	      return this.requiredSpace(content);
-	    } else {
-	      return content;
-	    }
-	  };
-	  _proto.newNode = function newNode(node, namespace) {
-	    if (namespace) {
-	      if (/^ +$/.test(namespace)) {
-	        if (!this.options.lossy) {
-	          this.spaces = (this.spaces || '') + namespace;
-	        }
-	        namespace = true;
-	      }
-	      node.namespace = namespace;
-	      unescapeProp(node, "namespace");
-	    }
-	    if (this.spaces) {
-	      node.spaces.before = this.spaces;
-	      this.spaces = '';
-	    }
-	    return this.current.append(node);
-	  };
-	  _proto.content = function content(token) {
-	    if (token === void 0) {
-	      token = this.currToken;
-	    }
-	    return this.css.slice(token[_tokenize.FIELDS.START_POS], token[_tokenize.FIELDS.END_POS]);
-	  };
-	  /**
-	   * returns the index of the next non-whitespace, non-comment token.
-	   * returns -1 if no meaningful token is found.
-	   */
-	  _proto.locateNextMeaningfulToken = function locateNextMeaningfulToken(startPosition) {
-	    if (startPosition === void 0) {
-	      startPosition = this.position + 1;
-	    }
-	    var searchPosition = startPosition;
-	    while (searchPosition < this.tokens.length) {
-	      if (WHITESPACE_EQUIV_TOKENS[this.tokens[searchPosition][_tokenize.FIELDS.TYPE]]) {
-	        searchPosition++;
-	        continue;
-	      } else {
-	        return searchPosition;
-	      }
-	    }
-	    return -1;
-	  };
-	  _createClass(Parser, [{
-	    key: "currToken",
-	    get: function get() {
-	      return this.tokens[this.position];
-	    }
-	  }, {
-	    key: "nextToken",
-	    get: function get() {
-	      return this.tokens[this.position + 1];
-	    }
-	  }, {
-	    key: "prevToken",
-	    get: function get() {
-	      return this.tokens[this.position - 1];
-	    }
-	  }]);
-	  return Parser;
-	}();
-	exports["default"] = Parser;
-	module.exports = exports.default;
-} (parser, parser.exports));
-
-(function (module, exports) {
-
-	exports.__esModule = true;
-	exports["default"] = void 0;
-	var _parser = _interopRequireDefault(parser.exports);
-	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "default": obj }; }
-	var Processor = /*#__PURE__*/function () {
-	  function Processor(func, options) {
-	    this.func = func || function noop() {};
-	    this.funcRes = null;
-	    this.options = options;
-	  }
-	  var _proto = Processor.prototype;
-	  _proto._shouldUpdateSelector = function _shouldUpdateSelector(rule, options) {
-	    if (options === void 0) {
-	      options = {};
-	    }
-	    var merged = Object.assign({}, this.options, options);
-	    if (merged.updateSelector === false) {
-	      return false;
-	    } else {
-	      return typeof rule !== "string";
-	    }
-	  };
-	  _proto._isLossy = function _isLossy(options) {
-	    if (options === void 0) {
-	      options = {};
-	    }
-	    var merged = Object.assign({}, this.options, options);
-	    if (merged.lossless === false) {
-	      return true;
-	    } else {
-	      return false;
-	    }
-	  };
-	  _proto._root = function _root(rule, options) {
-	    if (options === void 0) {
-	      options = {};
-	    }
-	    var parser = new _parser["default"](rule, this._parseOptions(options));
-	    return parser.root;
-	  };
-	  _proto._parseOptions = function _parseOptions(options) {
-	    return {
-	      lossy: this._isLossy(options)
-	    };
-	  };
-	  _proto._run = function _run(rule, options) {
-	    var _this = this;
-	    if (options === void 0) {
-	      options = {};
-	    }
-	    return new Promise(function (resolve, reject) {
-	      try {
-	        var root = _this._root(rule, options);
-	        Promise.resolve(_this.func(root)).then(function (transform) {
-	          var string = undefined;
-	          if (_this._shouldUpdateSelector(rule, options)) {
-	            string = root.toString();
-	            rule.selector = string;
-	          }
-	          return {
-	            transform: transform,
-	            root: root,
-	            string: string
-	          };
-	        }).then(resolve, reject);
-	      } catch (e) {
-	        reject(e);
-	        return;
-	      }
-	    });
-	  };
-	  _proto._runSync = function _runSync(rule, options) {
-	    if (options === void 0) {
-	      options = {};
-	    }
-	    var root = this._root(rule, options);
-	    var transform = this.func(root);
-	    if (transform && typeof transform.then === "function") {
-	      throw new Error("Selector processor returned a promise to a synchronous call.");
-	    }
-	    var string = undefined;
-	    if (options.updateSelector && typeof rule !== "string") {
-	      string = root.toString();
-	      rule.selector = string;
-	    }
-	    return {
-	      transform: transform,
-	      root: root,
-	      string: string
-	    };
-	  }
-
-	  /**
-	   * Process rule into a selector AST.
-	   *
-	   * @param rule {postcss.Rule | string} The css selector to be processed
-	   * @param options The options for processing
-	   * @returns {Promise<parser.Root>} The AST of the selector after processing it.
-	   */;
-	  _proto.ast = function ast(rule, options) {
-	    return this._run(rule, options).then(function (result) {
-	      return result.root;
-	    });
-	  }
-
-	  /**
-	   * Process rule into a selector AST synchronously.
-	   *
-	   * @param rule {postcss.Rule | string} The css selector to be processed
-	   * @param options The options for processing
-	   * @returns {parser.Root} The AST of the selector after processing it.
-	   */;
-	  _proto.astSync = function astSync(rule, options) {
-	    return this._runSync(rule, options).root;
-	  }
-
-	  /**
-	   * Process a selector into a transformed value asynchronously
-	   *
-	   * @param rule {postcss.Rule | string} The css selector to be processed
-	   * @param options The options for processing
-	   * @returns {Promise<any>} The value returned by the processor.
-	   */;
-	  _proto.transform = function transform(rule, options) {
-	    return this._run(rule, options).then(function (result) {
-	      return result.transform;
-	    });
-	  }
-
-	  /**
-	   * Process a selector into a transformed value synchronously.
-	   *
-	   * @param rule {postcss.Rule | string} The css selector to be processed
-	   * @param options The options for processing
-	   * @returns {any} The value returned by the processor.
-	   */;
-	  _proto.transformSync = function transformSync(rule, options) {
-	    return this._runSync(rule, options).transform;
-	  }
-
-	  /**
-	   * Process a selector into a new selector string asynchronously.
-	   *
-	   * @param rule {postcss.Rule | string} The css selector to be processed
-	   * @param options The options for processing
-	   * @returns {string} the selector after processing.
-	   */;
-	  _proto.process = function process(rule, options) {
-	    return this._run(rule, options).then(function (result) {
-	      return result.string || result.root.toString();
-	    });
-	  }
-
-	  /**
-	   * Process a selector into a new selector string synchronously.
-	   *
-	   * @param rule {postcss.Rule | string} The css selector to be processed
-	   * @param options The options for processing
-	   * @returns {string} the selector after processing.
-	   */;
-	  _proto.processSync = function processSync(rule, options) {
-	    var result = this._runSync(rule, options);
-	    return result.string || result.root.toString();
-	  };
-	  return Processor;
-	}();
-	exports["default"] = Processor;
-	module.exports = exports.default;
-} (processor, processor.exports));
-
-var selectors = {};
-
-var constructors = {};
-
-constructors.__esModule = true;
-constructors.universal = constructors.tag = constructors.string = constructors.selector = constructors.root = constructors.pseudo = constructors.nesting = constructors.id = constructors.comment = constructors.combinator = constructors.className = constructors.attribute = void 0;
-var _attribute = _interopRequireDefault(attribute$1);
-var _className = _interopRequireDefault(className$1.exports);
-var _combinator = _interopRequireDefault(combinator$2.exports);
-var _comment = _interopRequireDefault(comment$2.exports);
-var _id = _interopRequireDefault(id$1.exports);
-var _nesting = _interopRequireDefault(nesting$1.exports);
-var _pseudo = _interopRequireDefault(pseudo$1.exports);
-var _root = _interopRequireDefault(root$1.exports);
-var _selector = _interopRequireDefault(selector$1.exports);
-var _string = _interopRequireDefault(string$1.exports);
-var _tag = _interopRequireDefault(tag$1.exports);
-var _universal = _interopRequireDefault(universal$1.exports);
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "default": obj }; }
-function attribute(opts) {
-  return new _attribute["default"](opts);
+const unescapable = {
+    [tab]: true,
+    [newline]: true,
+    [cr]: true,
+    [feed]: true,
 };
-constructors.attribute = attribute;
-function className(opts) {
-  return new _className["default"](opts);
-};
-constructors.className = className;
-function combinator(opts) {
-  return new _combinator["default"](opts);
-};
-constructors.combinator = combinator;
-function comment(opts) {
-  return new _comment["default"](opts);
-};
-constructors.comment = comment;
-function id(opts) {
-  return new _id["default"](opts);
-};
-constructors.id = id;
-function nesting(opts) {
-  return new _nesting["default"](opts);
-};
-constructors.nesting = nesting;
-function pseudo(opts) {
-  return new _pseudo["default"](opts);
-};
-constructors.pseudo = pseudo;
-function root(opts) {
-  return new _root["default"](opts);
-};
-constructors.root = root;
-function selector(opts) {
-  return new _selector["default"](opts);
-};
-constructors.selector = selector;
-function string(opts) {
-  return new _string["default"](opts);
-};
-constructors.string = string;
-function tag(opts) {
-  return new _tag["default"](opts);
-};
-constructors.tag = tag;
-function universal(opts) {
-  return new _universal["default"](opts);
-};
-constructors.universal = universal;
+const wordDelimiters = {
+    [space]: true,
+    [tab]: true,
+    [newline]: true,
+    [cr]: true,
+    [feed]: true,
 
-var guards = {};
+    [ampersand]: true,
+    [asterisk]: true,
+    [bang]: true,
+    [comma]: true,
+    [colon]: true,
+    [semicolon]: true,
+    [openParenthesis]: true,
+    [closeParenthesis]: true,
+    [openSquare]: true,
+    [closeSquare]: true,
+    [singleQuote]: true,
+    [doubleQuote]: true,
+    [plus]: true,
+    [pipe]: true,
+    [tilde]: true,
+    [greaterThan]: true,
+    [equals]: true,
+    [dollar]: true,
+    [caret]: true,
+    [slash]: true,
+};
 
-guards.__esModule = true;
-guards.isComment = guards.isCombinator = guards.isClassName = guards.isAttribute = void 0;
-guards.isContainer = isContainer;
-guards.isIdentifier = void 0;
-guards.isNamespace = isNamespace;
-guards.isNesting = void 0;
-guards.isNode = isNode;
-guards.isPseudo = void 0;
-guards.isPseudoClass = isPseudoClass;
-guards.isPseudoElement = isPseudoElement;
-guards.isUniversal = guards.isTag = guards.isString = guards.isSelector = guards.isRoot = void 0;
-var _types = types;
-var _IS_TYPE;
-var IS_TYPE = (_IS_TYPE = {}, _IS_TYPE[_types.ATTRIBUTE] = true, _IS_TYPE[_types.CLASS] = true, _IS_TYPE[_types.COMBINATOR] = true, _IS_TYPE[_types.COMMENT] = true, _IS_TYPE[_types.ID] = true, _IS_TYPE[_types.NESTING] = true, _IS_TYPE[_types.PSEUDO] = true, _IS_TYPE[_types.ROOT] = true, _IS_TYPE[_types.SELECTOR] = true, _IS_TYPE[_types.STRING] = true, _IS_TYPE[_types.TAG] = true, _IS_TYPE[_types.UNIVERSAL] = true, _IS_TYPE);
-function isNode(node) {
-  return typeof node === "object" && IS_TYPE[node.type];
-}
-function isNodeType(type, node) {
-  return isNode(node) && node.type === type;
-}
-var isAttribute = isNodeType.bind(null, _types.ATTRIBUTE);
-guards.isAttribute = isAttribute;
-var isClassName = isNodeType.bind(null, _types.CLASS);
-guards.isClassName = isClassName;
-var isCombinator = isNodeType.bind(null, _types.COMBINATOR);
-guards.isCombinator = isCombinator;
-var isComment = isNodeType.bind(null, _types.COMMENT);
-guards.isComment = isComment;
-var isIdentifier = isNodeType.bind(null, _types.ID);
-guards.isIdentifier = isIdentifier;
-var isNesting = isNodeType.bind(null, _types.NESTING);
-guards.isNesting = isNesting;
-var isPseudo = isNodeType.bind(null, _types.PSEUDO);
-guards.isPseudo = isPseudo;
-var isRoot = isNodeType.bind(null, _types.ROOT);
-guards.isRoot = isRoot;
-var isSelector = isNodeType.bind(null, _types.SELECTOR);
-guards.isSelector = isSelector;
-var isString = isNodeType.bind(null, _types.STRING);
-guards.isString = isString;
-var isTag = isNodeType.bind(null, _types.TAG);
-guards.isTag = isTag;
-var isUniversal = isNodeType.bind(null, _types.UNIVERSAL);
-guards.isUniversal = isUniversal;
-function isPseudoElement(node) {
-  return isPseudo(node) && node.value && (node.value.startsWith("::") || node.value.toLowerCase() === ":before" || node.value.toLowerCase() === ":after" || node.value.toLowerCase() === ":first-letter" || node.value.toLowerCase() === ":first-line");
-}
-function isPseudoClass(node) {
-  return isPseudo(node) && !isPseudoElement(node);
-}
-function isContainer(node) {
-  return !!(isNode(node) && node.walk);
-}
-function isNamespace(node) {
-  return isAttribute(node) || isTag(node);
+
+const hex = {};
+const hexChars = "0123456789abcdefABCDEF";
+for (let i = 0; i < hexChars.length; i++) {
+    hex[hexChars.charCodeAt(i)] = true;
 }
 
-(function (exports) {
+/**
+ *  Returns the last index of the bar css word
+ * @param {string} css The string in which the word begins
+ * @param {number} start The index into the string where word's first letter occurs
+ */
+function consumeWord (css, start) {
+    let next = start;
+    let code;
+    do {
+        code = css.charCodeAt(next);
+        if (wordDelimiters[code]) {
+            return next - 1;
+        } else if (code === backslash) {
+            next = consumeEscape(css, next) + 1;
+        } else {
+            // All other characters are part of the word
+            next++;
+        }
+    } while (next < css.length);
+    return next - 1;
+}
 
-	exports.__esModule = true;
-	var _types = types;
-	Object.keys(_types).forEach(function (key) {
-	  if (key === "default" || key === "__esModule") return;
-	  if (key in exports && exports[key] === _types[key]) return;
-	  exports[key] = _types[key];
-	});
-	var _constructors = constructors;
-	Object.keys(_constructors).forEach(function (key) {
-	  if (key === "default" || key === "__esModule") return;
-	  if (key in exports && exports[key] === _constructors[key]) return;
-	  exports[key] = _constructors[key];
-	});
-	var _guards = guards;
-	Object.keys(_guards).forEach(function (key) {
-	  if (key === "default" || key === "__esModule") return;
-	  if (key in exports && exports[key] === _guards[key]) return;
-	  exports[key] = _guards[key];
-	});
-} (selectors));
+/**
+ *  Returns the last index of the escape sequence
+ * @param {string} css The string in which the sequence begins
+ * @param {number} start The index into the string where escape character (`\`) occurs.
+ */
+function consumeEscape (css, start) {
+    let next = start;
+    let code = css.charCodeAt(next + 1);
+    if (unescapable[code]) ; else if (hex[code]) {
+        let hexDigits = 0;
+        // consume up to 6 hex chars
+        do {
+            next++;
+            hexDigits++;
+            code = css.charCodeAt(next + 1);
+        } while (hex[code] && hexDigits < 6);
+        // if fewer than 6 hex chars, a trailing space ends the escape
+        if (hexDigits < 6 && code === space) {
+            next++;
+        }
+    } else {
+        // the next char is part of the current word
+        next++;
+    }
+    return next;
+}
 
-(function (module, exports) {
+const FIELDS = {
+    TYPE: 0,
+    START_LINE: 1,
+    START_COL: 2,
+    END_LINE: 3,
+    END_COL: 4,
+    START_POS: 5,
+    END_POS: 6,
+};
 
-	exports.__esModule = true;
-	exports["default"] = void 0;
-	var _processor = _interopRequireDefault(processor.exports);
-	var selectors$1 = _interopRequireWildcard(selectors);
-	function _getRequireWildcardCache(nodeInterop) { if (typeof WeakMap !== "function") return null; var cacheBabelInterop = new WeakMap(); var cacheNodeInterop = new WeakMap(); return (_getRequireWildcardCache = function _getRequireWildcardCache(nodeInterop) { return nodeInterop ? cacheNodeInterop : cacheBabelInterop; })(nodeInterop); }
-	function _interopRequireWildcard(obj, nodeInterop) { if (!nodeInterop && obj && obj.__esModule) { return obj; } if (obj === null || typeof obj !== "object" && typeof obj !== "function") { return { "default": obj }; } var cache = _getRequireWildcardCache(nodeInterop); if (cache && cache.has(obj)) { return cache.get(obj); } var newObj = {}; var hasPropertyDescriptor = Object.defineProperty && Object.getOwnPropertyDescriptor; for (var key in obj) { if (key !== "default" && Object.prototype.hasOwnProperty.call(obj, key)) { var desc = hasPropertyDescriptor ? Object.getOwnPropertyDescriptor(obj, key) : null; if (desc && (desc.get || desc.set)) { Object.defineProperty(newObj, key, desc); } else { newObj[key] = obj[key]; } } } newObj["default"] = obj; if (cache) { cache.set(obj, newObj); } return newObj; }
-	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "default": obj }; }
-	function parser(processor) {
-	  return new _processor["default"](processor);
-	};
-	Object.assign(parser, selectors$1);
-	delete parser.__esModule;
-	var _default = parser;
-	exports["default"] = _default;
-	module.exports = exports.default;
-} (dist, dist.exports));
+function tokenize (input) {
+    const tokens   = [];
+    let css        = input.css.valueOf();
+    let {length}   = css;
+    let offset     = -1;
+    let line       =  1;
+    let start      =  0;
+    let end        =  0;
 
-var selectorParser = dist.exports;
+    let code,
+        content,
+        endColumn,
+        endLine,
+        escaped,
+        escapePos,
+        last,
+        lines,
+        next,
+        nextLine,
+        nextOffset,
+        quote,
+        tokenType;
+
+    function unclosed (what, fix) {
+        if ( input.safe ) { // fyi: this is never set to true.
+            css += fix;
+            next = css.length - 1;
+        } else {
+            throw input.error('Unclosed ' + what, line, start - offset, start);
+        }
+    }
+
+    while ( start < length ) {
+        code = css.charCodeAt(start);
+
+        if ( code === newline ) {
+            offset = start;
+            line  += 1;
+        }
+
+        switch ( code ) {
+        case space:
+        case tab:
+        case newline:
+        case cr:
+        case feed:
+            next = start;
+            do {
+                next += 1;
+                code = css.charCodeAt(next);
+                if ( code === newline ) {
+                    offset = next;
+                    line  += 1;
+                }
+            } while (
+                code === space   ||
+                code === newline ||
+                code === tab     ||
+                code === cr      ||
+                code === feed
+            );
+
+            tokenType = space;
+            endLine = line;
+            endColumn = next - offset - 1;
+            end = next;
+            break;
+
+        case plus:
+        case greaterThan:
+        case tilde:
+        case pipe:
+            next = start;
+            do {
+                next += 1;
+                code = css.charCodeAt(next);
+            } while (
+                code === plus        ||
+                code === greaterThan ||
+                code === tilde       ||
+                code === pipe
+            );
+
+            tokenType = combinator$1;
+            endLine = line;
+            endColumn = start - offset;
+            end = next;
+            break;
+
+        // Consume these characters as single tokens.
+        case asterisk:
+        case ampersand:
+        case bang:
+        case comma:
+        case equals:
+        case dollar:
+        case caret:
+        case openSquare:
+        case closeSquare:
+        case colon:
+        case semicolon:
+        case openParenthesis:
+        case closeParenthesis:
+            next = start;
+            tokenType = code;
+            endLine = line;
+            endColumn = start - offset;
+            end = next + 1;
+            break;
+
+        case singleQuote:
+        case doubleQuote:
+            quote = code === singleQuote ? "'" : '"';
+            next  = start;
+            do {
+                escaped = false;
+                next    = css.indexOf(quote, next + 1);
+                if ( next === -1 ) {
+                    unclosed('quote', quote);
+                }
+                escapePos = next;
+                while ( css.charCodeAt(escapePos - 1) === backslash ) {
+                    escapePos -= 1;
+                    escaped = !escaped;
+                }
+            } while ( escaped );
+
+            tokenType = str;
+            endLine = line;
+            endColumn = start - offset;
+            end = next + 1;
+            break;
+
+        default:
+            if ( code === slash && css.charCodeAt(start + 1) === asterisk ) {
+                next = css.indexOf('*/', start + 2) + 1;
+                if ( next === 0 ) {
+                    unclosed('comment', '*/');
+                }
+
+                content = css.slice(start, next + 1);
+                lines   = content.split('\n');
+                last    = lines.length - 1;
+
+                if ( last > 0 ) {
+                    nextLine   = line + last;
+                    nextOffset = next - lines[last].length;
+                } else {
+                    nextLine   = line;
+                    nextOffset = offset;
+                }
+
+                tokenType = comment$1;
+                line   = nextLine;
+                endLine = nextLine;
+                endColumn = next - nextOffset;
+            } else if (code === slash) {
+                next = start;
+                tokenType = code;
+                endLine = line;
+                endColumn = start - offset;
+                end = next + 1;
+            } else {
+                next = consumeWord(css, start);
+                tokenType = word;
+                endLine = line;
+                endColumn = next - offset;
+            }
+
+            end = next + 1;
+            break;
+        }
+
+        // Ensure that the token structure remains consistent
+        tokens.push([
+            tokenType,              // [0] Token type
+            line,                   // [1] Starting line
+            start - offset,         // [2] Starting column
+            endLine,                // [3] Ending line
+            endColumn,              // [4] Ending column
+            start,                  // [5] Start position / Source index
+            end,                    // [6] End position
+        ]);
+
+        // Reset offset for the next token
+        if (nextOffset) {
+            offset = nextOffset;
+            nextOffset = null;
+        }
+
+        start = end;
+    }
+
+    return tokens;
+}
+
+const WHITESPACE_TOKENS = {
+    [space]: true,
+    [cr]: true,
+    [feed]: true,
+    [newline]: true,
+    [tab]: true,
+};
+
+const WHITESPACE_EQUIV_TOKENS = {
+    ...WHITESPACE_TOKENS,
+    [comment$1]: true,
+};
+
+function tokenStart (token) {
+    return {
+        line: token[FIELDS.START_LINE],
+        column: token[FIELDS.START_COL],
+    };
+}
+
+function tokenEnd (token) {
+    return {
+        line: token[FIELDS.END_LINE],
+        column: token[FIELDS.END_COL],
+    };
+}
+
+
+function getSource$1 (startLine, startColumn, endLine, endColumn) {
+    return {
+        start: {
+            line: startLine,
+            column: startColumn,
+        },
+        end: {
+            line: endLine,
+            column: endColumn,
+        },
+    };
+}
+
+function getTokenSource (token) {
+    return getSource$1(
+        token[FIELDS.START_LINE],
+        token[FIELDS.START_COL],
+        token[FIELDS.END_LINE],
+        token[FIELDS.END_COL]
+    );
+}
+
+function getTokenSourceSpan (startToken, endToken) {
+    if (!startToken) {
+        return undefined;
+    }
+    return getSource$1(
+        startToken[FIELDS.START_LINE],
+        startToken[FIELDS.START_COL],
+        endToken[FIELDS.END_LINE],
+        endToken[FIELDS.END_COL]
+    );
+}
+
+function unescapeProp (node, prop) {
+    let value = node[prop];
+    if (typeof value !== "string") {
+        return;
+    }
+    if (value.indexOf("\\") !== -1) {
+        ensureObject(node, 'raws');
+        node[prop] = unesc(value);
+        if (node.raws[prop] === undefined) {
+            node.raws[prop] = value;
+        }
+    }
+    return node;
+}
+
+function indexesOf (array, item) {
+    let i = -1;
+    const indexes = [];
+
+    while ((i = array.indexOf(item, i + 1)) !== -1) {
+        indexes.push(i);
+    }
+
+    return indexes;
+}
+
+function uniqs () {
+    const list = Array.prototype.concat.apply([], arguments);
+
+    return list.filter((item, i) => i === list.indexOf(item));
+}
+
+class Parser {
+    constructor (rule, options = {}) {
+        this.rule = rule;
+        this.options = Object.assign({lossy: false, safe: false}, options);
+        this.position = 0;
+
+        this.css = typeof this.rule === 'string' ? this.rule : this.rule.selector;
+
+        this.tokens = tokenize({
+            css: this.css,
+            error: this._errorGenerator(),
+            safe: this.options.safe,
+        });
+
+        let rootSource = getTokenSourceSpan(this.tokens[0], this.tokens[this.tokens.length - 1]);
+        this.root = new Root({source: rootSource});
+        this.root.errorGenerator = this._errorGenerator();
+
+
+        const selector = new Selector({source: {start: {line: 1, column: 1}}});
+        this.root.append(selector);
+        this.current = selector;
+
+        this.loop();
+    }
+
+    _errorGenerator () {
+        return (message, errorOptions) => {
+            if (typeof this.rule === 'string') {
+                return new Error(message);
+            }
+            return this.rule.error(message, errorOptions);
+        };
+    }
+
+    attribute () {
+        const attr = [];
+        const startingToken = this.currToken;
+        this.position ++;
+        while (
+            this.position < this.tokens.length &&
+            this.currToken[FIELDS.TYPE] !== closeSquare
+        ) {
+            attr.push(this.currToken);
+            this.position ++;
+        }
+        if (this.currToken[FIELDS.TYPE] !== closeSquare) {
+            return this.expected('closing square bracket', this.currToken[FIELDS.START_POS]);
+        }
+
+        const len = attr.length;
+        const node = {
+            source: getSource$1(
+                startingToken[1],
+                startingToken[2],
+                this.currToken[3],
+                this.currToken[4]
+            ),
+            sourceIndex: startingToken[FIELDS.START_POS],
+        };
+
+        if (len === 1 && !~[word].indexOf(attr[0][FIELDS.TYPE])) {
+            return this.expected('attribute', attr[0][FIELDS.START_POS]);
+        }
+
+        let pos = 0;
+        let spaceBefore = '';
+        let commentBefore = '';
+        let lastAdded = null;
+        let spaceAfterMeaningfulToken = false;
+
+        while (pos < len) {
+            const token = attr[pos];
+            const content = this.content(token);
+            const next = attr[pos + 1];
+
+            switch (token[FIELDS.TYPE]) {
+            case space:
+                // if (
+                //     len === 1 ||
+                //     pos === 0 && this.content(next) === '|'
+                // ) {
+                //     return this.expected('attribute', token[TOKEN.START_POS], content);
+                // }
+                spaceAfterMeaningfulToken = true;
+                if (this.options.lossy) {
+                    break;
+                }
+                if (lastAdded) {
+                    ensureObject(node, 'spaces', lastAdded);
+                    const prevContent = node.spaces[lastAdded].after || '';
+                    node.spaces[lastAdded].after = prevContent + content;
+
+                    const existingComment = getProp(node, 'raws', 'spaces', lastAdded, 'after') || null;
+
+                    if (existingComment) {
+                        node.raws.spaces[lastAdded].after = existingComment + content;
+                    }
+                } else {
+                    spaceBefore = spaceBefore + content;
+                    commentBefore = commentBefore + content;
+                }
+                break;
+            case asterisk:
+                if (next[FIELDS.TYPE] === equals) {
+                    node.operator = content;
+                    lastAdded = 'operator';
+                } else if ((!node.namespace || (lastAdded === "namespace" && !spaceAfterMeaningfulToken)) && next) {
+                    if (spaceBefore) {
+                        ensureObject(node, 'spaces', 'attribute');
+                        node.spaces.attribute.before = spaceBefore;
+                        spaceBefore = '';
+                    }
+                    if (commentBefore) {
+                        ensureObject(node, 'raws', 'spaces', 'attribute');
+                        node.raws.spaces.attribute.before = spaceBefore;
+                        commentBefore = '';
+                    }
+                    node.namespace = (node.namespace || "") + content;
+                    const rawValue = getProp(node, 'raws', 'namespace') || null;
+                    if (rawValue) {
+                        node.raws.namespace += content;
+                    }
+                    lastAdded = 'namespace';
+                }
+                spaceAfterMeaningfulToken = false;
+                break;
+            case dollar:
+                if (lastAdded === "value") {
+                    let oldRawValue = getProp(node, 'raws', 'value');
+                    node.value += "$";
+                    if (oldRawValue) {
+                        node.raws.value = oldRawValue + "$";
+                    }
+                    break;
+                }
+                // Falls through
+            case caret:
+                if (next[FIELDS.TYPE] === equals) {
+                    node.operator = content;
+                    lastAdded = 'operator';
+                }
+                spaceAfterMeaningfulToken = false;
+                break;
+            case combinator$1:
+                if (content === '~' && next[FIELDS.TYPE] === equals) {
+                    node.operator = content;
+                    lastAdded = 'operator';
+                }
+                if (content !== '|') {
+                    spaceAfterMeaningfulToken = false;
+                    break;
+                }
+                if (next[FIELDS.TYPE] === equals) {
+                    node.operator = content;
+                    lastAdded = 'operator';
+                } else if (!node.namespace && !node.attribute) {
+                    node.namespace = true;
+                }
+                spaceAfterMeaningfulToken = false;
+                break;
+            case word:
+                if (
+                    next &&
+                    this.content(next) === '|' &&
+                    (attr[pos + 2] && attr[pos + 2][FIELDS.TYPE] !== equals) && // this look-ahead probably fails with comment nodes involved.
+                    !node.operator &&
+                    !node.namespace
+                ) {
+                    node.namespace = content;
+                    lastAdded = 'namespace';
+                } else if (!node.attribute || (lastAdded === "attribute" && !spaceAfterMeaningfulToken)) {
+                    if (spaceBefore) {
+                        ensureObject(node, 'spaces', 'attribute');
+                        node.spaces.attribute.before = spaceBefore;
+
+                        spaceBefore = '';
+                    }
+                    if (commentBefore) {
+                        ensureObject(node, 'raws', 'spaces', 'attribute');
+                        node.raws.spaces.attribute.before = commentBefore;
+                        commentBefore = '';
+                    }
+                    node.attribute = (node.attribute || "") + content;
+                    const rawValue = getProp(node, 'raws', 'attribute') || null;
+                    if (rawValue) {
+                        node.raws.attribute += content;
+                    }
+                    lastAdded = 'attribute';
+                } else if ((!node.value && node.value !== "") || (lastAdded === "value" && !(spaceAfterMeaningfulToken || node.quoteMark))) {
+                    let unescaped = unesc(content);
+                    let oldRawValue = getProp(node, 'raws', 'value') || '';
+                    let oldValue = node.value || '';
+                    node.value = oldValue + unescaped;
+                    node.quoteMark = null;
+                    if (unescaped !== content || oldRawValue) {
+                        ensureObject(node, 'raws');
+                        node.raws.value = (oldRawValue || oldValue) + content;
+                    }
+                    lastAdded = 'value';
+                } else {
+                    let insensitive = (content === 'i' || content === "I");
+                    if ((node.value || node.value === '') && (node.quoteMark || spaceAfterMeaningfulToken)) {
+                        node.insensitive = insensitive;
+                        if (!insensitive || content === "I") {
+                            ensureObject(node, 'raws');
+                            node.raws.insensitiveFlag = content;
+                        }
+                        lastAdded = 'insensitive';
+                        if (spaceBefore) {
+                            ensureObject(node, 'spaces', 'insensitive');
+                            node.spaces.insensitive.before = spaceBefore;
+
+                            spaceBefore = '';
+                        }
+                        if (commentBefore) {
+                            ensureObject(node, 'raws', 'spaces', 'insensitive');
+                            node.raws.spaces.insensitive.before = commentBefore;
+                            commentBefore = '';
+                        }
+                    } else if (node.value || node.value === '') {
+                        lastAdded = 'value';
+                        node.value += content;
+                        if (node.raws.value) {
+                            node.raws.value += content;
+                        }
+                    }
+                }
+                spaceAfterMeaningfulToken = false;
+                break;
+            case str:
+                if (!node.attribute || !node.operator) {
+                    return this.error(`Expected an attribute followed by an operator preceding the string.`, {
+                        index: token[FIELDS.START_POS],
+                    });
+                }
+                let {unescaped, quoteMark} = unescapeValue(content);
+                node.value = unescaped;
+                node.quoteMark = quoteMark;
+                lastAdded = 'value';
+
+                ensureObject(node, 'raws');
+                node.raws.value = content;
+
+                spaceAfterMeaningfulToken = false;
+                break;
+            case equals:
+                if (!node.attribute) {
+                    return this.expected('attribute', token[FIELDS.START_POS], content);
+                }
+                if (node.value) {
+                    return this.error('Unexpected "=" found; an operator was already defined.', {index: token[FIELDS.START_POS]});
+                }
+                node.operator = node.operator ? node.operator + content : content;
+                lastAdded = 'operator';
+                spaceAfterMeaningfulToken = false;
+                break;
+            case comment$1:
+                if (lastAdded) {
+                    if (spaceAfterMeaningfulToken || (next && next[FIELDS.TYPE] === space) ||
+                        lastAdded === 'insensitive'
+                    ) {
+                        const lastComment = getProp(node, 'spaces', lastAdded, 'after') || '';
+                        const rawLastComment = getProp(node, 'raws', 'spaces', lastAdded, 'after') || lastComment;
+
+                        ensureObject(node, 'raws', 'spaces', lastAdded);
+                        node.raws.spaces[lastAdded].after = rawLastComment + content;
+                    } else {
+                        const lastValue = node[lastAdded] || '';
+                        const rawLastValue = getProp(node, 'raws', lastAdded) || lastValue;
+                        ensureObject(node, 'raws');
+                        node.raws[lastAdded] = rawLastValue + content;
+                    }
+                } else {
+                    commentBefore = commentBefore + content;
+                }
+                break;
+            default:
+                return this.error(`Unexpected "${content}" found.`, {index: token[FIELDS.START_POS]});
+            }
+            pos ++;
+        }
+        unescapeProp(node, "attribute");
+        unescapeProp(node, "namespace");
+        this.newNode(new Attribute(node));
+        this.position ++;
+    }
+
+    /**
+     * return a node containing meaningless garbage up to (but not including) the specified token position.
+     * if the token position is negative, all remaining tokens are consumed.
+     *
+     * This returns an array containing a single string node if all whitespace,
+     * otherwise an array of comment nodes with space before and after.
+     *
+     * These tokens are not added to the current selector, the caller can add them or use them to amend
+     * a previous node's space metadata.
+     *
+     * In lossy mode, this returns only comments.
+     */
+    parseWhitespaceEquivalentTokens (stopPosition) {
+        if (stopPosition < 0) {
+            stopPosition = this.tokens.length;
+        }
+        let startPosition = this.position;
+        let nodes = [];
+        let space = "";
+        let lastComment = undefined;
+        do {
+            if (WHITESPACE_TOKENS[this.currToken[FIELDS.TYPE]]) {
+                if (!this.options.lossy) {
+                    space += this.content();
+                }
+            } else if (this.currToken[FIELDS.TYPE] === comment$1) {
+                let spaces = {};
+                if (space) {
+                    spaces.before = space;
+                    space = "";
+                }
+                lastComment = new Comment({
+                    value: this.content(),
+                    source: getTokenSource(this.currToken),
+                    sourceIndex: this.currToken[FIELDS.START_POS],
+                    spaces,
+                });
+                nodes.push(lastComment);
+            }
+        } while (++this.position < stopPosition);
+
+        if (space) {
+            if (lastComment) {
+                lastComment.spaces.after = space;
+            } else if (!this.options.lossy) {
+                let firstToken = this.tokens[startPosition];
+                let lastToken = this.tokens[this.position - 1];
+                nodes.push(new String$1({
+                    value: '',
+                    source: getSource$1(
+                        firstToken[FIELDS.START_LINE],
+                        firstToken[FIELDS.START_COL],
+                        lastToken[FIELDS.END_LINE],
+                        lastToken[FIELDS.END_COL],
+                    ),
+                    sourceIndex: firstToken[FIELDS.START_POS],
+                    spaces: {before: space, after: ''},
+                }));
+            }
+        }
+        return nodes;
+    }
+
+    /**
+     *
+     * @param {*} nodes
+     */
+    convertWhitespaceNodesToSpace (nodes, requiredSpace = false) {
+        let space = "";
+        let rawSpace = "";
+        nodes.forEach(n => {
+            let spaceBefore = this.lossySpace(n.spaces.before, requiredSpace);
+            let rawSpaceBefore = this.lossySpace(n.rawSpaceBefore, requiredSpace);
+            space += spaceBefore + this.lossySpace(n.spaces.after, requiredSpace && spaceBefore.length === 0);
+            rawSpace += spaceBefore + n.value + this.lossySpace(n.rawSpaceAfter, requiredSpace && rawSpaceBefore.length === 0);
+        });
+        if (rawSpace === space) {
+            rawSpace = undefined;
+        }
+        let result = {space, rawSpace};
+        return result;
+    }
+
+    isNamedCombinator (position = this.position) {
+        return this.tokens[position + 0] && this.tokens[position + 0][FIELDS.TYPE] === slash &&
+               this.tokens[position + 1] && this.tokens[position + 1][FIELDS.TYPE] === word &&
+               this.tokens[position + 2] && this.tokens[position + 2][FIELDS.TYPE] === slash;
+
+    }
+    namedCombinator () {
+        if (this.isNamedCombinator()) {
+            let nameRaw = this.content(this.tokens[this.position + 1]);
+            let name = unesc(nameRaw).toLowerCase();
+            let raws = {};
+            if (name !== nameRaw) {
+                raws.value = `/${nameRaw}/`;
+            }
+            let node = new Combinator({
+                value: `/${name}/`,
+                source: getSource$1(
+                    this.currToken[FIELDS.START_LINE],
+                    this.currToken[FIELDS.START_COL],
+                    this.tokens[this.position + 2][FIELDS.END_LINE],
+                    this.tokens[this.position + 2][FIELDS.END_COL],
+                ),
+                sourceIndex: this.currToken[FIELDS.START_POS],
+                raws,
+            });
+            this.position = this.position + 3;
+            return node;
+        } else {
+            this.unexpected();
+        }
+    }
+
+    combinator () {
+        if (this.content() === '|') {
+            return this.namespace();
+        }
+        // We need to decide between a space that's a descendant combinator and meaningless whitespace at the end of a selector.
+        let nextSigTokenPos = this.locateNextMeaningfulToken(this.position);
+
+        if (nextSigTokenPos < 0 || this.tokens[nextSigTokenPos][FIELDS.TYPE] === comma) {
+            let nodes = this.parseWhitespaceEquivalentTokens(nextSigTokenPos);
+            if (nodes.length > 0) {
+                let last = this.current.last;
+                if (last) {
+                    let {space, rawSpace} = this.convertWhitespaceNodesToSpace(nodes);
+                    if (rawSpace !== undefined) {
+                        last.rawSpaceAfter += rawSpace;
+                    }
+                    last.spaces.after += space;
+                } else {
+                    nodes.forEach(n => this.newNode(n));
+                }
+            }
+            return;
+        }
+
+        let firstToken = this.currToken;
+        let spaceOrDescendantSelectorNodes = undefined;
+        if (nextSigTokenPos > this.position) {
+            spaceOrDescendantSelectorNodes = this.parseWhitespaceEquivalentTokens(nextSigTokenPos);
+        }
+
+        let node;
+        if (this.isNamedCombinator()) {
+            node = this.namedCombinator();
+        } else if (this.currToken[FIELDS.TYPE] === combinator$1) {
+            node = new Combinator({
+                value: this.content(),
+                source: getTokenSource(this.currToken),
+                sourceIndex: this.currToken[FIELDS.START_POS],
+            });
+            this.position++;
+        } else if (WHITESPACE_TOKENS[this.currToken[FIELDS.TYPE]]) ; else if (!spaceOrDescendantSelectorNodes) {
+            this.unexpected();
+        }
+
+        if (node) {
+            if (spaceOrDescendantSelectorNodes) {
+                let {space, rawSpace} = this.convertWhitespaceNodesToSpace(spaceOrDescendantSelectorNodes);
+                node.spaces.before = space;
+                node.rawSpaceBefore = rawSpace;
+            }
+        } else {
+            // descendant combinator
+            let {space, rawSpace} = this.convertWhitespaceNodesToSpace(spaceOrDescendantSelectorNodes, true);
+            if (!rawSpace) {
+                rawSpace = space;
+            }
+            let spaces = {};
+            let raws = {spaces: {}};
+            if (space.endsWith(' ') && rawSpace.endsWith(' ')) {
+                spaces.before = space.slice(0, space.length - 1);
+                raws.spaces.before = rawSpace.slice(0, rawSpace.length - 1);
+            } else if (space.startsWith(' ') && rawSpace.startsWith(' ')) {
+                spaces.after = space.slice(1);
+                raws.spaces.after = rawSpace.slice(1);
+            } else {
+                raws.value = rawSpace;
+            }
+            node = new Combinator({
+                value: ' ',
+                source: getTokenSourceSpan(firstToken, this.tokens[this.position - 1]),
+                sourceIndex: firstToken[FIELDS.START_POS],
+                spaces,
+                raws,
+            });
+        }
+
+        if (this.currToken && this.currToken[FIELDS.TYPE] === space) {
+            node.spaces.after = this.optionalSpace(this.content());
+            this.position++;
+        }
+
+        return this.newNode(node);
+    }
+
+    comma () {
+        if (this.position === this.tokens.length - 1) {
+            this.root.trailingComma = true;
+            this.position ++;
+            return;
+        }
+        this.current._inferEndPosition();
+        const selector = new Selector({source: {start: tokenStart(this.tokens[this.position + 1])}});
+        this.current.parent.append(selector);
+        this.current = selector;
+        this.position ++;
+    }
+
+    comment () {
+        const current = this.currToken;
+        this.newNode(new Comment({
+            value: this.content(),
+            source: getTokenSource(current),
+            sourceIndex: current[FIELDS.START_POS],
+        }));
+        this.position ++;
+    }
+
+    error (message, opts) {
+        throw this.root.error(message, opts);
+    }
+
+    missingBackslash () {
+        return this.error('Expected a backslash preceding the semicolon.', {
+            index: this.currToken[FIELDS.START_POS],
+        });
+    }
+
+    missingParenthesis () {
+        return this.expected('opening parenthesis', this.currToken[FIELDS.START_POS]);
+    }
+
+    missingSquareBracket () {
+        return this.expected('opening square bracket', this.currToken[FIELDS.START_POS]);
+    }
+
+    unexpected () {
+        return this.error(`Unexpected '${this.content()}'. Escaping special characters with \\ may help.`, this.currToken[FIELDS.START_POS]);
+    }
+
+    unexpectedPipe () {
+        return this.error(`Unexpected '|'.`, this.currToken[FIELDS.START_POS]);
+    }
+
+    namespace () {
+        const before = this.prevToken && this.content(this.prevToken) || true;
+        if (this.nextToken[FIELDS.TYPE] === word) {
+            this.position ++;
+            return this.word(before);
+        } else if (this.nextToken[FIELDS.TYPE] === asterisk) {
+            this.position ++;
+            return this.universal(before);
+        }
+
+        this.unexpectedPipe();
+    }
+
+    nesting () {
+        if (this.nextToken) {
+            let nextContent = this.content(this.nextToken);
+            if (nextContent === "|") {
+                this.position++;
+                return;
+            }
+        }
+        const current = this.currToken;
+        this.newNode(new Nesting({
+            value: this.content(),
+            source: getTokenSource(current),
+            sourceIndex: current[FIELDS.START_POS],
+        }));
+        this.position ++;
+    }
+
+    parentheses () {
+        let last = this.current.last;
+        let unbalanced = 1;
+        this.position ++;
+        if (last && last.type === PSEUDO) {
+            const selector = new Selector({source: {start: tokenStart(this.tokens[this.position - 1])}});
+            const cache = this.current;
+            last.append(selector);
+            this.current = selector;
+            while (this.position < this.tokens.length && unbalanced) {
+                if (this.currToken[FIELDS.TYPE] === openParenthesis) {
+                    unbalanced ++;
+                }
+                if (this.currToken[FIELDS.TYPE] === closeParenthesis) {
+                    unbalanced --;
+                }
+                if (unbalanced) {
+                    this.parse();
+                } else {
+                    this.current.source.end = tokenEnd(this.currToken);
+                    this.current.parent.source.end = tokenEnd(this.currToken);
+                    this.position ++;
+                }
+            }
+            this.current = cache;
+        } else {
+            // I think this case should be an error. It's used to implement a basic parse of media queries
+            // but I don't think it's a good idea.
+            let parenStart = this.currToken;
+            let parenValue = "(";
+            let parenEnd;
+            while (this.position < this.tokens.length && unbalanced) {
+                if (this.currToken[FIELDS.TYPE] === openParenthesis) {
+                    unbalanced ++;
+                }
+                if (this.currToken[FIELDS.TYPE] === closeParenthesis) {
+                    unbalanced --;
+                }
+                parenEnd = this.currToken;
+                parenValue += this.parseParenthesisToken(this.currToken);
+                this.position ++;
+            }
+            if (last) {
+                last.appendToPropertyAndEscape("value", parenValue, parenValue);
+            } else {
+                this.newNode(new String$1({
+                    value: parenValue,
+                    source: getSource$1(
+                        parenStart[FIELDS.START_LINE],
+                        parenStart[FIELDS.START_COL],
+                        parenEnd[FIELDS.END_LINE],
+                        parenEnd[FIELDS.END_COL],
+                    ),
+                    sourceIndex: parenStart[FIELDS.START_POS],
+                }));
+            }
+        }
+        if (unbalanced) {
+            return this.expected('closing parenthesis', this.currToken[FIELDS.START_POS]);
+        }
+    }
+
+    pseudo () {
+        let pseudoStr = '';
+        let startingToken = this.currToken;
+        while (this.currToken && this.currToken[FIELDS.TYPE] === colon) {
+            pseudoStr += this.content();
+            this.position ++;
+        }
+        if (!this.currToken) {
+            return this.expected(['pseudo-class', 'pseudo-element'], this.position - 1);
+        }
+        if (this.currToken[FIELDS.TYPE] === word) {
+            this.splitWord(false, (first, length) => {
+                pseudoStr += first;
+                this.newNode(new Pseudo({
+                    value: pseudoStr,
+                    source: getTokenSourceSpan(startingToken, this.currToken),
+                    sourceIndex: startingToken[FIELDS.START_POS],
+                }));
+                if (
+                    length > 1 &&
+                    this.nextToken &&
+                    this.nextToken[FIELDS.TYPE] === openParenthesis
+                ) {
+                    this.error('Misplaced parenthesis.', {
+                        index: this.nextToken[FIELDS.START_POS],
+                    });
+                }
+            });
+        } else {
+            return this.expected(['pseudo-class', 'pseudo-element'], this.currToken[FIELDS.START_POS]);
+        }
+    }
+
+    space () {
+        const content = this.content();
+        // Handle space before and after the selector
+        if (
+            this.position === 0 ||
+            this.prevToken[FIELDS.TYPE] === comma ||
+            this.prevToken[FIELDS.TYPE] === openParenthesis ||
+            (this.current.nodes.every((node) => node.type === 'comment'))
+        ) {
+            this.spaces = this.optionalSpace(content);
+            this.position ++;
+        } else if (
+            this.position === (this.tokens.length - 1) ||
+            this.nextToken[FIELDS.TYPE] === comma ||
+            this.nextToken[FIELDS.TYPE] === closeParenthesis
+        ) {
+            this.current.last.spaces.after = this.optionalSpace(content);
+            this.position ++;
+        } else {
+            this.combinator();
+        }
+    }
+
+    string () {
+        const current = this.currToken;
+        this.newNode(new String$1({
+            value: this.content(),
+            source: getTokenSource(current),
+            sourceIndex: current[FIELDS.START_POS],
+        }));
+        this.position ++;
+    }
+
+    universal (namespace) {
+        const nextToken = this.nextToken;
+        if (nextToken && this.content(nextToken) === '|') {
+            this.position ++;
+            return this.namespace();
+        }
+        const current = this.currToken;
+        this.newNode(new Universal({
+            value: this.content(),
+            source: getTokenSource(current),
+            sourceIndex: current[FIELDS.START_POS],
+        }), namespace);
+        this.position ++;
+    }
+
+    splitWord (namespace, firstCallback) {
+        let nextToken = this.nextToken;
+        let word$1 = this.content();
+        while (
+            nextToken &&
+            ~[dollar, caret, equals, word].indexOf(nextToken[FIELDS.TYPE])
+        ) {
+            this.position ++;
+            let current = this.content();
+            word$1 += current;
+            if (current.lastIndexOf('\\') === current.length - 1) {
+                let next = this.nextToken;
+                if (next && next[FIELDS.TYPE] === space) {
+                    word$1 += this.requiredSpace(this.content(next));
+                    this.position ++;
+                }
+            }
+            nextToken = this.nextToken;
+        }
+        const hasClass = indexesOf(word$1, '.').filter(i => {
+            // Allow escaped dot within class name
+            const escapedDot = word$1[i - 1] === '\\';
+            // Allow decimal numbers percent in @keyframes
+            const isKeyframesPercent = /^\d+\.\d+%$/.test(word$1);
+            return !escapedDot && !isKeyframesPercent;
+        });
+        let hasId = indexesOf(word$1, '#').filter(i => word$1[i - 1] !== '\\');
+        // Eliminate Sass interpolations from the list of id indexes
+        const interpolations = indexesOf(word$1, '#{');
+        if (interpolations.length) {
+            hasId = hasId.filter(hashIndex => !~interpolations.indexOf(hashIndex));
+        }
+        let indices = sortAscending(uniqs([0, ...hasClass, ...hasId]));
+        indices.forEach((ind, i) => {
+            const index = indices[i + 1] || word$1.length;
+            const value = word$1.slice(ind, index);
+            if (i === 0 && firstCallback) {
+                return firstCallback.call(this, value, indices.length);
+            }
+            let node;
+            const current = this.currToken;
+            const sourceIndex = current[FIELDS.START_POS] + indices[i];
+            const source = getSource$1(
+                current[1],
+                current[2] + ind,
+                current[3],
+                current[2] + (index - 1)
+            );
+            if (~hasClass.indexOf(ind)) {
+                let classNameOpts = {
+                    value: value.slice(1),
+                    source,
+                    sourceIndex,
+                };
+                node = new ClassName(unescapeProp(classNameOpts, "value"));
+            } else if (~hasId.indexOf(ind)) {
+                let idOpts = {
+                    value: value.slice(1),
+                    source,
+                    sourceIndex,
+                };
+                node = new ID(unescapeProp(idOpts, "value"));
+            } else {
+                let tagOpts = {
+                    value,
+                    source,
+                    sourceIndex,
+                };
+                unescapeProp(tagOpts, "value");
+                node = new Tag(tagOpts);
+            }
+            this.newNode(node, namespace);
+            // Ensure that the namespace is used only once
+            namespace = null;
+        });
+        this.position ++;
+    }
+
+    word (namespace) {
+        const nextToken = this.nextToken;
+        if (nextToken && this.content(nextToken) === '|') {
+            this.position ++;
+            return this.namespace();
+        }
+        return this.splitWord(namespace);
+    }
+
+    loop () {
+        while (this.position < this.tokens.length) {
+            this.parse(true);
+        }
+        this.current._inferEndPosition();
+        return this.root;
+    }
+
+    parse (throwOnParenthesis) {
+        switch (this.currToken[FIELDS.TYPE]) {
+        case space:
+            this.space();
+            break;
+        case comment$1:
+            this.comment();
+            break;
+        case openParenthesis:
+            this.parentheses();
+            break;
+        case closeParenthesis:
+            if (throwOnParenthesis) {
+                this.missingParenthesis();
+            }
+            break;
+        case openSquare:
+            this.attribute();
+            break;
+        case dollar:
+        case caret:
+        case equals:
+        case word:
+            this.word();
+            break;
+        case colon:
+            this.pseudo();
+            break;
+        case comma:
+            this.comma();
+            break;
+        case asterisk:
+            this.universal();
+            break;
+        case ampersand:
+            this.nesting();
+            break;
+        case slash:
+        case combinator$1:
+            this.combinator();
+            break;
+        case str:
+            this.string();
+            break;
+        // These cases throw; no break needed.
+        case closeSquare:
+            this.missingSquareBracket();
+        case semicolon:
+            this.missingBackslash();
+        default:
+            this.unexpected();
+        }
+    }
+
+    /**
+     * Helpers
+     */
+
+    expected (description, index, found) {
+        if (Array.isArray(description)) {
+            const last = description.pop();
+            description = `${description.join(', ')} or ${last}`;
+        }
+        const an = /^[aeiou]/.test(description[0]) ? 'an' : 'a';
+        if (!found) {
+            return this.error(
+                `Expected ${an} ${description}.`,
+                {index}
+            );
+        }
+        return this.error(
+            `Expected ${an} ${description}, found "${found}" instead.`,
+            {index}
+        );
+    }
+
+    requiredSpace (space) {
+        return this.options.lossy ? ' ' : space;
+    }
+
+    optionalSpace (space) {
+        return this.options.lossy ? '' : space;
+    }
+
+    lossySpace (space, required) {
+        if (this.options.lossy) {
+            return required ? ' ' : '';
+        } else {
+            return space;
+        }
+    }
+
+    parseParenthesisToken (token) {
+        const content = this.content(token);
+        if (token[FIELDS.TYPE] === space) {
+            return this.requiredSpace(content);
+        } else {
+            return content;
+        }
+    }
+
+    newNode (node, namespace) {
+        if (namespace) {
+            if (/^ +$/.test(namespace)) {
+                if (!this.options.lossy) {
+                    this.spaces = (this.spaces || '') + namespace;
+                }
+                namespace = true;
+            }
+            node.namespace = namespace;
+            unescapeProp(node, "namespace");
+        }
+        if (this.spaces) {
+            node.spaces.before = this.spaces;
+            this.spaces = '';
+        }
+        return this.current.append(node);
+    }
+
+    content (token = this.currToken) {
+        return this.css.slice(token[FIELDS.START_POS], token[FIELDS.END_POS]);
+    }
+
+    get currToken () {
+        return this.tokens[this.position];
+    }
+
+    get nextToken () {
+        return this.tokens[this.position + 1];
+    }
+
+    get prevToken () {
+        return this.tokens[this.position - 1];
+    }
+
+    /**
+     * returns the index of the next non-whitespace, non-comment token.
+     * returns -1 if no meaningful token is found.
+     */
+    locateNextMeaningfulToken (startPosition = this.position + 1) {
+        let searchPosition = startPosition;
+        while (searchPosition < this.tokens.length) {
+            if (WHITESPACE_EQUIV_TOKENS[this.tokens[searchPosition][FIELDS.TYPE]]) {
+                searchPosition++;
+                continue;
+            } else {
+                return searchPosition;
+            }
+        }
+        return -1;
+    }
+}
+
+class Processor {
+    constructor (func, options) {
+        this.func = func || function noop () {};
+        this.funcRes = null;
+        this.options = options;
+    }
+
+    _shouldUpdateSelector (rule, options = {}) {
+        let merged = Object.assign({}, this.options, options);
+        if (merged.updateSelector === false) {
+            return false;
+        } else {
+            return typeof rule !== "string";
+        }
+    }
+
+    _isLossy (options = {}) {
+        let merged = Object.assign({}, this.options, options);
+        if (merged.lossless === false) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    _root (rule, options = {}) {
+        let parser = new Parser(rule, this._parseOptions(options));
+        return parser.root;
+    }
+
+    _parseOptions (options) {
+        return {
+            lossy: this._isLossy(options),
+        };
+    }
+
+    _run (rule, options = {}) {
+        return new Promise((resolve, reject) => {
+            try {
+                let root = this._root(rule, options);
+                Promise.resolve(this.func(root)).then(transform => {
+                    let string = undefined;
+                    if (this._shouldUpdateSelector(rule, options)) {
+                        string = root.toString();
+                        rule.selector = string;
+                    }
+                    return {transform, root, string};
+                }).then(resolve, reject);
+            } catch (e) {
+                reject(e);
+                return;
+            }
+        });
+    }
+
+    _runSync (rule, options = {}) {
+        let root = this._root(rule, options);
+        let transform = this.func(root);
+        if (transform && typeof transform.then === "function") {
+            throw new Error("Selector processor returned a promise to a synchronous call.");
+        }
+        let string = undefined;
+        if (options.updateSelector && typeof rule !== "string") {
+            string = root.toString();
+            rule.selector = string;
+        }
+        return {transform, root, string};
+    }
+
+    /**
+     * Process rule into a selector AST.
+     *
+     * @param rule {postcss.Rule | string} The css selector to be processed
+     * @param options The options for processing
+     * @returns {Promise<parser.Root>} The AST of the selector after processing it.
+     */
+    ast (rule, options) {
+        return this._run(rule, options).then(result => result.root);
+    }
+
+    /**
+     * Process rule into a selector AST synchronously.
+     *
+     * @param rule {postcss.Rule | string} The css selector to be processed
+     * @param options The options for processing
+     * @returns {parser.Root} The AST of the selector after processing it.
+     */
+    astSync (rule, options) {
+        return this._runSync(rule, options).root;
+    }
+
+    /**
+     * Process a selector into a transformed value asynchronously
+     *
+     * @param rule {postcss.Rule | string} The css selector to be processed
+     * @param options The options for processing
+     * @returns {Promise<any>} The value returned by the processor.
+     */
+    transform (rule, options) {
+        return this._run(rule, options).then(result => result.transform);
+    }
+
+    /**
+     * Process a selector into a transformed value synchronously.
+     *
+     * @param rule {postcss.Rule | string} The css selector to be processed
+     * @param options The options for processing
+     * @returns {any} The value returned by the processor.
+     */
+    transformSync (rule, options) {
+        return this._runSync(rule, options).transform;
+    }
+
+    /**
+     * Process a selector into a new selector string asynchronously.
+     *
+     * @param rule {postcss.Rule | string} The css selector to be processed
+     * @param options The options for processing
+     * @returns {string} the selector after processing.
+     */
+    process (rule, options) {
+        return this._run(rule, options)
+            .then((result) => result.string || result.root.toString());
+    }
+
+    /**
+     * Process a selector into a new selector string synchronously.
+     *
+     * @param rule {postcss.Rule | string} The css selector to be processed
+     * @param options The options for processing
+     * @returns {string} the selector after processing.
+     */
+    processSync (rule, options) {
+        let result = this._runSync(rule, options);
+        return result.string || result.root.toString();
+    }
+}
+
+const attribute = opts => new Attribute(opts);
+const className = opts => new ClassName(opts);
+const combinator = opts => new Combinator(opts);
+const comment = opts => new Comment(opts);
+const id = opts => new ID(opts);
+const nesting = opts => new Nesting(opts);
+const pseudo = opts => new Pseudo(opts);
+const root = opts => new Root(opts);
+const selector = opts => new Selector(opts);
+const string = opts => new String$1(opts);
+const tag = opts => new Tag(opts);
+const universal = opts => new Universal(opts);
+
+const IS_TYPE = {
+    [ATTRIBUTE]: true,
+    [CLASS]: true,
+    [COMBINATOR]: true,
+    [COMMENT]: true,
+    [ID$1]: true,
+    [NESTING]: true,
+    [PSEUDO]: true,
+    [ROOT]: true,
+    [SELECTOR]: true,
+    [STRING]: true,
+    [TAG]: true,
+    [UNIVERSAL]: true,
+};
+
+function isNode (node) {
+    return (typeof node === "object" && IS_TYPE[node.type]);
+}
+
+function isNodeType (type, node) {
+    return isNode(node) && node.type === type;
+}
+
+const isAttribute = isNodeType.bind(null, ATTRIBUTE);
+const isClassName = isNodeType.bind(null, CLASS);
+const isCombinator = isNodeType.bind(null, COMBINATOR);
+const isComment = isNodeType.bind(null, COMMENT);
+const isIdentifier = isNodeType.bind(null, ID$1);
+const isNesting = isNodeType.bind(null, NESTING);
+const isPseudo = isNodeType.bind(null, PSEUDO);
+const isRoot = isNodeType.bind(null, ROOT);
+const isSelector = isNodeType.bind(null, SELECTOR);
+const isString = isNodeType.bind(null, STRING);
+const isTag = isNodeType.bind(null, TAG);
+const isUniversal = isNodeType.bind(null, UNIVERSAL);
+
+function isPseudoElement (node) {
+    return isPseudo(node)
+           && node.value
+           && (
+               node.value.startsWith("::")
+             || node.value.toLowerCase() === ":before"
+             || node.value.toLowerCase() === ":after"
+             || node.value.toLowerCase() === ":first-letter"
+             || node.value.toLowerCase() === ":first-line"
+           );
+}
+function isPseudoClass (node) {
+    return isPseudo(node) && !isPseudoElement(node);
+}
+
+function isContainer (node) {
+    return !!(isNode(node) && node.walk);
+}
+
+function isNamespace (node) {
+    return isAttribute(node) || isTag(node);
+}
+
+const selectors = /*#__PURE__*/Object.freeze({
+  __proto__: null,
+  TAG: TAG,
+  STRING: STRING,
+  SELECTOR: SELECTOR,
+  ROOT: ROOT,
+  PSEUDO: PSEUDO,
+  NESTING: NESTING,
+  ID: ID$1,
+  COMMENT: COMMENT,
+  COMBINATOR: COMBINATOR,
+  CLASS: CLASS,
+  ATTRIBUTE: ATTRIBUTE,
+  UNIVERSAL: UNIVERSAL,
+  attribute: attribute,
+  className: className,
+  combinator: combinator,
+  comment: comment,
+  id: id,
+  nesting: nesting,
+  pseudo: pseudo,
+  root: root,
+  selector: selector,
+  string: string,
+  tag: tag,
+  universal: universal,
+  isNode: isNode,
+  isAttribute: isAttribute,
+  isClassName: isClassName,
+  isCombinator: isCombinator,
+  isComment: isComment,
+  isIdentifier: isIdentifier,
+  isNesting: isNesting,
+  isPseudo: isPseudo,
+  isRoot: isRoot,
+  isSelector: isSelector,
+  isString: isString,
+  isTag: isTag,
+  isUniversal: isUniversal,
+  isPseudoElement: isPseudoElement,
+  isPseudoClass: isPseudoClass,
+  isContainer: isContainer,
+  isNamespace: isNamespace
+});
+
+const parser = processor => new Processor(processor);
+
+Object.assign(parser, selectors);
 
 const animationNameRE = /^(-\w+-)?animation-name$/;
 const animationRE = /^(-\w+-)?animation$/;
@@ -16733,7 +16349,7 @@ function processRule(id, rule) {
         return;
     }
     processedRules.add(rule);
-    rule.selector = selectorParser(selectorRoot => {
+    rule.selector = parser(selectorRoot => {
         selectorRoot.each(selector => {
             rewriteSelector(id, selector, selectorRoot);
         });
@@ -16770,7 +16386,7 @@ function rewriteSelector(id, selector, selectorRoot) {
                     // insert a space combinator before if it doesn't already have one
                     const prev = selector.at(selector.index(n) - 1);
                     if (!prev || !isSpaceCombinator(prev)) {
-                        selector.insertAfter(n, selectorParser.combinator({
+                        selector.insertAfter(n, parser.combinator({
                             value: ' '
                         }));
                     }
@@ -16832,7 +16448,7 @@ function rewriteSelector(id, selector, selectorRoot) {
         selector.insertAfter(
         // If node is null it means we need to inject [id] at the start
         // insertAfter can handle `null` here
-        node, selectorParser.attribute({
+        node, parser.attribute({
             attribute: id,
             value: id,
             raws: {},
@@ -16997,7 +16613,7 @@ const processors = {
     stylus: styl
 };
 
-const postcss = require('postcss');
+let postcss;
 function compileStyle(options) {
     return doCompileStyle(Object.assign(Object.assign({}, options), { isAsync: false }));
 }
@@ -17032,6 +16648,7 @@ function doCompileStyle(options) {
         errors.push(...preProcessedSource.errors);
     }
     try {
+        postcss || (postcss = require('postcss'));
         result = postcss(plugins).process(source, postCSSOptions);
         // In async mode, return a promise.
         if (options.isAsync) {
