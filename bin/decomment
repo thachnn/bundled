@@ -1,90 +1,139 @@
 #!/usr/bin/env node
 'use strict';
 
-const fs = require('fs'),
+let acorn;
+try {
+  acorn = require('acorn');
+} catch (_) {
   acorn = require('../vendor/acorn');
+}
 
 function decomment(code, options = {}) {
   const keep = options.keep,
-    ranges = [];
+    ranges = [],
+    noHashBang = code[0] !== '#' || code[1] !== '!';
 
   const opts = Object.assign({ sourceType: 'module' }, options, {
-    onComment: (block, text, start, end) =>
-      (start > 0 || block || code[0] != '#') && !(keep && keep.test(text)) && ranges.push([start, end]),
+    onComment: (isBlock, text, start, end) =>
+      (start > 0 || isBlock || noHashBang) && !(keep && keep.test(text)) && ranges.push([start, end]),
   });
-  acorn.parse(code, (delete opts.keep, opts));
 
-  for (let cmt, s1, s2, m1, m2; ranges.length; ) {
-    cmt = ranges.pop();
+  delete opts.keep;
+  acorn.parse(code, opts);
 
-    s1 = code.substring(0, cmt[0]);
-    s2 = code.substring(cmt[1]);
-
-    if (!(m2 = /^([^\S\r\n]*)(\r?\n|\r|$)/.exec(s2)))
-      !(m2 = /^[^\S\r\n]+/.exec(s2)) ? (s1 = s1.replace(/(\S)[^\S\r\n]+$/, '$1')) : (s2 = s2.substring(m2[0].length));
-    else if (!(m1 = /(^|\r?\n|\r)([^\S\r\n]*)$/.exec(s1))) {
-      s1 = s1.replace(/[^\S\r\n]+$/, '');
-      !m2[1].length || (s2 = s2.substring(m2[1].length));
-    } else {
-      !m1[2].length || (s1 = s1.substring(0, s1.length - m1[2].length));
-      !m2[0].length || (s2 = s2.substring(m2[0].length));
+  // Expand ranges
+  const codeLength = code.length;
+  const seekEOL = (i) => {
+    for (; i < codeLength; i++) {
+      if (code[i] === '\n') return [i, i + 1];
+      if (code[i] === '\r') return [i, i + (code[i + 1] === '\n' ? 2 : 1)];
+      if (code[i].trim().length > 0) return i;
     }
+  };
+  let lastIndex = 0;
+  const seekBOL = (i) => {
+    while (--i >= lastIndex) {
+      if (code[i] === '\n' || code[i] === '\r') return [i + 1];
+      if (code[i].trim().length > 0) return i + 1;
+    }
+  };
 
-    code = s1 + s2;
+  for (const loc of ranges) {
+    const right = seekEOL(loc[1]),
+      left = seekBOL(loc[0]);
+
+    // comment at the EOL
+    if (typeof right != 'number')
+      if (typeof left != 'number') {
+        // from the beginning
+        loc[0] = !left ? lastIndex : left[0];
+        loc[1] = !right ? codeLength : right[1];
+      } else {
+        // trim trailing space
+        loc[0] = left;
+        loc[1] = !right ? codeLength : right[0];
+      }
+    else if (right > loc[1]) loc[1] = right; // left comment
+    else if (typeof left == 'number') loc[0] = left;
+
+    lastIndex = loc[1];
   }
 
-  return code;
+  // String builder
+  const s = [];
+  lastIndex = 0;
+
+  for (const loc of ranges) {
+    lastIndex < loc[0] && s.push(code.slice(lastIndex, loc[0]));
+    lastIndex = loc[1];
+  }
+  lastIndex < codeLength && s.push(code.slice(lastIndex));
+
+  return s.join('');
 }
 
 require.main === module ? main(process.argv.slice(2)) : (module.exports = decomment.default = decomment);
 
-function help(status = 0) {
-  (status === 0 ? console.log : console.error)(
-    'Usage: decomment [--ecma[3-...|2015-...]] [-o|--output <outfile>] [-i|--inplace] [-h|--help] [--] [infile]'
+function help(exitCode = 0) {
+  console[exitCode ? 'error' : 'log'](
+    [
+      'Usage: decomment [options] [[--] <js file> | -]',
+      '',
+      '  --ecma<3|4|5|...|2015|2016|2017|...>',
+      '  -i, --inplace        Edit files in place',
+      '  -o, --output <file>  Write to file instead of stdout',
+      '  --allow-hash-bang',
+      '  --allow-return-outside-function',
+      '  --script             Specify source type is "script" instead of "module"',
+      '  --keep <RegExp>      E.g. "' + /(^\s*[@#]__|^[*\s]*!\s*\S)/.source + '"',
+      '  -h, --help           Output usage information',
+    ].join('\n')
   );
 
-  process.exit(status);
+  process.exit(exitCode);
 }
 
-function parseOpts(args) {
+function parseArgs(args) {
   const cmd = { opts: {} };
 
   for (let arg, m; args.length; ) {
     if (!(arg = args.shift())) continue;
 
-    if ((arg === '-' || arg[0] !== '-') && !cmd.infile) cmd.infile = arg;
-    else if (arg === '--' && !cmd.infile && args.length === 1) cmd.forceFile = !!(cmd.infile = args.shift());
+    if (arg === '--' && !cmd.inFile && args.length > 0) cmd.inFile = args.shift();
+    else if ((arg === '-' || arg[0] !== '-') && !cmd.inFile) cmd.inFile = arg !== '-' ? arg : false; // STDIN
     else if (arg === '--help' || arg === '-h' || arg === '-?') return help();
-    else if ((arg === '--output' || arg === '-o') && args.length) cmd.outfile = args.shift();
+    else if ((arg === '--output' || arg === '-o') && args.length) cmd.outFile = args.shift();
     else if (arg === '--inplace' || arg === '-i') cmd.inplace = true;
     else if (arg === '--keep' && args.length) cmd.opts.keep = new RegExp(args.shift());
     else if (arg === '--script') cmd.opts.sourceType = 'script';
-    else if ((m = arg.match(/^--((allow|preserve)[A-Za-z]+)$/))) cmd.opts[m[1]] = true;
-    else if ((m = arg.match(/^--ecma(\d+)$/))) cmd.opts.ecmaVersion = +m[1];
-    else return help(1);
+    else if ((m = arg.match(/^--ecma(\d+)\b/))) cmd.opts.ecmaVersion = +m[1];
+    else if ((m = arg.match(/^--((allow|preserve)[A-Za-z_-]+)\b/))) cmd.opts[toCamelCase(m[1])] = true;
+    else return help(2);
   }
 
   return cmd;
 }
 
+function toCamelCase(str) {
+  return str.replace(/[_-]+([a-z])/g, (_, c) => c.toUpperCase());
+}
+
 function main(args) {
-  const cmd = parseOpts(args);
+  const cmd = parseArgs(args),
+    fs = require('fs');
+
   const run = (code) => {
     code = decomment(code, cmd.opts);
 
-    if (!cmd.outfile && cmd.inplace && cmd.forceFile) cmd.outfile = cmd.infile;
-    if (!cmd.outfile) return console.log(code);
-
-    fs.writeFileSync(cmd.outfile, code);
+    if (!cmd.outFile && cmd.inplace && cmd.inFile) cmd.outFile = cmd.inFile;
+    cmd.outFile ? fs.writeFileSync(cmd.outFile, code) : console.log(code);
   };
 
-  if (cmd.forceFile || (cmd.infile && cmd.infile !== '-')) {
-    cmd.forceFile = true;
-    run(fs.readFileSync(cmd.infile, 'utf8'));
-  } else {
-    let data = '';
+  if (cmd.inFile) run(fs.readFileSync(cmd.inFile, 'utf8'));
+  else {
+    const data = [];
     process.stdin.resume();
-    process.stdin.on('data', (chunk) => (data += chunk));
-    process.stdin.on('end', () => run(data));
+    process.stdin.on('data', (chunk) => data.push(chunk));
+    process.stdin.on('end', () => run(data.join('')));
   }
 }
