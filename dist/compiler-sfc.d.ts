@@ -340,11 +340,11 @@ export declare interface SFCScriptBlock extends SFCBlock {
     bindings?: BindingMetadata;
     imports?: Record<string, ImportBinding>;
     /**
-     * import('\@babel/types').Statement
+     * import("\@babel/types").Statement
      */
     scriptAst?: any[];
     /**
-     * import('\@babel/types').Statement
+     * import("\@babel/types").Statement
      */
     scriptSetupAst?: any[];
 }
