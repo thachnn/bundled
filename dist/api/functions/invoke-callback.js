@@ -1,6 +1,3 @@
-"use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.build = void 0;
 const onlyCountsSync = (state) => {
     return state.counts;
 };
@@ -35,7 +32,7 @@ function report(error, callback, output, suppressErrors) {
     else
         callback(null, output);
 }
-function build(options, isSynchronous) {
+export function build(options, isSynchronous) {
     const { onlyCounts, group, maxFiles } = options;
     if (onlyCounts)
         return isSynchronous
@@ -54,4 +51,3 @@ function build(options, isSynchronous) {
             ? defaultSync
             : defaultAsync;
 }
-exports.build = build;

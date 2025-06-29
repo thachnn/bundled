@@ -17,7 +17,7 @@ export declare class Builder<TReturnType extends Output = PathsOutput, TGlobFunc
     withFullPaths(): this;
     withErrors(): this;
     withSymlinks({ resolvePaths }?: {
-        resolvePaths?: boolean | undefined;
+        resolvePaths?: boolean;
     }): this;
     withAbortSignal(signal: AbortSignal): this;
     normalize(): this;

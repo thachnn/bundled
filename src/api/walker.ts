@@ -46,6 +46,7 @@ export class Walker<TOutput extends Output> {
       queue: new Queue((error, state) =>
         this.callbackInvoker(state, error, callback)
       ),
+      /** @type {Map<string, string>} */
       symlinks: new Map(),
       visited: [""].slice(0, 0),
     };
@@ -75,7 +76,7 @@ export class Walker<TOutput extends Output> {
     return this.isSynchronous ? this.callbackInvoker(this.state, null) : null;
   }
 
-  private walk = (entries: Dirent[], directoryPath: string, depth: number) => {
+  private walk(entries: Dirent[], directoryPath: string, depth: number) {
     const {
       paths,
       options: {
@@ -149,5 +150,5 @@ export class Walker<TOutput extends Output> {
     }
 
     this.groupFiles(this.state.groups, directoryPath, files);
-  };
+  }
 }

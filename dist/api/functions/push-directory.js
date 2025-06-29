@@ -1,6 +1,3 @@
-"use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.build = void 0;
 function pushDirectoryWithRelativePath(root) {
     return function (directoryPath, paths) {
         paths.push(directoryPath.substring(root.length) || ".");
@@ -24,7 +21,7 @@ const pushDirectoryFilter = (directoryPath, paths, filters) => {
     }
 };
 const empty = () => { };
-function build(root, options) {
+export function build(root, options) {
     const { includeDirs, filters, relativePaths } = options;
     if (!includeDirs)
         return empty;
@@ -34,4 +31,3 @@ function build(root, options) {
             : pushDirectoryWithRelativePath(root);
     return filters && filters.length ? pushDirectoryFilter : pushDirectory;
 }
-exports.build = build;

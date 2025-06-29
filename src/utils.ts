@@ -39,9 +39,9 @@ export function normalizePath(
 
   if (path === ".") return "";
 
-  const needsSeperator = path[path.length - 1] !== pathSeparator;
+  const needsSeparator = path[path.length - 1] !== pathSeparator;
   return convertSlashes(
-    needsSeperator ? path + pathSeparator : path,
+    needsSeparator ? path + pathSeparator : path,
     pathSeparator
   );
 }

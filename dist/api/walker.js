@@ -1,65 +1,29 @@
-"use strict";
-var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    var desc = Object.getOwnPropertyDescriptor(m, k);
-    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
-      desc = { enumerable: true, get: function() { return m[k]; } };
-    }
-    Object.defineProperty(o, k2, desc);
-}) : (function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    o[k2] = m[k];
-}));
-var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
-    Object.defineProperty(o, "default", { enumerable: true, value: v });
-}) : function(o, v) {
-    o["default"] = v;
-});
-var __importStar = (this && this.__importStar) || function (mod) {
-    if (mod && mod.__esModule) return mod;
-    var result = {};
-    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
-    __setModuleDefault(result, mod);
-    return result;
-};
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.Walker = void 0;
-const path_1 = require("path");
-const utils_1 = require("../utils");
-const joinPath = __importStar(require("./functions/join-path"));
-const pushDirectory = __importStar(require("./functions/push-directory"));
-const pushFile = __importStar(require("./functions/push-file"));
-const getArray = __importStar(require("./functions/get-array"));
-const groupFiles = __importStar(require("./functions/group-files"));
-const resolveSymlink = __importStar(require("./functions/resolve-symlink"));
-const invokeCallback = __importStar(require("./functions/invoke-callback"));
-const walkDirectory = __importStar(require("./functions/walk-directory"));
-const queue_1 = require("./queue");
-const counter_1 = require("./counter");
-class Walker {
-    root;
-    isSynchronous;
-    state;
-    joinPath;
-    pushDirectory;
-    pushFile;
-    getArray;
-    groupFiles;
-    resolveSymlink;
-    walkDirectory;
-    callbackInvoker;
+import { basename, dirname } from "path";
+import { isRootDirectory, normalizePath } from "../utils";
+import * as joinPath from "./functions/join-path";
+import * as pushDirectory from "./functions/push-directory";
+import * as pushFile from "./functions/push-file";
+import * as getArray from "./functions/get-array";
+import * as groupFiles from "./functions/group-files";
+import * as resolveSymlink from "./functions/resolve-symlink";
+import * as invokeCallback from "./functions/invoke-callback";
+import * as walkDirectory from "./functions/walk-directory";
+import { Queue } from "./queue";
+import { Counter } from "./counter";
+export class Walker {
     constructor(root, options, callback) {
         this.isSynchronous = !callback;
         this.callbackInvoker = invokeCallback.build(options, this.isSynchronous);
-        this.root = (0, utils_1.normalizePath)(root, options);
+        this.root = normalizePath(root, options);
         this.state = {
-            root: (0, utils_1.isRootDirectory)(this.root) ? this.root : this.root.slice(0, -1),
+            root: isRootDirectory(this.root) ? this.root : this.root.slice(0, -1),
             // Perf: we explicitly tell the compiler to optimize for String arrays
             paths: [""].slice(0, 0),
             groups: [],
-            counts: new counter_1.Counter(),
+            counts: new Counter(),
             options,
-            queue: new queue_1.Queue((error, state) => this.callbackInvoker(state, error, callback)),
+            queue: new Queue((error, state) => this.callbackInvoker(state, error, callback)),
+            /** @type {Map<string, string>} */
             symlinks: new Map(),
             visited: [""].slice(0, 0),
         };
@@ -80,7 +44,7 @@ class Walker {
         this.walkDirectory(this.state, this.root, this.root, this.state.options.maxDepth, this.walk);
         return this.isSynchronous ? this.callbackInvoker(this.state, null) : null;
     }
-    walk = (entries, directoryPath, depth) => {
+    walk(entries, directoryPath, depth) {
         const { paths, options: { filters, resolveSymlinks, excludeSymlinks, exclude, maxFiles, signal, useRealPaths, pathSeparator, }, } = this.state;
         if ((signal && signal.aborted) || (maxFiles && paths.length > maxFiles))
             return;
@@ -103,7 +67,7 @@ class Walker {
                 let path = joinPath.joinPathWithBasePath(entry.name, directoryPath);
                 this.resolveSymlink(path, this.state, (stat, resolvedPath) => {
                     if (stat.isDirectory()) {
-                        resolvedPath = (0, utils_1.normalizePath)(resolvedPath, this.state.options);
+                        resolvedPath = normalizePath(resolvedPath, this.state.options);
                         if (exclude &&
                             exclude(entry.name, useRealPaths ? resolvedPath : path + pathSeparator))
                             return;
@@ -111,8 +75,8 @@ class Walker {
                     }
                     else {
                         resolvedPath = useRealPaths ? resolvedPath : path;
-                        const filename = (0, path_1.basename)(resolvedPath);
-                        const directoryPath = (0, utils_1.normalizePath)((0, path_1.dirname)(resolvedPath), this.state.options);
+                        const filename = basename(resolvedPath);
+                        const directoryPath = normalizePath(dirname(resolvedPath), this.state.options);
                         resolvedPath = this.joinPath(filename, directoryPath);
                         this.pushFile(resolvedPath, files, this.state.counts, filters);
                     }
@@ -120,6 +84,5 @@ class Walker {
             }
         }
         this.groupFiles(this.state.groups, directoryPath, files);
-    };
+    }
 }
-exports.Walker = Walker;

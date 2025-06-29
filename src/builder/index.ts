@@ -14,10 +14,10 @@ import { APIBuilder } from "./api-builder";
 import type picomatch from "picomatch";
 import type { Matcher, PicomatchOptions } from "picomatch";
 
-var pm: typeof picomatch | null = null;
+let pm: typeof picomatch | null = null;
 /* c8 ignore next 6 */
 try {
-  require.resolve("picomatch");
+  //require.resolve("picomatch");
   pm = require("picomatch");
 } catch (_e) {
   // do nothing
@@ -172,7 +172,7 @@ export class Builder<
       throw new Error("Please specify a glob function to use glob matching.");
     }
 
-    var isMatch = this.globCache[patterns.join("\0")];
+    let isMatch = this.globCache[patterns.join("\0")];
     if (!isMatch) {
       isMatch = globFn(patterns, ...options);
       this.globCache[patterns.join("\0")] = isMatch;

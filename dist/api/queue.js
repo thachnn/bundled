@@ -1,16 +1,12 @@
-"use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.Queue = void 0;
 /**
  * This is a custom stateless queue to track concurrent async fs calls.
  * It increments a counter whenever a call is queued and decrements it
  * as soon as it completes. When the counter hits 0, it calls onQueueEmpty.
  */
-class Queue {
-    onQueueEmpty;
-    count = 0;
+export class Queue {
     constructor(onQueueEmpty) {
         this.onQueueEmpty = onQueueEmpty;
+        this.count = 0;
     }
     enqueue() {
         this.count++;
@@ -20,4 +16,3 @@ class Queue {
             this.onQueueEmpty(error, output);
     }
 }
-exports.Queue = Queue;

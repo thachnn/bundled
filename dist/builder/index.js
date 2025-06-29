@@ -1,27 +1,23 @@
-"use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.Builder = void 0;
-const path_1 = require("path");
-const api_builder_1 = require("./api-builder");
-var pm = null;
+import { sep } from "path";
+import { APIBuilder } from "./api-builder";
+let pm = null;
 /* c8 ignore next 6 */
 try {
-    require.resolve("picomatch");
+    //require.resolve("picomatch");
     pm = require("picomatch");
 }
 catch (_e) {
     // do nothing
 }
-class Builder {
-    globCache = {};
-    options = {
-        maxDepth: Infinity,
-        suppressErrors: true,
-        pathSeparator: path_1.sep,
-        filters: [],
-    };
-    globFunction;
+export class Builder {
     constructor(options) {
+        this.globCache = {};
+        this.options = {
+            maxDepth: Infinity,
+            suppressErrors: true,
+            pathSeparator: sep,
+            filters: [],
+        };
         this.options = { ...this.options, ...options };
         this.globFunction = this.options.globFunction;
     }
@@ -93,7 +89,7 @@ class Builder {
         return this;
     }
     crawl(root) {
-        return new api_builder_1.APIBuilder(root || ".", this.options);
+        return new APIBuilder(root || ".", this.options);
     }
     withGlobFunction(fn) {
         // cast this since we don't have the new type params yet
@@ -110,7 +106,7 @@ class Builder {
     /* c8 ignore next 4 */
     crawlWithOptions(root, options) {
         this.options = { ...this.options, ...options };
-        return new api_builder_1.APIBuilder(root || ".", this.options);
+        return new APIBuilder(root || ".", this.options);
     }
     glob(...patterns) {
         if (this.globFunction) {
@@ -124,7 +120,7 @@ class Builder {
         if (!globFn) {
             throw new Error("Please specify a glob function to use glob matching.");
         }
-        var isMatch = this.globCache[patterns.join("\0")];
+        let isMatch = this.globCache[patterns.join("\0")];
         if (!isMatch) {
             isMatch = globFn(patterns, ...options);
             this.globCache[patterns.join("\0")] = isMatch;
@@ -133,4 +129,3 @@ class Builder {
         return this;
     }
 }
-exports.Builder = Builder;

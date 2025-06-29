@@ -1,6 +1,3 @@
-"use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.build = void 0;
 const pushFileFilterAndCount = (filename, _paths, counts, filters) => {
     if (filters.every((filter) => filter(filename, false)))
         counts.files++;
@@ -16,7 +13,7 @@ const pushFile = (filename, paths) => {
     paths.push(filename);
 };
 const empty = () => { };
-function build(options) {
+export function build(options) {
     const { excludeFiles, filters, onlyCounts } = options;
     if (excludeFiles)
         return empty;
@@ -30,4 +27,3 @@ function build(options) {
         return pushFile;
     }
 }
-exports.build = build;
