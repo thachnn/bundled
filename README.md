@@ -19,7 +19,7 @@
 <br>
 
 <p align="center">
-<strong>Blazing fast and accurate glob matcher written in JavaScript.</strong></br>
+<strong>Blazing fast and accurate glob matcher written in JavaScript.</strong><br>
 <em>No dependencies and full support for standard and extended Bash glob features, including braces, extglobs, POSIX brackets, and regular expressions.</em>
 </p>
 
@@ -30,7 +30,7 @@
 
 * **Lightweight** - No dependencies
 * **Minimal** - Tiny API surface. Main export is a function that takes a glob pattern and returns a matcher function.
-* **Fast** - Loads in about 2ms (that's several times faster than a [single frame of a HD movie](http://www.endmemo.com/sconvert/framespersecondframespermillisecond.php) at 60fps)
+* **Fast** - Loads in about 2ms (that's several times faster than a [single frame of an HD movie](http://www.endmemo.com/sconvert/framespersecondframespermillisecond.php) at 60fps)
 * **Performant** - Use the returned matcher function to speed up repeat matching (like when watching files)
 * **Accurate matching** - Using wildcards (`*` and `?`), globstars (`**`) for nested directories, [advanced globbing](#advanced-globbing) with extglobs, braces, and POSIX brackets, and support for escaping special characters with `\` or quotes.
 * **Well tested** - Thousands of unit tests
@@ -107,7 +107,7 @@ console.log(isMatch('a/b.js')); //=> false
 
 ## API
 
-### [picomatch](lib/picomatch.js#L31)
+### [picomatch](posix.js#L1760)
 
 Creates a matcher function from one or more glob patterns. The returned function takes a string to match as its first argument, and returns true if the string is a match. The returned matcher function also takes a boolean as the second argument that, when true, returns an object with additional information.
 
@@ -145,7 +145,7 @@ console.log(isMatch('a\\b')); //=> true
 console.log(isMatch('a/b')); //=> true
 ```
 
-### [.test](lib/picomatch.js#L116)
+### [.test](posix.js#L1844)
 
 Test `input` with the given `regex`. This is used by the main `picomatch()` function to test the input string.
 
@@ -165,7 +165,7 @@ console.log(picomatch.test('foo/bar', /^(?:([^/]*?)\/([^/]*?))$/));
 // { isMatch: true, match: [ 'foo/', 'foo', 'bar' ], output: 'foo/bar' }
 ```
 
-### [.matchBase](lib/picomatch.js#L160)
+### [.matchBase](posix.js#L1888)
 
 Match the basename of a filepath.
 
@@ -180,10 +180,10 @@ Match the basename of a filepath.
 ```js
 const picomatch = require('picomatch');
 // picomatch.matchBase(input, glob[, options]);
-console.log(picomatch.matchBase('foo/bar.js', '*.js'); // true
+console.log(picomatch.matchBase('foo/bar.js', '*.js')); // true
 ```
 
-### [.isMatch](lib/picomatch.js#L182)
+### [.isMatch](posix.js#L1910)
 
 Returns true if **any** of the given glob `patterns` match the specified `string`.
 
@@ -204,7 +204,7 @@ console.log(picomatch.isMatch('a.a', ['b.*', '*.a'])); //=> true
 console.log(picomatch.isMatch('a.a', 'b.*')); //=> false
 ```
 
-### [.parse](lib/picomatch.js#L198)
+### [.parse](posix.js#L704)
 
 Parse a glob pattern to create the source string for a regular expression.
 
@@ -218,10 +218,12 @@ Parse a glob pattern to create the source string for a regular expression.
 
 ```js
 const picomatch = require('picomatch');
-const result = picomatch.parse(pattern[, options]);
+// picomatch.parse(pattern[, options]);
+
+const result = picomatch.parse('*.js');
 ```
 
-### [.scan](lib/picomatch.js#L230)
+### [.scan](posix.js#L324)
 
 Scan a glob pattern to separate the pattern into segments.
 
@@ -239,6 +241,7 @@ const picomatch = require('picomatch');
 
 const result = picomatch.scan('!./foo/*.js');
 console.log(result);
+result ===
 { prefix: '!./',
   input: '!./foo/*.js',
   start: 3,
@@ -252,7 +255,7 @@ console.log(result);
   negated: true }
 ```
 
-### [.compileRe](lib/picomatch.js#L244)
+### [.compileRe](posix.js#L1972)
 
 Compile a regular expression from the `state` object returned by the
 [parse()](#parse) method.
@@ -265,7 +268,7 @@ Compile a regular expression from the `state` object returned by the
 * `returnState` **{Boolean}**: Adds the state to a `state` property on the returned regex. Useful for implementors and debugging.
 * `returns` **{RegExp}**
 
-### [.makeRe](lib/picomatch.js#L285)
+### [.makeRe](posix.js#L2013)
 
 Create a regular expression from a parsed glob pattern.
 
@@ -288,7 +291,7 @@ console.log(picomatch.compileRe(state));
 //=> /^(?:(?!\.)(?=.)[^/]*?\.js)$/
 ```
 
-### [.toRegex](lib/picomatch.js#L320)
+### [.toRegex](posix.js#L2048)
 
 Create a regular expression from the given regex source string.
 
@@ -509,7 +512,7 @@ isMatch('baz');
 Picomatch's matching features and expected results in unit tests are based on Bash's unit tests and the Bash 4.3 specification, with the following exceptions:
 
 * Bash will match `foo/bar/baz` with `*`. Picomatch only matches nested directories with `**`.
-* Bash greedily matches with negated extglobs. For example, Bash 4.3 says that `!(foo)*` should match `foo` and `foobar`, since the trailing `*` bracktracks to match the preceding pattern. This is very memory-inefficient, and IMHO, also incorrect. Picomatch would return `false` for both `foo` and `foobar`.
+* Bash greedily matches with negated extglobs. For example, Bash 4.3 says that `!(foo)*` should match `foo` and `foobar`, since the trailing `*` backtracks to match the preceding pattern. This is very memory-inefficient, and IMHO, also incorrect. Picomatch would return `false` for both `foo` and `foobar`.
 
 <br>
 
@@ -517,7 +520,7 @@ Picomatch's matching features and expected results in unit tests are based on Ba
 
 * [extglobs](#extglobs)
 * [POSIX brackets](#posix-brackets)
-* [Braces](#brace-expansion)
+* [Braces](#braces)
 
 #### Extglobs
 

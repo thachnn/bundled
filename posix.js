@@ -175,6 +175,7 @@ function globChars(win32) {
   return win32 === true ? WINDOWS_CHARS : POSIX_CHARS;
 }
 
+// noinspection JSUnusedGlobalSymbols
 const constants = {
   __proto__: null,
   MAX_LENGTH,
