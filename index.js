@@ -1,11 +1,11 @@
 'use strict';
 
-const pico = require('./lib/picomatch');
-const utils = require('./lib/utils');
+import pico from './posix';
+import * as utils from './lib/utils';
 
 function picomatch(glob, options, returnState = false) {
   // default to os.platform()
-  if (options && (options.windows === null || options.windows === undefined)) {
+  if (options && options.windows == null) {
     // don't mutate the original options object
     options = { ...options, windows: utils.isWindows() };
   }
@@ -14,4 +14,4 @@ function picomatch(glob, options, returnState = false) {
 }
 
 Object.assign(picomatch, pico);
-module.exports = picomatch;
+export default picomatch;

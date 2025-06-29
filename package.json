@@ -20,7 +20,9 @@
   "engines": {
     "node": ">=12"
   },
+  "types": "posix.d.ts",
   "scripts": {
+    "build": "rollup -i lib/picomatch.js -o posix.js -f cjs --generatedCode es2015 --interop esModule --no-freeze --no-generatedCode.symbols",
     "lint": "eslint --cache --cache-location node_modules/.cache/.eslintcache --report-unused-disable-directives --ignore-path .gitignore .",
     "mocha": "mocha --reporter dot",
     "test": "npm run lint && npm run mocha",
