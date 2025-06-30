@@ -211,6 +211,11 @@ function build$2(options, isSynchronous) {
   return isSynchronous ? resolveSymlinks : resolveSymlinksAsync;
 }
 
+/**
+ * @param {string} path
+ * @param {string} resolved
+ * @param {WalkerState} state
+ */
 function isRecursive(path, resolved, state) {
   if (state.options.useRealPaths)
     return isRecursiveUsingRealPaths(resolved, state);
@@ -292,6 +297,10 @@ function build$1(options, isSynchronous) {
 
 const readdirOpts = { withFileTypes: true };
 
+/** @typedef {(
+  state: WalkerState, crawlPath: string, directoryPath: string, depth: number, callback: Function
+) => void} WalkDirectoryFunction */
+/** @type {WalkDirectoryFunction} */
 const walkAsync = (state, crawlPath, directoryPath, currentDepth, callback) => {
   if (currentDepth < 0) return state.queue.dequeue(null, state);
 
@@ -308,6 +317,7 @@ const walkAsync = (state, crawlPath, directoryPath, currentDepth, callback) => {
   });
 };
 
+/** @type {WalkDirectoryFunction} */
 const walkSync = (state, crawlPath, directoryPath, currentDepth, callback) => {
   if (currentDepth < 0) return;
   state.visited.push(crawlPath);
@@ -346,6 +356,7 @@ class Queue {
   }
 }
 
+/** @extends {Counts} */
 class Counter {
   constructor() {
     this._files = 0;
@@ -383,6 +394,7 @@ class Walker {
     this.callbackInvoker = build$1(options, this.isSynchronous);
 
     this.root = normalizePath(root, options);
+    /** @type {WalkerState} */
     this.state = {
       root: isRootDirectory(this.root) ? this.root : this.root.slice(0, -1),
       // Perf: we explicitly tell the compiler to optimize for String arrays
@@ -393,7 +405,6 @@ class Walker {
       queue: new Queue((error, state) =>
         this.callbackInvoker(state, error, callback)
       ),
-      /** @type {Map<string, string>} */
       symlinks: new Map(),
       visited: [""].slice(0, 0),
     };
@@ -410,6 +421,8 @@ class Walker {
     this.groupFiles = build$3(options);
     this.resolveSymlink = build$2(options, this.isSynchronous);
     this.walkDirectory = build(this.isSynchronous);
+
+    this.walk = this.walk.bind(this);
   }
 
   start() {
@@ -519,6 +532,7 @@ function sync(root, options) {
   return walker.start();
 }
 
+// noinspection JSUnusedGlobalSymbols
 class APIBuilder {
   constructor(root, options) {
     this.root = root;
@@ -547,6 +561,7 @@ try {
   // do nothing
 }
 
+// noinspection JSUnusedGlobalSymbols
 class Builder {
   constructor(options) {
     this.globCache = {};

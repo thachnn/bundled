@@ -1,5 +1,6 @@
 <p align="center">
 <img src="https://github.com/thecodrr/fdir/raw/master/assets/fdir.gif" width="75%"/>
+</p>
 
 <h1 align="center">The Fastest Directory Crawler & Globber for NodeJS</h1>
 <p align="center">
@@ -11,7 +12,6 @@
   <a href="https://www.producthunt.com/posts/fdir-every-millisecond-matters"><img src="https://img.shields.io/badge/ProductHunt-Upvote-red?style=for-the-badge&logo=product-hunt"/></a>
   <a href="https://dev.to/thecodrr/how-i-wrote-the-fastest-directory-crawler-ever-3p9c"><img src="https://img.shields.io/badge/dev.to-Read%20Blog-black?style=for-the-badge&logo=dev.to"/></a>
   <a href="./LICENSE"><img src="https://img.shields.io/github/license/thecodrr/fdir?style=for-the-badge"/></a>
-</p>
 </p>
 
 ⚡ **The Fastest:** Nothing similar (in the NodeJS world) beats `fdir` in speed. It can easily crawl a directory containing **1 million files in < 1 second.**

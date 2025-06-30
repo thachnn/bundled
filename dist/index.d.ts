@@ -1,6 +1,6 @@
 // noinspection JSUnusedGlobalSymbols
 
-import type picomatch from "picomatch";
+import type picomatch = require("picomatch");
 
 type OnQueueEmptyCallback = (error: Error | null, output: WalkerState) => void;
 /**
