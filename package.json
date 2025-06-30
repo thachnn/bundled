@@ -7,6 +7,7 @@
   "scripts": {
     "prepublishOnly": "npm run test && npm run build",
     "build": "tsc --newLine lf --noCheck --noEmitHelpers --outDir dist -t es2019 -m es6 -d src/**/*.ts",
+    "bundle": "rollup -i dist/index.js -o index.js -f es --generatedCode es2015 --no-generatedCode.symbols -e path,fs",
     "format": "prettier --write src __tests__ benchmarks",
     "test": "vitest run __tests__/",
     "test:coverage": "vitest run --coverage __tests__/",
