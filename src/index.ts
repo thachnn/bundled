@@ -271,7 +271,7 @@ function crawl(options: GlobOptions, cwd: string, sync: boolean) {
     return sync ? api.sync() : api.withPromise();
   }
 
-  return sync ? formatPaths(api.sync(), cwd, root) : api.withPromise().then(paths => formatPaths(paths, cwd, root));
+  return sync ? formatPaths(api.sync(), cwd, root) : api.withPromise().then((paths) => formatPaths(paths, cwd, root));
 }
 
 export function glob(patterns: string | string[], options?: Omit<GlobOptions, 'patterns'>): Promise<string[]>;

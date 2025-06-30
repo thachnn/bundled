@@ -68,4 +68,4 @@ globSync(['src/**/*.ts'], { ignore: ['**/*.d.ts'] });
 - [`vitepress`](https://github.com/vuejs/vitepress)
 - [`pkg-pr-new`](https://github.com/stackblitz-labs/pkg.pr.new)
 - Your own project? [Open an issue](https://github.com/SuperchupuDev/tinyglobby/issues)
-if you feel like this list is incomplete.
+  if you feel like this list is incomplete.
