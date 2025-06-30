@@ -1,8 +1,10 @@
+// noinspection JSUnusedGlobalSymbols
+
 declare const convertPathToPattern: (path: string) => string;
 declare const escapePath: (path: string) => string;
 declare function isDynamicPattern(pattern: string, options?: { caseSensitiveMatch: boolean }): boolean;
 
-interface GlobOptions {
+export interface GlobOptions {
   absolute?: boolean;
   cwd?: string;
   patterns?: string | string[];
@@ -17,10 +19,10 @@ interface GlobOptions {
   debug?: boolean;
 }
 
-declare function glob(patterns: string | string[], options?: Omit<GlobOptions, 'patterns'>): Promise<string[]>;
-declare function glob(options: GlobOptions): Promise<string[]>;
+export declare function glob(patterns: string | string[], options?: Omit<GlobOptions, 'patterns'>): Promise<string[]>;
+export declare function glob(options: GlobOptions): Promise<string[]>;
 
-declare function globSync(patterns: string | string[], options?: Omit<GlobOptions, 'patterns'>): string[];
-declare function globSync(options: GlobOptions): string[];
+export declare function globSync(patterns: string | string[], options?: Omit<GlobOptions, 'patterns'>): string[];
+export declare function globSync(options: GlobOptions): string[];
 
-export { type GlobOptions, glob, globSync, convertPathToPattern, escapePath, isDynamicPattern };
+export { convertPathToPattern, escapePath, isDynamicPattern };

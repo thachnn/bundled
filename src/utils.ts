@@ -84,8 +84,8 @@ const splitPatternOptions = { parts: true };
 
 // if a pattern has no slashes outside glob symbols, results.parts is []
 export function splitPattern(path: string): string[] {
-  const result = picomatch.scan(path, splitPatternOptions);
-  return result.parts?.length ? result.parts : [path];
+  const result = picomatch.scan(path, splitPatternOptions).parts;
+  return result?.length ? result : [path];
 }
 // #endregion
 

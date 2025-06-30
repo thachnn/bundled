@@ -1,7 +1,7 @@
-import path, { posix } from 'node:path';
+import path, { posix } from 'path';
 import { type Options as FdirOptions, fdir } from 'fdir';
 import picomatch from 'picomatch';
-import { escapePath, getPartialMatcher, isDynamicPattern, log, splitPattern } from './utils.ts';
+import { escapePath, getPartialMatcher, isDynamicPattern, log, splitPattern } from './utils';
 
 const PARENT_DIRECTORY = /^(\/?\.\.)+/;
 const ESCAPING_BACKSLASHES = /\\(?=[()[\]{}!*+?@|])/g;
@@ -154,8 +154,11 @@ function formatPaths(paths: string[], cwd: string, root: string) {
   return paths;
 }
 
-function crawl(options: GlobOptions, cwd: string, sync: false): Promise<string[]>;
-function crawl(options: GlobOptions, cwd: string, sync: true): string[];
+function crawl<T extends boolean>(
+  options: GlobOptions,
+  cwd: string,
+  sync: T
+): T extends false ? Promise<string[]> : string[];
 function crawl(options: GlobOptions, cwd: string, sync: boolean) {
   if (process.env.TINYGLOBBY_DEBUG) {
     options.debug = true;
@@ -274,39 +277,37 @@ function crawl(options: GlobOptions, cwd: string, sync: boolean) {
   return sync ? formatPaths(api.sync(), cwd, root) : api.withPromise().then((paths) => formatPaths(paths, cwd, root));
 }
 
+function _glob<T extends boolean>(
+  patternsOrOptions: string | string[] | GlobOptions,
+  options: GlobOptions | undefined,
+  sync: T
+): T extends false ? Promise<string[]> : string[] {
+  if (patternsOrOptions && options?.patterns) {
+    throw new Error('Cannot pass patterns as both an argument and an option');
+  }
+
+  const opts =
+    Array.isArray(patternsOrOptions) || typeof patternsOrOptions === 'string'
+      ? { ...options, patterns: patternsOrOptions }
+      : patternsOrOptions;
+  const cwd = opts.cwd ? path.resolve(opts.cwd).replace(BACKSLASHES, '/') : process.cwd().replace(BACKSLASHES, '/');
+
+  return crawl(opts, cwd, sync);
+}
+
 export function glob(patterns: string | string[], options?: Omit<GlobOptions, 'patterns'>): Promise<string[]>;
 export function glob(options: GlobOptions): Promise<string[]>;
 export async function glob(
   patternsOrOptions: string | string[] | GlobOptions,
   options?: GlobOptions
 ): Promise<string[]> {
-  if (patternsOrOptions && options?.patterns) {
-    throw new Error('Cannot pass patterns as both an argument and an option');
-  }
-
-  const opts =
-    Array.isArray(patternsOrOptions) || typeof patternsOrOptions === 'string'
-      ? { ...options, patterns: patternsOrOptions }
-      : patternsOrOptions;
-  const cwd = opts.cwd ? path.resolve(opts.cwd).replace(BACKSLASHES, '/') : process.cwd().replace(BACKSLASHES, '/');
-
-  return crawl(opts, cwd, false);
+  return _glob(patternsOrOptions, options, false);
 }
 
 export function globSync(patterns: string | string[], options?: Omit<GlobOptions, 'patterns'>): string[];
 export function globSync(options: GlobOptions): string[];
 export function globSync(patternsOrOptions: string | string[] | GlobOptions, options?: GlobOptions): string[] {
-  if (patternsOrOptions && options?.patterns) {
-    throw new Error('Cannot pass patterns as both an argument and an option');
-  }
-
-  const opts =
-    Array.isArray(patternsOrOptions) || typeof patternsOrOptions === 'string'
-      ? { ...options, patterns: patternsOrOptions }
-      : patternsOrOptions;
-  const cwd = opts.cwd ? path.resolve(opts.cwd).replace(BACKSLASHES, '/') : process.cwd().replace(BACKSLASHES, '/');
-
-  return crawl(opts, cwd, true);
+  return _glob(patternsOrOptions, options, true);
 }
 
-export { convertPathToPattern, escapePath, isDynamicPattern } from './utils.ts';
+export { convertPathToPattern, escapePath, isDynamicPattern } from './utils';
