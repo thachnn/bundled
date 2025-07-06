@@ -1,6 +1,9 @@
-import path, { posix } from 'path';
-import { fdir } from 'fdir';
-import picomatch from 'picomatch';
+'use strict';
+
+const path = require('path'),
+  { posix } = path;
+const { fdir } = require('fdir');
+const picomatch = require('picomatch');
 
 // #region PARTIAL MATCHER
 const ONLY_PARENT_DIRECTORIES = /^(\/?\.\.)+$/;
@@ -405,4 +408,4 @@ function globSync(patternsOrOptions, options) {
   return _glob(patternsOrOptions, options, true);
 }
 
-export { glob, globSync, convertPathToPattern, escapePath, isDynamicPattern };
+module.exports = { glob, globSync, convertPathToPattern, escapePath, isDynamicPattern };
