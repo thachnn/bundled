@@ -1,16 +1,16 @@
 !(function (global, factory) {
   // prettier-ignore
-  typeof exports == 'object' && typeof module != 'undefined' ? (module.exports = factory(require)) :
-  typeof define == 'function' && define.amd ? define(['require'], factory) :
+  typeof exports == 'object' && typeof module != 'undefined' ? factory(module, require) :
+  typeof define == 'function' && define.amd ? define(['module', 'require'], factory) :
   ((global = typeof globalThis != 'undefined' ? globalThis : global || self).VueTemplateCompiler =
-    factory(function (mod) {
+    factory({}, function (mod) {
       return mod === './build' ? global.VueTemplateCompiler : mod === 'acorn-walk' ? global.acorn.walk : global[mod]
     }))
-})(this, function (require) {
+})(this, function (module, require) {
   'use strict'
 
   var acorn,
-    compiler = require('./build'),
+    compiler = (module.exports = require('./build')),
     original = {}
 
   ;['compile', 'ssrCompile'].forEach(function (method) {
