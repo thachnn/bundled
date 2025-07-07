@@ -1,27 +1,29 @@
 'use strict';
 
-const isObject = (obj) => obj && typeof obj == 'object';
-
-Object.defineProperty(Object.prototype, 'mergeDeep', {
-  value: function (/** @type {?Object} */ obj) {
-    if (isObject(obj))
-      for (const key in obj) {
-        const val = obj[key],
-          t = this[key];
-
-        Array.isArray(t) ? (this[key] = t.concat(val)) : isObject(t) ? t.mergeDeep(val) : (this[key] = val);
-      }
-
-    return this;
-  },
-});
+const isObject = (obj) => obj != null && typeof obj == 'object';
 
 /**
- * @param {...?Object} _objects
- * @return {Object}
+ * @param {Object} target
+ * @param {?Object} source
+ * @returns {Object}
  */
-function mergeDeep(_objects) {
-  return Array.prototype.reduce.call(arguments, (dest, src) => dest.mergeDeep(src), {});
+function mergeDeep(target, source) {
+  if (isObject(source))
+    for (const key in source) {
+      const v = source[key],
+        t = target[key];
+
+      Array.isArray(t) ? (target[key] = t.concat(v)) : isObject(t) ? mergeDeep(t, v) : (target[key] = v);
+    }
+
+  return target;
 }
 
-module.exports = mergeDeep;
+/**
+ * @param {Object} target
+ * @param {...?Object} _sources
+ * @returns {Object}
+ */
+module.exports = function (target, _sources) {
+  return Array.prototype.slice.call(arguments, 1).reduce((dest, src) => mergeDeep(dest, src), target);
+};

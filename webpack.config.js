@@ -22,7 +22,7 @@ const baseTerserOpts = require('./scripts/terser.config.json');
  * @returns {Configuration}
  */
 const webpackConfig = (name, config, clean = name.charAt(0) !== '/') => {
-  config = {
+  const defaults = {
     mode: 'production',
     name: clean ? name : name.substring(1),
     output: { path: path.join(__dirname, 'dist', clean ? name : '') },
@@ -42,24 +42,25 @@ const webpackConfig = (name, config, clean = name.charAt(0) !== '/') => {
         replace: '',
       }),
     ],
-  }.mergeDeep(config);
+  };
+  config = mergeDeep(defaults, config);
 
   config.optimization.minimizer.length > 1 && config.optimization.minimizer.shift();
   return config;
 };
 
-const newTerserPlugin = (opts = {}) =>
-  new TerserPlugin(
-    {
-      cache: true,
-      extractComments: { condition: /(^|\n)[\s*]*@(preserve|lic(ense)?|cc_on)\b|^\**\s*!(?!\s*\**$)/i, banner: false },
-      // parallel: true,
-      terserOptions: { output: { comments: /^\s*\d+\s*$/ } }.mergeDeep(baseTerserOpts),
-    }.mergeDeep(opts)
-  );
+const newTerserPlugin = (opts = {}) => {
+  const defaults = {
+    cache: true,
+    extractComments: { condition: /(^|\n)[\s*]*@(preserve|lic(ense)?|cc_on)\b|^\**\s*!\s*\S/i, banner: false },
+    // parallel: true,
+    terserOptions: mergeDeep({ output: { comments: /^\s*\d+\s*$/ } }, baseTerserOpts),
+  };
+  return new TerserPlugin(mergeDeep(defaults, opts));
+};
 
 const minifyContent = (content, opts = null) =>
-  minify(String(content), mergeDeep(baseTerserOpts, typeof opts == 'object' ? opts : null)).code;
+  minify(String(content), mergeDeep({}, baseTerserOpts, typeof opts == 'object' ? opts : null)).code;
 
 /** @param {(Array.<(ObjectPattern|string)>|ObjectPattern)} patterns */
 const newCopyPlugin = (patterns) => new CopyPlugin([].concat(patterns));
@@ -68,7 +69,7 @@ const newCopyPlugin = (patterns) => new CopyPlugin([].concat(patterns));
 
 Object.defineProperty(String.prototype, 'replaceBulk', {
   value: /** @param {...Array.<(string|RegExp)>} _args */ function (_args) {
-    return Array.prototype.reduce.call(arguments, (s, i) => s.replace(i[0], i[1]), this);
+    return Array.prototype.slice.call(arguments).reduce((s, i) => s.replace(i[0], i[1]), this);
   },
 });
 
