@@ -1,29 +1,1149 @@
---- a/node_modules/ansi-styles/index.js
-+++ b/node_modules/ansi-styles/index.js
-@@ -162,4 +162 @@ function assembleStyles() {
+--- a/.yarnrc.yml
++++ b/.yarnrc.yml
+@@ -6,2 +6,3 @@ conditions:
+ 
++enableTelemetry: false
+ enableGlobalCache: true
+--- a/yarn.lock
++++ b/yarn.lock
+@@ -4711,2 +4711,2 @@ __metadata:
+ 
+-"@jridgewell/resolve-uri@npm:3.1.0, @jridgewell/resolve-uri@npm:^3.0.3":
++"@jridgewell/resolve-uri@npm:^3.0.3, @jridgewell/resolve-uri@npm:^3.1.0":
+@@ -4736,8 +4736 @@ __metadata:
+-"@jridgewell/sourcemap-codec@npm:1.4.14":
+-  version: 1.4.14
+-  resolution: "@jridgewell/sourcemap-codec@npm:1.4.14"
+-  checksum: 61100637b6d173d3ba786a5dff019e1a74b1f394f323c1fee337ff390239f053b87266c7a948777f4b1ee68c01a8ad0ab61e5ff4abb5a012a0b091bec391ab97
+-  languageName: node
+-  linkType: hard
+-
+-"@jridgewell/sourcemap-codec@npm:^1.4.10, @jridgewell/sourcemap-codec@npm:^1.4.13, @jridgewell/sourcemap-codec@npm:^1.4.15":
++"@jridgewell/sourcemap-codec@npm:^1.4.10, @jridgewell/sourcemap-codec@npm:^1.4.13, @jridgewell/sourcemap-codec@npm:^1.4.14, @jridgewell/sourcemap-codec@npm:^1.4.15":
+@@ -4761,6 +4754,6 @@ __metadata:
+-  version: 0.3.18
+-  resolution: "@jridgewell/trace-mapping@npm:0.3.18"
++  version: 0.3.19
++  resolution: "@jridgewell/trace-mapping@npm:0.3.19"
+   dependencies:
+-    "@jridgewell/resolve-uri": 3.1.0
+-    "@jridgewell/sourcemap-codec": 1.4.14
+-  checksum: 0572669f855260808c16fe8f78f5f1b4356463b11d3f2c7c0b5580c8ba1cbf4ae53efe9f627595830856e57dbac2325ac17eb0c3dd0ec42102e6f227cc289c02
++    "@jridgewell/resolve-uri": ^3.1.0
++    "@jridgewell/sourcemap-codec": ^1.4.14
++  checksum: 956a6f0f6fec060fb48c6bf1f5ec2064e13cd38c8be3873877d4b92b4a27ba58289a34071752671262a3e3c202abcc3fa2aac64d8447b4b0fa1ba3c9047f1c20
+--- /dev/null
++++ b/.env
+@@ -0,0 +1,4 @@
++NODE_ENV=production
++BABEL_ENV=production
++STRIP_BABEL_8_FLAG=true
++IS_PUBLISH=true
+--- a/package.json
++++ b/package.json
+@@ -7,3 +7,2 @@
+   "scripts": {
+-    "prepare": "is-ci || husky install",
+     "bootstrap": "make bootstrap",
+@@ -23,18 +22,2 @@
+     "$repo-utils": "link:./scripts/repo-utils",
+-    "@babel/cli": "8.0.0-alpha.2",
+-    "@babel/core": "8.0.0-alpha.2",
+-    "@babel/eslint-config-internal": "workspace:^",
+-    "@babel/eslint-parser": "workspace:^",
+-    "@babel/eslint-plugin-development": "workspace:^",
+-    "@babel/eslint-plugin-development-internal": "workspace:^",
+-    "@babel/plugin-transform-dynamic-import": "8.0.0-alpha.2",
+-    "@babel/plugin-transform-export-namespace-from": "8.0.0-alpha.2",
+-    "@babel/plugin-transform-modules-commonjs": "8.0.0-alpha.2",
+-    "@babel/plugin-transform-object-rest-spread": "8.0.0-alpha.2",
+-    "@babel/plugin-transform-runtime": "8.0.0-alpha.2",
+-    "@babel/preset-env": "8.0.0-alpha.2",
+-    "@babel/preset-typescript": "8.0.0-alpha.2",
+-    "@babel/runtime": "8.0.0-alpha.2",
+-    "@cspotcode/source-map-support": "^0.8.1",
+-    "@eslint/eslintrc": "^2.1.0",
+     "@rollup/plugin-babel": "^6.0.3",
+@@ -45,8 +28,4 @@
+     "@rollup/plugin-terser": "^0.4.3",
+-    "@types/jest": "^29.5.2",
+     "@types/node": "^20.3.3",
+-    "@typescript-eslint/eslint-plugin": "^6.5.0",
+-    "@typescript-eslint/parser": "^6.5.0",
+     "babel-plugin-transform-charcodes": "^0.2.0",
+-    "c8": "^8.0.1",
+     "chalk": "^5.3.0",
+@@ -54,9 +33,2 @@
+     "core-js": "^3.31.1",
+-    "eslint": "^8.44.0",
+-    "eslint-formatter-codeframe": "^7.32.1",
+-    "eslint-import-resolver-node": "^0.3.6",
+-    "eslint-plugin-import": "^2.26.0",
+-    "eslint-plugin-jest": "^27.2.2",
+-    "eslint-plugin-node": "^11.1.0",
+-    "eslint-plugin-prettier": "^5.0.0",
+     "glob": "^10.2.2",
+@@ -65,10 +37,4 @@
+     "gulp-plumber": "^1.2.1",
+-    "husky": "^8.0.3",
+     "import-meta-resolve": "^3.0.0",
+-    "is-ci": "^3.0.1",
+-    "jest": "^29.6.2",
+-    "jest-light-runner": "^0.5.1",
+     "jest-worker": "^29.6.2",
+-    "lint-staged": "^14.0.1",
+-    "mergeiterator": "^1.4.4",
+     "prettier": "^3.0.3",
+@@ -80,3 +46,2 @@
+     "shelljs": "^0.8.5",
+-    "test262-stream": "^1.4.0",
+     "through2": "^4.0.0",
+@@ -85,8 +50,3 @@
+   "workspaces": [
+-    "codemods/*",
+-    "eslint/*",
+-    "packages/*",
+-    "test/esm",
+-    "test/runtime-integration/*",
+-    "benchmark"
++    "packages/*"
+   ],
+@@ -100,5 +60,13 @@
+     "@types/babel__traverse": "link:./nope",
+-    "@babel/parser/@babel/types": "workspace:*",
++    "@babel/preset-env/@babel/core-7.12": "link:./nope",
++    "@babel/helper-define-polyfill-provider/@babel/helper-compilation-targets": "workspace:^",
++    "@babel/helper-plugin-utils": "workspace:^",
++    "@babel/types": "workspace:*",
+     "@babel/plugin-syntax-unicode-sets-regex/@babel/helper-create-regexp-features-plugin": "workspace:*",
+     "babel-plugin-polyfill-corejs2/@babel/compat-data": "workspace:*",
++    "babel-plugin-transform-charcodes/@babel/parser": "workspace:^",
++    "babel-plugin-transform-charcodes/@babel/traverse": "workspace:^",
++    "regenerator-transform/@babel/runtime": "workspace:^",
++    "@rollup/plugin-babel/@babel/helper-module-imports": "workspace:^",
++    "@babel/code-frame": "workspace:^",
+     "chokidar@^3.4.0": "patch:chokidar@npm%3A3.5.3#./.yarn/patches/chokidar-npm-3.5.3-c5f9b0a56a.patch",
+@@ -109,7 +77,2 @@
+   },
+-  "lint-staged": {
+-    "*.{js,cjs,mjs,ts}": [
+-      "eslint --format=codeframe --cache --cache-strategy=content"
+-    ]
+-  },
+   "changelog": {
+--- a/babel.config.js
++++ b/babel.config.js
+@@ -116,5 +116,5 @@ module.exports = function (api) {
+         "packages/babel-runtime/regenerator"
+       );
+-      targets = { ie: 7 };
++      targets = { node: nodeVersion };
+       break;
+     case "rollup":
+@@ -289,5 +289,5 @@ module.exports = function (api) {
+         ],
+       },
+-      convertESM && {
++      (convertESM || env === "standalone") && {
+         exclude: [
+           "./packages/babel-core/src/config/files/import-meta-resolve.ts",
+@@ -295,4 +295,8 @@ module.exports = function (api) {
+         plugins: [pluginImportMetaUrl],
+       },
++      env === "standalone" && {
++        test: /\bnode_modules[\\/].*\.mjs$/i,
++        assumptions: sourceAssumptions,
++      },
+       {
+         test: sources.map(source => normalize(source.replace("/src", "/test"))),
+--- a/scripts/rollup-plugin-babel-source.js
++++ b/scripts/rollup-plugin-babel-source.js
+@@ -16,3 +16,3 @@ const BABEL_SRC_REGEXP =
+ 
+-export default function () {
++export default function (inBrowser = false) {
+   return {
+@@ -20,2 +20,3 @@ export default function () {
+     load(id) {
++      if (!inBrowser) return console.log(id), null;
+       const matches = id.match(BABEL_SRC_REGEXP);
+@@ -50,2 +51,3 @@ export default function () {
+             if (id.endsWith(nodeFileSrc)) {
++              console.log(id, browserFile);
+               if (browserFile === false) {
+@@ -61,3 +63,3 @@ export default function () {
+       }
+-      return null;
++      return console.log(id), null;
+     },
+@@ -97,3 +99,3 @@ export default function () {
+         ? `src/${internal}`
+-        : typeof packageJson["browser"] === "string"
++        : inBrowser && typeof packageJson["browser"] === "string"
+         ? packageJson["browser"]
+--- a/Gulpfile.mjs
++++ b/Gulpfile.mjs
+@@ -79,8 +79,8 @@ function mapToDts(packageName) {
+ 
+-function getIndexFromPackage(name) {
++function getIndexFromPackage(name, main = "index") {
+   try {
+-    fs.statSync(`./${name}/src/index.ts`);
+-    return `${name}/src/index.ts`;
++    fs.statSync(`./${name}/src/${main}.ts`);
++    return `${name}/src/${main}.ts`;
+   } catch {
+-    return `${name}/src/index.js`;
++    return `${name}/src/${main}.js`;
+   }
+@@ -321,3 +321,3 @@ const babelVersion =
+ function buildRollup(packages, buildStandalone) {
+-  const sourcemap = process.env.NODE_ENV === "production";
++  const sourcemap = false && process.env.NODE_ENV === "production";
+   return Promise.all(
+@@ -348,6 +348,9 @@ function buildRollup(packages, buildStandalone) {
+ 
+-        log(`Compiling '${chalk.cyan(input)}' with rollup ...`);
++        log(`Compiling '${chalk.cyan(typeof input == "object" ? Object.values(input) : input)}' with rollup ...`);
+         const bundle = await rollup({
+           input,
+-          external: buildStandalone ? [] : external,
++          external: !buildStandalone ? external : [
++            /@babel\/(types|parser|generator|template|traverse)\b/,
++            ...("common" in Object(input) ? [] : [/@babel\/helper-(validator-identifier|string-parser)\b/]),
++          ],
+           // all node modules are resolved as if they were placed in the n_m folder of package root
+@@ -422,4 +425,5 @@ function buildRollup(packages, buildStandalone) {
+                   "regenerate-unicode-properties"
+-                ).replace(/\\/g, "/") + "/**/*.js", // Must be posix path in rollup 3
++                ).replace(/\\/g, "/") + "/*/*.js", // Must be posix path in rollup 3
+               ],
++              ignoreGlobal: buildStandalone,
+               // Never delegate to the native require()
+@@ -440,9 +444,9 @@ function buildRollup(packages, buildStandalone) {
+               browser: buildStandalone,
+-              exportConditions: buildStandalone ? ["browser"] : [],
++              exportConditions: buildStandalone ? ["node"] : [],
+               // It needs to be set to 'false' when using rollupNodePolyfills
+               // https://github.com/rollup/plugins/issues/772
+-              preferBuiltins: !buildStandalone,
++              preferBuiltins: true || !buildStandalone,
+             }),
+             rollupJson(),
+-            src === "packages/babel-parser" &&
++            false && src === "packages/babel-parser" &&
+               getBabelOutputPlugin({
+@@ -497,3 +501,3 @@ function buildRollup(packages, buildStandalone) {
+               }),
+-            buildStandalone &&
++            false && buildStandalone &&
+               rollupPolyfillNode({
+@@ -511,4 +515,4 @@ function buildRollup(packages, buildStandalone) {
+         await bundle.write({
+-          esModule: true,
+-          file: outputFile,
++          esModule: !buildStandalone, generatedCode: { preset: "es2015", symbols: false },
++          ...(typeof input == "object" ? { dir: path.dirname(outputFile) } : { file: outputFile }),
+           format,
+@@ -518,2 +522,3 @@ function buildRollup(packages, buildStandalone) {
+           interop(id) {
++            if (buildStandalone) return id.startsWith("@babel/") ? "esModule" : "default";
+             // We have manually applied commonjs-esm interop to the source
+@@ -541,3 +546,3 @@ function buildRollup(packages, buildStandalone) {
+         // Only minify @babel/standalone
+-        if (!buildStandalone) {
++        if (true || !buildStandalone) {
+           return;
+@@ -716,12 +721,35 @@ const standaloneBundle = [
+   {
+-    src: "packages/babel-standalone",
+-    format: "umd",
++    name: "Common",
++    filename: "types.js",
++    input: {
++      common: getIndexFromPackage("packages/babel-standalone", "common"),
++      types: getIndexFromPackage("packages/babel-types"),
++      parser: getIndexFromPackage("packages/babel-parser"),
++      generator: getIndexFromPackage("packages/babel-generator"),
++    },
++  },
++  {
++    name: "Template",
++    filename: "traverse.js",
++    input: {
++      template: getIndexFromPackage("packages/babel-template"),
++      traverse: getIndexFromPackage("packages/babel-traverse"),
++    },
++  },
++  {
+     name: "Babel",
+     filename: "babel.js",
+-    dest: "",
+-    version: babelVersion,
+-    envName: "standalone",
+-    input: getIndexFromPackage("packages/babel-standalone"),
++    input: {
++      vendors: getIndexFromPackage("packages/babel-standalone", "vendors"),
++      babel: getIndexFromPackage("packages/babel-standalone"),
++    },
+   },
+-];
++].map(src => ({
++  src: "packages/babel-standalone",
++  format: "cjs",
++  dest: "",
++  version: babelVersion,
++  envName: "standalone",
++  ...src,
++}));
+ 
+--- /dev/null
++++ b/packages/babel-standalone/src/common.ts
+@@ -0,0 +1,2 @@
++export * from "@babel/helper-validator-identifier";
++export * from "@babel/helper-string-parser";
+--- a/../node_modules/@babel/helpers/lib/helpers.js
++++ b/../node_modules/@babel/helpers/lib/helpers.js
+@@ -409,15 +409,6 @@ helpers.objectWithoutPropertiesLoose = helper("7.0.0-beta.0")`
+   export default function _objectWithoutPropertiesLoose(source, excluded) {
+-    if (source == null) return {};
+-
+-    var target = {};
+-    var sourceKeys = Object.keys(source);
+-    var key, i;
+-
+-    for (i = 0; i < sourceKeys.length; i++) {
+-      key = sourceKeys[i];
+-      if (excluded.indexOf(key) >= 0) continue;
+-      target[key] = source[key];
+-    }
+-
+-    return target;
++    return source == null ? {} : Object.keys(source).reduce(function (target, key) {
++      if (excluded.indexOf(key) < 0) target[key] = source[key];
++      return target;
++    }, {});
+   }
+--- a/../node_modules/@babel/plugin-transform-object-rest-spread/lib/index.js
++++ b/../node_modules/@babel/plugin-transform-object-rest-spread/lib/index.js
+@@ -186,2 +186,3 @@ var index = helperPluginUtils.declare((api, opts) => {
+       keyExpression = core.types.arrayExpression(keys);
++      if (!(objectRestNoSymbols && ignoreFunctionLength))
+       if (!hasTemplateLiteral && !core.types.isProgram(path.scope.block)) {
+--- a/packages/babel-highlight/src/index.ts
++++ b/packages/babel-highlight/src/index.ts
+@@ -254,3 +254,3 @@ export function shouldHighlight(options: Options): boolean {
+ let chalkWithForcedColor: Chalk = undefined;
+-function getChalk(forceColor: boolean) {
++export function getChalk(forceColor: boolean) {
+   if (forceColor) {
+--- a/packages/babel-highlight/node_modules/chalk/index.js
++++ b/packages/babel-highlight/node_modules/chalk/index.js
+@@ -225,4 +225,4 @@ Object.defineProperties(Chalk.prototype, styles);
+ 
+-module.exports = Chalk(); // eslint-disable-line new-cap
+-module.exports.supportsColor = stdoutColor;
+-module.exports.default = module.exports; // For TypeScript
++var _chalk = Chalk(); // eslint-disable-line new-cap
++_chalk.supportsColor = stdoutColor;
++module.exports = _chalk.default = _chalk; // For TypeScript
+--- a/packages/babel-highlight/node_modules/ansi-styles/index.js
++++ b/packages/babel-highlight/node_modules/ansi-styles/index.js
+@@ -161,5 +161,2 @@ function assembleStyles() {
+ // Make the export immutable
 -Object.defineProperty(module, 'exports', {
 -	enumerable: true,
 -	get: assembleStyles
 -});
 +module.exports = assembleStyles();
---- a/node_modules/glob/glob.js
-+++ b/node_modules/glob/glob.js
-@@ -45,2 +45 @@ var minimatch = require('minimatch')
--var Minimatch = minimatch.Minimatch
--var inherits = require('inherits')
-+var inherits = require('util').inherits
-@@ -56 +55,0 @@ var inflight = require('inflight')
--var util = require('util')
---- a/node_modules/string_decoder/lib/string_decoder.js
-+++ b/node_modules/string_decoder/lib/string_decoder.js
-@@ -26 +26 @@
--var Buffer = require('safe-buffer').Buffer;
-+var Buffer = require('buffer').Buffer;
-@@ -104 +104 @@ function StringDecoder(encoding) {
--  this.lastChar = Buffer.allocUnsafe(nb);
-+  this.lastChar = (Buffer.allocUnsafe || Buffer)(nb);
+--- a/packages/babel-highlight/node_modules/color-convert/conversions.js
++++ b/packages/babel-highlight/node_modules/color-convert/conversions.js
+@@ -14,3 +14,3 @@ for (var key in cssKeywords) {
+ 
+-var convert = module.exports = {
++var convert; module.exports = convert = {
+ 	rgb: {channels: 3, labels: 'rgb'},
+--- a/packages/babel-code-frame/src/index.ts
++++ b/packages/babel-code-frame/src/index.ts
+@@ -2,15 +2,3 @@ import highlight, { shouldHighlight } from "@babel/highlight";
+ 
+-import chalk, { Chalk as ChalkClass, type ChalkInstance as Chalk } from "chalk";
+-
+-let chalkWithForcedColor: Chalk = undefined;
+-function getChalk(forceColor: boolean) {
+-  if (forceColor) {
+-    chalkWithForcedColor ??= process.env.BABEL_8_BREAKING
+-      ? new ChalkClass({ level: 1 })
+-      : // @ts-expect-error .Instance was .constructor in chalk 2
+-        new chalk.constructor({ enabled: true, level: 1 });
+-    return chalkWithForcedColor;
+-  }
+-  return chalk;
+-}
++import { getChalk } from "@babel/highlight";
+ 
+--- a/packages/babel-template/src/index.ts
++++ b/packages/babel-template/src/index.ts
+@@ -3,2 +3,3 @@ import createTemplateBuilder from "./builder.ts";
+ 
++export { codeFrameColumns } from "@babel/code-frame";
+ export const smart = createTemplateBuilder(formatters.smart);
+--- a/packages/babel-core/src/parser/index.ts
++++ b/packages/babel-core/src/parser/index.ts
+@@ -2,3 +2,3 @@ import type { Handler } from "gensync";
+ import { parse } from "@babel/parser";
+-import { codeFrameColumns } from "@babel/code-frame";
++import { codeFrameColumns } from "@babel/template";
+ import generateMissingPluginMessage from "./util/missing-plugin-helper.ts";
+--- a/packages/babel-core/src/transformation/file/file.ts
++++ b/packages/babel-core/src/transformation/file/file.ts
+@@ -3,3 +3,3 @@ import { NodePath } from "@babel/traverse";
+ import type { HubInterface, Visitor, Scope } from "@babel/traverse";
+-import { codeFrameColumns } from "@babel/code-frame";
++import { codeFrameColumns } from "@babel/template";
+ import traverse from "@babel/traverse";
+--- a/packages/babel-traverse/src/path/replacement.ts
++++ b/packages/babel-traverse/src/path/replacement.ts
+@@ -2,3 +2,3 @@
+ 
+-import { codeFrameColumns } from "@babel/code-frame";
++import { codeFrameColumns } from "@babel/template";
+ import traverse from "../index.ts";
+--- a/packages/babel-traverse/src/index.ts
++++ b/packages/babel-traverse/src/index.ts
+@@ -14,2 +14,4 @@ import { traverseNode } from "./traverse-node.ts";
+ 
++export { default as globals } from "globals";
++export { default as buildDebug } from "debug";
+ export type { ExplodedVisitor, Visitor, Binding };
+--- a/packages/babel-plugin-transform-classes/src/index.ts
++++ b/packages/babel-plugin-transform-classes/src/index.ts
+@@ -6,3 +6,3 @@ import splitExportDeclaration from "@babel/helper-split-export-declaration";
+ import { types as t } from "@babel/core";
+-import globals from "globals";
++import { globals } from "@babel/traverse";
+ import transformClass from "./transformClass.ts";
+--- a/packages/babel-core/src/config/config-chain.ts
++++ b/packages/babel-core/src/config/config-chain.ts
+@@ -3,3 +3,3 @@
+ import path from "path";
+-import buildDebug from "debug";
++import { buildDebug } from "@babel/traverse";
+ import type { Handler } from "gensync";
+--- a/packages/babel-core/src/config/files/configuration.ts
++++ b/packages/babel-core/src/config/files/configuration.ts
+@@ -1,2 +1,2 @@
+-import buildDebug from "debug";
++import { buildDebug } from "@babel/traverse";
+ import nodeFs from "fs";
+--- a/packages/babel-core/src/config/files/module-types.ts
++++ b/packages/babel-core/src/config/files/module-types.ts
+@@ -6,3 +6,3 @@ import { createRequire } from "module";
+ import semver from "semver";
+-import buildDebug from "debug";
++import { buildDebug } from "@babel/traverse";
+ 
+--- a/packages/babel-core/src/config/files/plugins.ts
++++ b/packages/babel-core/src/config/files/plugins.ts
+@@ -4,3 +4,3 @@
+ 
+-import buildDebug from "debug";
++import { buildDebug } from "@babel/traverse";
+ import path from "path";
+--- a/packages/babel-core/src/transformation/normalize-file.ts
++++ b/packages/babel-core/src/transformation/normalize-file.ts
+@@ -2,3 +2,3 @@ import fs from "fs";
+ import path from "path";
+-import buildDebug from "debug";
++import { buildDebug } from "@babel/traverse";
+ import type { Handler } from "gensync";
+--- a/node_modules/debug/package.json
++++ b/node_modules/debug/package.json
+@@ -55,2 +55,7 @@
+   "browser": "./src/browser.js",
++  "exports": {
++    "browser": "./src/browser.js",
++    "node": "./src/node.js",
++    "default": "./src/index.js"
++  },
+   "engines": {
+--- a/node_modules/debug/src/common.js
++++ b/node_modules/debug/src/common.js
+@@ -6,2 +6,3 @@
+ 
++const humanize = require('ms');
+ function setup(env) {
+@@ -13,3 +14,3 @@ function setup(env) {
+ 	createDebug.enabled = enabled;
+-	createDebug.humanize = require('ms');
++	createDebug.humanize = humanize;
+ 	createDebug.destroy = destroy;
+--- a/node_modules/debug/src/node.js
++++ b/node_modules/debug/src/node.js
+@@ -6,2 +6,4 @@ const tty = require('tty');
+ const util = require('util');
++	const supportsColor = require('supports-color');
++	const setupDebug = require('./common');
+ 
+@@ -11,9 +13,4 @@ const util = require('util');
+ 
+-exports.init = init;
+-exports.log = log;
+-exports.formatArgs = formatArgs;
+-exports.save = save;
+-exports.load = load;
+-exports.useColors = useColors;
+-exports.destroy = util.deprecate(
++let _debug = {init, log, formatArgs, save, load, useColors};
++_debug.destroy = util.deprecate(
+ 	() => {},
+@@ -26,3 +23,3 @@ exports.destroy = util.deprecate(
+ 
+-exports.colors = [6, 2, 3, 4, 5, 1];
++_debug.colors = [6, 2, 3, 4, 5, 1];
+ 
+@@ -31,6 +28,5 @@ try {
+ 	// eslint-disable-next-line import/no-extraneous-dependencies
+-	const supportsColor = require('supports-color');
+ 
+ 	if (supportsColor && (supportsColor.stderr || supportsColor).level >= 2) {
+-		exports.colors = [
++		_debug.colors = [
+ 			20,
+@@ -123,3 +119,3 @@ try {
+ 
+-exports.inspectOpts = Object.keys(process.env).filter(key => {
++_debug.inspectOpts = Object.keys(process.env).filter(key => {
+ 	return /^debug_/i.test(key);
+@@ -155,4 +151,4 @@ exports.inspectOpts = Object.keys(process.env).filter(key => {
+ function useColors() {
+-	return 'colors' in exports.inspectOpts ?
+-		Boolean(exports.inspectOpts.colors) :
++	return 'colors' in _debug.inspectOpts ?
++		Boolean(_debug.inspectOpts.colors) :
+ 		tty.isatty(process.stderr.fd);
+@@ -175,3 +171,3 @@ function formatArgs(args) {
+ 		args[0] = prefix + args[0].split('\n').join('\n' + prefix);
+-		args.push(colorCode + 'm+' + module.exports.humanize(this.diff) + '\u001B[0m');
++		args.push(colorCode + 'm+' + _debug.humanize(this.diff) + '\u001B[0m');
+ 	} else {
+@@ -182,3 +178,3 @@ function formatArgs(args) {
+ function getDate() {
+-	if (exports.inspectOpts.hideDate) {
++	if (_debug.inspectOpts.hideDate) {
+ 		return '';
+@@ -233,5 +229,5 @@ function init(debug) {
+ 
+-	const keys = Object.keys(exports.inspectOpts);
++	const keys = Object.keys(_debug.inspectOpts);
+ 	for (let i = 0; i < keys.length; i++) {
+-		debug.inspectOpts[keys[i]] = exports.inspectOpts[keys[i]];
++		debug.inspectOpts[keys[i]] = _debug.inspectOpts[keys[i]];
+ 	}
+@@ -239,5 +235,5 @@ function init(debug) {
+ 
+-module.exports = require('./common')(exports);
++module.exports = _debug = setupDebug(_debug);
+ 
+-const {formatters} = module.exports;
++const {formatters} = _debug;
+ 
+--- a/node_modules/debug/src/browser.js
++++ b/node_modules/debug/src/browser.js
+@@ -6,8 +6,5 @@
+ 
+-exports.formatArgs = formatArgs;
+-exports.save = save;
+-exports.load = load;
+-exports.useColors = useColors;
+-exports.storage = localstorage();
+-exports.destroy = (() => {
++const setupDebug = require('./common');
++let _debug = {formatArgs, save, load, useColors, storage: localstorage()};
++_debug.destroy = (() => {
+ 	let warned = false;
+@@ -26,3 +23,3 @@ exports.destroy = (() => {
+ 
+-exports.colors = [
++_debug.colors = [
+ 	'#0000CC',
+@@ -151,3 +148,3 @@ function formatArgs(args) {
+ 		(this.useColors ? '%c ' : ' ') +
+-		'+' + module.exports.humanize(this.diff);
++		'+' + _debug.humanize(this.diff);
+ 
+@@ -188,3 +185,3 @@ function formatArgs(args) {
+  */
+-exports.log = console.debug || console.log || (() => {});
++_debug.log = console.debug || console.log || (() => {});
+ 
+@@ -199,5 +196,5 @@ function save(namespaces) {
+ 		if (namespaces) {
+-			exports.storage.setItem('debug', namespaces);
++			_debug.storage.setItem('debug', namespaces);
+ 		} else {
+-			exports.storage.removeItem('debug');
++			_debug.storage.removeItem('debug');
+ 		}
+@@ -218,3 +215,3 @@ function load() {
+ 	try {
+-		r = exports.storage.getItem('debug');
++		r = _debug.storage.getItem('debug');
+ 	} catch (error) {
+@@ -254,5 +251,5 @@ function localstorage() {
+ 
+-module.exports = require('./common')(exports);
++module.exports = _debug = setupDebug(_debug);
+ 
+-const {formatters} = module.exports;
++const {formatters} = _debug;
+ 
+--- /dev/null
++++ b/packages/babel-standalone/src/vendors.ts
+@@ -0,0 +1,7 @@
++export { default as rewritePattern } from "regexpu-core";
++export { default as browserslist } from "browserslist";
++export { default as semver } from "semver";
++export { parse as json5parse } from "json5";
++//export { default as debounce } from "lodash.debounce";
++//export { default as requireResolve } from "resolve/sync";
++export { default as convertSourceMap } from "convert-source-map";
+--- a/packages/babel-core/src/gensync-utils/async.ts
++++ b/packages/babel-core/src/gensync-utils/async.ts
+@@ -42,3 +42,3 @@ const withKind = gensync({
+   sync: cb => cb("sync"),
+-  async: async cb => cb("async"),
++  async: cb => new Promise(resolve => resolve(cb("async"))),
+ }) as <T>(cb: (kind: "sync" | "async") => MaybePromise<T>) => Handler<T>;
+@@ -101,3 +101,3 @@ export const waitFor = gensync({
+   sync: x => x,
+-  async: async x => x,
++  async: x => Promise.resolve(x),
+ }) as <T>(p: T | Promise<T>) => Handler<T>;
+--- a/packages/babel-standalone/src/index.ts
++++ b/packages/babel-standalone/src/index.ts
+@@ -16,2 +16,6 @@ import {
+   transformSync as babelTransformSync,
++  transformFromAstAsync as babelTransformFromAstAsync,
++  transformAsync as babelTransformAsync,
++  transformFileSync as babelTransformFileSync,
++  transformFileAsync as babelTransformFileAsync,
+   buildExternalHelpers as babelBuildExternalHelpers,
+@@ -32,3 +36,3 @@ import type { InputOptions } from "@babel/core";
+ 
+-import { runScripts } from "./transformScriptTags.ts";
++export * from "@babel/core"; //import { runScripts } from "./transformScriptTags.ts";
+ 
+@@ -47,2 +51,3 @@
+ export const availablePlugins: typeof all = {};
++const hasOwnProp = Function.call.bind(Object.prototype.hasOwnProperty);
+ 
+@@ -98,7 +103,7 @@ function loadBuiltin(builtinTable: Record<string, unknown>, name: any) {
+   if (isArray(name) && typeof name[0] === "string") {
+-    if (Object.prototype.hasOwnProperty.call(builtinTable, name[0])) {
++    if (hasOwnProp(builtinTable, name[0])) {
+       return [builtinTable[name[0]]].concat(name.slice(1));
+     }
+-    return;
+-  } else if (typeof name === "string") {
++    //return;
++  } else if (typeof name === "string" && hasOwnProp(builtinTable, name)) {
+     return builtinTable[name];
+@@ -112,3 +117,3 @@ function loadBuiltin(builtinTable: Record<string, unknown>, name: any) {
+  */
+-function processOptions(options: InputOptions) {
++function processOptions(options: InputOptions = {}) {
+   // Parse preset names
+@@ -124,3 +129,3 @@ function processOptions(options: InputOptions) {
+         typeof preset[0] === "object" &&
+-        Object.prototype.hasOwnProperty.call(preset[0], "buildPreset")
++        hasOwnProp(preset[0], "buildPreset")
+       ) {
+@@ -149,3 +154,3 @@ function processOptions(options: InputOptions) {
+   return {
+-    babelrc: false,
++    //babelrc: false,
+     ...options,
+@@ -156,3 +161,3 @@ function processOptions(options: InputOptions) {
+ 
+-export function transform(code: string, options: InputOptions) {
++export function transform(code: string, options?: InputOptions) {
+   return babelTransformSync(code, processOptions(options));
+@@ -163,3 +168,3 @@ export function transformFromAst(
+   code: string,
+-  options: InputOptions,
++  options?: InputOptions,
+ ) {
+@@ -167,2 +172,18 @@ export function transformFromAst(
+ }
++export function transformAsync(code: string, options?: InputOptions) {
++  return babelTransformAsync(code, processOptions(options));
++}
++export function transformFromAstAsync(
++  ast: Parameters<typeof babelTransformFromAstAsync>[0],
++  code: string,
++  options?: InputOptions,
++) {
++  return babelTransformFromAstAsync(ast, code, processOptions(options));
++}
++export function transformFile(filename: string, options?: InputOptions) {
++  return babelTransformFileSync(filename, processOptions(options));
++}
++export function transformFileAsync(filename: string, options?: InputOptions) {
++  return babelTransformFileAsync(filename, processOptions(options));
++}
+ 
+@@ -173,3 +194,3 @@ export const buildExternalHelpers = babelBuildExternalHelpers;
+ export function registerPlugin(name: string, plugin: () => PluginObject): void {
+-  if (Object.prototype.hasOwnProperty.call(availablePlugins, name)) {
++  if (hasOwnProp(availablePlugins, name)) {
+     console.warn(
+@@ -196,3 +217,3 @@ export function registerPlugins(newPlugins: {
+ export function registerPreset(name: string, preset: () => PresetObject): void {
+-  if (Object.prototype.hasOwnProperty.call(availablePresets, name)) {
++  if (hasOwnProp(availablePresets, name)) {
+     if (name === "env") {
+@@ -226,3 +247,3 @@ export const version: string = VERSION;
+ 
+-function onDOMContentLoaded() {
++/*function onDOMContentLoaded() {
+   transformScriptTags();
+@@ -239,3 +260,2 @@ if (typeof window !== "undefined" && window?.addEventListener) {
+  * @param {Array} scriptTags specify script tags to transform, transform all in the <head> if not given
+- */
+ export function transformScriptTags(
+@@ -248,5 +268,4 @@ export function transformScriptTags(
+  * Disables automatic transformation of <script> tags with "text/babel" type.
+- */
+ export function disableScriptTags() {
+   window.removeEventListener("DOMContentLoaded", onDOMContentLoaded);
+-}
++}*/
+--- a/packages/babel-core/src/config/files/module-types.ts
++++ b/packages/babel-core/src/config/files/module-types.ts
+@@ -13,2 +13,4 @@ import type { InputOptions } from "../index.ts";
+ import { transformFileSync } from "../../transform-file.ts";
++import { version as babelTsVersion } from "@babel/preset-typescript/package.json";
++import presetTypescript from "@babel/preset-typescript";
+ 
+@@ -116,4 +118,3 @@ function loadCtsDefault(filepath: string) {
+           if (!hasTsSupport) {
+-            const packageJson = require("@babel/preset-typescript/package.json");
+-            if (semver.lt(packageJson.version, "7.21.4")) {
++            if (semver.lt(babelTsVersion, "7.21.4")) {
+               console.error(
+@@ -171,8 +172,8 @@ function loadCjsDefault(filepath: string) {
+ 
+-async function loadMjsDefault(filepath: string) {
++function loadMjsDefault(filepath: string) {
+   if (!import_) {
+-    throw new ConfigError(
++    return Promise.reject(new ConfigError(
+       "Internal error: Native ECMAScript modules aren't supported by this platform.\n",
+       filepath,
+-    );
++    ));
+   }
+@@ -181,4 +182,3 @@ async function loadMjsDefault(filepath: string) {
+   // https://github.com/nodejs/node/issues/31710
+-  const module = await endHiddenCallStack(import_)(pathToFileURL(filepath));
+-  return module.default;
++  return endHiddenCallStack(import_)(pathToFileURL(filepath)).then(module => module.default);
+ }
+@@ -186,5 +186,5 @@ async function loadMjsDefault(filepath: string) {
+ function getTSPreset(filepath: string) {
+-  try {
++  //try {
+     // eslint-disable-next-line import/no-extraneous-dependencies
+-    return require("@babel/preset-typescript");
++    return presetTypescript;/*
+   } catch (error) {
+@@ -211,3 +211,3 @@ packageExtensions:
+     throw new ConfigError(message, filepath);
+-  }
++  }*/
+ }
+--- a/packages/babel-core/src/config/files/configuration.ts
++++ b/packages/babel-core/src/config/files/configuration.ts
+@@ -3,3 +3,3 @@ import nodeFs from "fs";
+ import path from "path";
+-import json5 from "json5";
++import { parse as json5parse } from "json5";
+ import gensync from "gensync";
+@@ -160,3 +160,3 @@ const readConfigJSON5 = makeStaticFileCache((filepath, content): ConfigFile => {
+   try {
+-    options = json5.parse(content);
++    options = json5parse(content);
+   } catch (err) {
+--- a/node_modules/json5/dist/index.mjs
++++ b/node_modules/json5/dist/index.mjs
+@@ -1423,4 +1423,4 @@ const JSON5 = {
+ 
+-var lib = JSON5;
++export { parse, stringify };
+ 
+-export default lib;
++export default JSON5;
+--- a/node_modules/json5/package.json
++++ b/node_modules/json5/package.json
+@@ -9,2 +9,7 @@
+   "types": "lib/index.d.ts",
++  "exports": {
++    "import": "./dist/index.mjs",
++    "browser": "./dist/index.js",
++    "default": "./lib/index.js"
++  },
+   "files": [
+--- a/node_modules/browserslist/node.js
++++ b/node_modules/browserslist/node.js
+@@ -170,3 +170,3 @@ function normalizeUsageData(usageData, data) {
+ 
+-module.exports = {
++var _exports; module.exports = _exports = {
+   loadQueries: function loadQueries(ctx, name) {
+@@ -233,6 +233,6 @@ module.exports = {
+       } else {
+-        return pickEnv(module.exports.readConfig(file), opts)
++        return pickEnv(_exports.readConfig(file), opts)
+       }
+     } else if (opts.path) {
+-      return pickEnv(module.exports.findConfig(opts.path), opts)
++      return pickEnv(_exports.findConfig(opts.path), opts)
+     } else {
+@@ -320,3 +320,3 @@ module.exports = {
+     }
+-    return module.exports.parseConfig(fs.readFileSync(file))
++    return _exports.parseConfig(fs.readFileSync(file))
+   },
+@@ -363,5 +363,5 @@ module.exports = {
+       } else if (isFile(config)) {
+-        return module.exports.readConfig(config)
++        return _exports.readConfig(config)
+       } else if (isFile(rc)) {
+-        return module.exports.readConfig(rc)
++        return _exports.readConfig(rc)
+       } else {
+--- a/node_modules/caniuse-lite/dist/unpacker/feature.js
++++ b/node_modules/caniuse-lite/dist/unpacker/feature.js
+@@ -46,3 +46,3 @@ function unpackFeature(packed) {
+ 
+-module.exports = unpackFeature
+-module.exports.default = unpackFeature
++module.exports =
++unpackFeature.default = unpackFeature
+--- a/node_modules/caniuse-lite/dist/unpacker/region.js
++++ b/node_modules/caniuse-lite/dist/unpacker/region.js
+@@ -20,3 +20,3 @@ function unpackRegion(packed) {
+ 
+-module.exports = unpackRegion
+-module.exports.default = unpackRegion
++module.exports =
++unpackRegion.default = unpackRegion
+--- a/node_modules/@babel/helper-define-polyfill-provider/esm/index.node.mjs
++++ b/node_modules/@babel/helper-define-polyfill-provider/esm/index.node.mjs
+@@ -4,4 +4,4 @@ import * as _babel from '@babel/core';
+ import path from 'path';
+-import debounce from 'lodash.debounce';
+-import requireResolve from 'resolve';
++//import debounce from 'lodash.debounce';
++//import requireResolve from 'resolve/sync';
+ import { createRequire } from 'module';
+@@ -423,3 +423,3 @@ var entry = (callProvider => ({
+ 
+-const nativeRequireResolve = parseFloat(process.versions.node) >= 8.9;
++//const nativeRequireResolve = parseFloat(process.versions.node) >= 8.9;
+ const require = createRequire(import /*::(_)*/.meta.url); // eslint-disable-line
+@@ -427,3 +427,3 @@ const require = createRequire(import /*::(_)*/.meta.url); // eslint-disable-line
+ function myResolve(name, basedir) {
+-  if (nativeRequireResolve) {
++  //if (nativeRequireResolve) {
+     return require.resolve(name, {
+@@ -431,3 +431,3 @@ function myResolve(name, basedir) {
+     }).replace(/\\/g, "/");
+-  } else {
++  /*} else {
+     return requireResolve.sync(name, {
+@@ -435,3 +435,3 @@ function myResolve(name, basedir) {
+     }).replace(/\\/g, "/");
+-  }
++  }*/
+ }
+@@ -469,3 +469,3 @@ function logMissing(missingDeps) {
+ let allMissingDeps = new Set();
+-const laterLogMissingDependencies = debounce(() => {
++const laterLogMissingDependencies = () => setTimeout(() => {
+   logMissing(allMissingDeps);
+--- a/node_modules/resolve/lib/node-modules-paths.js
++++ b/node_modules/resolve/lib/node-modules-paths.js
+@@ -1,3 +1,3 @@
+ var path = require('path');
+-var parse = path.parse || require('path-parse'); // eslint-disable-line global-require
++var parse = path.parse; // || require('path-parse') eslint-disable-line global-require
+ 
 --- a/node_modules/is-core-module/index.js
 +++ b/node_modules/is-core-module/index.js
-@@ -3 +3 @@
+@@ -2,3 +2,3 @@
+ 
 -var has = require('has');
-+var has = Function.call.bind(Object.prototype.hasOwnProperty);
++var has = Function.call.bind(Object.prototype.hasOwnProperty); // require('has');
+ 
+--- a/node_modules/@babel/preset-modules/package.json
++++ b/node_modules/@babel/preset-modules/package.json
+@@ -5,2 +5,8 @@
+   "main": "lib/index.js",
++  "module": "src/index.js",
++  "exports": {
++    ".": { "import": "./src/index.js", "default": "./lib/index.js" },
++    "./lib/*": { "import": "./src/*", "default": "./lib/*" },
++    "./package.json": "./package.json"
++  },
+   "license": "MIT",
+--- a/node_modules/@babel/regjsgen/regjsgen.js
++++ b/node_modules/@babel/regjsgen/regjsgen.js
+@@ -5,3 +5,3 @@
+  */
+-;(function() {
++/*;(function() {
+   'use strict';
+@@ -27,3 +27,3 @@
+     root = freeGlobal;
+-  }
++  }*/
+ 
+@@ -402,2 +402,3 @@
+   // Export regjsgen.
++  exports.generate = generate;/*
+   var regjsgen = {
+@@ -424,2 +425,2 @@
+   }
+-}.call(this));
++}.call(this));*/
+--- a/node_modules/regenerate/regenerate.js
++++ b/node_modules/regenerate/regenerate.js
+@@ -1,3 +1,3 @@
+ /*! https://mths.be/regenerate v1.4.2 by @mathias | MIT license */
+-;(function(root) {
++/*;(function(root) {
+ 
+@@ -1190,2 +1190,3 @@
+ 	// like the following:
++	module.exports = regenerate;/*
+ 	if (
+@@ -1208,2 +1209,2 @@
+ 
+-}(this));
++}(this));*/
+--- a/node_modules/regjsparser/parser.js
++++ b/node_modules/regjsparser/parser.js
+@@ -221,3 +221,3 @@
+ "use strict";
+-(function() {
++//(function() {
+ 
+@@ -1623,3 +1623,3 @@
+ 
+-  var regjsparser = {
++  module.exports = {
+     parse: parse
+@@ -1627,3 +1627,3 @@
+ 
+-  if (typeof module !== 'undefined' && module.exports) {
++  /*if (typeof module !== 'undefined' && module.exports) {
+     module.exports = regjsparser;
+@@ -1633,2 +1633,2 @@
+ 
+-}());
++}());*/
+--- a/node_modules/lru-cache/node_modules/yallist/yallist.js
++++ b/node_modules/lru-cache/node_modules/yallist/yallist.js
+@@ -424,3 +424,7 @@ try {
+   // add if support for Symbol.iterator is present
+-  require('./iterator.js')(Yallist)
++  Yallist.prototype[Symbol.iterator] = function* () {
++    for (let walker = this.head; walker; walker = walker.next) {
++      yield walker.value
++    }
++  }
+ } catch (er) {}
+--- a/node_modules/regenerator-transform/package.json
++++ b/node_modules/regenerator-transform/package.json
+@@ -6,2 +6,3 @@
+   "main": "lib/index.js",
++  "module": "src/index.js",
+   "keywords": [
+--- a/node_modules/regenerator-transform/src/emit.js
++++ b/node_modules/regenerator-transform/src/emit.js
+@@ -52,3 +52,3 @@ function Emitter(contextId) {
+ let Ep = Emitter.prototype;
+-exports.Emitter = Emitter;
++export { Emitter };
+ 
+--- a/node_modules/regenerator-transform/src/hoist.js
++++ b/node_modules/regenerator-transform/src/hoist.js
+@@ -14,3 +14,3 @@ let hasOwn = Object.prototype.hasOwnProperty;
+ // declarations.
+-exports.hoist = function(funPath) {
++export function hoist(funPath) {
+   const t = util.getTypes();
+--- a/node_modules/regenerator-transform/src/leap.js
++++ b/node_modules/regenerator-transform/src/leap.js
+@@ -23,3 +23,3 @@ function FunctionEntry(returnLoc) {
+ inherits(FunctionEntry, Entry);
+-exports.FunctionEntry = FunctionEntry;
++export { FunctionEntry };
+ 
+@@ -45,3 +45,3 @@ function LoopEntry(breakLoc, continueLoc, label) {
+ inherits(LoopEntry, Entry);
+-exports.LoopEntry = LoopEntry;
++export { LoopEntry };
+ 
+@@ -54,3 +54,3 @@ function SwitchEntry(breakLoc) {
+ inherits(SwitchEntry, Entry);
+-exports.SwitchEntry = SwitchEntry;
++export { SwitchEntry };
+ 
+@@ -83,3 +83,3 @@ function TryEntry(firstLoc, catchEntry, finallyEntry) {
+ inherits(TryEntry, Entry);
+-exports.TryEntry = TryEntry;
++export { TryEntry };
+ 
+@@ -98,3 +98,3 @@ function CatchEntry(firstLoc, paramId) {
+ inherits(CatchEntry, Entry);
+-exports.CatchEntry = CatchEntry;
++export { CatchEntry };
+ 
+@@ -110,3 +110,3 @@ function FinallyEntry(firstLoc, afterLoc) {
+ inherits(FinallyEntry, Entry);
+-exports.FinallyEntry = FinallyEntry;
++export { FinallyEntry };
+ 
+@@ -125,3 +125,3 @@ function LabeledEntry(breakLoc, label) {
+ inherits(LabeledEntry, Entry);
+-exports.LabeledEntry = LabeledEntry;
++export { LabeledEntry };
+ 
+@@ -137,3 +137,3 @@ function LeapManager(emitter) {
+ let LMp = LeapManager.prototype;
+-exports.LeapManager = LeapManager;
++export { LeapManager };
+ 
+--- a/node_modules/regenerator-transform/src/meta.js
++++ b/node_modules/regenerator-transform/src/meta.js
+@@ -108,3 +108,3 @@ for (let type in leapTypes) {
+ 
+-exports.hasSideEffects = makePredicate("hasSideEffects", sideEffectTypes);
+-exports.containsLeap = makePredicate("containsLeap", leapTypes);
++export const hasSideEffects = makePredicate("hasSideEffects", sideEffectTypes);
++export const containsLeap = makePredicate("containsLeap", leapTypes);
+--- a/node_modules/regenerator-transform/src/visit.js
++++ b/node_modules/regenerator-transform/src/visit.js
+@@ -15,3 +15,3 @@ import * as util from "./util";
+ 
+-exports.getVisitor = ({ types: t }) => ({
++export const getVisitor = ({ types: t }) => ({
+   Method(path, state) {
+#
+# Plugin loose patches
+#
+--- a/packages/babel-plugin-transform-object-rest-spread/src/index.ts
++++ b/packages/babel-plugin-transform-object-rest-spread/src/index.ts
+@@ -220,3 +220,3 @@ export default declare((api, opts: Options) => {
+ 
+-      if (!hasTemplateLiteral && !t.isProgram(path.scope.block)) {
++      if (!loose && !hasTemplateLiteral && !t.isProgram(path.scope.block)) {
+         // Hoist definition of excluded keys, so that it's not created each time.
+--- a/packages/babel-plugin-transform-parameters/src/index.ts
++++ b/packages/babel-plugin-transform-parameters/src/index.ts
+@@ -39,3 +39,3 @@ export default declare((api, options: Options) => {
+ 
+-        const convertedRest = convertFunctionRest(path);
++        const convertedRest = convertFunctionRest(path, options.loose);
+         const convertedParams = convertFunctionParams(
+--- a/packages/babel-plugin-transform-parameters/src/rest.ts
++++ b/packages/babel-plugin-transform-parameters/src/rest.ts
+@@ -9,2 +9,5 @@ import {
+ 
++const buildLooseRest = template.statement(`
++  var ARRAY = Array.prototype.slice.call(ARGUMENTS, START);
++`);
+ const buildRest = template.statement(`
+@@ -299,3 +302,3 @@ function optimiseLengthGetter(
+ 
+-export default function convertFunctionRest(path: NodePath<t.Function>) {
++export default function convertFunctionRest(path: NodePath<t.Function>, loose = false) {
+   const { node, scope } = path;
+@@ -409,3 +412,3 @@ export default function convertFunctionRest(path: NodePath<t.Function>) {
+ 
+-  const loop = buildRest({
++  const loop = loose ? buildLooseRest({ ARGUMENTS: argsId, START: start, ARRAY: rest }) : buildRest({
+     ARGUMENTS: argsId,
+--- a/packages/babel-plugin-transform-async-to-generator/src/index.ts
++++ b/packages/babel-plugin-transform-async-to-generator/src/index.ts
+@@ -6,2 +6,3 @@ import { types as t } from "@babel/core";
+ export interface Options {
++  loose?: boolean;
+   method?: string;
+@@ -17,6 +18,6 @@ export default declare<State>((api, options: Options) => {
+ 
+-  const { method, module } = options;
++  const { method, module, loose = false } = options;
+   // Todo(BABEL 8): Consider default it to false
+   const noNewArrows = api.assumption("noNewArrows") ?? true;
+-  const ignoreFunctionLength = api.assumption("ignoreFunctionLength") ?? false;
++  const ignoreFunctionLength = api.assumption("ignoreFunctionLength") ?? loose;
+ 
+@@ -42,2 +43,3 @@ export default declare<State>((api, options: Options) => {
+             ignoreFunctionLength,
++            loose,
+           );
+@@ -60,2 +62,3 @@ export default declare<State>((api, options: Options) => {
+           ignoreFunctionLength,
++          loose,
+         );
+--- a/packages/babel-helper-remap-async-to-generator/src/index.ts
++++ b/packages/babel-helper-remap-async-to-generator/src/index.ts
+@@ -44,2 +44,3 @@ export default function (
+   ignoreFunctionLength?: boolean,
++  loose?: boolean,
+ ) {
+@@ -59,2 +60,3 @@ export default function (
+     ignoreFunctionLength,
++    loose,
+   );
+--- a/packages/babel-helper-wrap-function/src/index.ts
++++ b/packages/babel-helper-wrap-function/src/index.ts
+@@ -55,2 +55,5 @@ const buildNamedExpressionWrapper = template.expression(`
+ 
++const buildLooseDeclaration = template.statement(`
++  var NAME = FUNCTION;
++`);
+ const buildDeclarationWrapper = template.statements(`
+@@ -96,2 +99,3 @@ function plainFunction(
+   ignoreFunctionLength: boolean,
++  loose?: boolean,
+ ) {
+@@ -150,2 +154,6 @@ function plainFunction(
+   if (isDeclaration) {
++    if (loose) {
++      path.replaceWith(buildLooseDeclaration({ NAME: functionId, FUNCTION: built }));
++      return;
++    }
+     const container = buildDeclarationWrapper(wrapperArgs);
+@@ -158,3 +166,3 @@ function plainFunction(
+       container = buildNamedExpressionWrapper(wrapperArgs);
+-    } else {
++    } else if (!loose) {
+       container = buildAnonymousExpressionWrapper(wrapperArgs);
+@@ -170,3 +178,3 @@ function plainFunction(
+ 
+-    if (functionId || (!ignoreFunctionLength && params.length)) {
++    if (functionId || (container && !ignoreFunctionLength && params.length)) {
+       path.replaceWith(container);
+@@ -185,2 +193,3 @@ export default function wrapFunction(
+   ignoreFunctionLength: boolean = false,
++  loose: boolean = false,
+ ) {
+@@ -194,2 +203,3 @@ export default function wrapFunction(
+       ignoreFunctionLength,
++      loose,
+     );
