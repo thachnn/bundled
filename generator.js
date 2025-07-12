@@ -1,6 +1,6 @@
 "use strict";
 
-var _t = require('./types');
+const _t = require('./types');
 
 let get, put;
 class SetArray {
@@ -1366,7 +1366,7 @@ function isFirstInContext(printStack, checkParam) {
   return false;
 }
 
-var parens = Object.freeze({
+const parens = Object.freeze({
   __proto__: null,
   ArrowFunctionExpression: ArrowFunctionExpression$1,
   AssignmentExpression: AssignmentExpression$1,
@@ -1456,7 +1456,7 @@ function needsParens$1(node, parent, printStack) {
 }
 
 // noinspection JSUnusedGlobalSymbols
-var n = Object.freeze({
+const n = Object.freeze({
   __proto__: null,
   needsParens: needsParens$1,
   needsWhitespace,
@@ -4141,7 +4141,7 @@ function tsPrintClassMemberModifiers(node) {
   }
 }
 
-var generatorFunctions = Object.freeze({
+const generatorFunctions = Object.freeze({
   __proto__: null,
   AnyTypeAnnotation,
   ArgumentPlaceholder,

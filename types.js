@@ -1,6 +1,6 @@
 "use strict";
 
-var common = require('./common.js');
+const common = require('./common.js');
 
 function shallowEqual(actual, expected) {
   const keys = Object.keys(expected);

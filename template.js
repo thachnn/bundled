@@ -1,6 +1,6 @@
 "use strict";
 
-var _t = require('./types'),
+const _t = require('./types'),
   parser = require('./parser'),
   common = require('./common.js');
 
@@ -1738,7 +1738,7 @@ const smart = createTemplateBuilder(smart$1),
   statements = createTemplateBuilder(statements$1),
   expression = createTemplateBuilder(expression$1),
   program = createTemplateBuilder(program$1);
-var index = Object.assign(smart.bind(void 0), {
+const index = Object.assign(smart.bind(void 0), {
   smart,
   statement,
   statements,

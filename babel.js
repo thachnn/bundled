@@ -1,7 +1,7 @@
 "use strict";
 
 // noinspection NodeCoreCodingAssistance,NpmUsedModulesInstalled
-var traverse = require('./traverse'),
+const traverse = require('./traverse'),
   t$5 = require('./types'),
   template$1 = require('./template'),
   assert = require('assert'),
@@ -22,7 +22,7 @@ var traverse = require('./traverse'),
   util = require('util');
 
 // noinspection JSUnusedGlobalSymbols
-var _babel = Object.freeze({
+const _babel = Object.freeze({
   __proto__: null,
   get DEFAULT_EXTENSIONS() { return DEFAULT_EXTENSIONS; },
   get File() { return File; },
@@ -64,7 +64,7 @@ function helper$3(minVersion, source) {
     ast: () => template$1.program.ast(source, { preserveComments: true })
   });
 }
-var generated = Object.freeze({
+const generated = Object.freeze({
   AsyncGenerator: helper$3("7.0.0-beta.0",
     'import OverloadYield from"OverloadYield";export default function AsyncGenerator(e){var r,t;function resume(r,t){try{var n=e[r](t),o=n.value,u=o instanceof OverloadYield;Promise.resolve(u?o.v:o).then((function(t){if(u){var i="return"===r?"return":"next";if(!o.k||t.done)return resume(i,t);t=e[i](t).value}settle(n.done?"return":"normal",t)}),(function(e){resume("throw",e)}))}catch(e){settle("throw",e)}}function settle(e,n){switch(e){case"return":r.resolve({value:n,done:!0});break;case"throw":r.reject(n);break;default:r.resolve({value:n,done:!1})}(r=r.next)?resume(r.key,r.arg):t=null}this._invoke=function(e,n){return new Promise((function(o,u){var i={key:e,arg:n,resolve:o,reject:u,next:null};t?t=t.next=i:(r=t=i,resume(e,n))}))},"function"!=typeof e.return&&(this.return=void 0)}AsyncGenerator.prototype["function"==typeof Symbol&&Symbol.asyncIterator||"@@asyncIterator"]=function(){return this},AsyncGenerator.prototype.next=function(e){return this._invoke("next",e)},AsyncGenerator.prototype.throw=function(e){return this._invoke("throw",e)},AsyncGenerator.prototype.return=function(e){return this._invoke("return",e)};'
   ),
@@ -4023,7 +4023,7 @@ class OptionValidator {
   }
 }
 
-var require$$0$6 = {
+const require$$0$6 = {
   "es6.module": {
     chrome: "61",
     and_chr: "61",
@@ -4682,7 +4682,7 @@ function getInclusionReasons(item, targetVersions, list) {
   }, {});
 }
 
-var require$$0$5 = {
+const require$$0$5 = {
   "transform-unicode-sets-regex": {
     chrome: "112",
     opera: "98",
@@ -5842,7 +5842,7 @@ class ConfigItem {
 }
 Object.freeze(ConfigItem.prototype);
 
-var removed = {
+const removed = {
   auxiliaryComment: { message: "Use `auxiliaryCommentBefore` or `auxiliaryCommentAfter`" },
   blacklist: { message: "Put the specific transforms you want in the `plugins` option" },
   breakConfig: { message: "This is not a necessary option in Babel 6" },
@@ -6928,7 +6928,7 @@ class PartialConfig {
 }
 Object.freeze(PartialConfig.prototype);
 
-var loadConfig$1 = gensync(function* (inputOpts) {
+const loadConfig$1 = gensync(function* (inputOpts) {
   var _opts$assumptions;
   const result = yield* loadPrivatePartialConfig(inputOpts);
   if (!result) return null;
@@ -8559,7 +8559,7 @@ var removePlugin = function (plugins, name) {
   for (const i of indices) plugins.splice(i, 1);
 };
 
-var syntaxTypescript = declare((api, opts) => {
+const syntaxTypescript = declare((api, opts) => {
   api.assertVersion(7);
   const { disallowAmbiguousJSXLike, dts } = opts;
 
@@ -10767,7 +10767,7 @@ function assertCjsTransformEnabled(path, pass, wrong, suggestion, extra = "") {
 Please consider using \`${suggestion}\`${extra}, or add @babel/plugin-transform-modules-commonjs to your Babel config.`
     );
 }
-var transformTypescript = declare((api, opts) => {
+const transformTypescript = declare((api, opts) => {
   const { types: t, template } = api;
   api.assertVersion(7);
   const JSX_PRAGMA_REGEX = /\*?\s*@jsx((?:Frag)?)\s+([^\s]+)/;
@@ -11111,7 +11111,7 @@ var transformTypescript = declare((api, opts) => {
   }
 });
 
-var syntaxJsx = declare(api => {
+const syntaxJsx = declare(api => {
   api.assertVersion(7);
   return {
     name: "syntax-jsx",
@@ -11129,7 +11129,7 @@ function transformDynamicImport(path, noInterop, file) {
   path.replaceWith(buildDynamicImport(path.node, true, false, specifier => buildRequire(specifier, file)));
 }
 
-var transformModulesCommonjs = declare((api, options) => {
+const transformModulesCommonjs = declare((api, options) => {
   var _api$assumption, _api$assumption2, _api$assumption3;
   api.assertVersion(7);
   const {
@@ -11331,7 +11331,7 @@ function normalizeOptions$3(options = {}) {
   return normalized;
 }
 
-var presetTypescript = declare((api, opts) => {
+const presetTypescript = declare((api, opts) => {
   api.assertVersion(7);
   const {
     allExtensions,
@@ -12836,7 +12836,7 @@ function makeNoopPlugin() {
   return ((p = () => ({})).default = p);
 }
 
-var externalHelpers = declare((api, options) => {
+const externalHelpers = declare((api, options) => {
   api.assertVersion(7);
   const { helperVersion = "7.0.0-beta.0", whitelist = /** @type {?Array} */ false } = options;
   if (whitelist !== false && (!Array.isArray(whitelist) || whitelist.some(w => typeof w != "string")))
@@ -12857,7 +12857,7 @@ var externalHelpers = declare((api, options) => {
   };
 });
 
-var syntaxDecimal = declare(api => {
+const syntaxDecimal = declare(api => {
   api.assertVersion(7);
   return {
     name: "syntax-decimal",
@@ -12867,7 +12867,7 @@ var syntaxDecimal = declare(api => {
   };
 });
 
-var syntaxDecorators = declare((api, options) => {
+const syntaxDecorators = declare((api, options) => {
   api.assertVersion(7);
   let { version } = options;
 
@@ -12921,7 +12921,7 @@ var syntaxDecorators = declare((api, options) => {
   };
 });
 
-var syntaxDestructuringPrivate = declare(api => {
+const syntaxDestructuringPrivate = declare(api => {
   api.assertVersion(7);
   return {
     name: "syntax-destructuring-private",
@@ -12931,7 +12931,7 @@ var syntaxDestructuringPrivate = declare(api => {
   };
 });
 
-var syntaxDoExpressions = declare(api => {
+const syntaxDoExpressions = declare(api => {
   api.assertVersion(7);
   return {
     name: "syntax-do-expressions",
@@ -12941,7 +12941,7 @@ var syntaxDoExpressions = declare(api => {
   };
 });
 
-var syntaxExplicitResourceManagement = declare(api => {
+const syntaxExplicitResourceManagement = declare(api => {
   api.assertVersion(7);
   return {
     name: "syntax-explicit-resource-management",
@@ -12951,7 +12951,7 @@ var syntaxExplicitResourceManagement = declare(api => {
   };
 });
 
-var syntaxExportDefaultFrom = declare(api => {
+const syntaxExportDefaultFrom = declare(api => {
   api.assertVersion(7);
   return {
     name: "syntax-export-default-from",
@@ -12961,7 +12961,7 @@ var syntaxExportDefaultFrom = declare(api => {
   };
 });
 
-var syntaxFlow = declare((api, options) => {
+const syntaxFlow = declare((api, options) => {
   api.assertVersion(7);
   const { all, enums } = options;
   if (typeof all != "boolean" && all !== void 0) throw new Error(".all must be a boolean, or undefined");
@@ -12977,7 +12977,7 @@ var syntaxFlow = declare((api, options) => {
   };
 });
 
-var syntaxFunctionBind = declare(api => {
+const syntaxFunctionBind = declare(api => {
   api.assertVersion(7);
   return {
     name: "syntax-function-bind",
@@ -12987,7 +12987,7 @@ var syntaxFunctionBind = declare(api => {
   };
 });
 
-var syntaxFunctionSent = declare(api => {
+const syntaxFunctionSent = declare(api => {
   api.assertVersion(7);
   return {
     name: "syntax-function-sent",
@@ -12997,7 +12997,7 @@ var syntaxFunctionSent = declare(api => {
   };
 });
 
-var syntaxImportAssertions = declare(api => {
+const syntaxImportAssertions = declare(api => {
   api.assertVersion(7);
   return {
     name: "syntax-import-assertions",
@@ -13007,7 +13007,7 @@ var syntaxImportAssertions = declare(api => {
   };
 });
 
-var syntaxImportAttributes = declare((api, { deprecatedAssertSyntax }) => {
+const syntaxImportAttributes = declare((api, { deprecatedAssertSyntax }) => {
   api.assertVersion("^7.22.0");
   if (deprecatedAssertSyntax != null && typeof deprecatedAssertSyntax != "boolean")
     throw new Error("'deprecatedAssertSyntax' must be a boolean, if specified.");
@@ -13021,7 +13021,7 @@ var syntaxImportAttributes = declare((api, { deprecatedAssertSyntax }) => {
   };
 });
 
-var syntaxImportReflection = declare(api => {
+const syntaxImportReflection = declare(api => {
   api.assertVersion(7);
   return {
     name: "syntax-import-reflection",
@@ -13031,7 +13031,7 @@ var syntaxImportReflection = declare(api => {
   };
 });
 
-var syntaxModuleBlocks = declare(api => {
+const syntaxModuleBlocks = declare(api => {
   api.assertVersion(7);
   return {
     name: "syntax-module-blocks",
@@ -13044,7 +13044,7 @@ var syntaxModuleBlocks = declare(api => {
 const PIPELINE_PROPOSALS = ["minimal", "fsharp", "hack", "smart"],
   TOPIC_TOKENS = ["^^", "@@", "^", "%", "#"],
   documentationURL = "https://babeljs.io/docs/en/babel-plugin-proposal-pipeline-operator";
-var syntaxPipelineOperator = declare((api, { proposal, topicToken }) => {
+const syntaxPipelineOperator = declare((api, { proposal, topicToken }) => {
   api.assertVersion(7);
   if (typeof proposal != "string" || !PIPELINE_PROPOSALS.includes(proposal)) {
     const proposalList = PIPELINE_PROPOSALS.map(p => `"${p}"`).join(", ");
@@ -13067,7 +13067,7 @@ var syntaxPipelineOperator = declare((api, { proposal, topicToken }) => {
   };
 });
 
-var syntaxRecordAndTuple = declare((api, options) => {
+const syntaxRecordAndTuple = declare((api, options) => {
   api.assertVersion(7);
   return {
     name: "syntax-record-and-tuple",
@@ -13281,7 +13281,7 @@ function rewriteForAwait(path, { getAsyncIterator }) {
   return { replaceParent: isLabeledParent, node: template, declar, loop };
 }
 
-var proposalAsyncGeneratorFunctions = declare(api => {
+const proposalAsyncGeneratorFunctions = declare(api => {
   api.assertVersion(7);
   const yieldStarVisitor = traverse.visitors.merge([{
     ArrowFunctionExpression(path) {
@@ -13341,7 +13341,7 @@ var proposalAsyncGeneratorFunctions = declare(api => {
   };
 });
 
-var proposalClassProperties = declare((api, options) => {
+const proposalClassProperties = declare((api, options) => {
   api.assertVersion(7);
   return createClassFeaturePlugin({
     name: "transform-class-properties",
@@ -13364,7 +13364,7 @@ function generateUid(scope, denyList) {
   } while (denyList.has(uid));
   return uid;
 }
-var proposalClassStaticBlock = declare(({ types: t, template, assertVersion }) => {
+const proposalClassStaticBlock = declare(({ types: t, template, assertVersion }) => {
   assertVersion("^7.12.0");
   return {
     name: "transform-class-static-block",
@@ -14173,7 +14173,7 @@ function transformer2023_05({ assertVersion, assumption }, { loose }, version) {
   };
 }
 
-var proposalDecorators = declare((api, options) => {
+const proposalDecorators = declare((api, options) => {
   api.assertVersion(7);
 
   var { legacy } = options;
@@ -14593,7 +14593,7 @@ function variableDeclarationHasPattern(node) {
 
   return false;
 }
-var transformDestructuring = declare((api, /** Object.<string, *> */ options) => {
+const transformDestructuring = declare((api, /** Object.<string, *> */ options) => {
   var _api$assumption, _options$allowArrayLi, _api$assumption2;
   api.assertVersion(7);
   const { useBuiltIns = false } = options;
@@ -15294,7 +15294,7 @@ function convertFunctionRest(path, loose = false) {
   return true;
 }
 
-var transformParameters = declare((api, options) => {
+const transformParameters = declare((api, options) => {
   var _api$assumption, _api$assumption2;
   api.assertVersion(7);
   const ignoreFunctionLength =
@@ -15319,7 +15319,7 @@ var transformParameters = declare((api, options) => {
   };
 });
 
-var proposalDestructuringPrivate = declare(function ({ assertVersion, assumption, types: t }) {
+const proposalDestructuringPrivate = declare(function ({ assertVersion, assumption, types: t }) {
   assertVersion("^7.17.0");
   const {
     assignmentExpression,
@@ -15438,7 +15438,7 @@ var proposalDestructuringPrivate = declare(function ({ assertVersion, assumption
   };
 });
 
-var proposalDoExpressions = declare(api => {
+const proposalDoExpressions = declare(api => {
   api.assertVersion(7);
   return {
     name: "proposal-do-expressions",
@@ -15600,7 +15600,7 @@ function isRegExpTest(path) {
   );
 }
 
-var proposalDuplicateNamedCapturingGroupsRegex = declare((api, options) => {
+const proposalDuplicateNamedCapturingGroupsRegex = declare((api, options) => {
   api.assertVersion("^7.19.0");
   const { runtime } = options;
   if (runtime !== void 0 && typeof runtime != "boolean") throw new Error("The 'runtime' option must be boolean");
@@ -15625,7 +15625,7 @@ Babel to transpile your imports and exports, you can use
 the @babel/plugin-syntax-dynamic-import plugin and let your
 bundler handle dynamic imports.
 `;
-var proposalDynamicImport = declare(api => {
+const proposalDynamicImport = declare(api => {
   api.assertVersion(7);
   return {
     name: "transform-dynamic-import",
@@ -15642,7 +15642,7 @@ var proposalDynamicImport = declare(api => {
   };
 });
 
-var proposalExportDefaultFrom = declare(api => {
+const proposalExportDefaultFrom = declare(api => {
   api.assertVersion(7);
   return {
     name: "proposal-export-default-from",
@@ -15664,7 +15664,7 @@ var proposalExportDefaultFrom = declare(api => {
   };
 });
 
-var proposalExportNamespaceFrom = declare(api => {
+const proposalExportNamespaceFrom = declare(api => {
   api.assertVersion(7);
   return {
     name: "transform-export-namespace-from",
@@ -15697,7 +15697,7 @@ var proposalExportNamespaceFrom = declare(api => {
   };
 });
 
-var proposalFunctionBind = declare(api => {
+const proposalFunctionBind = declare(api => {
   api.assertVersion(7);
   function getTempId(scope) {
     let id = scope.path.getData("functionBind");
@@ -15743,7 +15743,7 @@ var proposalFunctionBind = declare(api => {
   };
 });
 
-var proposalFunctionSent = declare(api => {
+const proposalFunctionSent = declare(api => {
   api.assertVersion(7);
   const isFunctionSent = node =>
     t$5.isIdentifier(node.meta, { name: "function" }) && t$5.isIdentifier(node.property, { name: "sent" });
@@ -15781,7 +15781,7 @@ var proposalFunctionSent = declare(api => {
   };
 });
 
-var proposalJsonStrings = declare(api => {
+const proposalJsonStrings = declare(api => {
   api.assertVersion(7);
   const regex = /(\\*)([\u2028\u2029])/g;
   function replace(match, escapes, separator) {
@@ -15799,7 +15799,7 @@ var proposalJsonStrings = declare(api => {
   };
 });
 
-var proposalLogicalAssignmentOperators = declare(api => {
+const proposalLogicalAssignmentOperators = declare(api => {
   api.assertVersion(7);
   return {
     name: "transform-logical-assignment-operators",
@@ -15833,7 +15833,7 @@ var proposalLogicalAssignmentOperators = declare(api => {
   };
 });
 
-var proposalNullishCoalescingOperator = declare((api, { loose = false }) => {
+const proposalNullishCoalescingOperator = declare((api, { loose = false }) => {
   var _api$assumption;
   api.assertVersion(7);
   const noDocumentAll = (_api$assumption = api.assumption("noDocumentAll")) != null ? _api$assumption : loose;
@@ -15877,7 +15877,7 @@ function remover({ node }) {
   if (extra != null && (_extra$raw = extra.raw) != null && _extra$raw.includes("_"))
     extra.raw = extra.raw.replace(/_/g, "");
 }
-var proposalNumericSeparator = declare(api => {
+const proposalNumericSeparator = declare(api => {
   api.assertVersion(7);
   return {
     name: "transform-numeric-separator",
@@ -15886,7 +15886,7 @@ var proposalNumericSeparator = declare(api => {
   };
 });
 
-var require$$0$4 = {
+const require$$0$4 = {
   "es6.array.copy-within": {
     chrome: "45",
     opera: "32",
@@ -18005,7 +18005,7 @@ const { isAssignmentPattern, isObjectProperty } = t$5;
     pattern = t$5.objectPattern([property]);
   var ZERO_REFS = t$5.isReferenced(node, property, pattern) ? 1 : 0;
 }
-var proposalObjectRestSpread = declare((api, opts) => {
+const proposalObjectRestSpread = declare((api, opts) => {
   var _api$assumption, _api$assumption2, _api$assumption3, _api$assumption4;
   api.assertVersion(7);
   const supportsObjectAssign = !isRequired("es6.object.assign", api.targets(), { compatData: corejs2BuiltIns }),
@@ -18365,7 +18365,7 @@ var proposalObjectRestSpread = declare((api, opts) => {
   };
 });
 
-var proposalOptionalCatchBinding = declare(api => {
+const proposalOptionalCatchBinding = declare(api => {
   api.assertVersion(7);
   return {
     name: "transform-optional-catch-binding",
@@ -18547,7 +18547,7 @@ function transform$1(path, assumptions) {
   }
 }
 
-var proposalOptionalChaining = declare((api, options) => {
+const proposalOptionalChaining = declare((api, options) => {
   var _api$assumption, _api$assumption2;
   api.assertVersion(7);
   const { loose = false } = options,
@@ -18695,7 +18695,7 @@ const visitorsPerProposal = {
   fsharp: fsharpVisitor,
   smart: smartVisitor
 };
-var proposalPipelineOperator = declare((api, options) => {
+const proposalPipelineOperator = declare((api, options) => {
   api.assertVersion(7);
   const { proposal } = options;
   proposal !== "smart" || console.warn('The smart-mix pipe operator is deprecated. Use "proposal": "hack" instead.');
@@ -18707,7 +18707,7 @@ var proposalPipelineOperator = declare((api, options) => {
   };
 });
 
-var proposalPrivateMethods = declare((api, options) => {
+const proposalPrivateMethods = declare((api, options) => {
   api.assertVersion(7);
   return createClassFeaturePlugin({
     name: "transform-private-methods",
@@ -18720,7 +18720,7 @@ var proposalPrivateMethods = declare((api, options) => {
   });
 });
 
-var proposalPrivatePropertyInObject = declare((api, opt) => {
+const proposalPrivatePropertyInObject = declare((api, opt) => {
   api.assertVersion(7);
   const { types: t, template } = api,
     { loose } = opt,
@@ -18813,7 +18813,7 @@ var proposalPrivatePropertyInObject = declare((api, opt) => {
 });
 
 const v$1 = new OptionValidator("@babel/plugin-proposal-record-and-tuple");
-var proposalRecordAndTuple = declare((api, /** Object.<string, *> */ options) => {
+const proposalRecordAndTuple = declare((api, /** Object.<string, *> */ options) => {
   api.assertVersion(7);
   const polyfillModuleName = v$1.validateStringOption(
     "polyfillModuleName", options.polyfillModuleName, "@bloomberg/record-tuple-polyfill"
@@ -18860,12 +18860,12 @@ var proposalRecordAndTuple = declare((api, /** Object.<string, *> */ options) =>
   };
 });
 
-var proposalRegexpModifiers = declare(api => {
+const proposalRegexpModifiers = declare(api => {
   api.assertVersion("^7.19.0");
   return createRegExpFeaturePlugin({ name: "proposal-regexp-modifiers", feature: "modifiers" });
 });
 
-var syntaxThrowExpressions = declare(api => {
+const syntaxThrowExpressions = declare(api => {
   api.assertVersion(7);
   return {
     name: "syntax-throw-expressions",
@@ -18875,7 +18875,7 @@ var syntaxThrowExpressions = declare(api => {
   };
 });
 
-var proposalThrowExpressions = declare(api => {
+const proposalThrowExpressions = declare(api => {
   api.assertVersion(7);
   return {
     name: "proposal-throw-expressions",
@@ -18893,7 +18893,7 @@ var proposalThrowExpressions = declare(api => {
   };
 });
 
-var proposalUnicodePropertyRegex = declare((api, options) => {
+const proposalUnicodePropertyRegex = declare((api, options) => {
   api.assertVersion(7);
   const { useUnicodeFlag = true } = options;
   if (typeof useUnicodeFlag != "boolean") throw new Error(".useUnicodeFlag must be a boolean, or undefined");
@@ -18905,7 +18905,7 @@ var proposalUnicodePropertyRegex = declare((api, options) => {
   });
 });
 
-var transformUnicodeSetsRegex = declare(api => {
+const transformUnicodeSetsRegex = declare(api => {
   api.assertVersion(7);
   return createRegExpFeaturePlugin({
     name: "transform-unicode-sets-regex",
@@ -18916,7 +18916,7 @@ var transformUnicodeSetsRegex = declare(api => {
   });
 });
 
-var transformAsyncToGenerator = declare((api, options) => {
+const transformAsyncToGenerator = declare((api, options) => {
   var _api$assumption, _api$assumption2;
   api.assertVersion(7);
   const { method, module, loose = false } = options,
@@ -18948,7 +18948,7 @@ var transformAsyncToGenerator = declare((api, options) => {
   };
 });
 
-var transformArrowFunctions = declare((api, options) => {
+const transformArrowFunctions = declare((api, options) => {
   var _api$assumption;
   api.assertVersion(7);
   const noNewArrows = (_api$assumption = api.assumption("noNewArrows")) != null ? _api$assumption : !options.spec;
@@ -18963,7 +18963,7 @@ var transformArrowFunctions = declare((api, options) => {
   };
 });
 
-var transformBlockScopedFunctions = declare(api => {
+const transformBlockScopedFunctions = declare(api => {
   api.assertVersion(7);
   function transformStatementList(paths) {
     for (const path of paths) {
@@ -19400,7 +19400,7 @@ function isStrict(path) {
   });
 }
 
-var transformBlockScoping = declare((api, opts) => {
+const transformBlockScoping = declare((api, opts) => {
   api.assertVersion(7);
   const { throwIfClosureRequired = false, tdz: tdzEnabled = false } = opts;
   if (typeof throwIfClosureRequired != "boolean")
@@ -19992,7 +19992,7 @@ function transformClass(path, file, builtinClasses, isLoose, assumptions, suppor
 
 const getBuiltinClasses = category => Object.keys(traverse.globals[category]).filter(name => /^[A-Z]/.test(name)),
   builtinClasses = new Set([...getBuiltinClasses("builtin"), ...getBuiltinClasses("browser")]);
-var transformClasses = declare((api, options) => {
+const transformClasses = declare((api, options) => {
   var _api$assumption, _api$assumption2, _api$assumption3, _api$assumption4;
   api.assertVersion(7);
   const { loose = false } = options,
@@ -20047,7 +20047,7 @@ var DefineAccessorHelper = template$1.expression.ast`
 `;
 DefineAccessorHelper._compact = true;
 
-var transformComputedProperties = declare((api, options) => {
+const transformComputedProperties = declare((api, options) => {
   api.assertVersion(7);
   var _api$assumption = api.assumption("setComputedProperties");
   const pushComputedProps = (_api$assumption != null ? _api$assumption : options.loose)
@@ -20153,7 +20153,7 @@ var transformComputedProperties = declare((api, options) => {
   };
 });
 
-var transformDotallRegex = declare(api => {
+const transformDotallRegex = declare(api => {
   api.assertVersion(7);
   return createRegExpFeaturePlugin({ name: "transform-dotall-regex", feature: "dotAllFlag" });
 });
@@ -20161,7 +20161,7 @@ var transformDotallRegex = declare(api => {
 function getName(key) {
   return t$5.isIdentifier(key) ? key.name : key.value.toString();
 }
-var transformDuplicateKeys = declare(api => {
+const transformDuplicateKeys = declare(api => {
   api.assertVersion(7);
   return {
     name: "transform-duplicate-keys",
@@ -20278,7 +20278,7 @@ function build(opts) {
   };
 }
 
-var transformExponentialOperator = declare(api => {
+const transformExponentialOperator = declare(api => {
   api.assertVersion(7);
   return {
     name: "transform-exponentiation-operator",
@@ -20290,7 +20290,7 @@ var transformExponentialOperator = declare(api => {
   };
 });
 
-var transformFlowComments = declare(api => {
+const transformFlowComments = declare(api => {
   api.assertVersion(7);
   function commentFromString(comment) {
     return typeof comment == "string" ? { type: "CommentBlock", value: comment } : comment;
@@ -20477,7 +20477,7 @@ var transformFlowComments = declare(api => {
   };
 });
 
-var transformFlowStripTypes = declare((api, opts) => {
+const transformFlowStripTypes = declare((api, opts) => {
   api.assertVersion(7);
   const FLOW_DIRECTIVE = /(@flow(\s+(strict(-local)?|weak))?|@noflow)/;
   let skipStrip = false;
@@ -20717,7 +20717,7 @@ function buildLoopBody(path, declar, newBody) {
   }
   return block;
 }
-var transformForOf = declare((api, /** Object.<string, *> */ options) => {
+const transformForOf = declare((api, /** Object.<string, *> */ options) => {
   var _options$assumeArray, _options$allowArrayLi, _api$assumption;
   api.assertVersion(7);
   {
@@ -20862,7 +20862,7 @@ var transformForOf = declare((api, /** Object.<string, *> */ options) => {
   };
 });
 
-var transformFunctionName = declare(api => {
+const transformFunctionName = declare(api => {
   api.assertVersion(7);
   const supportUnicodeId = !isRequired("transform-unicode-escapes", api.targets());
   return {
@@ -20887,7 +20887,7 @@ var transformFunctionName = declare(api => {
   };
 });
 
-var transformInstanceof = declare(api => {
+const transformInstanceof = declare(api => {
   api.assertVersion(7);
   return {
     name: "transform-instanceof",
@@ -20911,7 +20911,7 @@ var transformInstanceof = declare(api => {
   };
 });
 
-var transformJscript = declare(api => {
+const transformJscript = declare(api => {
   api.assertVersion(7);
   return {
     name: "transform-jscript",
@@ -20929,7 +20929,7 @@ var transformJscript = declare(api => {
   };
 });
 
-var transformLiterals = declare(api => {
+const transformLiterals = declare(api => {
   api.assertVersion(7);
   return {
     name: "transform-literals",
@@ -20944,7 +20944,7 @@ var transformLiterals = declare(api => {
   };
 });
 
-var transformMemberExpressionLiterals = declare(api => {
+const transformMemberExpressionLiterals = declare(api => {
   api.assertVersion(7);
   return {
     name: "transform-member-expression-literals",
@@ -20979,7 +20979,7 @@ function injectWrapper(path, wrapper) {
   amdFactory.pushContainer("directives", directives);
   amdFactory.pushContainer("body", body);
 }
-var transformModulesAmd = declare((api, options) => {
+const transformModulesAmd = declare((api, options) => {
   var _api$assumption, _api$assumption2;
   api.assertVersion(7);
   const { allowTopLevelThis, strict, strictMode, importInterop, noInterop } = options,
@@ -21172,7 +21172,7 @@ function constructExportCall(path, exportIdent, exportNames, exportValues, expor
   }
   return statements;
 }
-var transformModulesSystemjs = declare((api, options) => {
+const transformModulesSystemjs = declare((api, options) => {
   api.assertVersion(7);
   const { systemGlobal = "System", allowTopLevelThis = false } = options,
     reassignmentVisited = new WeakSet();
@@ -21484,7 +21484,7 @@ const buildWrapper = template$1.default(`
     function(IMPORT_NAMES) {
   })
 `);
-var transformModulesUmd = declare((api, options) => {
+const transformModulesUmd = declare((api, options) => {
   var _api$assumption, _api$assumption2;
   api.assertVersion(7);
   const { globals, exactGlobals, allowTopLevelThis, strict, strictMode, noInterop, importInterop } = options,
@@ -21602,7 +21602,7 @@ var transformModulesUmd = declare((api, options) => {
   };
 });
 
-var transformNamedCapturingGroupsRegex = declare((api, options) => {
+const transformNamedCapturingGroupsRegex = declare((api, options) => {
   const { runtime } = options;
   if (runtime !== void 0 && typeof runtime != "boolean") throw new Error("The 'runtime' option must be boolean");
 
@@ -21613,7 +21613,7 @@ var transformNamedCapturingGroupsRegex = declare((api, options) => {
   });
 });
 
-var transformNewTarget = declare(api => {
+const transformNewTarget = declare(api => {
   api.assertVersion(7);
   return {
     name: "transform-new-target",
@@ -21659,7 +21659,7 @@ var transformNewTarget = declare(api => {
   };
 });
 
-var transformObjectAssign = declare(api => {
+const transformObjectAssign = declare(api => {
   api.assertVersion(7);
   return {
     name: "transform-object-assign",
@@ -21674,7 +21674,7 @@ var transformObjectAssign = declare(api => {
 function replacePropertySuper(path, getObjectRef, file) {
   new ReplaceSupers({ getObjectRef, methodPath: path, file }).replace();
 }
-var transformObjectSuper = declare(api => {
+const transformObjectSuper = declare(api => {
   api.assertVersion(7);
   return {
     name: "transform-object-super",
@@ -21694,7 +21694,7 @@ var transformObjectSuper = declare(api => {
   };
 });
 
-var transformObjectSetPrototypeOfToAssign = declare(api => {
+const transformObjectSetPrototypeOfToAssign = declare(api => {
   api.assertVersion(7);
   return {
     name: "transform-object-set-prototype-of-to-assign",
@@ -21706,7 +21706,7 @@ var transformObjectSetPrototypeOfToAssign = declare(api => {
   };
 });
 
-var transformPropertyLiterals = declare(api => {
+const transformPropertyLiterals = declare(api => {
   api.assertVersion(7);
   return {
     name: "transform-property-literals",
@@ -21755,7 +21755,7 @@ function toDefineObject(mutatorMap) {
   return objExpr;
 }
 
-var transformPropertyMutators = declare(api => {
+const transformPropertyMutators = declare(api => {
   api.assertVersion(7);
   return {
     name: "transform-property-mutators",
@@ -21784,7 +21784,7 @@ var transformPropertyMutators = declare(api => {
   };
 });
 
-var transformProtoToAssign = declare(api => {
+const transformProtoToAssign = declare(api => {
   api.assertVersion(7);
   function isProtoKey(node) {
     return !t$5.isSpreadElement(node) && t$5.isStringLiteral(t$5.toComputedKey(node, node.key), { value: "__proto__" });
@@ -21841,7 +21841,7 @@ var transformProtoToAssign = declare(api => {
   };
 });
 
-var transformReactConstantElements = declare((api, options) => {
+const transformReactConstantElements = declare((api, options) => {
   api.assertVersion(7);
   const { allowMutablePropsOnTags } = options;
   if (allowMutablePropsOnTags != null && !Array.isArray(allowMutablePropsOnTags))
@@ -21986,7 +21986,7 @@ var transformReactConstantElements = declare((api, options) => {
   };
 });
 
-var transformReactDisplayName = declare(api => {
+const transformReactDisplayName = declare(api => {
   api.assertVersion(7);
   function addDisplayName(id, call) {
     const props = call.arguments[0].properties;
@@ -22218,7 +22218,7 @@ function helper(opts) {
   }
 }
 
-var transformReactInlineElements = declare(api => {
+const transformReactInlineElements = declare(api => {
   api.assertVersion(7);
   function hasRefOrSpread(attrs) {
     for (let i = 0; i < attrs.length; i++) {
@@ -22703,9 +22703,9 @@ function sourceSelfError(path, name) {
   );
 }
 
-var transformReactJSX = createPlugin({ name: "transform-react-jsx", development: false });
+const transformReactJSX = createPlugin({ name: "transform-react-jsx", development: false });
 
-var transformReactJsxCompat = declare(api => {
+const transformReactJsxCompat = declare(api => {
   api.assertVersion(7);
   return {
     name: "transform-react-jsx-compat",
@@ -22731,7 +22731,7 @@ var transformReactJsxCompat = declare(api => {
   };
 });
 
-var transformReactJSXDevelopment = createPlugin({ name: "transform-react-jsx/development", development: true });
+const transformReactJSXDevelopment = createPlugin({ name: "transform-react-jsx/development", development: true });
 
 const TRACE_ID$1 = "__self";
 function getThisFunctionParent(path) {
@@ -22754,7 +22754,7 @@ function isThisAllowed(path) {
     !isDerivedClass(parentMethodOrFunction.parentPath.parentPath)
   );
 }
-var transformReactJsxSelf = declare(api => {
+const transformReactJsxSelf = declare(api => {
   api.assertVersion(7);
   const visitor = {
     JSXOpeningElement(path) {
@@ -22779,7 +22779,7 @@ var transformReactJsxSelf = declare(api => {
 const TRACE_ID = "__source",
   FILE_NAME_VAR = "_jsxFileName",
   createNodeFromNullish = (val, fn) => (val == null ? t$5.nullLiteral() : fn(val));
-var transformReactJsxSource = declare(api => {
+const transformReactJsxSource = declare(api => {
   api.assertVersion(7);
   function makeTrace(fileNameIdentifier, { line, column }) {
     const fileLineLiteral = createNodeFromNullish(line, t$5.numericLiteral),
@@ -23885,7 +23885,7 @@ function regeneratorTransform(context) {
   return plugin;
 }
 
-var transformRegenerator = declare(({ types: t, assertVersion }) => {
+const transformRegenerator = declare(({ types: t, assertVersion }) => {
   assertVersion(7);
   return {
     name: "transform-regenerator",
@@ -23911,7 +23911,7 @@ var transformRegenerator = declare(({ types: t, assertVersion }) => {
   };
 });
 
-var transformReservedWords = declare(api => {
+const transformReservedWords = declare(api => {
   api.assertVersion(7);
   return {
     name: "transform-reserved-words",
@@ -24873,7 +24873,7 @@ var index$2 = definePolyfillProvider(function (api, {
   };
 });
 
-var require$$0$3 = {
+const require$$0$3 = {
   "es.symbol": {
     android: "49",
     bun: "0.1.1",
@@ -31221,7 +31221,7 @@ var helpers = {
   sortObjectByKey
 };
 
-var require$$1 = {
+const require$$1 = {
   "3.0": [
     "es.symbol",
     "es.symbol.description",
@@ -31688,7 +31688,7 @@ var require$$1 = {
   ]
 };
 
-var require$$2 = [
+const require$$2 = [
   "es.symbol",
   "es.symbol.description",
   "es.symbol.async-iterator",
@@ -32159,7 +32159,7 @@ var getModulesListForTargetVersion$1 = function (raw) {
 
 var getModulesListForTargetVersion = getModulesListForTargetVersion$1;
 
-var require$$0$2 = {
+const require$$0$2 = {
   "core-js": [
     "es.symbol",
     "es.symbol.description",
@@ -45631,7 +45631,7 @@ function createBasePolyfillsPlugin({
 function supportsStaticESM$1(caller) {
   return !(caller == null || !caller.supportsStaticESM);
 }
-var transformRuntime = declare((api, options, dirname) => {
+const transformRuntime = declare((api, options, dirname) => {
   api.assertVersion(7);
   const {
     helpers: useRuntimeHelpers = true,
@@ -45719,7 +45719,7 @@ var transformRuntime = declare((api, options, dirname) => {
   };
 });
 
-var transformShorthandProperties = declare(api => {
+const transformShorthandProperties = declare(api => {
   api.assertVersion(7);
   return {
     name: "transform-shorthand-properties",
@@ -45748,7 +45748,7 @@ var transformShorthandProperties = declare(api => {
   };
 });
 
-var transformSpread = declare((api, /** Object.<string, *> */ options) => {
+const transformSpread = declare((api, /** Object.<string, *> */ options) => {
   var _api$assumption, _options$allowArrayLi;
   api.assertVersion(7);
   const iterableIsArray =
@@ -45855,7 +45855,7 @@ Please add '@babel/plugin-transform-classes' to your Babel configuration.");
   };
 });
 
-var transformStickyRegex = declare(api => {
+const transformStickyRegex = declare(api => {
   api.assertVersion(7);
   return {
     name: "transform-sticky-regex",
@@ -45871,7 +45871,7 @@ var transformStickyRegex = declare(api => {
   };
 });
 
-var transformStrictMode = declare(api => {
+const transformStrictMode = declare(api => {
   api.assertVersion(7);
   return {
     name: "transform-strict-mode",
@@ -45886,7 +45886,7 @@ var transformStrictMode = declare(api => {
   };
 });
 
-var transformTemplateLiterals = declare((api, options) => {
+const transformTemplateLiterals = declare((api, options) => {
   var _api$assumption, _api$assumption2;
   api.assertVersion(7);
   const ignoreToPrimitiveHint =
@@ -45968,7 +45968,7 @@ var transformTemplateLiterals = declare((api, options) => {
   };
 });
 
-var transformTypeofSymbol = declare(api => {
+const transformTypeofSymbol = declare(api => {
   api.assertVersion(7);
   return {
     name: "transform-typeof-symbol",
@@ -46012,7 +46012,7 @@ var transformTypeofSymbol = declare(api => {
   };
 });
 
-var transformUnicodeEscapes = declare(api => {
+const transformUnicodeEscapes = declare(api => {
   api.assertVersion(7);
   const surrogate = /[\ud800-\udfff]/g,
     unicodeEscape = /(\\+)u{([0-9a-fA-F]+)}/g;
@@ -46094,12 +46094,12 @@ var transformUnicodeEscapes = declare(api => {
   };
 });
 
-var transformUnicodeRegex = declare(api => {
+const transformUnicodeRegex = declare(api => {
   api.assertVersion(7);
   return createRegExpFeaturePlugin({ name: "transform-unicode-regex", feature: "unicodeFlag" });
 });
 
-var proposalExplicitResourceManagement = declare(api => {
+const proposalExplicitResourceManagement = declare(api => {
   api.assertVersion("^7.22.0");
   const TOP_LEVEL_USING = new Map();
   function isUsingDeclaration(node) {
@@ -46345,7 +46345,7 @@ const all = {
   "proposal-explicit-resource-management": proposalExplicitResourceManagement
 };
 
-var preset2015 = (_, opts) => {
+const preset2015 = (_, opts) => {
   let loose = false,
     modules = "commonjs",
     spec = false;
@@ -46372,7 +46372,7 @@ var preset2015 = (_, opts) => {
   };
 };
 
-var presetStage3 = (_, opts = {}) => {
+const presetStage3 = (_, opts = {}) => {
   const { loose = false, decoratorsLegacy = false, decoratorsVersion = "2018-09", decoratorsBeforeExport } = opts;
   return {
     plugins: [
@@ -46388,7 +46388,7 @@ var presetStage3 = (_, opts = {}) => {
   };
 };
 
-var presetStage2 = (_, opts = {}) => {
+const presetStage2 = (_, opts = {}) => {
   const { pipelineProposal = "minimal", pipelineTopicToken = "%", recordAndTupleSyntax = "hash" } = opts;
   return {
     presets: [[presetStage3, opts]],
@@ -46402,7 +46402,7 @@ var presetStage2 = (_, opts = {}) => {
   };
 };
 
-var presetStage1 = (_, opts = {}) => {
+const presetStage1 = (_, opts = {}) => {
   const {
     loose = false,
     useBuiltIns = false,
@@ -46430,7 +46430,7 @@ var presetStage1 = (_, opts = {}) => {
   };
 };
 
-var presetStage0 = (_, opts = {}) => {
+const presetStage0 = (_, opts = {}) => {
   const {
     loose = false,
     useBuiltIns = false,
@@ -46490,7 +46490,7 @@ function getOptionSpecificExcludesFor({ loose }) {
 }
 
 const OPTS = { allowInsertArrow: false, specCompliant: false };
-var bugfixAsyncArrowsInClass = ({ types: t }) => ({
+const bugfixAsyncArrowsInClass = ({ types: t }) => ({
   name: "transform-async-arrows-in-class",
   visitor: {
     ArrowFunctionExpression(path) {
@@ -46499,7 +46499,7 @@ var bugfixAsyncArrowsInClass = ({ types: t }) => ({
   }
 });
 
-var bugfixEdgeDefaultParameters = ({ types: t }) => {
+const bugfixEdgeDefaultParameters = ({ types: t }) => {
   const isArrowParent = p => p.parentKey === "params" && p.parentPath && t.isArrowFunctionExpression(p.parentPath);
   return {
     name: "transform-edge-default-parameters",
@@ -46515,7 +46515,7 @@ var bugfixEdgeDefaultParameters = ({ types: t }) => {
   };
 };
 
-var bugfixEdgeFunctionName = ({ types: t }) => ({
+const bugfixEdgeFunctionName = ({ types: t }) => ({
   name: "transform-edge-function-name",
   visitor: {
     FunctionExpression: {
@@ -46532,7 +46532,7 @@ var bugfixEdgeFunctionName = ({ types: t }) => ({
   }
 });
 
-var bugfixTaggedTemplateCaching = ({ types: t }) => ({
+const bugfixTaggedTemplateCaching = ({ types: t }) => ({
   name: "transform-tagged-template-caching",
   visitor: {
     TaggedTemplateExpression(path, state) {
@@ -46597,7 +46597,7 @@ function handle(declaration) {
   fn && fn.scope.hasOwnBinding(name) && fn.scope.getOwnBinding(name).kind === "param" &&
     declaration.scope.rename(name);
 }
-var bugfixSafariForShadowing = () => ({
+const bugfixSafariForShadowing = () => ({
   name: "transform-safari-for-shadowing",
   visitor: {
     ForXStatement(path) {
@@ -46623,7 +46623,7 @@ function shouldTransform$1(path) {
   );
 }
 
-var bugfixSafariIdDestructuringCollisionInFunctionExpression = declare(api => {
+const bugfixSafariIdDestructuringCollisionInFunctionExpression = declare(api => {
   api.assertVersion("^7.16.0");
   return {
     name: "plugin-bugfix-safari-id-destructuring-collision-in-function-expression",
@@ -46670,7 +46670,7 @@ function shouldTransform(path) {
   return false;
 }
 
-var bugfixV8SpreadParametersInOptionalChaining = declare(api => {
+const bugfixV8SpreadParametersInOptionalChaining = declare(api => {
   var _api$assumption, _api$assumption2;
   api.assertVersion(7);
   const noDocumentAll = (_api$assumption = api.assumption("noDocumentAll")) != null && _api$assumption,
@@ -46792,7 +46792,7 @@ function removeUnsupportedItems(items, babelVersion) {
   });
 }
 
-var moduleTransformations = {
+const moduleTransformations = {
   auto: "transform-modules-commonjs",
   amd: "transform-modules-amd",
   commonjs: "transform-modules-commonjs",
@@ -46803,7 +46803,7 @@ var moduleTransformations = {
 
 var coreJsCompat = require$$0$3;
 
-var require$$0$1 = {
+const require$$0$1 = {
   "bugfix/transform-async-arrows-in-class": {
     chrome: "55",
     opera: "42",
@@ -47442,7 +47442,7 @@ function supportsDynamicImport(/** @prop {boolean} supportsDynamicImport */ call
 function supportsExportNamespaceFrom(/** @prop {boolean} supportsExportNamespaceFrom */ caller) {
   return !(caller == null || !caller.supportsExportNamespaceFrom);
 }
-var presetEnv = declare((api, opts) => {
+const presetEnv = declare((api, opts) => {
   api.assertVersion(7);
   const babelTargets = api.targets();
   const {
@@ -47556,7 +47556,7 @@ function normalizeOptions$1(options = {}) {
   return { all, allowDeclareFields, ignoreExtensions };
 }
 
-var presetFlow = declare((api, opts) => {
+const presetFlow = declare((api, opts) => {
   api.assertVersion(7);
   const { all, allowDeclareFields, ignoreExtensions = false } = normalizeOptions$1(opts);
 
@@ -47580,7 +47580,7 @@ const PURE_CALLS = [
   ],
   ["react-dom", new Set(["createPortal"])]
 ];
-var transformReactPure = declare(api => {
+const transformReactPure = declare(api => {
   api.assertVersion(7);
   return {
     name: "transform-react-pure-annotations",
@@ -47630,7 +47630,7 @@ function normalizeOptions(options = {}) {
   };
 }
 
-var presetReact = declare((api, opts) => {
+const presetReact = declare((api, opts) => {
   api.assertVersion(7);
   const { development, importSource, pragma, pragmaFrag, pure, runtime, throwIfNamespace } = normalizeOptions(opts);
   return {
@@ -47767,7 +47767,29 @@ function registerPresets(newPresets) {
 const version = "7.22.20";
 
 // noinspection JSUnusedGlobalSymbols
-module.exports = Object.assign({}, _babel, {
+exports = module.exports = {
+  DEFAULT_EXTENSIONS,
+  File,
+  createConfigItem,
+  createConfigItemAsync,
+  createConfigItemSync,
+  getEnv,
+  loadOptions,
+  loadOptionsAsync,
+  loadOptionsSync,
+  loadPartialConfig,
+  loadPartialConfigAsync,
+  loadPartialConfigSync,
+  parse,
+  parseAsync,
+  parseSync,
+  resolvePlugin,
+  resolvePreset,
+  transformFileSync,
+  transformFromAstSync,
+  transformSync,
+  types: t$5,
+  //..._babel,
   availablePlugins,
   availablePresets,
   buildExternalHelpers,
@@ -47782,4 +47804,7 @@ module.exports = Object.assign({}, _babel, {
   transformFromAst,
   transformFromAstAsync,
   version
-});
+};
+Object.defineProperty(exports, 'template', { enumerable: true, get() { return template$1.default; } });
+Object.defineProperty(exports, 'tokTypes', { enumerable: true, get() { return parser$1.tokTypes; } });
+Object.defineProperty(exports, 'traverse', { enumerable: true, get() { return traverse.default; } });

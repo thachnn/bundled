@@ -1,6 +1,6 @@
 "use strict";
 
-var common = require('./common.js');
+const common = require('./common.js');
 
 function _objectWithoutPropertiesLoose(source, excluded) {
   return source == null ? {} : Object.keys(source).reduce(function (target, key) {
@@ -35,7 +35,7 @@ function createPositionWithColumnOffset(position, columnOffset) {
 }
 
 const code = "BABEL_PARSER_SOURCETYPE_MODULE_REQUIRED";
-var ModuleErrors = {
+const ModuleErrors = {
   ImportMetaOutsideModule: { message: "import.meta may appear only with 'sourceType: \"module\"'", code },
   ImportOutsideModule: { message: "'import' and 'export' may appear only with 'sourceType: \"module\"'", code }
 };
@@ -65,7 +65,7 @@ const NodeDescriptions = {
 const toNodeDescription = ({ type, prefix }) =>
   type === "UpdateExpression" ? NodeDescriptions.UpdateExpression[String(prefix)] : NodeDescriptions[type];
 
-var StandardErrors = {
+const StandardErrors = {
   AccessorIsGenerator: ({ kind }) => `A ${kind}ter cannot be a generator.`,
   ArgumentsInClass: "'arguments' is only allowed in functions and class methods.",
   AsyncFunctionInSingleStatementContext: "Async functions can only be declared at the top level or inside a block.",
@@ -249,7 +249,7 @@ var StandardErrors = {
   ZeroDigitNumericSeparator: "Numeric separator can not be used after leading 0."
 };
 
-var StrictModeErrors = {
+const StrictModeErrors = {
   StrictDelete: "Deleting local variable in strict mode.",
   StrictEvalArguments: ({ referenceName }) => `Assigning to '${referenceName}' in strict mode.`,
   StrictEvalArgumentsBinding: ({ bindingName }) => `Binding '${bindingName}' in strict mode.`,
@@ -265,7 +265,7 @@ const UnparenthesizedPipeBodyDescriptions = new Set([
   "ConditionalExpression",
   "YieldExpression"
 ]);
-var PipelineOperatorErrors = {
+const PipelineOperatorErrors = {
   PipeBodyIsTighter:
     "Unexpected yield after pipeline body; any yield expression acting as Hack-style pipe body must be parenthesized due to its loose operator precedence.",
   PipeTopicRequiresHackPipes:
@@ -359,7 +359,7 @@ function toESTreeLocation(node) {
   return node;
 }
 // noinspection JSUnusedGlobalSymbols
-var estree = superClass => class extends superClass {
+const estree = superClass => class extends superClass {
   parse() {
     const file = toESTreeLocation(super.parse());
     if (this.options.tokens) file.tokens = file.tokens.map(toESTreeLocation);
@@ -2935,7 +2935,7 @@ function partition(list, test) {
 const FLOW_PRAGMA_REGEX = /\*?\s*@((?:no)?flow)\b/;
 // noinspection JSUnusedGlobalSymbols
 /** @prop {?string} flowPragma */
-var flow = superClass => class extends superClass {
+const flow = superClass => class extends superClass {
   constructor(...args) {
     super(...args);
     this.flowPragma = void 0;
@@ -5164,7 +5164,7 @@ function getQualifiedJSXName(object) {
 
   throw new Error("Node had unexpected type: " + object.type);
 }
-var jsx = superClass => class extends superClass {
+const jsx = superClass => class extends superClass {
   jsxReadToken() {
     let out = "",
       chunkStart = this.state.pos;
@@ -6076,7 +6076,7 @@ function tsIsVarianceAnnotations(modifier) {
  * @prop {Function} tsParseConstModifier
  * @prop {Function} tsParseInOutConstModifiers
  */
-var typescript = superClass => class extends superClass {
+const typescript = superClass => class extends superClass {
   constructor(...args) {
     super(...args);
     this.tsParseInOutModifiers = this.tsParseModifiers.bind(this, {
@@ -8259,7 +8259,7 @@ const PlaceholderErrors = ParseErrorEnum`placeholders`({
   UnexpectedSpace: "Unexpected space in placeholder."
 });
 // noinspection JSUnusedGlobalSymbols
-var placeholders = superClass => class extends superClass {
+const placeholders = superClass => class extends superClass {
   parsePlaceholder(expectedNode) {
     if (this.match(142)) {
       const node = this.startNode();
@@ -8417,7 +8417,7 @@ var placeholders = superClass => class extends superClass {
   }
 };
 
-var v8intrinsic = superClass => class extends superClass {
+const v8intrinsic = superClass => class extends superClass {
   parseV8Intrinsic() {
     if (this.match(54)) {
       const v8IntrinsicStartLoc = this.state.startLoc,

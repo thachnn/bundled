@@ -1,6 +1,6 @@
 "use strict";
 
-var _t = require('./types'),
+const _t = require('./types'),
   generator = require('./generator'),
   template = require('./template'),
   parser = require('./parser');
@@ -24,7 +24,7 @@ const ReferencedIdentifier = ["Identifier", "JSXIdentifier"],
   NumericLiteralTypeAnnotation = ["NumberLiteralTypeAnnotation"],
   ForAwaitStatement = ["ForOfStatement"];
 
-var virtualTypes = Object.freeze({
+const virtualTypes = Object.freeze({
   __proto__: null,
   BindingIdentifier,
   BlockScoped,
@@ -210,7 +210,7 @@ function mergePair(dest, src) {
   for (const phase of ["enter", "exit"]) if (src[phase]) dest[phase] = [].concat(dest[phase] || [], src[phase]);
 }
 
-var visitors = Object.freeze({
+const visitors = Object.freeze({
   __proto__: null,
   explode,
   isExplodedVisitor,
@@ -250,7 +250,7 @@ function getOrCreateCachedPaths(hub, parent) {
   return paths;
 }
 
-var cache = Object.freeze({
+const cache = Object.freeze({
   __proto__: null,
   clear,
   clearPath,
@@ -2377,7 +2377,7 @@ var devtools = {
   unmonitorEvents: false,
   values: false
 };
-var require$$0 = {
+const require$$0 = {
   builtin,
   es5,
   es2015,
@@ -3310,7 +3310,7 @@ function inType(...candidateTypes) {
   return false;
 }
 
-var NodePath_ancestry = Object.freeze({
+const NodePath_ancestry = Object.freeze({
   __proto__: null,
   find,
   findParent,
@@ -3587,7 +3587,7 @@ function resolveCall(callee) {
   }
 }
 
-var inferers = Object.freeze({
+const inferers = Object.freeze({
   __proto__: null,
   ArrayExpression,
   ArrowFunctionExpression: Func,
@@ -3725,7 +3725,7 @@ function isGenericType(genericName) {
   );
 }
 
-var NodePath_inference = Object.freeze({
+const NodePath_inference = Object.freeze({
   __proto__: null,
   _getTypeAnnotation,
   baseTypeStrictlyMatches,
@@ -3942,7 +3942,7 @@ function replaceInline(nodes) {
   return this.replaceWith(nodes);
 }
 
-var NodePath_replacement = Object.freeze({
+const NodePath_replacement = Object.freeze({
   __proto__: null,
   _replaceWith,
   replaceExpressionWithStatements,
@@ -4251,7 +4251,7 @@ function evaluate() {
   return { confident: state.confident, deopt: state.deoptPath, value };
 }
 
-var NodePath_evaluation = Object.freeze({
+const NodePath_evaluation = Object.freeze({
   __proto__: null,
   evaluate,
   evaluateTruthy
@@ -4799,7 +4799,7 @@ function getScopeInformation(fnPath) {
   return { thisPaths, argumentsPaths, newTargetPaths, superProps, superCalls };
 }
 
-var NodePath_conversion = Object.freeze({
+const NodePath_conversion = Object.freeze({
   __proto__: null,
   arrowFunctionToExpression,
   ensureBlock,
@@ -5089,7 +5089,7 @@ function isInStrictMode() {
   });
 }
 
-var NodePath_introspection = Object.freeze({
+const NodePath_introspection = Object.freeze({
   __proto__: null,
   _guessExecutionStatusRelativeTo,
   _resolve,
@@ -5289,7 +5289,7 @@ function _getQueueContexts() {
   return contexts;
 }
 
-var NodePath_context = Object.freeze({
+const NodePath_context = Object.freeze({
   __proto__: null,
   _call,
   _getQueueContexts,
@@ -5383,7 +5383,7 @@ function _assertUnremoved() {
   if (this.removed) throw this.buildCodeFrameError("NodePath has been removed so is read-only.");
 }
 
-var NodePath_removal = Object.freeze({
+const NodePath_removal = Object.freeze({
   __proto__: null,
   _assertUnremoved,
   _callRemovalHooks,
@@ -5706,7 +5706,7 @@ function hoist(scope = this.scope) {
   return new PathHoister(this, scope).run();
 }
 
-var NodePath_modification = Object.freeze({
+const NodePath_modification = Object.freeze({
   __proto__: null,
   _containerInsert,
   _containerInsertAfter,
@@ -5953,7 +5953,7 @@ function getOuterBindingIdentifierPaths(duplicates = false) {
   return this.getBindingIdentifierPaths(duplicates, true);
 }
 
-var NodePath_family = Object.freeze({
+const NodePath_family = Object.freeze({
   __proto__: null,
   _getKey,
   _getPattern,
@@ -6010,7 +6010,7 @@ function addComments(type, comments) {
   _addComments(this.node, type, comments);
 }
 
-var NodePath_comments = Object.freeze({
+const NodePath_comments = Object.freeze({
   __proto__: null,
   addComment,
   addComments,
@@ -6112,7 +6112,7 @@ function isForAwaitStatement() {
   return isForOfStatement(this.node, { await: true });
 }
 
-var NodePath_virtual_types_validator = Object.freeze({
+const NodePath_virtual_types_validator = Object.freeze({
   __proto__: null,
   isBindingIdentifier,
   isBlockScoped,

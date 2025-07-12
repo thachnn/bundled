@@ -1,6 +1,6 @@
 "use strict";
 
-var path$1 = require('path'),
+const path$1 = require('path'),
   fs = require('fs');
 
 var ERRORS = {
@@ -33939,7 +33939,7 @@ const rewritePattern = (pattern, flags, options) => {
 };
 var rewritePattern_1 = rewritePattern;
 
-var require$$0 = [
+const require$$0 = [
   { name: "nodejs", version: "0.2.0", date: "2011-08-26", lts: false, security: false, v8: "2.3.8.0" },
   { name: "nodejs", version: "0.3.0", date: "2011-08-26", lts: false, security: false, v8: "2.5.1.0" },
   { name: "nodejs", version: "0.4.0", date: "2011-08-26", lts: false, security: false, v8: "3.1.2.0" },
@@ -37831,7 +37831,7 @@ var v4 = { start: "2015-09-08", lts: "2015-10-12", maintenance: "2017-04-01", en
   v18 = { start: "2022-04-19", lts: "2022-10-25", maintenance: "2023-10-18", end: "2025-04-30", codename: "Hydrogen" },
   v19 = { start: "2022-10-18", maintenance: "2023-04-01", end: "2023-06-01" },
   v20 = { start: "2023-04-18", lts: "2023-10-24", maintenance: "2024-10-22", end: "2026-04-30", codename: "" };
-var require$$2 = {
+const require$$2 = {
   "v0.8": { start: "2012-06-25", end: "2014-07-31" },
   "v0.10": { start: "2013-03-11", end: "2016-10-31" },
   "v0.12": { start: "2015-02-06", end: "2016-12-31" },
