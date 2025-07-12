@@ -11378,7 +11378,7 @@ var presetTypescript = declare((api, opts) => {
 const debug$2 = traverse.buildDebug("babel:config:loading:files:module-types");
 let import_;
 try {
-  import_ = require("./import.cjs");
+  import_ = new Function("filepath", "return import(filepath)");
 } catch (_unused) {}
 const supportsESM = vendors.semver.satisfies(process.versions.node, "^12.17 || >=13.2");
 function* loadCodeDefault(filepath, asyncError) {
