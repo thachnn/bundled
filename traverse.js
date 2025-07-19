@@ -267,7 +267,11 @@ var s = 1000,
   d = h * 24,
   w = d * 7,
   y = d * 365.25;
-var ms = function (val, /** Object.<string, *> */ options) {
+/**
+ * @param {*} val
+ * @param {Object.<string, *>} [options]
+ */
+var ms = function (val, options) {
   options = options || {};
   var type = typeof val;
   if (type === 'string' && val.length > 0) return parse(val);
@@ -3310,7 +3314,7 @@ function inType(...candidateTypes) {
   return false;
 }
 
-const NodePath_ancestry = Object.freeze({
+const NodePath_ancestry = Object.freeze(/** @lends NodePath.prototype */ {
   __proto__: null,
   find,
   findParent,
@@ -3463,6 +3467,7 @@ const {
   voidTypeAnnotation: voidTypeAnnotation$1,
   isIdentifier: isIdentifier$6
 } = _t;
+/** @this NodePath */
 function VariableDeclarator() {
   if (this.get("id").isIdentifier()) return this.get("init").getTypeAnnotation();
 }
@@ -3474,6 +3479,7 @@ function TSAsExpression(node) {
   return node.typeAnnotation;
 }
 TSAsExpression.validParent = true;
+/** @this NodePath */
 function TSNonNullExpression() {
   return this.get("expression").getTypeAnnotation();
 }
@@ -3495,6 +3501,7 @@ function UnaryExpression(node) {
     ? booleanTypeAnnotation()
     : void 0;
 }
+/** @this NodePath */
 function BinaryExpression(node) {
   const operator = node.operator;
   if (NUMBER_BINARY_OPERATORS.indexOf(operator) >= 0) return numberTypeAnnotation();
@@ -3510,18 +3517,23 @@ function BinaryExpression(node) {
       : unionTypeAnnotation([stringTypeAnnotation$1(), numberTypeAnnotation()]);
   }
 }
+/** @this NodePath */
 function LogicalExpression() {
   return createUnionType([this.get("left").getTypeAnnotation(), this.get("right").getTypeAnnotation()]);
 }
+/** @this NodePath */
 function ConditionalExpression() {
   return createUnionType([this.get("consequent").getTypeAnnotation(), this.get("alternate").getTypeAnnotation()]);
 }
+/** @this NodePath */
 function SequenceExpression() {
   return this.get("expressions").pop().getTypeAnnotation();
 }
+/** @this NodePath */
 function ParenthesizedExpression() {
   return this.get("expression").getTypeAnnotation();
 }
+/** @this NodePath */
 function AssignmentExpression() {
   return this.get("right").getTypeAnnotation();
 }
@@ -3561,6 +3573,7 @@ const isArrayFrom = buildMatchMemberExpression("Array.from"),
   isObjectKeys = buildMatchMemberExpression("Object.keys"),
   isObjectValues = buildMatchMemberExpression("Object.values"),
   isObjectEntries = buildMatchMemberExpression("Object.entries");
+/** @this NodePath */
 function CallExpression() {
   const { callee } = this.node;
   return isObjectKeys(callee)
@@ -3571,6 +3584,7 @@ function CallExpression() {
     ? arrayTypeAnnotation(tupleTypeAnnotation([stringTypeAnnotation$1(), anyTypeAnnotation$1()]))
     : resolveCall(this.get("callee"));
 }
+/** @this NodePath */
 function TaggedTemplateExpression() {
   return resolveCall(this.get("tag"));
 }
@@ -3725,7 +3739,7 @@ function isGenericType(genericName) {
   );
 }
 
-const NodePath_inference = Object.freeze({
+const NodePath_inference = Object.freeze(/** @lends NodePath.prototype */ {
   __proto__: null,
   _getTypeAnnotation,
   baseTypeStrictlyMatches,
@@ -3942,7 +3956,7 @@ function replaceInline(nodes) {
   return this.replaceWith(nodes);
 }
 
-const NodePath_replacement = Object.freeze({
+const NodePath_replacement = Object.freeze(/** @lends NodePath.prototype */ {
   __proto__: null,
   _replaceWith,
   replaceExpressionWithStatements,
@@ -3974,6 +3988,7 @@ const Globals = new Map([
   ["Infinity", Infinity],
   ["NaN", NaN]
 ]);
+/** @returns {*} */
 function evaluateCached(path, state) {
   const { node } = path,
     { seen } = state;
@@ -4251,7 +4266,7 @@ function evaluate() {
   return { confident: state.confident, deopt: state.deoptPath, value };
 }
 
-const NodePath_evaluation = Object.freeze({
+const NodePath_evaluation = Object.freeze(/** @lends NodePath.prototype */ {
   __proto__: null,
   evaluate,
   evaluateTruthy
@@ -4799,7 +4814,7 @@ function getScopeInformation(fnPath) {
   return { thisPaths, argumentsPaths, newTargetPaths, superProps, superCalls };
 }
 
-const NodePath_conversion = Object.freeze({
+const NodePath_conversion = Object.freeze(/** @lends NodePath.prototype */ {
   __proto__: null,
   arrowFunctionToExpression,
   ensureBlock,
@@ -5089,7 +5104,7 @@ function isInStrictMode() {
   });
 }
 
-const NodePath_introspection = Object.freeze({
+const NodePath_introspection = Object.freeze(/** @lends NodePath.prototype */ {
   __proto__: null,
   _guessExecutionStatusRelativeTo,
   _resolve,
@@ -5289,7 +5304,7 @@ function _getQueueContexts() {
   return contexts;
 }
 
-const NodePath_context = Object.freeze({
+const NodePath_context = Object.freeze(/** @lends NodePath.prototype */ {
   __proto__: null,
   _call,
   _getQueueContexts,
@@ -5383,7 +5398,7 @@ function _assertUnremoved() {
   if (this.removed) throw this.buildCodeFrameError("NodePath has been removed so is read-only.");
 }
 
-const NodePath_removal = Object.freeze({
+const NodePath_removal = Object.freeze(/** @lends NodePath.prototype */ {
   __proto__: null,
   _assertUnremoved,
   _callRemovalHooks,
@@ -5706,7 +5721,7 @@ function hoist(scope = this.scope) {
   return new PathHoister(this, scope).run();
 }
 
-const NodePath_modification = Object.freeze({
+const NodePath_modification = Object.freeze(/** @lends NodePath.prototype */ {
   __proto__: null,
   _containerInsert,
   _containerInsertAfter,
@@ -5953,7 +5968,7 @@ function getOuterBindingIdentifierPaths(duplicates = false) {
   return this.getBindingIdentifierPaths(duplicates, true);
 }
 
-const NodePath_family = Object.freeze({
+const NodePath_family = Object.freeze(/** @lends NodePath.prototype */ {
   __proto__: null,
   _getKey,
   _getPattern,
@@ -6010,7 +6025,7 @@ function addComments(type, comments) {
   _addComments(this.node, type, comments);
 }
 
-const NodePath_comments = Object.freeze({
+const NodePath_comments = Object.freeze(/** @lends NodePath.prototype */ {
   __proto__: null,
   addComment,
   addComments,
@@ -6112,7 +6127,7 @@ function isForAwaitStatement() {
   return isForOfStatement(this.node, { await: true });
 }
 
-const NodePath_virtual_types_validator = Object.freeze({
+const NodePath_virtual_types_validator = Object.freeze(/** @lends NodePath.prototype */ {
   __proto__: null,
   isBindingIdentifier,
   isBlockScoped,

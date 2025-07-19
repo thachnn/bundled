@@ -1464,17 +1464,20 @@ const n = Object.freeze({
   needsWhitespaceBefore
 });
 
+/** @this Printer */
 function TaggedTemplateExpression(node) {
   this.print(node.tag, node);
   this.print(node.typeParameters, node);
   this.print(node.quasi, node);
 }
+/** @this Printer */
 function TemplateElement(node, parent) {
   const isFirst = parent.quasis[0] === node,
     isLast = parent.quasis[parent.quasis.length - 1] === node,
     value = (isFirst ? "`" : "}") + node.value.raw + (isLast ? "`" : "${");
   this.token(value, true);
 }
+/** @this Printer */
 function TemplateLiteral(node) {
   const quasis = node.quasis;
   for (let i = 0; i < quasis.length; i++) {
@@ -1484,6 +1487,7 @@ function TemplateLiteral(node) {
 }
 
 const { isCallExpression, isLiteral, isMemberExpression, isNewExpression } = _t;
+/** @this Printer */
 function UnaryExpression(node) {
   const { operator } = node;
   if (operator === "void" || operator === "delete" || operator === "typeof" || operator === "throw") {
@@ -1493,6 +1497,7 @@ function UnaryExpression(node) {
 
   this.print(node.argument, node);
 }
+/** @this Printer */
 function DoExpression(node) {
   if (node.async) {
     this.word("async", true);
@@ -1502,11 +1507,13 @@ function DoExpression(node) {
   this.space();
   this.print(node.body, node);
 }
+/** @this Printer */
 function ParenthesizedExpression(node) {
   this.tokenChar(40);
   this.print(node.expression, node);
   this.rightParens(node);
 }
+/** @this Printer */
 function UpdateExpression(node) {
   if (node.prefix) {
     this.token(node.operator);
@@ -1516,6 +1523,7 @@ function UpdateExpression(node) {
     this.token(node.operator);
   }
 }
+/** @this Printer */
 function ConditionalExpression(node) {
   this.print(node.test, node);
   this.space();
@@ -1527,6 +1535,7 @@ function ConditionalExpression(node) {
   this.space();
   this.print(node.alternate, node);
 }
+/** @this Printer */
 function NewExpression(node, parent) {
   this.word("new");
   this.space();
@@ -1549,12 +1558,15 @@ function NewExpression(node, parent) {
   this.printList(node.arguments, node);
   this.rightParens(node);
 }
+/** @this Printer */
 function SequenceExpression(node) {
   this.printList(node.expressions, node);
 }
+/** @this Printer */
 function ThisExpression() {
   this.word("this");
 }
+/** @this Printer */
 function Super() {
   this.word("super");
 }
@@ -1579,6 +1591,7 @@ function _shouldPrintDecoratorsBeforeExport(node) {
     ? this.format.decoratorsBeforeExport
     : typeof node.start == "number" && node.start === node.declaration.start;
 }
+/** @this Printer */
 function Decorator(node) {
   this.tokenChar(64);
   const { expression } = node;
@@ -1590,6 +1603,7 @@ function Decorator(node) {
 
   this.newline();
 }
+/** @this Printer */
 function OptionalMemberExpression(node) {
   let { computed } = node;
   const { optional, property } = node;
@@ -1610,6 +1624,7 @@ function OptionalMemberExpression(node) {
     this.print(property, node);
   }
 }
+/** @this Printer */
 function OptionalCallExpression(node) {
   this.print(node.callee, node);
   this.print(node.typeParameters, node);
@@ -1620,6 +1635,7 @@ function OptionalCallExpression(node) {
   this.printList(node.arguments, node);
   this.rightParens(node);
 }
+/** @this Printer */
 function CallExpression(node) {
   this.print(node.callee, node);
   this.print(node.typeArguments, node);
@@ -1628,9 +1644,11 @@ function CallExpression(node) {
   this.printList(node.arguments, node);
   this.rightParens(node);
 }
+/** @this Printer */
 function Import() {
   this.word("import");
 }
+/** @this Printer */
 function AwaitExpression(node) {
   this.word("await");
   if (node.argument) {
@@ -1638,6 +1656,7 @@ function AwaitExpression(node) {
     this.printTerminatorless(node.argument, node, false);
   }
 }
+/** @this Printer */
 function YieldExpression(node) {
   this.word("yield", true);
   if (node.delegate) {
@@ -1651,13 +1670,16 @@ function YieldExpression(node) {
     this.printTerminatorless(node.argument, node, false);
   }
 }
+/** @this Printer */
 function EmptyStatement() {
   this.semicolon(true);
 }
+/** @this Printer */
 function ExpressionStatement(node) {
   this.print(node.expression, node);
   this.semicolon();
 }
+/** @this Printer */
 function AssignmentPattern(node) {
   this.print(node.left, node);
   node.left.optional && this.tokenChar(63);
@@ -1667,6 +1689,7 @@ function AssignmentPattern(node) {
   this.space();
   this.print(node.right, node);
 }
+/** @this Printer */
 function AssignmentExpression(node, parent) {
   const parens = this.inForStatementInitCounter && node.operator === "in" && !needsParens$1(node, parent);
   parens && this.tokenChar(40);
@@ -1679,11 +1702,13 @@ function AssignmentExpression(node, parent) {
   this.print(node.right, node);
   parens && this.tokenChar(41);
 }
+/** @this Printer */
 function BindExpression(node) {
   this.print(node.object, node);
   this.token("::");
   this.print(node.callee, node);
 }
+/** @this Printer */
 function MemberExpression(node) {
   this.print(node.object, node);
   if (!node.computed && isMemberExpression(node.property))
@@ -1701,19 +1726,23 @@ function MemberExpression(node) {
     this.print(node.property, node);
   }
 }
+/** @this Printer */
 function MetaProperty(node) {
   this.print(node.meta, node);
   this.tokenChar(46);
   this.print(node.property, node);
 }
+/** @this Printer */
 function PrivateName(node) {
   this.tokenChar(35);
   this.print(node.id, node);
 }
+/** @this Printer */
 function V8IntrinsicIdentifier(node) {
   this.tokenChar(37);
   this.word(node.name);
 }
+/** @this Printer */
 function ModuleExpression(node) {
   this.word("module", true);
   this.space();
@@ -1728,6 +1757,7 @@ function ModuleExpression(node) {
 }
 
 const { isFor, isForStatement, isIfStatement, isStatement: isStatement$3 } = _t;
+/** @this Printer */
 function WithStatement(node) {
   this.word("with");
   this.space();
@@ -1736,6 +1766,7 @@ function WithStatement(node) {
   this.tokenChar(41);
   this.printBlock(node);
 }
+/** @this Printer */
 function IfStatement(node) {
   this.word("if");
   this.space();
@@ -1766,6 +1797,7 @@ function getLastStatement(statement) {
   const { body } = statement;
   return isStatement$3(body) === false ? statement : getLastStatement(body);
 }
+/** @this Printer */
 function ForStatement(node) {
   this.word("for");
   this.space();
@@ -1786,6 +1818,7 @@ function ForStatement(node) {
   this.tokenChar(41);
   this.printBlock(node);
 }
+/** @this Printer */
 function WhileStatement(node) {
   this.word("while");
   this.space();
@@ -1794,6 +1827,7 @@ function WhileStatement(node) {
   this.tokenChar(41);
   this.printBlock(node);
 }
+/** @this Printer */
 function ForXStatement(node) {
   this.word("for");
   this.space();
@@ -1814,6 +1848,7 @@ function ForXStatement(node) {
 }
 const ForInStatement = ForXStatement,
   ForOfStatement = ForXStatement;
+/** @this Printer */
 function DoWhileStatement(node) {
   this.word("do");
   this.space();
@@ -1833,29 +1868,37 @@ function printStatementAfterKeyword(printer, node, parent, isLabel) {
   }
   printer.semicolon();
 }
+/** @this Printer */
 function BreakStatement(node) {
   this.word("break");
   printStatementAfterKeyword(this, node.label, node, true);
 }
+/** @this Printer */
 function ContinueStatement(node) {
   this.word("continue");
   printStatementAfterKeyword(this, node.label, node, true);
 }
+/** @this Printer */
 function ReturnStatement(node) {
   this.word("return");
   printStatementAfterKeyword(this, node.argument, node, false);
 }
+/** @this Printer */
 function ThrowStatement(node) {
   this.word("throw");
   printStatementAfterKeyword(this, node.argument, node, false);
 }
+/** @this Printer */
 function LabeledStatement(node) {
   this.print(node.label, node);
   this.tokenChar(58);
   this.space();
   this.print(node.body, node);
 }
-/** @param {({handlers: ?Array}|*)} node */
+/**
+ * @param {({handlers: ?Array}|*)} node
+ * @this Printer
+ */
 function TryStatement(node) {
   this.word("try");
   this.space();
@@ -1870,6 +1913,7 @@ function TryStatement(node) {
     this.print(node.finalizer, node);
   }
 }
+/** @this Printer */
 function CatchClause(node) {
   this.word("catch");
   this.space();
@@ -1882,6 +1926,7 @@ function CatchClause(node) {
   }
   this.print(node.body, node);
 }
+/** @this Printer */
 function SwitchStatement(node) {
   this.word("switch");
   this.space();
@@ -1898,6 +1943,7 @@ function SwitchStatement(node) {
   });
   this.rightBrace(node);
 }
+/** @this Printer */
 function SwitchCase(node) {
   if (node.test) {
     this.word("case");
@@ -1913,10 +1959,12 @@ function SwitchCase(node) {
     this.printSequence(node.consequent, node, { indent: true });
   }
 }
+/** @this Printer */
 function DebuggerStatement() {
   this.word("debugger");
   this.semicolon();
 }
+/** @this Printer */
 function VariableDeclaration(node, parent) {
   if (node.declare) {
     this.word("declare");
@@ -1944,6 +1992,7 @@ function VariableDeclaration(node, parent) {
 
   this.semicolon();
 }
+/** @this Printer */
 function VariableDeclarator(node) {
   this.print(node.id, node);
   node.definite && this.tokenChar(33);
@@ -1957,6 +2006,7 @@ function VariableDeclarator(node) {
 }
 
 const { isExportDefaultDeclaration, isExportNamedDeclaration } = _t;
+/** @this Printer */
 function ClassDeclaration(node, parent) {
   ((isExportDefaultDeclaration(parent) || isExportNamedDeclaration(parent)) &&
     this._shouldPrintDecoratorsBeforeExport(parent)) ||
@@ -1992,6 +2042,7 @@ function ClassDeclaration(node, parent) {
   this.space();
   this.print(node.body, node);
 }
+/** @this Printer */
 function ClassBody(node) {
   this.tokenChar(123);
   if (node.body.length === 0) this.tokenChar(125);
@@ -2002,6 +2053,7 @@ function ClassBody(node) {
     this.rightBrace(node);
   }
 }
+/** @this Printer */
 function ClassProperty(node) {
   var _node$key$loc;
   this.printJoin(node.decorators, node);
@@ -2029,6 +2081,7 @@ function ClassProperty(node) {
   }
   this.semicolon();
 }
+/** @this Printer */
 function ClassAccessorProperty(node) {
   var _node$key$loc2;
   this.printJoin(node.decorators, node);
@@ -2060,6 +2113,7 @@ function ClassAccessorProperty(node) {
   }
   this.semicolon();
 }
+/** @this Printer */
 function ClassPrivateProperty(node) {
   this.printJoin(node.decorators, node);
   if (node.static) {
@@ -2076,11 +2130,13 @@ function ClassPrivateProperty(node) {
   }
   this.semicolon();
 }
+/** @this Printer */
 function ClassMethod(node) {
   this._classMethodHead(node);
   this.space();
   this.print(node.body, node);
 }
+/** @this Printer */
 function ClassPrivateMethod(node) {
   this._classMethodHead(node);
   this.space();
@@ -2097,6 +2153,7 @@ function _classMethodHead(node) {
   this.tsPrintClassMemberModifiers(node);
   this._methodHead(node);
 }
+/** @this Printer */
 function StaticBlock(node) {
   this.word("static");
   this.space();
@@ -2187,11 +2244,13 @@ function _functionHead(node, parent) {
   this._params(node, node.id, parent);
   node.type === "TSDeclareFunction" || this._predicate(node);
 }
+/** @this Printer */
 function FunctionExpression(node, parent) {
   this._functionHead(node, parent);
   this.space();
   this.print(node.body, node);
 }
+/** @this Printer */
 function ArrowFunctionExpression(node, parent) {
   if (node.async) {
     this.word("async", true);
@@ -2263,6 +2322,7 @@ const {
   isImportNamespaceSpecifier,
   isStatement: isStatement$2
 } = _t;
+/** @this Printer */
 function ImportSpecifier(node) {
   if (node.importKind === "type" || node.importKind === "typeof") {
     this.word(node.importKind);
@@ -2276,12 +2336,15 @@ function ImportSpecifier(node) {
     this.print(node.local, node);
   }
 }
+/** @this Printer */
 function ImportDefaultSpecifier(node) {
   this.print(node.local, node);
 }
+/** @this Printer */
 function ExportDefaultSpecifier(node) {
   this.print(node.exported, node);
 }
+/** @this Printer */
 function ExportSpecifier(node) {
   if (node.exportKind === "type") {
     this.word("type");
@@ -2295,6 +2358,7 @@ function ExportSpecifier(node) {
     this.print(node.exported, node);
   }
 }
+/** @this Printer */
 function ExportNamespaceSpecifier(node) {
   this.tokenChar(42);
   this.space();
@@ -2328,6 +2392,7 @@ Please specify the "importAttributesKeyword" generator option, whose value can b
   this.space();
   this.tokenChar(125);
 }
+/** @this Printer */
 function ExportAllDeclaration(node) {
   var _node$attributes, _node$assertions;
   this.word("export");
@@ -2355,6 +2420,7 @@ function maybePrintDecoratorsBeforeExport(printer, node) {
   isClassDeclaration(node.declaration) && printer._shouldPrintDecoratorsBeforeExport(node) &&
     printer.printJoin(node.declaration.decorators, node);
 }
+/** @this Printer */
 function ExportNamedDeclaration(node) {
   maybePrintDecoratorsBeforeExport(this, node);
   this.word("export");
@@ -2407,6 +2473,7 @@ function ExportNamedDeclaration(node) {
     this.semicolon();
   }
 }
+/** @this Printer */
 function ExportDefaultDeclaration(node) {
   maybePrintDecoratorsBeforeExport(this, node);
   this.word("export");
@@ -2418,6 +2485,7 @@ function ExportDefaultDeclaration(node) {
   this.print(declar, node);
   isStatement$2(declar) || this.semicolon();
 }
+/** @this Printer */
 function ImportDeclaration(node) {
   var _node$attributes3, _node$assertions3;
   this.word("import");
@@ -2470,12 +2538,14 @@ function ImportDeclaration(node) {
 
   this.semicolon();
 }
+/** @this Printer */
 function ImportAttribute(node) {
   this.print(node.key);
   this.tokenChar(58);
   this.space();
   this.print(node.value);
 }
+/** @this Printer */
 function ImportNamespaceSpecifier(node) {
   this.tokenChar(42);
   this.space();
@@ -2703,18 +2773,22 @@ jsesc.version = '2.5.2';
 var jsesc_1 = jsesc;
 
 const { isAssignmentPattern, isIdentifier } = _t;
+/** @this Printer */
 function Identifier(node) {
   var _node$loc;
   this.sourceIdentifierName(((_node$loc = node.loc) == null ? void 0 : _node$loc.identifierName) || node.name);
   this.word(node.name);
 }
+/** @this Printer */
 function ArgumentPlaceholder() {
   this.tokenChar(63);
 }
+/** @this Printer */
 function RestElement(node) {
   this.token("...");
   this.print(node.argument, node);
 }
+/** @this Printer */
 function ObjectExpression(node) {
   const props = node.properties;
   this.tokenChar(123);
@@ -2726,12 +2800,14 @@ function ObjectExpression(node) {
   this.sourceWithOffset("end", node.loc, -1);
   this.tokenChar(125);
 }
+/** @this Printer */
 function ObjectMethod(node) {
   this.printJoin(node.decorators, node);
   this._methodHead(node);
   this.space();
   this.print(node.body, node);
 }
+/** @this Printer */
 function ObjectProperty(node) {
   this.printJoin(node.decorators, node);
   if (node.computed) {
@@ -2751,6 +2827,7 @@ function ObjectProperty(node) {
   this.space();
   this.print(node.value, node);
 }
+/** @this Printer */
 function ArrayExpression(node) {
   const elems = node.elements,
     len = elems.length;
@@ -2765,6 +2842,7 @@ function ArrayExpression(node) {
   }
   this.tokenChar(93);
 }
+/** @this Printer */
 function RecordExpression(node) {
   const props = node.properties;
   let startToken, endToken;
@@ -2789,6 +2867,7 @@ function RecordExpression(node) {
   }
   this.token(endToken);
 }
+/** @this Printer */
 function TupleExpression(node) {
   const elems = node.elements,
     len = elems.length;
@@ -2812,15 +2891,19 @@ function TupleExpression(node) {
   }
   this.token(endToken);
 }
+/** @this Printer */
 function RegExpLiteral(node) {
   this.word(`/${node.pattern}/${node.flags}`);
 }
+/** @this Printer */
 function BooleanLiteral(node) {
   this.word(node.value ? "true" : "false");
 }
+/** @this Printer */
 function NullLiteral() {
   this.word("null");
 }
+/** @this Printer */
 function NumericLiteral(node) {
   const raw = this.getPossibleRaw(node),
     opts = this.format.jsescOption,
@@ -2833,6 +2916,7 @@ function NumericLiteral(node) {
     ? this.number(raw.length < value.length ? raw : value)
     : this.number(raw);
 }
+/** @this Printer */
 function StringLiteral(node) {
   const raw = this.getPossibleRaw(node);
   if (!this.format.minified && raw !== void 0) {
@@ -2842,15 +2926,18 @@ function StringLiteral(node) {
   const val = jsesc_1(node.value, this.format.jsescOption);
   this.token(val);
 }
+/** @this Printer */
 function BigIntLiteral(node) {
   const raw = this.getPossibleRaw(node);
   this.format.minified || raw === void 0 ? this.word(node.value + "n") : this.word(raw);
 }
+/** @this Printer */
 function DecimalLiteral(node) {
   const raw = this.getPossibleRaw(node);
   this.format.minified || raw === void 0 ? this.word(node.value + "m") : this.word(raw);
 }
 const validTopicTokenSet = new Set(["^^", "@@", "^", "%", "#"]);
+/** @this Printer */
 function TopicReference() {
   const { topicToken } = this.format;
   if (!validTopicTokenSet.has(topicToken)) {
@@ -2864,34 +2951,43 @@ function TopicReference() {
   }
   this.token(topicToken);
 }
+/** @this Printer */
 function PipelineTopicExpression(node) {
   this.print(node.expression, node);
 }
+/** @this Printer */
 function PipelineBareFunction(node) {
   this.print(node.callee, node);
 }
+/** @this Printer */
 function PipelinePrimaryTopicReference() {
   this.tokenChar(35);
 }
 
 const { isDeclareExportDeclaration, isStatement: isStatement$1 } = _t;
+/** @this Printer */
 function AnyTypeAnnotation() {
   this.word("any");
 }
+/** @this Printer */
 function ArrayTypeAnnotation(node) {
   this.print(node.elementType, node, true);
   this.tokenChar(91);
   this.tokenChar(93);
 }
+/** @this Printer */
 function BooleanTypeAnnotation() {
   this.word("boolean");
 }
+/** @this Printer */
 function BooleanLiteralTypeAnnotation(node) {
   this.word(node.value ? "true" : "false");
 }
+/** @this Printer */
 function NullLiteralTypeAnnotation() {
   this.word("null");
 }
+/** @this Printer */
 function DeclareClass(node, parent) {
   if (!isDeclareExportDeclaration(parent)) {
     this.word("declare");
@@ -2901,6 +2997,7 @@ function DeclareClass(node, parent) {
   this.space();
   this._interfaceish(node);
 }
+/** @this Printer */
 function DeclareFunction(node, parent) {
   if (!isDeclareExportDeclaration(parent)) {
     this.word("declare");
@@ -2916,10 +3013,12 @@ function DeclareFunction(node, parent) {
   }
   this.semicolon();
 }
+/** @this Printer */
 function InferredPredicate() {
   this.tokenChar(37);
   this.word("checks");
 }
+/** @this Printer */
 function DeclaredPredicate(node) {
   this.tokenChar(37);
   this.word("checks");
@@ -2927,11 +3026,13 @@ function DeclaredPredicate(node) {
   this.print(node.value, node);
   this.tokenChar(41);
 }
+/** @this Printer */
 function DeclareInterface(node) {
   this.word("declare");
   this.space();
   this.InterfaceDeclaration(node);
 }
+/** @this Printer */
 function DeclareModule(node) {
   this.word("declare");
   this.space();
@@ -2941,6 +3042,7 @@ function DeclareModule(node) {
   this.space();
   this.print(node.body, node);
 }
+/** @this Printer */
 function DeclareModuleExports(node) {
   this.word("declare");
   this.space();
@@ -2949,11 +3051,13 @@ function DeclareModuleExports(node) {
   this.word("exports");
   this.print(node.typeAnnotation, node);
 }
+/** @this Printer */
 function DeclareTypeAlias(node) {
   this.word("declare");
   this.space();
   this.TypeAlias(node);
 }
+/** @this Printer */
 function DeclareOpaqueType(node, parent) {
   if (!isDeclareExportDeclaration(parent)) {
     this.word("declare");
@@ -2961,6 +3065,7 @@ function DeclareOpaqueType(node, parent) {
   }
   this.OpaqueType(node);
 }
+/** @this Printer */
 function DeclareVariable(node, parent) {
   if (!isDeclareExportDeclaration(parent)) {
     this.word("declare");
@@ -2972,6 +3077,7 @@ function DeclareVariable(node, parent) {
   this.print(node.id.typeAnnotation, node);
   this.semicolon();
 }
+/** @this Printer */
 function DeclareExportDeclaration(node) {
   this.word("declare");
   this.space();
@@ -2983,11 +3089,13 @@ function DeclareExportDeclaration(node) {
   }
   FlowExportDeclaration.call(this, node);
 }
+/** @this Printer */
 function DeclareExportAllDeclaration(node) {
   this.word("declare");
   this.space();
   ExportAllDeclaration.call(this, node);
 }
+/** @this Printer */
 function EnumDeclaration(node) {
   const { id, body } = node;
   this.word("enum");
@@ -3039,6 +3147,7 @@ function EnumSymbolBody(node) {
   enumExplicitType(this, "symbol", true);
   enumBody(this, node);
 }
+/** @this Printer */
 function EnumDefaultedMember(node) {
   const { id } = node;
   this.print(id, node);
@@ -3062,6 +3171,7 @@ function EnumNumberMember(node) {
 function EnumStringMember(node) {
   enumInitializedMember(this, node);
 }
+/** @this Printer */
 function FlowExportDeclaration(node) {
   if (node.declaration) {
     const declar = node.declaration;
@@ -3084,9 +3194,11 @@ function FlowExportDeclaration(node) {
     this.semicolon();
   }
 }
+/** @this Printer */
 function ExistsTypeAnnotation() {
   this.tokenChar(42);
 }
+/** @this Printer */
 function FunctionTypeAnnotation(node, parent) {
   this.print(node.typeParameters, node);
   this.tokenChar(40);
@@ -3125,6 +3237,7 @@ function FunctionTypeAnnotation(node, parent) {
   this.space();
   this.print(node.returnType, node);
 }
+/** @this Printer */
 function FunctionTypeParam(node) {
   this.print(node.name, node);
   node.optional && this.tokenChar(63);
@@ -3134,6 +3247,7 @@ function FunctionTypeParam(node) {
   }
   this.print(node.typeAnnotation, node);
 }
+/** @this Printer */
 function InterfaceExtends(node) {
   this.print(node.id, node);
   this.print(node.typeParameters, node, true);
@@ -3171,6 +3285,7 @@ function _variance(node) {
   const kind = (_node$variance = node.variance) == null ? void 0 : _node$variance.kind;
   if (kind != null) kind === "plus" ? this.tokenChar(43) : kind !== "minus" || this.tokenChar(45);
 }
+/** @this Printer */
 function InterfaceDeclaration(node) {
   this.word("interface");
   this.space();
@@ -3181,6 +3296,7 @@ function andSeparator() {
   this.tokenChar(38);
   this.space();
 }
+/** @this Printer */
 function InterfaceTypeAnnotation(node) {
   var _node$extends2;
   this.word("interface");
@@ -3193,38 +3309,48 @@ function InterfaceTypeAnnotation(node) {
   this.space();
   this.print(node.body, node);
 }
+/** @this Printer */
 function IntersectionTypeAnnotation(node) {
   this.printJoin(node.types, node, { separator: andSeparator });
 }
+/** @this Printer */
 function MixedTypeAnnotation() {
   this.word("mixed");
 }
+/** @this Printer */
 function EmptyTypeAnnotation() {
   this.word("empty");
 }
+/** @this Printer */
 function NullableTypeAnnotation(node) {
   this.tokenChar(63);
   this.print(node.typeAnnotation, node);
 }
+/** @this Printer */
 function NumberTypeAnnotation() {
   this.word("number");
 }
+/** @this Printer */
 function StringTypeAnnotation() {
   this.word("string");
 }
+/** @this Printer */
 function ThisTypeAnnotation() {
   this.word("this");
 }
+/** @this Printer */
 function TupleTypeAnnotation(node) {
   this.tokenChar(91);
   this.printList(node.types, node);
   this.tokenChar(93);
 }
+/** @this Printer */
 function TypeofTypeAnnotation(node) {
   this.word("typeof");
   this.space();
   this.print(node.argument, node);
 }
+/** @this Printer */
 function TypeAlias(node) {
   this.word("type");
   this.space();
@@ -3236,17 +3362,20 @@ function TypeAlias(node) {
   this.print(node.right, node);
   this.semicolon();
 }
+/** @this Printer */
 function TypeAnnotation(node) {
   this.tokenChar(58);
   this.space();
   node.optional && this.tokenChar(63);
   this.print(node.typeAnnotation, node);
 }
+/** @this Printer */
 function TypeParameterInstantiation(node) {
   this.tokenChar(60);
   this.printList(node.params, node, {});
   this.tokenChar(62);
 }
+/** @this Printer */
 function TypeParameter(node) {
   this._variance(node);
   this.word(node.name);
@@ -3259,6 +3388,7 @@ function TypeParameter(node) {
     this.print(node.default, node);
   }
 }
+/** @this Printer */
 function OpaqueType(node) {
   this.word("opaque");
   this.space();
@@ -3279,6 +3409,7 @@ function OpaqueType(node) {
   }
   this.semicolon();
 }
+/** @this Printer */
 function ObjectTypeAnnotation(node) {
   node.exact ? this.token("{|") : this.tokenChar(123);
 
@@ -3315,6 +3446,7 @@ function ObjectTypeAnnotation(node) {
   }
   node.exact ? this.token("|}") : this.tokenChar(125);
 }
+/** @this Printer */
 function ObjectTypeInternalSlot(node) {
   if (node.static) {
     this.word("static");
@@ -3332,6 +3464,7 @@ function ObjectTypeInternalSlot(node) {
   }
   this.print(node.value, node);
 }
+/** @this Printer */
 function ObjectTypeCallProperty(node) {
   if (node.static) {
     this.word("static");
@@ -3339,6 +3472,7 @@ function ObjectTypeCallProperty(node) {
   }
   this.print(node.value, node);
 }
+/** @this Printer */
 function ObjectTypeIndexer(node) {
   if (node.static) {
     this.word("static");
@@ -3357,6 +3491,7 @@ function ObjectTypeIndexer(node) {
   this.space();
   this.print(node.value, node);
 }
+/** @this Printer */
 function ObjectTypeProperty(node) {
   if (node.proto) {
     this.word("proto");
@@ -3379,15 +3514,18 @@ function ObjectTypeProperty(node) {
   }
   this.print(node.value, node);
 }
+/** @this Printer */
 function ObjectTypeSpreadProperty(node) {
   this.token("...");
   this.print(node.argument, node);
 }
+/** @this Printer */
 function QualifiedTypeIdentifier(node) {
   this.print(node.qualification, node);
   this.tokenChar(46);
   this.print(node.id, node);
 }
+/** @this Printer */
 function SymbolTypeAnnotation() {
   this.word("symbol");
 }
@@ -3396,27 +3534,33 @@ function orSeparator() {
   this.tokenChar(124);
   this.space();
 }
+/** @this Printer */
 function UnionTypeAnnotation(node) {
   this.printJoin(node.types, node, { separator: orSeparator });
 }
+/** @this Printer */
 function TypeCastExpression(node) {
   this.tokenChar(40);
   this.print(node.expression, node);
   this.print(node.typeAnnotation, node);
   this.tokenChar(41);
 }
+/** @this Printer */
 function Variance(node) {
   node.kind === "plus" ? this.tokenChar(43) : this.tokenChar(45);
 }
+/** @this Printer */
 function VoidTypeAnnotation() {
   this.word("void");
 }
+/** @this Printer */
 function IndexedAccessType(node) {
   this.print(node.objectType, node, true);
   this.tokenChar(91);
   this.print(node.indexType, node);
   this.tokenChar(93);
 }
+/** @this Printer */
 function OptionalIndexedAccessType(node) {
   this.print(node.objectType, node);
   node.optional && this.token("?.");
@@ -3426,11 +3570,13 @@ function OptionalIndexedAccessType(node) {
   this.tokenChar(93);
 }
 
+/** @this Printer */
 function File(node) {
   node.program && this.print(node.program.interpreter, node);
 
   this.print(node.program, node);
 }
+/** @this Printer */
 function Program(node) {
   var _node$directives;
   this.noIndentInnerCommentsHere();
@@ -3447,6 +3593,7 @@ function Program(node) {
   }
   this.printSequence(node.body, node);
 }
+/** @this Printer */
 function BlockStatement(node) {
   var _node$directives2;
   this.tokenChar(123);
@@ -3463,12 +3610,14 @@ function BlockStatement(node) {
   this.printSequence(node.body, node, { indent: true });
   this.rightBrace(node);
 }
+/** @this Printer */
 function Directive(node) {
   this.print(node.value, node);
   this.semicolon();
 }
 const unescapedSingleQuoteRE = /(?:^|[^\\])(?:\\\\)*'/,
   unescapedDoubleQuoteRE = /(?:^|[^\\])(?:\\\\)*"/;
+/** @this Printer */
 function DirectiveLiteral(node) {
   const raw = this.getPossibleRaw(node);
   if (!this.format.minified && raw !== void 0) {
@@ -3483,10 +3632,12 @@ function DirectiveLiteral(node) {
       "Malformed AST: it is not possible to print a directive containing both unescaped single and double quotes."
     );
 }
+/** @this Printer */
 function InterpreterDirective(node) {
   this.token("#!" + node.value);
   this.newline(1, true);
 }
+/** @this Printer */
 function Placeholder(node) {
   this.token("%%");
   this.print(node.name);
@@ -3494,6 +3645,7 @@ function Placeholder(node) {
   node.expectedNode !== "Statement" || this.semicolon();
 }
 
+/** @this Printer */
 function JSXAttribute(node) {
   this.print(node.name, node);
   if (node.value) {
@@ -3501,40 +3653,48 @@ function JSXAttribute(node) {
     this.print(node.value, node);
   }
 }
+/** @this Printer */
 function JSXIdentifier(node) {
   this.word(node.name);
 }
+/** @this Printer */
 function JSXNamespacedName(node) {
   this.print(node.namespace, node);
   this.tokenChar(58);
   this.print(node.name, node);
 }
+/** @this Printer */
 function JSXMemberExpression(node) {
   this.print(node.object, node);
   this.tokenChar(46);
   this.print(node.property, node);
 }
+/** @this Printer */
 function JSXSpreadAttribute(node) {
   this.tokenChar(123);
   this.token("...");
   this.print(node.argument, node);
   this.tokenChar(125);
 }
+/** @this Printer */
 function JSXExpressionContainer(node) {
   this.tokenChar(123);
   this.print(node.expression, node);
   this.tokenChar(125);
 }
+/** @this Printer */
 function JSXSpreadChild(node) {
   this.tokenChar(123);
   this.token("...");
   this.print(node.expression, node);
   this.tokenChar(125);
 }
+/** @this Printer */
 function JSXText(node) {
   const raw = this.getPossibleRaw(node);
   raw !== void 0 ? this.token(raw, true) : this.token(node.value, true);
 }
+/** @this Printer */
 function JSXElement(node) {
   const open = node.openingElement;
   this.print(open, node);
@@ -3548,6 +3708,7 @@ function JSXElement(node) {
 function spaceSeparator() {
   this.space();
 }
+/** @this Printer */
 function JSXOpeningElement(node) {
   this.tokenChar(60);
   this.print(node.name, node);
@@ -3561,14 +3722,17 @@ function JSXOpeningElement(node) {
     this.token("/>");
   } else this.tokenChar(62);
 }
+/** @this Printer */
 function JSXClosingElement(node) {
   this.token("</");
   this.print(node.name, node);
   this.tokenChar(62);
 }
+/** @this Printer */
 function JSXEmptyExpression() {
   this.printInnerComments();
 }
+/** @this Printer */
 function JSXFragment(node) {
   this.print(node.openingFragment, node);
   this.indent();
@@ -3577,21 +3741,25 @@ function JSXFragment(node) {
   this.dedent();
   this.print(node.closingFragment, node);
 }
+/** @this Printer */
 function JSXOpeningFragment() {
   this.tokenChar(60);
   this.tokenChar(62);
 }
+/** @this Printer */
 function JSXClosingFragment() {
   this.token("</");
   this.tokenChar(62);
 }
 
+/** @this Printer */
 function TSTypeAnnotation(node) {
   this.tokenChar(58);
   this.space();
   node.optional && this.tokenChar(63);
   this.print(node.typeAnnotation, node);
 }
+/** @this Printer */
 function TSTypeParameterInstantiation(node, parent) {
   this.tokenChar(60);
   this.printList(node.params, node, {});
@@ -3599,6 +3767,7 @@ function TSTypeParameterInstantiation(node, parent) {
 
   this.tokenChar(62);
 }
+/** @this Printer */
 function TSTypeParameter(node) {
   if (node.in) {
     this.word("in");
@@ -3622,6 +3791,7 @@ function TSTypeParameter(node) {
     this.print(node.default, node);
   }
 }
+/** @this Printer */
 function TSParameterProperty(node) {
   if (node.accessibility) {
     this.word(node.accessibility);
@@ -3633,6 +3803,7 @@ function TSParameterProperty(node) {
   }
   this._param(node.parameter);
 }
+/** @this Printer */
 function TSDeclareFunction(node, parent) {
   if (node.declare) {
     this.word("declare");
@@ -3641,25 +3812,30 @@ function TSDeclareFunction(node, parent) {
   this._functionHead(node, parent);
   this.tokenChar(59);
 }
+/** @this Printer */
 function TSDeclareMethod(node) {
   this._classMethodHead(node);
   this.tokenChar(59);
 }
+/** @this Printer */
 function TSQualifiedName(node) {
   this.print(node.left, node);
   this.tokenChar(46);
   this.print(node.right, node);
 }
+/** @this Printer */
 function TSCallSignatureDeclaration(node) {
   this.tsPrintSignatureDeclarationBase(node);
   this.tokenChar(59);
 }
+/** @this Printer */
 function TSConstructSignatureDeclaration(node) {
   this.word("new");
   this.space();
   this.tsPrintSignatureDeclarationBase(node);
   this.tokenChar(59);
 }
+/** @this Printer */
 function TSPropertySignature(node) {
   const { readonly, initializer } = node;
   if (readonly) {
@@ -3684,6 +3860,7 @@ function tsPrintPropertyOrMethodName(node) {
 
   node.optional && this.tokenChar(63);
 }
+/** @this Printer */
 function TSMethodSignature(node) {
   const { kind } = node;
   if (kind === "set" || kind === "get") {
@@ -3694,6 +3871,7 @@ function TSMethodSignature(node) {
   this.tsPrintSignatureDeclarationBase(node);
   this.tokenChar(59);
 }
+/** @this Printer */
 function TSIndexSignature(node) {
   const { readonly, static: isStatic } = node;
   if (isStatic) {
@@ -3710,51 +3888,67 @@ function TSIndexSignature(node) {
   this.print(node.typeAnnotation, node);
   this.tokenChar(59);
 }
+/** @this Printer */
 function TSAnyKeyword() {
   this.word("any");
 }
+/** @this Printer */
 function TSBigIntKeyword() {
   this.word("bigint");
 }
+/** @this Printer */
 function TSUnknownKeyword() {
   this.word("unknown");
 }
+/** @this Printer */
 function TSNumberKeyword() {
   this.word("number");
 }
+/** @this Printer */
 function TSObjectKeyword() {
   this.word("object");
 }
+/** @this Printer */
 function TSBooleanKeyword() {
   this.word("boolean");
 }
+/** @this Printer */
 function TSStringKeyword() {
   this.word("string");
 }
+/** @this Printer */
 function TSSymbolKeyword() {
   this.word("symbol");
 }
+/** @this Printer */
 function TSVoidKeyword() {
   this.word("void");
 }
+/** @this Printer */
 function TSUndefinedKeyword() {
   this.word("undefined");
 }
+/** @this Printer */
 function TSNullKeyword() {
   this.word("null");
 }
+/** @this Printer */
 function TSNeverKeyword() {
   this.word("never");
 }
+/** @this Printer */
 function TSIntrinsicKeyword() {
   this.word("intrinsic");
 }
+/** @this Printer */
 function TSThisType() {
   this.word("this");
 }
+/** @this Printer */
 function TSFunctionType(node) {
   this.tsPrintFunctionOrConstructorType(node);
 }
+/** @this Printer */
 function TSConstructorType(node) {
   if (node.abstract) {
     this.word("abstract");
@@ -3777,10 +3971,12 @@ function tsPrintFunctionOrConstructorType(node) {
   const returnType = node.typeAnnotation;
   this.print(returnType.typeAnnotation, node);
 }
+/** @this Printer */
 function TSTypeReference(node) {
   this.print(node.typeName, node, true);
   this.print(node.typeParameters, node, true);
 }
+/** @this Printer */
 function TSTypePredicate(node) {
   if (node.asserts) {
     this.word("asserts");
@@ -3794,12 +3990,14 @@ function TSTypePredicate(node) {
     this.print(node.typeAnnotation.typeAnnotation);
   }
 }
+/** @this Printer */
 function TSTypeQuery(node) {
   this.word("typeof");
   this.space();
   this.print(node.exprName);
   node.typeParameters && this.print(node.typeParameters, node);
 }
+/** @this Printer */
 function TSTypeLiteral(node) {
   this.tsPrintTypeLiteralOrInterfaceBody(node.members, node);
 }
@@ -3819,23 +4017,28 @@ function tsPrintBraced(printer, members, node) {
   }
   printer.rightBrace(node);
 }
+/** @this Printer */
 function TSArrayType(node) {
   this.print(node.elementType, node, true);
   this.token("[]");
 }
+/** @this Printer */
 function TSTupleType(node) {
   this.tokenChar(91);
   this.printList(node.elementTypes, node);
   this.tokenChar(93);
 }
+/** @this Printer */
 function TSOptionalType(node) {
   this.print(node.typeAnnotation, node);
   this.tokenChar(63);
 }
+/** @this Printer */
 function TSRestType(node) {
   this.token("...");
   this.print(node.typeAnnotation, node);
 }
+/** @this Printer */
 function TSNamedTupleMember(node) {
   this.print(node.label, node);
   node.optional && this.tokenChar(63);
@@ -3858,6 +4061,7 @@ function tsPrintUnionOrIntersectionType(printer, node, sep) {
     }
   });
 }
+/** @this Printer */
 function TSConditionalType(node) {
   this.print(node.checkType);
   this.space();
@@ -3873,27 +4077,32 @@ function TSConditionalType(node) {
   this.space();
   this.print(node.falseType);
 }
+/** @this Printer */
 function TSInferType(node) {
   this.token("infer");
   this.space();
   this.print(node.typeParameter);
 }
+/** @this Printer */
 function TSParenthesizedType(node) {
   this.tokenChar(40);
   this.print(node.typeAnnotation, node);
   this.tokenChar(41);
 }
+/** @this Printer */
 function TSTypeOperator(node) {
   this.word(node.operator);
   this.space();
   this.print(node.typeAnnotation, node);
 }
+/** @this Printer */
 function TSIndexedAccessType(node) {
   this.print(node.objectType, node, true);
   this.tokenChar(91);
   this.print(node.indexType, node);
   this.tokenChar(93);
 }
+/** @this Printer */
 function TSMappedType(node) {
   const { nameType, optional, readonly, typeParameter } = node;
   this.tokenChar(123);
@@ -3929,13 +4138,16 @@ function TSMappedType(node) {
 function tokenIfPlusMinus(self, tok) {
   tok === true || self.token(tok);
 }
+/** @this Printer */
 function TSLiteralType(node) {
   this.print(node.literal, node);
 }
+/** @this Printer */
 function TSExpressionWithTypeArguments(node) {
   this.print(node.expression, node);
   this.print(node.typeParameters, node);
 }
+/** @this Printer */
 function TSInterfaceDeclaration(node) {
   const { declare, id, typeParameters, extends: extendz, body } = node;
   if (declare) {
@@ -3955,9 +4167,11 @@ function TSInterfaceDeclaration(node) {
   this.space();
   this.print(body, node);
 }
+/** @this Printer */
 function TSInterfaceBody(node) {
   this.tsPrintTypeLiteralOrInterfaceBody(node.body, node);
 }
+/** @this Printer */
 function TSTypeAliasDeclaration(node) {
   const { declare, id, typeParameters, typeAnnotation } = node;
   if (declare) {
@@ -3974,6 +4188,7 @@ function TSTypeAliasDeclaration(node) {
   this.print(typeAnnotation, node);
   this.tokenChar(59);
 }
+/** @this Printer */
 function TSTypeExpression(node) {
   var _expression$trailingC;
   const { type, expression, typeAnnotation } = node,
@@ -3984,6 +4199,7 @@ function TSTypeExpression(node) {
   this.space();
   this.print(typeAnnotation, node);
 }
+/** @this Printer */
 function TSTypeAssertion(node) {
   const { typeAnnotation, expression } = node;
   this.tokenChar(60);
@@ -3992,10 +4208,12 @@ function TSTypeAssertion(node) {
   this.space();
   this.print(expression, node);
 }
+/** @this Printer */
 function TSInstantiationExpression(node) {
   this.print(node.expression, node);
   this.print(node.typeParameters, node);
 }
+/** @this Printer */
 function TSEnumDeclaration(node) {
   const { declare, const: isConst, id, members } = node;
   if (declare) {
@@ -4012,6 +4230,7 @@ function TSEnumDeclaration(node) {
   this.space();
   tsPrintBraced(this, members, node);
 }
+/** @this Printer */
 function TSEnumMember(node) {
   const { id, initializer } = node;
   this.print(id, node);
@@ -4023,6 +4242,7 @@ function TSEnumMember(node) {
   }
   this.tokenChar(44);
 }
+/** @this Printer */
 function TSModuleDeclaration(node) {
   const { declare, id } = node;
   if (declare) {
@@ -4050,6 +4270,7 @@ function TSModuleDeclaration(node) {
 function TSModuleBlock(node) {
   tsPrintBraced(this, node.body, node);
 }
+/** @this Printer */
 function TSImportType(node) {
   const { argument, qualifier, typeParameters } = node;
   this.word("import");
@@ -4062,6 +4283,7 @@ function TSImportType(node) {
   }
   typeParameters && this.print(typeParameters, node);
 }
+/** @this Printer */
 function TSImportEqualsDeclaration(node) {
   const { isExport, id, moduleReference } = node;
   if (isExport) {
@@ -4077,15 +4299,18 @@ function TSImportEqualsDeclaration(node) {
   this.print(moduleReference, node);
   this.tokenChar(59);
 }
+/** @this Printer */
 function TSExternalModuleReference(node) {
   this.token("require(");
   this.print(node.expression, node);
   this.tokenChar(41);
 }
+/** @this Printer */
 function TSNonNullExpression(node) {
   this.print(node.expression, node);
   this.tokenChar(33);
 }
+/** @this Printer */
 function TSExportAssignment(node) {
   this.word("export");
   this.space();
@@ -4094,6 +4319,7 @@ function TSExportAssignment(node) {
   this.print(node.expression, node);
   this.tokenChar(59);
 }
+/** @this Printer */
 function TSNamespaceExportDeclaration(node) {
   this.word("export");
   this.space();
@@ -4141,7 +4367,7 @@ function tsPrintClassMemberModifiers(node) {
   }
 }
 
-const generatorFunctions = Object.freeze({
+const generatorFunctions = Object.freeze(/** @lends Printer.prototype */ {
   __proto__: null,
   AnyTypeAnnotation,
   ArgumentPlaceholder,
@@ -4890,6 +5116,13 @@ class Printer {
 
     printNewLines && skipNewLines !== 3 && this.newline(1);
   }
+  /**
+   * @param {number} type
+   * @param {Array} comments
+   * @param {*} node
+   * @param {*} [parent]
+   * @param {number} [lineOffset=0]
+   */
   _printComments(type, comments, node, parent, lineOffset = 0) {
     const nodeLoc = node.loc,
       len = comments.length;

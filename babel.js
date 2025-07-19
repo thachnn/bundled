@@ -7699,7 +7699,7 @@ function cloneDeep(value) {
 const { file, traverseFast } = t$5,
   debug$3 = traverse.buildDebug("babel:transform:file"),
   INLINE_SOURCEMAP_REGEX =
-    /^[@#]\s+sourceMappingURL=data:(?:application|text)\/json;(?:charset[:=]\S+?;)?base64,(?:.*)$/,
+    /^[@#]\s+sourceMappingURL=data:(?:application|text)\/json;(?:charset[:=]\S+?;)?base64,.*$/,
   EXTERNAL_SOURCEMAP_REGEX = /^[@#][ \t]+sourceMappingURL=([^\s'"`]+)[ \t]*$/;
 function* normalizeFile(pluginPasses, options, code, ast) {
   code = `${code || ""}`;
@@ -10770,7 +10770,7 @@ Please consider using \`${suggestion}\`${extra}, or add @babel/plugin-transform-
 const transformTypescript = declare((api, opts) => {
   const { types: t, template } = api;
   api.assertVersion(7);
-  const JSX_PRAGMA_REGEX = /\*?\s*@jsx((?:Frag)?)\s+([^\s]+)/;
+  const JSX_PRAGMA_REGEX = /\*?\s*@jsx((?:Frag)?)\s+(\S+)/;
   const {
     allowNamespaces = true,
     jsxPragma = "React.createElement",
@@ -20938,7 +20938,7 @@ const transformLiterals = declare(api => {
         if (node.extra && /^0[ob]/i.test(node.extra.raw)) node.extra = void 0;
       },
       StringLiteral({ node }) {
-        if (node.extra && /\\[u]/gi.test(node.extra.raw)) node.extra = void 0;
+        if (node.extra && /\\u/gi.test(node.extra.raw)) node.extra = void 0;
       }
     }
   };
@@ -22264,10 +22264,10 @@ const DEFAULT = {
   pragma: "React.createElement",
   pragmaFrag: "React.Fragment"
 };
-const JSX_SOURCE_ANNOTATION_REGEX = /^\s*\*?\s*@jsxImportSource\s+([^\s]+)\s*$/m,
-  JSX_RUNTIME_ANNOTATION_REGEX = /^\s*\*?\s*@jsxRuntime\s+([^\s]+)\s*$/m,
-  JSX_ANNOTATION_REGEX = /^\s*\*?\s*@jsx\s+([^\s]+)\s*$/m,
-  JSX_FRAG_ANNOTATION_REGEX = /^\s*\*?\s*@jsxFrag\s+([^\s]+)\s*$/m,
+const JSX_SOURCE_ANNOTATION_REGEX = /^\s*\*?\s*@jsxImportSource\s+(\S+)\s*$/m,
+  JSX_RUNTIME_ANNOTATION_REGEX = /^\s*\*?\s*@jsxRuntime\s+(\S+)\s*$/m,
+  JSX_ANNOTATION_REGEX = /^\s*\*?\s*@jsx\s+(\S+)\s*$/m,
+  JSX_FRAG_ANNOTATION_REGEX = /^\s*\*?\s*@jsxFrag\s+(\S+)\s*$/m,
   get = (pass, name) => pass.get("@babel/plugin-react-jsx/" + name),
   set = (pass, name, v) => pass.set("@babel/plugin-react-jsx/" + name, v);
 function hasProto(node) {

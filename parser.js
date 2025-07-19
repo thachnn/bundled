@@ -359,7 +359,8 @@ function toESTreeLocation(node) {
   return node;
 }
 // noinspection JSUnusedGlobalSymbols
-const estree = superClass => class extends superClass {
+/** @param {typeof Parser} superClass */
+const estree = superClass => class ESTreeParserMixin extends superClass {
   parse() {
     const file = toESTreeLocation(super.parse());
     if (this.options.tokens) file.tokens = file.tokens.map(toESTreeLocation);
@@ -1210,6 +1211,7 @@ class FlowScopeHandler extends ScopeHandler {
   }
 }
 
+/** @prop {Map<string, Object>} plugins */
 class BaseParser {
   constructor() {
     this.sawUnambiguousESM = false;
@@ -2118,7 +2120,13 @@ class Tokenizer extends CommentsParser {
     this.state.pos = pos;
     this.finishToken(135, { pattern: content, flags: mods });
   }
-  /** @returns {?number} */
+  /**
+   * @param {number} radix
+   * @param {number} [len]
+   * @param {boolean} [forceLen=false]
+   * @param {(boolean|string)} [allowNumSeparator=true]
+   * @returns {?number}
+   */
   readInt(radix, len, forceLen = false, allowNumSeparator = true) {
     const { n, pos } = common.readInt(
       this.input,
@@ -2729,6 +2737,14 @@ class ExpressionErrors {
   }
 }
 
+/**
+ * @prop {*} typeAnnotation
+ * @prop {boolean} computed
+ * @prop {?string} kind
+ * @prop {?boolean} readonly
+ * @prop {*} id
+ * @prop {*} program
+ */
 class Node {
   constructor(parser, pos, loc) {
     this.type = "";
@@ -2934,8 +2950,8 @@ function partition(list, test) {
 }
 const FLOW_PRAGMA_REGEX = /\*?\s*@((?:no)?flow)\b/;
 // noinspection JSUnusedGlobalSymbols
-/** @prop {?string} flowPragma */
-const flow = superClass => class extends superClass {
+/** @param {typeof Parser} superClass */
+const flow = superClass => class FlowParserMixin extends superClass {
   constructor(...args) {
     super(...args);
     this.flowPragma = void 0;
@@ -4115,7 +4131,7 @@ const flow = superClass => class extends superClass {
 
     return hasNamespace;
   }
-  parseClassId(node, isStatement, optionalId) {
+  parseClassId(node, isStatement, optionalId, _bindingType) {
     super.parseClassId(node, isStatement, optionalId);
     if (this.match(47)) node.typeParameters = this.flowParseTypeParameterDeclaration();
   }
@@ -5164,7 +5180,8 @@ function getQualifiedJSXName(object) {
 
   throw new Error("Node had unexpected type: " + object.type);
 }
-const jsx = superClass => class extends superClass {
+/** @param {typeof Parser} superClass */
+const jsx = superClass => class JSXParserMixin extends superClass {
   jsxReadToken() {
     let out = "",
       chunkStart = this.state.pos;
@@ -6071,12 +6088,8 @@ function tsIsVarianceAnnotations(modifier) {
   return modifier === "in" || modifier === "out";
 }
 // noinspection JSUnusedGlobalSymbols
-/**
- * @prop {Function} tsParseInOutModifiers
- * @prop {Function} tsParseConstModifier
- * @prop {Function} tsParseInOutConstModifiers
- */
-const typescript = superClass => class extends superClass {
+/** @param {typeof Parser} superClass */
+const typescript = superClass => class TypeScriptParserMixin extends superClass {
   constructor(...args) {
     super(...args);
     this.tsParseInOutModifiers = this.tsParseModifiers.bind(this, {
@@ -8259,7 +8272,8 @@ const PlaceholderErrors = ParseErrorEnum`placeholders`({
   UnexpectedSpace: "Unexpected space in placeholder."
 });
 // noinspection JSUnusedGlobalSymbols
-const placeholders = superClass => class extends superClass {
+/** @param {typeof Parser} superClass */
+const placeholders = superClass => class PlaceholdersParserMixin extends superClass {
   parsePlaceholder(expectedNode) {
     if (this.match(142)) {
       const node = this.startNode();
@@ -8417,7 +8431,8 @@ const placeholders = superClass => class extends superClass {
   }
 };
 
-const v8intrinsic = superClass => class extends superClass {
+/** @param {typeof Parser} superClass */
+const v8intrinsic = superClass => class V8IntrinsicMixin extends superClass {
   parseV8Intrinsic() {
     if (this.match(54)) {
       const v8IntrinsicStartLoc = this.state.startLoc,

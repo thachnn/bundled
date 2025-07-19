@@ -31323,7 +31323,7 @@ function parse$4(str, flags, features) {
       if (match('B')) bail('\\B not possible inside of CharacterClass', '', from);
       else if (!isUnicodeMode && (res = matchReg(/^c([0-9])/)))
         return createEscaped('controlLetter', res[1] + 16, res[1], 2);
-      else if (!isUnicodeMode && (res = matchReg(/^c_/))) return createEscaped('controlLetter', 31, '_', 2);
+      else if (!isUnicodeMode && matchReg(/^c_/)) return createEscaped('controlLetter', 31, '_', 2);
 
       if (isUnicodeMode && match('-')) return createEscaped('singleEscape', 0x002d, '\\-');
     }
@@ -31335,7 +31335,7 @@ function parse$4(str, flags, features) {
       from = pos;
     if ((res = matchReg(/^(?!0)\d+/))) {
       match = res[0];
-      var refIdx = parseInt(res[0], 10);
+      var refIdx = parseInt(match, 10);
       if (refIdx <= closedCaptureCounter && !insideCharacterClass) return createReference(res[0]);
 
       backrefDenied.push(refIdx);
@@ -39911,8 +39911,8 @@ var browserslist_1 = browserslist,
       });
       if (high.operator === comp || high.operator === ecomp) return false;
 
-      if ((!low.operator || low.operator === comp) && ltefn(version, low.semver)) return false;
-      if (low.operator === ecomp && ltfn(version, low.semver)) return false;
+      if ((!low.operator || low.operator === comp) && ltefn(version, low.semver, options)) return false;
+      if (low.operator === ecomp && ltfn(version, low.semver, options)) return false;
     }
     return true;
   }
@@ -40296,6 +40296,7 @@ const lexStates = {
         lexState = 'hexadecimal';
         return;
     }
+    // noinspection PointlessArithmeticExpressionJS
     return newToken('numeric', sign * 0);
   },
   decimalInteger() {
@@ -40716,13 +40717,13 @@ var convertSourceMap = {};
   /** @prop {RegExp} exports.commentRegex */
   Object.defineProperty(exports, 'commentRegex', {
     get: function () {
-      return /^\s*\/[\/*][@#]\s+sourceMappingURL=data:(?:application|text)\/json;(?:charset[:=]\S+?;)?base64,(?:.*)$/gm;
+      return /^\s*\/[\/*][@#]\s+sourceMappingURL=data:(?:application|text)\/json;(?:charset[:=]\S+?;)?base64,.*$/gm;
     }
   });
   /** @prop {RegExp} exports.mapFileCommentRegex */
   Object.defineProperty(exports, 'mapFileCommentRegex', {
     get: function () {
-      return /(?:\/\/[@#][ \t]+sourceMappingURL=([^\s'"`]+?)[ \t]*$)|(?:\/\*[@#][ \t]+sourceMappingURL=([^*]+?)[ \t]*(?:\*\/)[ \t]*$)/gm;
+      return /\/\/[@#][ \t]+sourceMappingURL=([^\s'"`]+?)[ \t]*$|\/\*[@#][ \t]+sourceMappingURL=([^*]+?)[ \t]*\*\/[ \t]*$/gm;
     }
   });
   var decodeBase64 =

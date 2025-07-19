@@ -1032,7 +1032,7 @@ var supportsColor_1 = {
 };
 
 const TEMPLATE_REGEX =
-    /(?:\\(u[a-f\d]{4}|x[a-f\d]{2}|.))|(?:{(~)?(\w+(?:\([^)]*\))?(?:\.\w+(?:\([^)]*\))?)*)(?:[ \t]|(?=\r?\n)))|(})|((?:.|[\r\n\f])+?)/gi,
+    /\\(u[a-f\d]{4}|x[a-f\d]{2}|.)|{(~)?(\w+(?:\([^)]*\))?(?:\.\w+(?:\([^)]*\))?)*)(?:[ \t]|(?=\r?\n))|(})|((?:.|[\r\n\f])+?)/gi,
   STYLE_REGEX = /(?:^|\.)(\w+)(?:\(([^)]*)\))?/g,
   STRING_REGEX = /^(['"])((?:\\.|(?!\1)[^\\])*)\1$/,
   ESCAPE_REGEX = /\\(u[a-f\d]{4}|x[a-f\d]{2}|.)|([^\\])/gi;
@@ -1136,6 +1136,7 @@ function applyOptions(obj, options) {
   obj.level = options.level === void 0 ? scLevel : options.level;
   obj.enabled = 'enabled' in options ? options.enabled : obj.level > 0;
 }
+/** @prop {*} template */
 function Chalk(options) {
   if (!this || !(this instanceof Chalk) || this.template) {
     const chalk = {};

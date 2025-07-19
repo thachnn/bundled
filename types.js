@@ -5410,9 +5410,9 @@ function cleanJSXElementLiteralChild(child, args) {
       isLastLine = i === lines.length - 1,
       isLastNonEmptyLine = i === lastNonEmptyLine;
     let trimmedLine = line.replace(/\t/g, " ");
-    isFirstLine || (trimmedLine = trimmedLine.replace(/^[ ]+/, ""));
+    isFirstLine || (trimmedLine = trimmedLine.replace(/^ +/, ""));
 
-    isLastLine || (trimmedLine = trimmedLine.replace(/[ ]+$/, ""));
+    isLastLine || (trimmedLine = trimmedLine.replace(/ +$/, ""));
 
     if (trimmedLine) {
       isLastNonEmptyLine || (trimmedLine += " ");
